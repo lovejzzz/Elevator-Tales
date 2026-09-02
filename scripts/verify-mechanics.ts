@@ -2,11 +2,35 @@ import assert from 'node:assert/strict';
 import { emergencyEnergyRunway, expressTrip, failureLesson, initialRun, installUpgrade, makeOffers, NIGHT_RUSH_MAX, NIGHT_RUSH_MIN, nightRushBonus, readyPartner, resolveFloor, synergyPartnerAtSlot, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
 import { UPGRADES, type PassengerKind } from '../lib/game-data';
 import { energyForecast, stressForecast } from '../lib/game-forecast';
+import { activeConnection, planPlacement } from '../lib/game-interaction';
 
 const rider = (kind: PassengerKind, id: string, overrides: Partial<Rider> = {}): Rider => ({
   id, kind, destination: 8, patience: 10, boardedAt: 1, fareBonus: 0, ...overrides,
 });
 const sourceMap = (sources: ChangeLine[]) => Object.fromEntries(sources.map((line) => [line.label, line.amount]));
+
+const emptyPlacement = initialRun(); const placedLover = rider('lover', 'placed-lover');
+const placeFirst = planPlacement(emptyPlacement, placedLover, 0);
+assert.equal(placeFirst.ok, true); assert.equal(placeFirst.tone, 'place');
+assert.equal(emptyPlacement.cabin[0], null, 'hover previews must never mutate live cabin state');
+const placeSecond = planPlacement(placeFirst.next, rider('lover', 'second-lover'), 1);
+assert.equal(placeSecond.tone, 'combo'); assert.equal(activeConnection(placeSecond.next.cabin, 0, 1), true);
+assert.deepEqual(placeSecond.slots, [1, 0], 'both members of a newly formed pair should receive feedback');
+const invalidPlacement = planPlacement(placeFirst.next, rider('nurse', 'blocked-nurse'), 0);
+assert.equal(invalidPlacement.ok, false); assert.equal(invalidPlacement.tone, 'error');
+assert.equal(invalidPlacement.next.cabin, placeFirst.next.cabin, 'a rejected drop must preserve the cabin');
+assert.equal(planPlacement(placeFirst.next, placedLover, 0).changed, false, 'dropping on the source should not replay a success effect');
+assert.equal(planPlacement({ ...placeFirst.next, weightCap: 1 }, rider('lover', 'too-heavy'), 1).ok, false);
+const oldPassengerRun = { ...placeFirst.next, floor: 2 };
+const firstReseat = planPlacement(oldPassengerRun, placedLover, 1);
+assert.equal(firstReseat.next.swapped, true);
+assert.equal(planPlacement(firstReseat.next, placedLover, 2).ok, false, 'a second old-rider move must be rejected in both drag and tap flows');
+const newRider = rider('courier', 'new-arrival', { boardedAt: 2 });
+const afterBoarding = planPlacement(firstReseat.next, newRider, 3);
+assert.equal(planPlacement(afterBoarding.next, newRider, 4).ok, true, 'new riders still move freely after the old-rider swap was used');
+assert.equal(planPlacement(afterBoarding.next, newRider, 1).ok, false, 'a new rider cannot bypass the swap limit by targeting an old rider');
+assert.equal(planPlacement({ ...emptyPlacement, status: 'won' }, placedLover, 0).ok, false);
+for (const target of [-1, 6, 0.5, NaN]) assert.equal(planPlacement(emptyPlacement, placedLover, target).ok, false);
 
 const guidedOffers = makeOffers(1, initialRun().upgrades, true, () => 0.5);
 assert.deepEqual(guidedOffers.map((offer) => offer.kind), ['lover', 'lover', 'courier'], 'the first shift should demonstrate a real adjacency pairing');
@@ -93,4 +117,4 @@ assert.equal(calledOffers[0].kind, 'lover', 'a solo lover should sometimes call 
 assert.equal(calledOffers[0].calledByLover, true, 'the called lover should retain its causal marker');
 assert.equal(new Set(Object.values(UPGRADES).map((upgrade) => upgrade.strategy)).size, 6, 'every upgrade should expose a distinct strategic role');
 
-console.log('Mechanics verified: pressure and energy forecasts, Midnight Rush rewards, lover pairing, crisis rescue, and the lover call.');
+console.log('Mechanics verified: placement previews and rejection, swap limits, pressure and energy forecasts, Midnight Rush rewards, lover pairing, crisis rescue, and the lover call.');

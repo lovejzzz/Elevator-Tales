@@ -1,14 +1,35 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
-import { ArrowUp, BatteryCharging, BookOpen, Coins, Gauge, HelpCircle, LockKeyhole, RotateCcw, Sparkles, Volume2, VolumeX, Weight } from 'lucide-react';
+import { ArrowUp, BatteryCharging, BookOpen, Check, Coins, Gauge, HelpCircle, LockKeyhole, RotateCcw, Sparkles, Volume2, VolumeX, Weight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ADJACENT, PASSENGER_ORDER, PASSENGERS, SCORE_RANKS, UPGRADES, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
-import { EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, isFreeReseat, makeOffers, neighbourCount, neighbours, NIGHT_RUSH_MAX, NIGHT_RUSH_MIN, nightRushBonus, readyPartner, resolveFloor, synergyPartnerAtSlot, totalWeight, unlockedAt, upgradeChoices, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
+import { EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, makeOffers, neighbourCount, NIGHT_RUSH_MAX, NIGHT_RUSH_MIN, nightRushBonus, readyPartner, resolveFloor, totalWeight, unlockedAt, upgradeChoices, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, stressForecast } from '@/lib/game-forecast';
+import { activeConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
+import { disposeGameAudio, playGameSound as playTone } from '@/lib/game-audio';
 
 type DragPayload = { type: 'offer'; id: string } | { type: 'slot'; slot: number };
+type Feedback = { id: number; tone: 'place' | 'combo' | 'error' | 'arrival'; label: string; slots: number[]; coins?: number; energy?: number; pressure?: number };
+
+function AnimatedNumber({ value }: { value: number }) {
+  const [shown, setShown] = useState(value); const current = useRef(value);
+  useEffect(() => {
+    const from = current.current; const start = performance.now();
+    const duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 280;
+    let frame: number;
+    const tick = (now: number) => {
+      const progress = duration ? Math.min(1, (now - start) / duration) : 1;
+      const next = Math.round(from + (value - from) * (1 - (1 - progress) ** 3));
+      current.current = next; setShown(next);
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+  return <span className="animated-number" aria-label={String(value)}>{shown}</span>;
+}
 
 const signedDelta = (value: number) => value > 0 ? `+${value}` : value < 0 ? `−${Math.abs(value)}` : '不变';
 const scoreRank = (coins: number) => {
@@ -43,31 +64,7 @@ function riderState(cabin: Array<Rider | null>, slot: number, weight: number): {
   }
 }
 
-function activeConnection(cabin: Array<Rider | null>, first: number, second: number): boolean {
-  const a = cabin[first]; const b = cabin[second];
-  if (!a || !b) return false;
-  const supports = (source: PassengerKind, target: PassengerKind, sourceSlot: number) => {
-    if (source === 'lover') return target === 'lover';
-    if (source === 'thief') return target === 'cop' || target === 'lawyer';
-    if (source === 'cop') return target === 'thief' || target === 'bomb';
-    if (source === 'lawyer') return target === 'thief';
-    if (source === 'drunk') return target === 'musician' || target === 'nurse';
-    if (source === 'child') return target === 'lover' || target === 'musician' || target === 'nurse';
-    if (source === 'ghost') return target === 'exorcist';
-    if (source === 'exorcist') return target === 'ghost';
-    if (source === 'bomb') return target === 'cop';
-    if (source === 'coach') return true;
-    if (source === 'celebrity') return neighbourCount(cabin, sourceSlot) === 1;
-    return false;
-  };
-  return supports(a.kind, b.kind, first) || supports(b.kind, a.kind, second);
-}
-
 const CONNECTION_POINTS = [[47, 50], [150, 50], [253, 50], [47, 150], [150, 150], [253, 150]];
-
-function placementMessage(cabin: Array<Rider | null>, offer: Rider, slot: number, fallback: string) {
-  return offer.kind === 'lover' && hasNeighbour(cabin, slot, ['lover']) ? '恋人已配对：每层 +2 金币，到站车费翻倍。' : fallback;
-}
 
 const rescuesCrisis = (key: UpgradeKey, crisis: UpgradeCrisis) => crisis === 'energy' ? key === 'battery' || key === 'reinforced' : crisis === 'stress' && key === 'calm';
 
@@ -83,29 +80,24 @@ function upgradeImpact(key: UpgradeKey, run: RunState): string {
   }
 }
 
-function playTone(enabled: boolean, type: 'select' | 'depart' | 'arrive' | 'danger' | 'upgrade' | 'victory') {
-  if (!enabled || typeof window === 'undefined') return;
-  const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-  const ctx = new AudioCtx();
-  const notes = type === 'danger' ? [155, 128] : type === 'victory' ? [392, 523, 659, 784] : type === 'upgrade' ? [330, 440, 660] : type === 'depart' ? [220, 165] : type === 'arrive' ? [392, 523] : [440];
-  notes.forEach((frequency, index) => {
-    const osc = ctx.createOscillator(); const gain = ctx.createGain();
-    osc.type = type === 'danger' ? 'sawtooth' : 'sine'; osc.frequency.value = frequency;
-    gain.gain.setValueAtTime(.0001, ctx.currentTime + index * .08); gain.gain.exponentialRampToValueAtTime(.055, ctx.currentTime + index * .08 + .015); gain.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + index * .08 + .16);
-    osc.connect(gain).connect(ctx.destination); osc.start(ctx.currentTime + index * .08); osc.stop(ctx.currentTime + index * .08 + .18);
-  });
-  setTimeout(() => ctx.close(), type === 'victory' ? 1100 : 700);
-}
-
 export default function ElevatorGame() {
   const [run, setRun] = useState<RunState>(initialRun); const [offers, setOffers] = useState<Rider[]>([]);
-  const [selectedSlot, setSelectedSlot] = useState<number | null>(null); const [doors, setDoors] = useState<'open' | 'closing' | 'moving'>('open');
+  const [selectedSlot, setSelectedSlot] = useState<number | null>(null); const [doors, setDoors] = useState<'open' | 'closing' | 'moving' | 'opening'>('open');
   const [pendingOfferId, setPendingOfferId] = useState<string | null>(null);
   const [dragged, setDragged] = useState<DragPayload | null>(null); const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [guidedShift, setGuidedShift] = useState(false);
   const [intro, setIntro] = useState(true); const [help, setHelp] = useState(false); const [pressureHelp, setPressureHelp] = useState(false); const [archive, setArchive] = useState(false); const [sound, setSound] = useState(true);
   const [highest, setHighest] = useState(1); const [bestCoins, setBestCoins] = useState(0); const [runStartBest, setRunStartBest] = useState(0); const [choices, setChoices] = useState<UpgradeKey[]>([]); const busyRef = useRef(false);
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const feedbackId = useRef(0); const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null); const journeyTimers = useRef<Array<ReturnType<typeof setTimeout>>>([]);
+  const stageRef = useRef<HTMLElement>(null);
   const locked = doors !== 'open' || run.status !== 'playing';
+  const flash = useCallback((event: Omit<Feedback, 'id'>) => {
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    setFeedback({ ...event, id: ++feedbackId.current });
+    feedbackTimer.current = setTimeout(() => setFeedback(null), event.tone === 'arrival' ? 2600 : 1900);
+  }, []);
+  useEffect(() => () => { journeyTimers.current.forEach(clearTimeout); if (feedbackTimer.current) clearTimeout(feedbackTimer.current); disposeGameAudio(); }, []);
 
   useEffect(() => { const savedBest = Math.max(0, Number(localStorage.getItem('elevator-tales-best-coins') || 0)); const savedHighest = Math.max(1, Number(localStorage.getItem('elevator-tales-highest') || 1)); const shouldGuide = savedHighest <= 1 || new URLSearchParams(window.location.search).get('tutorial') === '1'; setHighest(savedHighest); setBestCoins(savedBest); setRunStartBest(savedBest); setGuidedShift(shouldGuide); setOffers(makeOffers(1, EMPTY_UPGRADES, shouldGuide)); }, []);
   useEffect(() => { if (run.floor > highest) { setHighest(run.floor); localStorage.setItem('elevator-tales-highest', String(run.floor)); } if (run.status === 'upgrade') { const crisis: UpgradeCrisis = run.energy <= 0 ? 'energy' : run.stress >= run.stressCap ? 'stress' : null; setChoices(upgradeChoices(run.upgrades, Math.random, crisis)); } }, [run.floor, run.status, run.upgrades, run.energy, run.stress, run.stressCap, highest]);
@@ -126,46 +118,49 @@ export default function ElevatorGame() {
   const earningSummary = run.lastEarnings.sources.slice(0, 2).map((line) => `${line.label} +${line.amount}`).join(' · ') + (run.lastEarnings.sources.length > 2 ? ` · 另 ${run.lastEarnings.sources.length - 2} 项` : '');
   const pressureSummary = run.lastPressure.sources.slice(0, 2).map((line) => `${line.label} ${signedDelta(line.amount)}`).join(' · ') + (run.lastPressure.sources.length > 2 ? ` · 另 ${run.lastPressure.sources.length - 2} 项` : '');
   const energySummary = run.lastEnergy.sources.slice(0, 2).map((line) => `${line.label} ${signedDelta(line.amount)}`).join(' · ') + (run.lastEnergy.sources.length > 2 ? ` · 另 ${run.lastEnergy.sources.length - 2} 项` : '');
-  const activeOfferId = pendingOfferId ?? (dragged?.type === 'offer' ? dragged.id : null); const activeOffer = offers.find((offer) => offer.id === activeOfferId);
+  const activeOfferId = pendingOfferId ?? (dragged?.type === 'offer' ? dragged.id : null);
+  const activeRider = dragged?.type === 'slot' ? run.cabin[dragged.slot] : selectedSlot !== null ? run.cabin[selectedSlot] : offers.find((offer) => offer.id === activeOfferId);
+  const placementPlans = activeRider ? run.cabin.map((_, slot) => planPlacement(run, activeRider, slot)) : [];
+  const hoveredPlan = dragOverSlot !== null ? placementPlans[dragOverSlot] : null;
   const rushForecast = rushGuaranteed ? ` · 热区 +${rushPayout}` : rushPossible ? ` · 热区可能 +${rushPayout}` : '';
   const departureForecast = `下一层 · 能源 ${energyPreview.range} · 压力 ${pressurePreview.range}${rushForecast}${pressurePreview.details ? ` · ${pressurePreview.details}` : ''}`;
   const nextRankGoal = rank.next ? `再赚 ${rank.next.min - run.coins} 金币可升至 ${rank.next.grade} 级` : '';
   const resultChallenge = run.status === 'lost' ? failureLesson(run) : run.coins > runStartBest ? `新纪录 · 比原纪录多 ${run.coins - runStartBest} 金币${nextRankGoal ? ` · ${nextRankGoal}` : ''}` : rank.next ? `${nextRankGoal}${runStartBest > run.coins ? ` · 距个人最佳 ${runStartBest - run.coins}` : ''}` : '已达最高评级 · 下一班继续刷新纪录';
 
-  const reset = useCallback(() => { const fresh = initialRun(); setRunStartBest(bestCoins); setRun(fresh); setOffers(makeOffers(1, fresh.upgrades)); setGuidedShift(false); setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setDoors('open'); setIntro(false); busyRef.current = false; }, [bestCoins]);
+  const reset = useCallback(() => { journeyTimers.current.forEach(clearTimeout); journeyTimers.current = []; if (feedbackTimer.current) clearTimeout(feedbackTimer.current); setFeedback(null); const fresh = initialRun(); setRunStartBest(bestCoins); setRun(fresh); setOffers(makeOffers(1, fresh.upgrades)); setGuidedShift(false); setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setDoors('open'); setIntro(false); busyRef.current = false; }, [bestCoins]);
+  const commitPlacement = (result: PlacementResult) => {
+    setRun(result.next);
+    if (!result.ok || result.changed) { flash({ tone: result.tone, label: result.label, slots: result.slots }); playTone(sound, result.ok ? result.tone === 'combo' ? 'combo' : 'place' : 'danger'); }
+    if (result.ok) { setPendingOfferId(null); setSelectedSlot(null); setDragOverSlot(null); }
+  };
   const toggleOffer = (offer: Rider) => {
     if (locked) return;
     const existing = run.cabin.findIndex((rider) => rider?.id === offer.id);
     if (existing >= 0) { setRun((current) => ({ ...current, cabin: current.cabin.map((rider, i) => i === existing ? null : rider), message: `${PASSENGERS[offer.kind].name}回到队伍中。` })); setPendingOfferId(null); playTone(sound, 'select'); return; }
     if (pendingOfferId === offer.id) { setPendingOfferId(null); setRun((current) => ({ ...current, message: '已取消安排。' })); return; }
-    setPendingOfferId(offer.id); setSelectedSlot(null);
+    setPendingOfferId(offer.id); setSelectedSlot(null); setDragOverSlot(null); setFeedback(null);
     setRun((current) => ({ ...current, message: `已选择${PASSENGERS[offer.kind].name}，现在点一个空位。` })); playTone(sound, 'select');
+    if (window.matchMedia('(max-width: 700px)').matches) stageRef.current?.scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   };
   const clickSlot = (slot: number) => {
     if (locked) return;
     if (pendingOfferId) {
       const offer = offers.find((candidate) => candidate.id === pendingOfferId);
       if (!offer) { setPendingOfferId(null); return; }
-      if (run.cabin[slot]) { setRun((current) => ({ ...current, message: `${slot + 1} 号位已经有人，请选择空位。` })); playTone(sound, 'danger'); return; }
-      if (weight + PASSENGERS[offer.kind].weight > run.weightCap) { setRun((current) => ({ ...current, message: `载重会超出 ${run.weightCap}，无法上车。` })); setPendingOfferId(null); playTone(sound, 'danger'); return; }
-      setRun((current) => { const cabin = current.cabin.map((rider, i) => i === slot ? offer : rider); return { ...current, cabin, message: placementMessage(cabin, offer, slot, `${PASSENGERS[offer.kind].name}已站到 ${slot + 1} 号位。`) }; });
-      setPendingOfferId(null); playTone(sound, 'select'); return;
+      commitPlacement(planPlacement(run, offer, slot)); return;
     }
-    if (selectedSlot === null) { const rider = run.cabin[slot]; if (rider && (!run.swapped || rider.boardedAt === run.floor)) setSelectedSlot(slot); return; }
+    if (selectedSlot === null) { const rider = run.cabin[slot]; if (rider && (!run.swapped || rider.boardedAt === run.floor)) { setSelectedSlot(slot); playTone(sound, 'select'); } else if (rider) { flash({ tone: 'error', label: '本层旧乘客换位已用', slots: [slot] }); playTone(sound, 'danger'); } return; }
     if (selectedSlot === slot) { setSelectedSlot(null); return; }
-    setRun((current) => {
-      const freeReseat = isFreeReseat(current.cabin, selectedSlot, slot, current.floor);
-      if (current.swapped && !freeReseat) return { ...current, message: '本层旧乘客的唯一一次换位已经用过。' };
-      const cabin = [...current.cabin]; [cabin[selectedSlot], cabin[slot]] = [cabin[slot], cabin[selectedSlot]];
-      return { ...current, cabin, swapped: current.swapped || !freeReseat, message: freeReseat ? '本层新乘客已重新安排，不消耗换位。' : '站位已调整。本层不能再次交换旧乘客。' };
-    });
-    setSelectedSlot(null); playTone(sound, 'select');
+    const rider = run.cabin[selectedSlot];
+    if (rider) commitPlacement(planPlacement(run, rider, slot));
   };
   const startDrag = (event: DragEvent, payload: DragPayload) => {
     if (locked) { event.preventDefault(); return; }
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('application/elevator-tales', JSON.stringify(payload));
-    setPendingOfferId(null); setDragged(payload);
+    const portrait = event.currentTarget.querySelector<HTMLElement>('.portrait-window');
+    if (portrait) { const bounds = portrait.getBoundingClientRect(); event.dataTransfer.setDragImage(portrait, bounds.width / 2, bounds.height / 2); }
+    setPendingOfferId(null); setSelectedSlot(null); setFeedback(null); setDragged(payload); playTone(sound, 'select');
   };
   const endDrag = () => { setDragged(null); setDragOverSlot(null); };
   const dropOnSlot = (event: DragEvent, target: number) => {
@@ -173,48 +168,38 @@ export default function ElevatorGame() {
     if (locked) return;
     let payload = dragged;
     try { payload = JSON.parse(event.dataTransfer.getData('application/elevator-tales')) as DragPayload; } catch { /* state fallback */ }
-    if (!payload) return;
-    if (payload.type === 'offer') {
-      const offer = offers.find((candidate) => candidate.id === payload.id);
-      if (!offer) return;
-      setRun((current) => {
-        const cabin = [...current.cabin];
-        const source = cabin.findIndex((rider) => rider?.id === offer.id);
-        if (source === target) return current;
-        if (source >= 0) {
-          const freeReseat = isFreeReseat(cabin, source, target, current.floor);
-          if (current.swapped && !freeReseat) return { ...current, message: '本层旧乘客的唯一一次换位已经用过。' };
-          [cabin[source], cabin[target]] = [cabin[target], cabin[source]];
-          return { ...current, cabin, swapped: current.swapped || !freeReseat, message: freeReseat ? `${PASSENGERS[offer.kind].name}已重新安排，不消耗换位。` : `${PASSENGERS[offer.kind].name}已拖到 ${target + 1} 号位，本层旧乘客换位已用。` };
-        }
-        if (cabin[target]) return { ...current, message: `${target + 1} 号位已经有人，请拖到空位。` };
-        if (totalWeight(cabin) + PASSENGERS[offer.kind].weight > current.weightCap) return { ...current, message: `载重会超出 ${current.weightCap}，无法上车。` };
-        cabin[target] = offer;
-        return { ...current, cabin, message: placementMessage(cabin, offer, target, `${PASSENGERS[offer.kind].name}已直接站到 ${target + 1} 号位。`) };
-      });
-    } else if (payload.slot !== target) {
-      setRun((current) => {
-        if (!current.cabin[payload.slot]) return current;
-        const freeReseat = isFreeReseat(current.cabin, payload.slot, target, current.floor);
-        if (current.swapped && !freeReseat) return { ...current, message: '本层旧乘客的唯一一次换位已经用过。' };
-        const cabin = [...current.cabin];
-        [cabin[payload.slot], cabin[target]] = [cabin[target], cabin[payload.slot]];
-        return { ...current, cabin, swapped: current.swapped || !freeReseat, message: freeReseat ? '本层新乘客已重新安排，不消耗换位。' : `乘客已拖到 ${target + 1} 号位，本层旧乘客换位已用。` };
-      });
-    }
-    setDragged(null); setDragOverSlot(null); setSelectedSlot(null); setPendingOfferId(null); playTone(sound, 'select');
+    if (!payload || typeof payload !== 'object') { endDrag(); return; }
+    const rider = payload.type === 'offer' ? offers.find((candidate) => candidate.id === payload.id) : payload.type === 'slot' && Number.isInteger(payload.slot) ? run.cabin[payload.slot] : null;
+    if (rider) commitPlacement(planPlacement(run, rider, target));
+    endDrag();
   };
   const depart = useCallback(() => {
     if (locked || busyRef.current) return;
-    busyRef.current = true; setSelectedSlot(null); setPendingOfferId(null); setDoors('closing'); playTone(sound, 'depart'); setTimeout(() => setDoors('moving'), 420);
-    setTimeout(() => { setRun((current) => { const resolved = resolveFloor(current); let delivered = resolved; if (resolved.status === 'playing') { const nextOffers = makeOffers(resolved.floor, resolved.upgrades, false, Math.random, resolved.cabin); setOffers(nextOffers); if (nextOffers.some((rider) => rider.calledByLover) && resolved.lastPressure.delta <= 0) delivered = { ...resolved, message: '恋人的呼唤得到了回应。把两人安排在相邻站位。' }; } playTone(sound, resolved.status === 'lost' ? 'danger' : resolved.status === 'won' ? 'victory' : 'arrive'); return delivered; }); setDoors('open'); busyRef.current = false; }, 920);
-  }, [locked, sound]);
-  useEffect(() => { const onKey = (event: KeyboardEvent) => { if (event.key === 'Enter' && !intro && !help && !pressureHelp && !archive) depart(); }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, [depart, intro, help, pressureHelp, archive]);
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (window.matchMedia('(max-width: 700px)').matches) stageRef.current?.scrollIntoView({ block: 'center', behavior: reduced ? 'instant' : 'smooth' });
+    busyRef.current = true; setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setFeedback(null); setDoors('closing'); playTone(sound, 'depart');
+    journeyTimers.current.forEach(clearTimeout);
+    journeyTimers.current = [
+      setTimeout(() => setDoors('moving'), reduced ? 30 : 250),
+      setTimeout(() => {
+        const resolved = resolveFloor(run); let delivered = resolved;
+        if (resolved.status === 'playing') { const nextOffers = makeOffers(resolved.floor, resolved.upgrades, false, Math.random, resolved.cabin); setOffers(nextOffers); if (nextOffers.some((rider) => rider.calledByLover) && resolved.lastPressure.delta <= 0) delivered = { ...resolved, message: '恋人的呼唤得到了回应。把两人安排在相邻站位。' }; }
+        setRun(delivered); setDoors('opening');
+        flash({ tone: 'arrival', label: `${String(resolved.floor).padStart(2, '0')}F · 本层结算`, slots: [], coins: resolved.lastEarnings.total, energy: resolved.lastEnergy.delta, pressure: resolved.lastPressure.delta });
+        playTone(sound, resolved.status === 'lost' ? 'danger' : resolved.status === 'won' ? 'victory' : 'arrive');
+      }, reduced ? 70 : 470),
+      setTimeout(() => { setDoors('open'); busyRef.current = false; }, reduced ? 110 : 730),
+    ];
+  }, [locked, sound, run, flash]);
+  useEffect(() => { const onKey = (event: KeyboardEvent) => {
+    if (intro || help || pressureHelp || archive || event.repeat) return;
+    if (event.key === 'Escape') { setPendingOfferId(null); setSelectedSlot(null); setDragged(null); setDragOverSlot(null); return; }
+    if (event.key === 'Enter' && !(event.target instanceof HTMLElement && event.target.closest('button,input,textarea,select,[contenteditable="true"]'))) { event.preventDefault(); depart(); }
+  }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, [depart, intro, help, pressureHelp, archive]);
   const chooseUpgrade = (key: UpgradeKey) => {
-    setRun((current) => {
-      const updated = installUpgrade(current, key);
-      if (updated.status === 'playing') { const nextOffers = makeOffers(current.floor, updated.upgrades, false, Math.random, updated.cabin); setOffers(nextOffers); if (nextOffers.some((rider) => rider.calledByLover)) return { ...updated, message: '恋人的呼唤得到了回应。把两人安排在相邻站位。' }; } return updated;
-    }); playTone(sound, 'upgrade');
+    const updated = installUpgrade(run, key); let delivered = updated;
+    if (updated.status === 'playing') { const nextOffers = makeOffers(run.floor, updated.upgrades, false, Math.random, updated.cabin); setOffers(nextOffers); if (nextOffers.some((rider) => rider.calledByLover)) delivered = { ...updated, message: '恋人的呼唤得到了回应。把两人安排在相邻站位。' }; }
+    setRun(delivered); flash({ tone: 'combo', label: `${UPGRADES[key].name} · 已安装`, slots: [] }); playTone(sound, 'upgrade');
   };
 
   return <main className={`game-shell ${run.floor >= 50 ? 'phase-dawn' : ''} ${run.status === 'won' ? 'shift-won' : ''}`}>
@@ -223,24 +208,35 @@ export default function ElevatorGame() {
     <section className="game-grid">
       <aside className="status-rail">
         <div className="floor-plaque"><span>FLOOR</span><strong>{String(run.floor).padStart(2, '0')}</strong><small>{phase}</small><progress className="floor-progress" aria-label={`前往六十层，当前 ${run.floor} 层`} max={60} value={run.floor} /></div>
-        <div className="meter-card energy" title={energyPreview.summary}><div><BatteryCharging /><span>能源</span><b>{run.energy}</b></div><div className="meter-track"><i style={{ width: `${Math.max(0, Math.min(100, run.energy / run.energyCap * 100))}%` }} /></div><small>NEXT {energyPreview.range} · {run.energyCap} MAX</small>{run.lastEnergy.sources.length > 0 && <div className={`energy-receipt ${run.lastEnergy.delta > 0 ? 'gained' : run.lastEnergy.delta < 0 ? 'spent' : 'balanced'}`} key={run.floor} aria-live="polite" title={energySummary}><b>{run.lastEnergy.delta === 0 ? '本层持平' : `本层 ${signedDelta(run.lastEnergy.delta)}`}</b><span>{energySummary}</span></div>}</div>
-        <div className={`meter-card pressure ${rushReady ? 'rush-ready' : ''}`} title={`${pressurePreview.summary}${rushForecast}`}><div><Gauge /><span className="meter-label">压力<button className="meter-help" onClick={() => setPressureHelp(true)} aria-label="查看压力来源" title="查看压力来源"><HelpCircle /></button></span><b>{run.stress}</b></div><div className="meter-track"><i style={{ width: `${Math.min(100, run.stress / run.stressCap * 100)}%` }} /></div><small>NEXT {pressurePreview.range} · {run.stressCap} LIMIT</small>{run.lastPressure.sources.length > 0 ? <div className={`pressure-receipt ${run.lastPressure.delta > 0 ? 'rose' : run.lastPressure.delta < 0 ? 'fell' : 'balanced'}`} key={run.floor} aria-live="polite" title={pressureSummary}><b>{run.lastPressure.delta === 0 ? '本层抵消' : `本层 ${signedDelta(run.lastPressure.delta)}`}</b><span>{pressureSummary}</span></div> : rushReady ? <div className="pressure-principle rush-principle"><b>午夜热区已就绪 · +{rushPayout}</b><span>下一层把压力保持在 {NIGHT_RUSH_MIN}–{NIGHT_RUSH_MAX}</span></div> : <div className="pressure-principle"><b>普通上行不加压</b><span>只看人物事件与耐心</span></div>}</div>
+        <div className={`meter-card energy ${energyPreview.danger ? 'meter-danger' : ''}`} title={energyPreview.summary}><div><BatteryCharging /><span>能源</span><b><AnimatedNumber value={run.energy} /></b></div><div className="meter-track"><i style={{ width: `${Math.max(0, Math.min(100, run.energy / run.energyCap * 100))}%` }} /></div><small>NEXT {energyPreview.range} · {run.energyCap} MAX</small>{run.lastEnergy.sources.length > 0 && <div className={`energy-receipt ${run.lastEnergy.delta > 0 ? 'gained' : run.lastEnergy.delta < 0 ? 'spent' : 'balanced'}`} key={run.floor} aria-live="polite" title={energySummary}><b>{run.lastEnergy.delta === 0 ? '本层持平' : `本层 ${signedDelta(run.lastEnergy.delta)}`}</b><span>{energySummary}</span></div>}</div>
+        <div className={`meter-card pressure ${rushReady ? 'rush-ready' : ''} ${pressurePreview.tone === 'danger' ? 'meter-danger' : ''}`} title={`${pressurePreview.summary}${rushForecast}`}><div><Gauge /><span className="meter-label">压力<button className="meter-help" onClick={() => setPressureHelp(true)} aria-label="查看压力来源" title="查看压力来源"><HelpCircle /></button></span><b><AnimatedNumber value={run.stress} /></b></div><div className="meter-track pressure-track"><span className="rush-band" style={{ left: `${NIGHT_RUSH_MIN / run.stressCap * 100}%`, width: `${(NIGHT_RUSH_MAX - NIGHT_RUSH_MIN) / run.stressCap * 100}%` }} aria-hidden="true" /><i style={{ width: `${Math.min(100, run.stress / run.stressCap * 100)}%` }} /></div><small>NEXT {pressurePreview.range} · {run.stressCap} LIMIT</small>{run.lastPressure.sources.length > 0 ? <div className={`pressure-receipt ${run.lastPressure.delta > 0 ? 'rose' : run.lastPressure.delta < 0 ? 'fell' : 'balanced'}`} key={run.floor} aria-live="polite" title={pressureSummary}><b>{run.lastPressure.delta === 0 ? '本层抵消' : `本层 ${signedDelta(run.lastPressure.delta)}`}</b><span>{pressureSummary}</span></div> : rushReady ? <div className="pressure-principle rush-principle"><b>午夜热区已就绪 · +{rushPayout}</b><span>下一层把压力保持在 {NIGHT_RUSH_MIN}–{NIGHT_RUSH_MAX}</span></div> : <div className="pressure-principle"><b>普通上行不加压</b><span>只看人物事件与耐心</span></div>}</div>
         <div className={`load-card ${weight > 8 ? 'load-warn' : ''}`}><Weight /><span>载重</span><b>{weight} / {run.weightCap}</b></div>
-        <div className={`score-card ${rankedUp ? 'rank-up' : ''}`}><Coins /><span>本次收入</span><strong>{run.coins}</strong><progress className="rank-progress" aria-label={`${rank.grade}级进度`} max={100} value={rankProgress} /><small><b>{rank.grade}</b><span className="rank-full"> {rank.name} · {rank.next ? `距 ${rank.next.grade} 级 ${rank.next.min - run.coins}` : '最高评级'} · 最佳 {bestCoins}</span><span className="rank-compact"> · {rank.next ? `距 ${rank.next.grade} ${rank.next.min - run.coins}` : '最高级'} · 最佳{bestCoins}</span></small>{run.lastEarnings.total > 0 && <div className="earning-receipt" key={run.floor} aria-live="polite" title={earningSummary}><b>{rankedUp ? `晋升 ${rank.grade} 级 · ` : ''}本层 +{run.lastEarnings.total}</b><span>{earningSummary}</span></div>}</div>
+        <div className={`score-card ${rankedUp ? 'rank-up' : ''}`}><Coins /><span>本次收入</span><strong><AnimatedNumber value={run.coins} /></strong><progress className="rank-progress" aria-label={`${rank.grade}级进度`} max={100} value={rankProgress} /><small><b>{rank.grade}</b><span className="rank-full"> {rank.name} · {rank.next ? `距 ${rank.next.grade} 级 ${rank.next.min - run.coins}` : '最高评级'} · 最佳 {bestCoins}</span><span className="rank-compact"> · {rank.next ? `距 ${rank.next.grade} ${rank.next.min - run.coins}` : '最高级'} · 最佳{bestCoins}</span></small>{run.lastEarnings.total > 0 && <div className="earning-receipt" key={run.floor} aria-live="polite" title={earningSummary}><b>{rankedUp ? `晋升 ${rank.grade} 级 · ` : ''}本层 +{run.lastEarnings.total}</b><span>{earningSummary}</span></div>}</div>
         {run.floor >= 50 && run.floor < 60 && <div className={`final-push ${sGap === 0 ? 'secured' : sGap <= sprintPace ? 'on-track' : 'must-risk'}`}><span>FINAL PUSH · 剩 {floorsLeft} 层</span><b>{sGap === 0 ? 'S 级已锁定' : sGap <= sprintPace ? `S 级在望 · 还差 ${sGap}` : `需要冒险 · 还差 ${sGap}`}</b></div>}
         <div className="event-log">{run.log.slice(0, 3).map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}</div>
       </aside>
-      <section className={`elevator-stage doors-${doors}`} aria-label="电梯座舱">
-        <div className="elevator-image" /><div className="motion-lines" /><div className="floor-indicator"><ArrowUp /><b>{String(run.floor).padStart(2, '0')}</b></div><div className="cabin-title"><span>CAR № 07</span><i /><span>{run.cabin.filter(Boolean).length} / 6 OCCUPIED</span></div>
+      <section ref={stageRef} className={`elevator-stage doors-${doors} ${activeRider ? 'is-placing' : ''} ${rushReady ? 'cabin-rush' : ''}`} aria-label="电梯座舱" aria-busy={doors !== 'open'}>
+        <div className="elevator-image" /><div className="motion-lines" /><div className="floor-indicator"><ArrowUp /><b key={run.floor}>{String(run.floor).padStart(2, '0')}</b></div><div className="cabin-title"><span>CAR № 07</span><i /><span>{occupied} / 6 OCCUPIED</span></div>
         <div className="adjacency-key"><i />连线站位互为邻座</div>
-        <div className="standing-grid"><svg className="adjacency-map" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true">{ADJACENT.map(([first, second]) => <line key={`${first}-${second}`} className={activeConnection(run.cabin, first, second) ? 'active' : ''} x1={CONNECTION_POINTS[first][0]} y1={CONNECTION_POINTS[first][1]} x2={CONNECTION_POINTS[second][0]} y2={CONNECTION_POINTS[second][1]} />)}</svg>{run.cabin.map((rider, index) => {
-          const state = riderState(run.cabin, index, weight); const synergyPartner = !rider && activeOffer ? synergyPartnerAtSlot(activeOffer.kind, run.cabin, index, activeOffer.id) : null;
-          return <button key={index} className={`standing-slot ${rider ? 'occupied' : ''} ${synergyPartner ? 'synergy-target' : ''} ${selectedSlot === index ? 'selected' : ''} ${dragOverSlot === index ? 'drag-target' : ''}`} onClick={() => clickSlot(index)} draggable={Boolean(rider) && !locked && (!run.swapped || rider?.boardedAt === run.floor)} onDragStart={(event) => rider && startDrag(event, { type: 'slot', slot: index })} onDragEnd={endDrag} onDragOver={(event) => { if (!locked) { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; setDragOverSlot(index); } }} onDragLeave={() => setDragOverSlot((current) => current === index ? null : current)} onDrop={(event) => dropOnSlot(event, index)} aria-label={rider ? `${index + 1}号位，${PASSENGERS[rider.kind].name}${state ? `，${state.label}` : ''}` : `${index + 1}号空位${synergyPartner ? `，可与${PASSENGERS[synergyPartner].name}联动` : ''}`}>
-            {rider ? <><Portrait kind={rider.kind} large /><span className="slot-destination">{rider.destination}F</span>{state && rider.kind !== 'bomb' && <span className={`slot-state ${state.tone}`}>{state.label}</span>}<span className="rider-name">{PASSENGERS[rider.kind].name}</span><span className={`patience patience-${Math.min(3, rider.patience)}`}>{'◆'.repeat(Math.max(0, Math.min(5, rider.patience)))}</span>{rider.fuse !== undefined && <span className="fuse">引信 {rider.fuse}</span>}</> : <span className="slot-number">{String(index + 1).padStart(2, '0')}</span>}
+        {feedback && <output key={feedback.id} className={`cabin-feedback feedback-${feedback.tone}`}>
+          <div className="feedback-label">{feedback.tone === 'error' ? <X /> : feedback.tone === 'combo' ? <Sparkles /> : <Check />}<b>{feedback.label}</b></div>
+          {feedback.tone === 'arrival' && <div className="feedback-values">{Boolean(feedback.coins) && <span className="value-coins" aria-label={`金币增加 ${feedback.coins}`}><Coins />+{feedback.coins}</span>}<span className={feedback.energy! > 0 ? 'value-gain' : 'value-spent'} aria-label={`能源 ${signedDelta(feedback.energy ?? 0)}`}><BatteryCharging />{signedDelta(feedback.energy ?? 0)}</span><span className={feedback.pressure! > 0 ? 'value-danger' : 'value-gain'} aria-label={`压力 ${signedDelta(feedback.pressure ?? 0)}`}><Gauge />{signedDelta(feedback.pressure ?? 0)}</span></div>}
+        </output>}
+        {doors === 'moving' && <div className="travel-caption"><ArrowUp />前往 {String(run.floor + 1).padStart(2, '0')}F</div>}
+        <div className="standing-grid"><svg className="adjacency-map" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true">{ADJACENT.map(([first, second]) => {
+          const preview = hoveredPlan?.ok && hoveredPlan.changed && activeConnection(hoveredPlan.next.cabin, first, second);
+          return <line key={`${first}-${second}`} className={`${activeConnection(run.cabin, first, second) ? 'active' : ''} ${preview ? 'preview-link' : ''}`} x1={CONNECTION_POINTS[first][0]} y1={CONNECTION_POINTS[first][1]} x2={CONNECTION_POINTS[second][0]} y2={CONNECTION_POINTS[second][1]} />;
+        })}</svg>{run.cabin.map((rider, index) => {
+          const state = riderState(run.cabin, index, weight); const plan = placementPlans[index]; const synergy = plan?.ok && plan.changed && plan.tone === 'combo';
+          const target = dragOverSlot === index && Boolean(activeRider); const reaction = feedback?.slots.includes(index) ? feedback : null;
+          return <button key={index} className={`standing-slot ${rider ? 'occupied' : ''} ${synergy ? 'synergy-target' : ''} ${plan ? plan.ok ? 'drop-valid' : 'drop-blocked' : ''} ${selectedSlot === index ? 'selected' : ''} ${target ? 'drag-target' : ''}`} onClick={() => clickSlot(index)} disabled={locked} draggable={Boolean(rider) && !locked && (!run.swapped || rider?.boardedAt === run.floor)} onDragStart={(event) => rider && startDrag(event, { type: 'slot', slot: index })} onDragEnd={endDrag} onMouseEnter={() => activeRider && window.matchMedia('(min-width: 701px) and (hover: hover)').matches && setDragOverSlot(index)} onMouseLeave={() => !dragged && setDragOverSlot(null)} onDragOver={(event) => { if (!locked && dragged) { event.preventDefault(); event.dataTransfer.dropEffect = plan?.ok ? 'move' : 'none'; setDragOverSlot(index); } }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOverSlot((current) => current === index ? null : current); }} onDrop={(event) => dropOnSlot(event, index)} aria-label={rider ? `${index + 1}号位，${PASSENGERS[rider.kind].name}${state ? `，${state.label}` : ''}` : `${index + 1}号空位${synergy ? '，可联动' : ''}`}>
+            {rider ? <span className="rider-visual" key={rider.id}><Portrait kind={rider.kind} large /><span className="slot-destination">{rider.destination}F</span>{state && rider.kind !== 'bomb' && <span className={`slot-state ${state.tone}`}>{state.label}</span>}<span className="rider-name">{PASSENGERS[rider.kind].name}</span><span className={`patience patience-${Math.min(3, rider.patience)}`} title={`剩余耐心 ${rider.patience}`}>{'◆'.repeat(Math.max(0, Math.min(5, rider.patience)))}</span>{rider.fuse !== undefined && <span className="fuse">引信 {rider.fuse}</span>}</span> : <><span className="slot-number">{String(index + 1).padStart(2, '0')}</span>{target && plan?.ok && activeRider && <span className="placement-ghost"><Portrait kind={activeRider.kind} large /></span>}</>}
+            {reaction && <span key={reaction.id} className={`slot-reaction reaction-${reaction.tone}`} aria-hidden="true" />}
+            {target && plan && <span className={`drop-caption ${plan.ok ? 'allowed' : 'blocked'}`}>{plan.ok ? `${dragged ? '松手' : '点击'} · ${synergy ? '联动' : '就位'}` : '不可放置'}</span>}
           </button>;
         })}</div>
         <div className="door door-left" /><div className="door door-right" />
-        <div className="cabin-message" aria-live="polite"><Sparkles /><span>{run.message}</span></div><div className="swap-status">{pendingOfferId ? '点一个空位安排乘客' : selectedSlot !== null ? '再选一个站位完成调整' : run.swapped ? <><LockKeyhole /> 旧乘客换位已用 · 新上客仍可调整</> : '拖拽人物安排站位 · 有效组合会亮起'}</div>
+        <div className={`cabin-message ${hoveredPlan && !hoveredPlan.ok ? 'message-error' : ''}`} aria-live="polite"><Sparkles /><span>{hoveredPlan ? hoveredPlan.ok ? hoveredPlan.next.message : hoveredPlan.label : run.message}</span></div><div className="swap-status">{pendingOfferId ? '选择发光站位 · ESC 取消' : selectedSlot !== null ? '再选一个站位完成调整 · ESC 取消' : run.swapped ? <><LockKeyhole /> 旧乘客换位已用 · 新上客仍可调整</> : '拖拽人物安排站位 · 有效组合会亮起'}</div>
       </section>
       <aside className="arrival-panel">
         <div className={`arrival-heading ${loverResponse || firstPairLesson ? 'lover-response' : ''}`}><div><span>{loverResponse ? 'LOVER SIGNAL · RESPONSE' : firstPairLesson ? 'FIRST PAIR · GUIDED SHIFT' : doors === 'open' ? 'DOORS OPEN' : 'IN TRANSIT'}</span><h2>{loverResponse ? '有人回应了呼唤' : firstPairLesson ? firstPairActive ? '配对完成，可以上行' : '先让恋人成为邻座' : '谁要上楼？'}</h2></div><div className="arrival-count">{offers.length}</div></div>
@@ -248,7 +244,7 @@ export default function ElevatorGame() {
         <button className="depart-button" onClick={depart} disabled={locked}><span>{doors === 'open' ? '关门上行' : '正在上行'}</span><b>ENTER</b></button><p className={`panel-hint forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : firstPairLesson && !firstPairActive ? '第一班 · 把两位恋人放进连线相连的站位' : departureForecast}</p>
       </aside>
     </section>
-    <footer className="footer-line"><span>ELV–07 / v4.6</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
+    <footer className="footer-line"><span>ELV–07 / v4.7</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
 
     <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">CAR № 07 · 00:17 AM</p><DialogHeader><DialogTitle>今晚，所有人<br />都想再上一层。</DialogTitle><DialogDescription>安排六个站位，让合适的人彼此相邻。在能源耗尽、压力失控或危险爆发前，抵达六十层。</DialogDescription></DialogHeader><div className="intro-rules"><span><b>01</b> 拖拽或点选</span><span><b>02</b> {guidedShift ? '先让恋人相邻' : '看连线配邻座'}</span><span><b>03</b> 关门上行</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始午夜班次 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
     <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">NIGHT OPERATOR&apos;S MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>每次上行都消耗能源，等待会消耗乘客耐心。普通乘坐不会直接增加压力，只有人物事件和耐心归零会加压。</DialogDescription></DialogHeader><div className="manual-grid"><div><b>安排站位</b><p>桌面端可把人物直接拖进空位；手机端点乘客，再点目标空位。</p></div><div><b>相邻关系</b><p>轿厢连线两端互为邻座；有效组合形成后连线会亮起。</p></div><div><b>午夜热区</b><p>车内至少4人、压力保持在5–9时，每两位乘客每层贡献1金币小费。</p></div><div><b>收益标记</b><p>候客卡右侧显示基础金币和到站能源；连携关系可能带来额外奖励。</p></div><div><b>一次换位</b><p>本层新上客可自由调整；牵动已在车内的旧乘客时，每层只能换位一次。</p></div><div><b>十层升级</b><p>每十层选择一项永久升级。撑到60层即完成班次。</p></div></div></DialogContent></Dialog>
