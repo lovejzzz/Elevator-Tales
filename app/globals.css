@@ -129,6 +129,7 @@ button:focus-visible { outline:1px solid var(--brass-pale); outline-offset:3px; 
 .portrait-sheet { position:absolute; inset:0; background-size:300% 200%; background-repeat:no-repeat; }
 .passenger-copy { min-width:0; display:block; }.passenger-copy strong { display:block; font:600 22px var(--font-display); color:#f3e7d0; }.passenger-copy small { display:block; color:#adb4ae; font-size:10px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .tag-row { display:flex; gap:5px; margin-top:8px; }.tag-row i { border:1px solid rgba(181,153,98,.28); color:#c0c5be; font:normal 9px var(--font-mono); padding:3px 5px; white-space:nowrap; }
+.tag-row .ready-tag { border-color:rgba(104,190,140,.55); background:rgba(24,73,48,.58); color:#afe0c0; box-shadow:0 0 12px rgba(75,155,108,.1); }
 .tag-row .call-tag { border-color:rgba(106,183,146,.5); background:rgba(31,77,58,.48); color:#a8ddc1; }
 .tag-row .lesson-tag { border-color:rgba(213,173,93,.5); background:rgba(74,53,22,.52); color:#ecc77f; }
 .passenger-card.lover-called { border-color:rgba(111,190,151,.58); background:linear-gradient(110deg,rgba(29,58,45,.98),rgba(10,22,18,.94)); box-shadow:inset 3px 0 rgba(111,190,151,.72),0 0 20px rgba(77,150,114,.1); }

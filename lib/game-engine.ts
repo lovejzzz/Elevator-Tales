@@ -19,6 +19,11 @@ export const neighbourCount = (cabin: Array<Rider | null>, slot: number) => neig
 export const totalWeight = (cabin: Array<Rider | null>) => cabin.reduce((sum, rider) => sum + (rider ? PASSENGERS[rider.kind].weight : 0), 0);
 export const isFreeReseat = (cabin: Array<Rider | null>, source: number, target: number, floor: number) => Boolean(cabin[source] && cabin[source]!.boardedAt === floor && (!cabin[target] || cabin[target]!.boardedAt === floor));
 export const unlockedAt = (floor: number) => UNLOCK_TIERS.flatMap((tier) => tier.floor <= floor ? tier.kinds : []);
+const READY_PARTNERS: Partial<Record<PassengerKind, PassengerKind[]>> = { lover: ['lover'], thief: ['cop', 'lawyer'], cop: ['thief', 'bomb'], lawyer: ['thief'], drunk: ['musician', 'nurse'], musician: ['drunk', 'child'], nurse: ['drunk', 'child'], child: ['lover', 'musician', 'nurse'], ghost: ['exorcist'], exorcist: ['ghost'], bomb: ['cop'] };
+export const readyPartner = (kind: PassengerKind, cabin: Array<Rider | null>, excludeId?: string): PassengerKind | null => {
+  const partners = READY_PARTNERS[kind] ?? [];
+  return partners.find((partner) => cabin.some((rider) => rider?.id !== excludeId && rider?.kind === partner)) ?? null;
+};
 export const rand = (min: number, max: number, rng: () => number = Math.random) => Math.floor(rng() * (max - min + 1)) + min;
 export const travelEnergyCost = (destinationFloor: number) => destinationFloor < 25 ? 2 : destinationFloor < 50 ? 3 : 4;
 export const emergencyEnergyRunway = (floor: number, floors = 3) => Array.from({ length: floors }, (_, index) => travelEnergyCost(Math.min(60, floor + index + 1))).reduce((sum, cost) => sum + cost, 1);

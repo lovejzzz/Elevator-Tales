@@ -13,7 +13,7 @@ type Aggregate = {
   recoveryEnergyRescues: number; recoveryStressRescues: number; recoveryAlive1: number; recoveryAlive3: number; recoveryAlive5: number;
   recoveryEnergyAlive1: number; recoveryEnergyAlive3: number; recoveryEnergyAlive5: number; recoveryStressAlive1: number; recoveryStressAlive3: number; recoveryStressAlive5: number;
   loverPairedRiderTurns: number; loverSoloRiderTurns: number; loverPairedArrivals: number; loverCallsOffered: number; loverCallsBoarded: number;
-  boarded: Record<PassengerKind, number>; upgrades: Record<UpgradeKey, number>;
+  offered: Record<PassengerKind, number>; boarded: Record<PassengerKind, number>; upgrades: Record<UpgradeKey, number>;
 };
 
 const loverRarityOverride = Number(process.env.ET_LOVER_RARITY);
@@ -76,6 +76,7 @@ function offerScore(state: RunState, rider: Rider, policy: Policy): number {
 }
 
 function board(state: RunState, offers: Rider[], policy: Policy, aggregate: Aggregate) {
+  offers.forEach((rider) => { aggregate.offered[rider.kind] += 1; });
   aggregate.loverCallsOffered += offers.filter((rider) => rider.calledByLover).length;
   const ordered = policy === 'reckless' ? [...offers] : [...offers].sort((a, b) => offerScore(state, b, policy) - offerScore(state, a, policy));
   for (const rider of ordered) {
@@ -152,6 +153,7 @@ function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: 
 }
 
 function boardOpening(state: RunState, offers: Rider[], plan: OpeningPlan, aggregate: Aggregate) {
+  offers.forEach((rider) => { aggregate.offered[rider.kind] += 1; });
   aggregate.loverCallsOffered += offers.filter((rider) => rider.calledByLover).length;
   if (plan.boarding === 'none') return;
   if (plan.boarding === 'conservative') { board(state, offers, 'conservative', aggregate); return; }
@@ -194,7 +196,8 @@ function simulateEndgame(seed: number, plan: EndgamePlan) {
 }
 
 function emptyAggregate(runs: number): Aggregate {
-  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, pressureRiskFloors: 0, pressureReliefFloors: 0, pressureCancelledFloors: 0, pressureSources: {}, checkpointCrises: 0, checkpointEnergyCrises: 0, checkpointStressCrises: 0, checkpointRescueOffers: 0, checkpointRescues: 0, checkpointDeadEnds: 0, recoveryEnergyRescues: 0, recoveryStressRescues: 0, recoveryAlive1: 0, recoveryAlive3: 0, recoveryAlive5: 0, recoveryEnergyAlive1: 0, recoveryEnergyAlive3: 0, recoveryEnergyAlive5: 0, recoveryStressAlive1: 0, recoveryStressAlive3: 0, recoveryStressAlive5: 0, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, loverPairedArrivals: 0, loverCallsOffered: 0, loverCallsBoarded: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, boarded: Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>, upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
+  const emptyRoster = () => Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>;
+  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, pressureRiskFloors: 0, pressureReliefFloors: 0, pressureCancelledFloors: 0, pressureSources: {}, checkpointCrises: 0, checkpointEnergyCrises: 0, checkpointStressCrises: 0, checkpointRescueOffers: 0, checkpointRescues: 0, checkpointDeadEnds: 0, recoveryEnergyRescues: 0, recoveryStressRescues: 0, recoveryAlive1: 0, recoveryAlive3: 0, recoveryAlive5: 0, recoveryEnergyAlive1: 0, recoveryEnergyAlive3: 0, recoveryEnergyAlive5: 0, recoveryStressAlive1: 0, recoveryStressAlive3: 0, recoveryStressAlive5: 0, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, loverPairedArrivals: 0, loverCallsOffered: 0, loverCallsBoarded: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, offered: emptyRoster(), boarded: emptyRoster(), upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
 }
 
 function rounded(value: number) { return Math.round(value * 10) / 10; }
@@ -217,6 +220,7 @@ const summarize = (aggregate: Aggregate) => ({
   pressure: { riskFloorsPerRun: rounded(aggregate.pressureRiskFloors / runs), reliefFloorsPerRun: rounded(aggregate.pressureReliefFloors / runs), cancelledFloorsPerRun: rounded(aggregate.pressureCancelledFloors / runs), sourcesPerRun: Object.fromEntries(Object.entries(aggregate.pressureSources).sort((a, b) => b[1] - a[1]).map(([label, total]) => [label, rounded(total / runs)])) },
   checkpoints: { crises: aggregate.checkpointCrises, energyCrises: aggregate.checkpointEnergyCrises, stressCrises: aggregate.checkpointStressCrises, rescueOffers: aggregate.checkpointRescueOffers, rescues: aggregate.checkpointRescues, deadEnds: aggregate.checkpointDeadEnds, crisesPerRun: rounded(aggregate.checkpointCrises / runs), rescueOfferRate: aggregate.checkpointCrises ? rounded(aggregate.checkpointRescueOffers / aggregate.checkpointCrises * 100) : 0, rescueRate: aggregate.checkpointCrises ? rounded(aggregate.checkpointRescues / aggregate.checkpointCrises * 100) : 0 },
   recovery: { energyRescues: aggregate.recoveryEnergyRescues, stressRescues: aggregate.recoveryStressRescues, aliveAfter1Rate: aggregate.checkpointRescues ? rounded(aggregate.recoveryAlive1 / aggregate.checkpointRescues * 100) : 0, aliveAfter3Rate: aggregate.checkpointRescues ? rounded(aggregate.recoveryAlive3 / aggregate.checkpointRescues * 100) : 0, aliveAfter5Rate: aggregate.checkpointRescues ? rounded(aggregate.recoveryAlive5 / aggregate.checkpointRescues * 100) : 0, energyAliveAfter1Rate: aggregate.recoveryEnergyRescues ? rounded(aggregate.recoveryEnergyAlive1 / aggregate.recoveryEnergyRescues * 100) : 0, energyAliveAfter3Rate: aggregate.recoveryEnergyRescues ? rounded(aggregate.recoveryEnergyAlive3 / aggregate.recoveryEnergyRescues * 100) : 0, energyAliveAfter5Rate: aggregate.recoveryEnergyRescues ? rounded(aggregate.recoveryEnergyAlive5 / aggregate.recoveryEnergyRescues * 100) : 0, stressAliveAfter1Rate: aggregate.recoveryStressRescues ? rounded(aggregate.recoveryStressAlive1 / aggregate.recoveryStressRescues * 100) : 0, stressAliveAfter3Rate: aggregate.recoveryStressRescues ? rounded(aggregate.recoveryStressAlive3 / aggregate.recoveryStressRescues * 100) : 0, stressAliveAfter5Rate: aggregate.recoveryStressRescues ? rounded(aggregate.recoveryStressAlive5 / aggregate.recoveryStressRescues * 100) : 0 },
+  roster: Object.fromEntries((Object.keys(PASSENGERS) as PassengerKind[]).map((kind) => [kind, { offersPerRun: rounded(aggregate.offered[kind] / runs), boardingsPerRun: rounded(aggregate.boarded[kind] / runs), acceptanceRate: aggregate.offered[kind] ? rounded(aggregate.boarded[kind] / aggregate.offered[kind] * 100) : 0 }])),
   upgradeMix: Object.fromEntries(Object.entries(aggregate.upgrades).map(([key, count]) => [key, rounded(count / runs)])),
 });
 
@@ -274,6 +278,10 @@ const report = mode === 'opening' ? ([
   const aggregate = emptyAggregate(runs);
   for (let run = 0; run < runs; run += 1) simulateRun(61001 + policyIndex * 1000003 + run * 97, policy, aggregate);
   return { policy, winRate: rounded(aggregate.wins / runs * 100), averagePeakStress: rounded(aggregate.maxStress / runs), ...summarize(aggregate).pressure, deaths: aggregate.deaths };
+}) : mode === 'roster' ? (['conservative', 'calculated', 'reckless'] as Policy[]).map((policy, policyIndex) => {
+  const aggregate = emptyAggregate(runs);
+  for (let run = 0; run < runs; run += 1) simulateRun(67001 + policyIndex * 1000003 + run * 97, policy, aggregate);
+  return { policy, winRate: rounded(aggregate.wins / runs * 100), roster: summarize(aggregate).roster };
 }) : mode === 'scores' ? (['conservative', 'thief', 'drunk', 'celebrity', 'bomb', 'calculated', 'reckless'] as Policy[]).map((policy, policyIndex) => {
   const aggregate = emptyAggregate(runs); const scores: number[] = [];
   for (let run = 0; run < runs; run += 1) {

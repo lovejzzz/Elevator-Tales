@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { emergencyEnergyRunway, expressTrip, failureLesson, initialRun, installUpgrade, makeOffers, resolveFloor, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
+import { emergencyEnergyRunway, expressTrip, failureLesson, initialRun, installUpgrade, makeOffers, readyPartner, resolveFloor, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
 import { UPGRADES, type PassengerKind } from '../lib/game-data';
 
 const rider = (kind: PassengerKind, id: string, overrides: Partial<Rider> = {}): Rider => ({
@@ -10,6 +10,9 @@ const sourceMap = (sources: ChangeLine[]) => Object.fromEntries(sources.map((lin
 const guidedOffers = makeOffers(1, initialRun().upgrades, true, () => 0.5);
 assert.deepEqual(guidedOffers.map((offer) => offer.kind), ['lover', 'lover', 'courier'], 'the first shift should demonstrate a real adjacency pairing');
 assert.deepEqual(guidedOffers.map((offer) => offer.destination), [6, 6, 3], 'the guided lover pair should travel and arrive together');
+assert.equal(readyPartner('lover', [guidedOffers[0], null, null, null, null, null], guidedOffers[1].id), 'lover', 'the second guided lover should show that its pairing is ready');
+assert.equal(readyPartner('thief', [rider('cop', 'ready-cop'), null, null, null, null, null]), 'cop');
+assert.equal(readyPartner('commuter', [rider('cop', 'unused-cop'), null, null, null, null, null]), null);
 
 const balanced = resolveFloor({ ...initialRun(), cabin: [rider('nurse', 'nurse'), rider('thief', 'thief'), null, null, null, null] }, () => 0.9);
 assert.equal(balanced.stress, 0, 'same-floor relief should cancel pressure regardless of slot order');
