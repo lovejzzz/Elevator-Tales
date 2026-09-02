@@ -118,6 +118,17 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
 
 export const upgradeChoices = (upgrades: Record<UpgradeKey, number> = EMPTY_UPGRADES, rng: () => number = Math.random): UpgradeKey[] => shuffle((Object.keys(UPGRADES) as UpgradeKey[]).filter((key) => key !== 'express' || upgrades.express < 1), rng).slice(0, 3);
 
+export function failureLesson(state: RunState): string {
+  if (state.status !== 'lost') return '';
+  if (state.message.includes('引信')) return '引信归零 · 下一班让炸弹客与警察相邻以延缓；来不及送达就拒载。';
+  if (state.message.includes('能源')) return '能源耗尽 · 下一班优先短途和高回能乘客；低于下一层耗能时不要空驶。';
+  if (state.message.includes('压力')) {
+    const source = state.lastPressure.sources.filter((line) => line.amount > 0).sort((a, b) => b.amount - a.amount)[0];
+    return source ? `压力失控 · 最后一层主要来源：${source.label} +${source.amount}。下一班先解除人物风险。` : '压力失控 · 下一班先控制小偷、安抚醉汉，并避免检查员发现超载。';
+  }
+  return '班次中断 · 下一班留意关门前的能源与压力预报。';
+}
+
 export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
   const upgrades = { ...current.upgrades, [key]: current.upgrades[key] + 1 }; let energyCap = current.energyCap; let energy = current.energy; let stressCap = current.stressCap; let stress = current.stress; let weightCap = current.weightCap;
   if (key === 'battery') { energyCap += 5; energy += 5; } if (key === 'calm') { stressCap += 3; stress = Math.max(0, stress - 3); } if (key === 'reinforced') { weightCap += 3; energyCap += 3; energy += 3; }

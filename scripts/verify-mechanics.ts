@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { initialRun, makeOffers, resolveFloor, type ChangeLine, type Rider } from '../lib/game-engine';
+import { failureLesson, initialRun, makeOffers, resolveFloor, type ChangeLine, type Rider } from '../lib/game-engine';
 import { UPGRADES, type PassengerKind } from '../lib/game-data';
 
 const rider = (kind: PassengerKind, id: string, overrides: Partial<Rider> = {}): Rider => ({
@@ -23,6 +23,13 @@ assert.equal(sourceMap(impatient.lastPressure.sources)['耐心归零'], 2);
 const drunk = resolveFloor({ ...initialRun(), cabin: [rider('drunk', 'drunk'), null, null, null, null, null] }, () => 0.1);
 assert.equal(drunk.stress, 2);
 assert.equal(sourceMap(drunk.lastPressure.sources)['醉汉闹事'], 2);
+
+const energyLoss = resolveFloor({ ...initialRun(), energy: 1 }, () => 0.9);
+assert.match(failureLesson(energyLoss), /短途和高回能乘客/);
+const pressureLoss = resolveFloor({ ...initialRun(), stress: 14, cabin: [rider('thief', 'risky-thief'), null, null, null, null, null] }, () => 0.9);
+assert.match(failureLesson(pressureLoss), /小偷未受控 \+1/);
+const bombLoss = resolveFloor({ ...initialRun(), cabin: [rider('bomb', 'bomb', { fuse: 1 }), null, null, null, null, null] }, () => 0.9);
+assert.match(failureLesson(bombLoss), /炸弹客与警察相邻/);
 
 const lovers = resolveFloor({ ...initialRun(), cabin: [rider('lover', 'lover-a'), rider('lover', 'lover-b'), null, null, null, null] }, () => 0.9);
 assert.equal(lovers.lastEarnings.total, 2);
