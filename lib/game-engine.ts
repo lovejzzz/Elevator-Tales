@@ -37,15 +37,15 @@ function weightedKind(floor: number, rng: () => number): PassengerKind {
 
 export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, tutorial = false, rng: () => number = Math.random, cabin: Array<Rider | null> = [], loverCallChance = LOVER_CALL_CHANCE): Rider[] {
   const used = new Set<PassengerKind>();
-  const firstShift: PassengerKind[] = ['commuter', 'courier', 'mechanic'];
+  const firstShift: PassengerKind[] = ['lover', 'lover', 'courier']; const firstShiftTrips = [5, 5, 2]; const guidedShift = floor === 1 && tutorial;
   const waitingLover = cabin.some((rider, slot) => rider?.kind === 'lover' && !hasNeighbour(cabin, slot, ['lover']));
   const loverCalled = !tutorial && waitingLover && loverCallChance > 0 && rng() < loverCallChance;
   return Array.from({ length: 3 }, (_, index) => {
-    let kind = floor === 1 && tutorial ? firstShift[index] : loverCalled && index === 0 ? 'lover' : weightedKind(floor, rng); let guard = 0;
-    while (used.has(kind) && guard++ < 15) kind = weightedKind(floor, rng);
+    let kind = guidedShift ? firstShift[index] : loverCalled && index === 0 ? 'lover' : weightedKind(floor, rng); let guard = 0;
+    while (!guidedShift && used.has(kind) && guard++ < 15) kind = weightedKind(floor, rng);
     used.add(kind);
     const spec = PASSENGERS[kind];
-    const baseTrip = rand(spec.trip[0], spec.trip[1], rng);
+    const baseTrip = guidedShift ? firstShiftTrips[index] : rand(spec.trip[0], spec.trip[1], rng);
     const trip = baseTrip <= 3 ? baseTrip : Math.max(3, baseTrip - Math.min(1, upgrades.express));
     return { id: `f${floor}-${index}-${rng().toString(36).slice(2, 7)}`, kind, destination: Math.min(60, floor + trip), patience: trip + spec.patience + upgrades.concierge * 3, boardedAt: floor, fareBonus: upgrades.concierge * 2, fuse: kind === 'bomb' ? rand(3, 6, rng) : undefined, calledByLover: loverCalled && index === 0 };
   });
