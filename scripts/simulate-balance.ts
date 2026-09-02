@@ -3,6 +3,7 @@ import { hasNeighbour, initialRun, installUpgrade, makeOffers, neighbourCount, n
 
 type Policy = 'conservative' | 'calculated' | 'reckless' | 'thief' | 'drunk' | 'celebrity' | 'bomb';
 type UpgradePlan = { label: string; prefer?: UpgradeKey; ban?: UpgradeKey };
+type OpeningPlan = { label: string; tutorial: boolean; boarding: 'all' | 'first' | 'conservative' | 'none' };
 type Aggregate = {
   runs: number; wins: number; floors: number; coins: number; winnerCoins: number; winnerEnergy: number;
   maxStress: number; riskBoardings: number; weightRejects: number; deaths: Record<string, number>;
@@ -104,6 +105,29 @@ function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: 
   else aggregate.deaths[deathReason(state.message)] += 1;
 }
 
+function boardOpening(state: RunState, offers: Rider[], plan: OpeningPlan, aggregate: Aggregate) {
+  if (plan.boarding === 'none') return;
+  if (plan.boarding === 'conservative') { board(state, offers, 'conservative', aggregate); return; }
+  const candidates = plan.boarding === 'first' ? offers.slice(0, 1) : offers;
+  for (const rider of candidates) {
+    if (totalWeight(state.cabin) + PASSENGERS[rider.kind].weight > state.weightCap) { aggregate.weightRejects += 1; continue; }
+    const target = state.cabin.findIndex((current) => !current);
+    if (target < 0) break;
+    state.cabin[target] = rider; aggregate.boarded[rider.kind] += 1;
+    if (RISK_KINDS.has(rider.kind)) aggregate.riskBoardings += 1;
+  }
+}
+
+function simulateOpening(seed: number, plan: OpeningPlan) {
+  const rng = mulberry32(seed); const aggregate = emptyAggregate(1); let state = initialRun();
+  let offers = makeOffers(1, state.upgrades, plan.tutorial, rng); let peakStress = 0;
+  while (state.status === 'playing' && state.floor < 10) {
+    boardOpening(state, offers, plan, aggregate); state = resolveFloor(state, rng); peakStress = Math.max(peakStress, state.stress);
+    if (state.status === 'playing') offers = makeOffers(state.floor, state.upgrades, false, rng);
+  }
+  return { state, peakStress, risks: aggregate.riskBoardings, weightRejects: aggregate.weightRejects };
+}
+
 function emptyAggregate(runs: number): Aggregate {
   return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, boarded: Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>, upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
 }
@@ -118,7 +142,26 @@ const summarize = (aggregate: Aggregate) => ({
   upgradeMix: Object.fromEntries(Object.entries(aggregate.upgrades).map(([key, count]) => [key, rounded(count / runs)])),
 });
 
-const report = mode === 'upgrades' ? [
+const report = mode === 'opening' ? ([
+  { label: 'first-shift-blind-all', tutorial: true, boarding: 'all' },
+  { label: 'repeat-blind-all', tutorial: false, boarding: 'all' },
+  { label: 'repeat-first-only', tutorial: false, boarding: 'first' },
+  { label: 'repeat-conservative', tutorial: false, boarding: 'conservative' },
+  { label: 'no-passengers', tutorial: false, boarding: 'none' },
+] as OpeningPlan[]).map((plan, planIndex) => {
+  let reachedTen = 0; let energy = 0; let stress = 0; let coins = 0; let peakStress = 0; let risks = 0; let weightRejects = 0; let lowEnergy = 0;
+  const deaths: Record<string, number> = { energy: 0, stress: 0, bomb: 0, other: 0 };
+  for (let run = 0; run < runs; run += 1) {
+    const result = simulateOpening(51001 + planIndex * 1000003 + run * 97, plan);
+    peakStress += result.peakStress; risks += result.risks; weightRejects += result.weightRejects;
+    if (result.state.floor >= 10) { reachedTen += 1; energy += result.state.energy; stress += result.state.stress; coins += result.state.coins; if (result.state.energy <= 5) lowEnergy += 1; }
+    else deaths[deathReason(result.state.message)] += 1;
+  }
+  return { plan: plan.label, runs, reach10Rate: rounded(reachedTen / runs * 100), lowEnergyAt10Rate: reachedTen ? rounded(lowEnergy / reachedTen * 100) : 0,
+    averageEnergyAt10: reachedTen ? rounded(energy / reachedTen) : 0, averageStressAt10: reachedTen ? rounded(stress / reachedTen) : 0,
+    averageCoinsAt10: reachedTen ? rounded(coins / reachedTen) : 0, averagePeakStress: rounded(peakStress / runs),
+    riskBoardings: rounded(risks / runs), weightRejects: rounded(weightRejects / runs), deaths };
+}) : mode === 'upgrades' ? [
   { label: 'baseline' },
   ...(['battery', 'solar', 'calm', 'concierge', 'reinforced', 'express'] as UpgradeKey[]).map((prefer) => ({ label: `prefer-${prefer}`, prefer })),
   ...(['battery', 'solar', 'calm', 'concierge', 'reinforced', 'express'] as UpgradeKey[]).map((ban) => ({ label: `ban-${ban}`, ban })),
