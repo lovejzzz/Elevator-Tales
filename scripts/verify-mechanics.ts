@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { failureLesson, initialRun, installUpgrade, makeOffers, resolveFloor, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
+import { emergencyEnergyRunway, failureLesson, initialRun, installUpgrade, makeOffers, resolveFloor, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
 import { UPGRADES, type PassengerKind } from '../lib/game-data';
 
 const rider = (kind: PassengerKind, id: string, overrides: Partial<Rider> = {}): Rider => ({
@@ -35,9 +35,12 @@ const energyRescueChoices = upgradeChoices(initialRun().upgrades, () => 0.5, 'en
 assert.ok(energyRescueChoices.some((key) => key === 'battery' || key === 'reinforced'), 'an energy crisis checkpoint should always offer a rescue');
 const stressRescueChoices = upgradeChoices(initialRun().upgrades, () => 0.5, 'stress');
 assert.ok(stressRescueChoices.includes('calm'), 'a pressure crisis checkpoint should always offer calm control');
-const deepEnergyRescue = installUpgrade({ ...initialRun(), status: 'upgrade', energy: -8 }, 'battery');
+const deepEnergyRescue = installUpgrade({ ...initialRun(), floor: 10, status: 'upgrade', energy: -8 }, 'battery');
 assert.equal(deepEnergyRescue.status, 'playing', 'a labeled energy rescue should restart even after a deep deficit');
-assert.equal(deepEnergyRescue.energy, 1, 'an emergency energy restart should leave one point');
+assert.equal(deepEnergyRescue.energy, emergencyEnergyRunway(10), 'an emergency energy restart should cover three baseline moves plus one point');
+assert.equal(emergencyEnergyRunway(10), 7);
+assert.equal(emergencyEnergyRunway(30), 10);
+assert.equal(emergencyEnergyRunway(50), 13);
 const deepStressRescue = installUpgrade({ ...initialRun(), status: 'upgrade', stress: 21 }, 'calm');
 assert.equal(deepStressRescue.status, 'playing', 'a labeled pressure rescue should de-escalate even after a deep overrun');
 assert.equal(deepStressRescue.stress, deepStressRescue.stressCap - 1, 'an emergency pressure reset should leave one point of margin');

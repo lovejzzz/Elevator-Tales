@@ -20,6 +20,8 @@ export const totalWeight = (cabin: Array<Rider | null>) => cabin.reduce((sum, ri
 export const isFreeReseat = (cabin: Array<Rider | null>, source: number, target: number, floor: number) => Boolean(cabin[source] && cabin[source]!.boardedAt === floor && (!cabin[target] || cabin[target]!.boardedAt === floor));
 export const unlockedAt = (floor: number) => UNLOCK_TIERS.flatMap((tier) => tier.floor <= floor ? tier.kinds : []);
 export const rand = (min: number, max: number, rng: () => number = Math.random) => Math.floor(rng() * (max - min + 1)) + min;
+export const travelEnergyCost = (destinationFloor: number) => destinationFloor < 25 ? 2 : destinationFloor < 50 ? 3 : 4;
+export const emergencyEnergyRunway = (floor: number, floors = 3) => Array.from({ length: floors }, (_, index) => travelEnergyCost(Math.min(60, floor + index + 1))).reduce((sum, cost) => sum + cost, 1);
 
 export function shuffle<T>(items: T[], rng: () => number = Math.random): T[] {
   const result = [...items];
@@ -53,7 +55,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
 
 export function resolveFloor(state: RunState, rng: () => number = Math.random): RunState {
   const nextFloor = state.floor + 1;
-  const energyCost = nextFloor < 25 ? 2 : nextFloor < 50 ? 3 : 4;
+  const energyCost = travelEnergyCost(nextFloor);
   let energy = state.energy; let stress = state.stress; let coins = state.coins;
   const earningSources: ChangeLine[] = []; const pressureSources: ChangeLine[] = []; const energySources: ChangeLine[] = [];
   const addCoins = (label: string, amount: number) => { coins += amount; const existing = earningSources.find((line) => line.label === label); if (existing) existing.amount += amount; else earningSources.push({ label, amount }); };
@@ -141,9 +143,9 @@ export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
   const energyCrisis = current.energy <= 0; const stressCrisis = current.stress >= current.stressCap;
   const upgrades = { ...current.upgrades, [key]: current.upgrades[key] + 1 }; let energyCap = current.energyCap; let energy = current.energy; let stressCap = current.stressCap; let stress = current.stress; let weightCap = current.weightCap;
   if (key === 'battery') { energyCap += 5; energy += 5; } if (key === 'calm') { stressCap += 3; stress = Math.max(0, stress - 3); } if (key === 'reinforced') { weightCap += 3; energyCap += 3; energy += 3; }
-  if (energyCrisis && (key === 'battery' || key === 'reinforced')) energy = Math.max(1, energy);
+  if (energyCrisis && (key === 'battery' || key === 'reinforced')) energy = Math.max(emergencyEnergyRunway(current.floor), energy);
   if (stressCrisis && key === 'calm') stress = Math.min(stress, stressCap - 1);
   const stillFailed = energy <= 0 || stress >= stressCap; const status: RunState['status'] = stillFailed ? 'lost' : 'playing';
-  const message = energy <= 0 ? '能源仍未恢复，轿厢停在维修层。' : stress >= stressCap ? '压力仍然超出上限，班次在维修层终止。' : `${UPGRADES[key].name}已安装。继续上行。`;
+  const message = energy <= 0 ? '能源仍未恢复，轿厢停在维修层。' : stress >= stressCap ? '压力仍然超出上限，班次在维修层终止。' : energyCrisis ? `${UPGRADES[key].name}已安装，应急电量可覆盖三层基础行驶。` : `${UPGRADES[key].name}已安装。继续上行。`;
   return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap, status, message, lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] }, log: [`${String(current.floor).padStart(2, '0')}F · 安装 ${UPGRADES[key].name}`, ...current.log].slice(0, 4) };
 }
