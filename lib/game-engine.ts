@@ -1,14 +1,15 @@
 import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, type PassengerKind, type UpgradeKey } from './game-data';
 
 export type Rider = { id: string; kind: PassengerKind; destination: number; patience: number; boardedAt: number; fareBonus: number; fuse?: number };
+export type EarningLine = { label: string; amount: number };
 export type RunState = {
   floor: number; energy: number; energyCap: number; stress: number; stressCap: number; weightCap: number; coins: number;
   cabin: Array<Rider | null>; swapped: boolean; upgrades: Record<UpgradeKey, number>;
-  status: 'playing' | 'upgrade' | 'lost' | 'won'; message: string; log: string[];
+  status: 'playing' | 'upgrade' | 'lost' | 'won'; message: string; log: string[]; lastEarnings: { total: number; sources: EarningLine[] };
 };
 
 export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 };
-export const initialRun = (): RunState => ({ floor: 1, energy: 15, energyCap: 24, stress: 0, stressCap: 15, weightCap: 10, coins: 0, cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 午夜班次开始'] });
+export const initialRun = (): RunState => ({ floor: 1, energy: 15, energyCap: 24, stress: 0, stressCap: 15, weightCap: 10, coins: 0, cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 午夜班次开始'], lastEarnings: { total: 0, sources: [] } });
 
 export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);
 export const hasNeighbour = (cabin: Array<Rider | null>, slot: number, kinds: PassengerKind[]) => neighbours(slot).some((i) => cabin[i] && kinds.includes(cabin[i]!.kind));
@@ -48,6 +49,8 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
 export function resolveFloor(state: RunState, rng: () => number = Math.random): RunState {
   const nextFloor = state.floor + 1;
   let energy = state.energy - (nextFloor < 25 ? 2 : nextFloor < 50 ? 3 : 4); let stress = state.stress; let coins = state.coins;
+  const earningSources: EarningLine[] = [];
+  const addCoins = (label: string, amount: number) => { coins += amount; const existing = earningSources.find((line) => line.label === label); if (existing) existing.amount += amount; else earningSources.push({ label, amount }); };
   let cabin = state.cabin.map((rider) => rider ? { ...rider, patience: rider.patience - 1 } : null);
   const notes: string[] = []; const stressReasons: string[] = []; const occupied = cabin.filter(Boolean).length; const weight = totalWeight(cabin);
   const effectCabin = [...cabin]; const deferredSwaps: Array<[number, number]> = [];
@@ -57,14 +60,14 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
     const pairedLover = hasNeighbour(effectCabin, slot, ['lover']); const controlledGhost = hasNeighbour(effectCabin, slot, ['exorcist']);
     switch (rider.kind) {
       case 'mechanic': if (nextFloor % 3 === 0) { energy += 1; notes.push('维修工回充 +1'); } break;
-      case 'lover': if (pairedLover) coins += 1; else if (nextFloor % 2 === 0) rider.patience -= 1; break;
-      case 'thief': coins += controlledThief ? 1 : 3; if (!controlledThief && nextFloor % 2 === 0) { stress += 1; stressReasons.push('小偷未受控制，压力 +1'); } break;
-      case 'drunk': if (calmDrunk) coins += 1; else if (rng() < .25) { stress += 2; const options = neighbours(slot); deferredSwaps.push([slot, options[rand(0, options.length - 1, rng)]]); stressReasons.push('醉汉闹事并乱换位，压力 +2'); } break;
+      case 'lover': if (pairedLover) addCoins('恋人连携', 1); else if (nextFloor % 2 === 0) rider.patience -= 1; break;
+      case 'thief': addCoins(controlledThief ? '受控小偷' : '小偷', controlledThief ? 1 : 3); if (!controlledThief && nextFloor % 2 === 0) { stress += 1; stressReasons.push('小偷未受控制，压力 +1'); } break;
+      case 'drunk': if (calmDrunk) addCoins('醉汉安抚', 1); else if (rng() < .25) { stress += 2; const options = neighbours(slot); deferredSwaps.push([slot, options[rand(0, options.length - 1, rng)]]); stressReasons.push('醉汉闹事并乱换位，压力 +2'); } break;
       case 'musician': if (occupied >= 4) stress = Math.max(0, stress - 1); break;
       case 'nurse': if (nextFloor % 2 === 0) stress = Math.max(0, stress - 1); break;
       case 'child': if (!hasNeighbour(effectCabin, slot, ['lover', 'musician', 'nurse']) && nextFloor % 2 === 0) rider.patience -= 1; break;
       case 'ghost': if (controlledGhost) energy += 1; else if (nextFloor % 3 === 0) { const nearby = neighbours(slot).filter((i) => effectCabin[i]); if (nearby.length) { effectCabin[nearby[rand(0, nearby.length - 1, rng)]]!.destination += 1; notes.push('幽灵令邻座延误一层'); } } break;
-      case 'celebrity': { const count = neighbourCount(effectCabin, slot); if (count === 1) coins += 3; if (count > 1 && nextFloor % 2 === 0) { stress += 1; stressReasons.push('名人被多人围住，压力 +1'); } break; }
+      case 'celebrity': { const count = neighbourCount(effectCabin, slot); if (count === 1) addCoins('名人关注', 3); if (count > 1 && nextFloor % 2 === 0) { stress += 1; stressReasons.push('名人被多人围住，压力 +1'); } break; }
       case 'inspector': if (nextFloor % 2 === 0) { if (weight <= 8) energy += 1; else { stress += 1; stressReasons.push('检查员发现超载，压力 +1'); } } break;
       case 'bomb': { const paused = hasNeighbour(effectCabin, slot, ['cop']) && nextFloor % 2 === 0; if (!paused) rider.fuse = (rider.fuse ?? 1) - 1; break; }
     }
@@ -83,7 +86,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
     if (rider.kind === 'coach') fare += neighbourCount(cabin, slot) * 3;
     if (hasNeighbour(cabin, slot, ['coach']) && rider.kind !== 'coach') fare = Math.ceil(fare * 1.5);
     fare += rider.fareBonus;
-    coins += fare; energy += spec.energy; arrivals += 1; return null;
+    addCoins(`${spec.name}到站`, fare); energy += spec.energy; arrivals += 1; return null;
   });
   let impatient = 0;
   cabin = cabin.map((rider) => { if (rider && rider.patience <= 0) { impatient += 1; stress += 2; return null; } return rider; });
@@ -99,7 +102,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   else if (nextFloor >= 60) { status = 'won'; message = '六十层。城市在脚下安静下来，午夜班次完成。'; }
   if (stressReasons.length && status === 'playing') message = stressReasons.slice(0, 2).join(' · ');
   else if (notes.length && status === 'playing') message = notes.slice(0, 2).join(' · ');
-  return { ...state, floor: nextFloor, energy, stress, coins, cabin, swapped: false, status, message, log: [`${String(nextFloor).padStart(2, '0')}F · ${message}`, ...state.log].slice(0, 4) };
+  const lastEarnings = { total: coins - state.coins, sources: earningSources }; const incomeNote = lastEarnings.total ? `+${lastEarnings.total} 金币 · ` : '';
+  return { ...state, floor: nextFloor, energy, stress, coins, cabin, swapped: false, status, message, lastEarnings, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
 }
 
 export const upgradeChoices = (upgrades: Record<UpgradeKey, number> = EMPTY_UPGRADES, rng: () => number = Math.random): UpgradeKey[] => shuffle((Object.keys(UPGRADES) as UpgradeKey[]).filter((key) => key !== 'express' || upgrades.express < 1), rng).slice(0, 3);
