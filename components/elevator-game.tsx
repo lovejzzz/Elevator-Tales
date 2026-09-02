@@ -14,7 +14,7 @@ const scoreRank = (coins: number) => {
   const index = SCORE_RANKS.findLastIndex((rank) => coins >= rank.min);
   return { ...SCORE_RANKS[Math.max(0, index)], next: SCORE_RANKS[index + 1] ?? null };
 };
-const shiftPhase = (floor: number) => floor >= 60 ? '天台抵达' : floor >= 50 ? '黎明将至' : floor >= 40 ? '危险区段' : floor >= 25 ? '高层夜色' : floor >= 10 ? '城市深处' : '午夜启程';
+const shiftPhase = (floor: number) => floor >= 60 ? '天台抵达' : floor >= 50 ? `黎明将至 · 剩${60 - floor}层` : floor >= 40 ? '危险区段' : floor >= 25 ? '高层夜色' : floor >= 10 ? '城市深处' : '午夜启程';
 
 function Portrait({ kind, large = false }: { kind: PassengerKind; large?: boolean }) {
   const spec = PASSENGERS[kind]; const x = spec.cell % 3; const y = Math.floor(spec.cell / 3);
@@ -171,7 +171,8 @@ export default function ElevatorGame() {
   const pressurePreview = useMemo(() => stressForecast(run, weight), [run, weight]); const energyPreview = useMemo(() => energyForecast(run, weight), [run, weight]);
   const rank = scoreRank(run.coins); const forecastTone = energyPreview.danger ? 'danger' : pressurePreview.tone;
   const rankProgress = rank.next ? Math.max(0, Math.min(100, (run.coins - rank.min) / (rank.next.min - rank.min) * 100)) : 100;
-  const phase = shiftPhase(run.floor); const upgradeCount = Object.values(run.upgrades).reduce((sum, count) => sum + count, 0);
+  const phase = shiftPhase(run.floor); const upgradeCount = Object.values(run.upgrades).reduce((sum, count) => sum + count, 0); const floorsLeft = Math.max(0, 60 - run.floor);
+  const sTarget = SCORE_RANKS[SCORE_RANKS.length - 1].min; const sGap = Math.max(0, sTarget - run.coins); const sprintPace = floorsLeft * 23;
   const departureForecast = `下一层 · 能源 ${energyPreview.range} · 压力 ${pressurePreview.range}${pressurePreview.details ? ` · ${pressurePreview.details}` : ''}`;
   const nextRankGoal = rank.next ? `再赚 ${rank.next.min - run.coins} 金币可升至 ${rank.next.grade} 级` : '';
   const resultChallenge = run.coins > runStartBest ? `新纪录 · 比原纪录多 ${run.coins - runStartBest} 金币${nextRankGoal ? ` · ${nextRankGoal}` : ''}` : rank.next ? `${nextRankGoal}${runStartBest > run.coins ? ` · 距个人最佳 ${runStartBest - run.coins}` : ''}` : '已达最高评级 · 下一班继续刷新纪录';
@@ -264,6 +265,7 @@ export default function ElevatorGame() {
         <div className="meter-card pressure" title={pressurePreview.summary}><div><Gauge /><span>压力</span><b>{run.stress}</b></div><div className="meter-track"><i style={{ width: `${Math.min(100, run.stress / run.stressCap * 100)}%` }} /></div><small>NEXT {pressurePreview.range} · {run.stressCap} LIMIT</small></div>
         <div className={`load-card ${weight > 8 ? 'load-warn' : ''}`}><Weight /><span>载重</span><b>{weight} / {run.weightCap}</b></div>
         <div className="score-card"><Coins /><span>本次收入</span><strong>{run.coins}</strong><progress className="rank-progress" aria-label={`${rank.grade}级进度`} max={100} value={rankProgress} /><small><b>{rank.grade}</b><span className="rank-full"> {rank.name} · {rank.next ? `距 ${rank.next.grade} 级 ${rank.next.min - run.coins}` : '最高评级'} · 最佳 {bestCoins}</span><span className="rank-compact"> · {rank.next ? `距 ${rank.next.grade} ${rank.next.min - run.coins}` : '最高级'} · 最佳{bestCoins}</span></small></div>
+        {run.floor >= 50 && run.floor < 60 && <div className={`final-push ${sGap === 0 ? 'secured' : sGap <= sprintPace ? 'on-track' : 'must-risk'}`}><span>FINAL PUSH · 剩 {floorsLeft} 层</span><b>{sGap === 0 ? 'S 级已锁定' : sGap <= sprintPace ? `S 级在望 · 还差 ${sGap}` : `需要冒险 · 还差 ${sGap}`}</b></div>}
         <div className="event-log">{run.log.slice(0, 3).map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}</div>
       </aside>
       <section className={`elevator-stage doors-${doors}`} aria-label="电梯座舱">
@@ -284,7 +286,7 @@ export default function ElevatorGame() {
         <button className="depart-button" onClick={depart} disabled={locked}><span>{doors === 'open' ? '关门上行' : '正在上行'}</span><b>ENTER</b></button><p className={`panel-hint forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : departureForecast}</p>
       </aside>
     </section>
-    <footer className="footer-line"><span>ELV–07 / v2.4</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
+    <footer className="footer-line"><span>ELV–07 / v2.5</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
 
     <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">CAR № 07 · 00:17 AM</p><DialogHeader><DialogTitle>今晚，所有人<br />都想再上一层。</DialogTitle><DialogDescription>安排六个站位，让合适的人彼此相邻。在能源耗尽、压力失控或危险爆发前，抵达六十层。</DialogDescription></DialogHeader><div className="intro-rules"><span><b>01</b> 拖拽或点选</span><span><b>02</b> 看连线配邻座</span><span><b>03</b> 关门上行</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始午夜班次 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
     <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">NIGHT OPERATOR&apos;S MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>每次上行都消耗能源，等待会消耗乘客耐心。耐心归零的乘客离开并增加压力。</DialogDescription></DialogHeader><div className="manual-grid"><div><b>安排站位</b><p>桌面端可把人物直接拖进空位；手机端点乘客，再点目标空位。</p></div><div><b>相邻关系</b><p>轿厢连线两端互为邻座；有效组合形成后连线会亮起。</p></div><div><b>压力预报</b><p>关门键下方会预报下一层变化，并列出耐心归零、失控乘客和安抚效果。</p></div><div><b>收益标记</b><p>候客卡右侧显示基础金币和到站能源；连携关系可能带来额外奖励。</p></div><div><b>一次换位</b><p>轿厢内拖拽，或连续点两个站位完成交换；每层只能一次。</p></div><div><b>十层升级</b><p>每十层选择一项永久升级。撑到60层即完成班次。</p></div></div></DialogContent></Dialog>
