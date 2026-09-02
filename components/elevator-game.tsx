@@ -34,9 +34,6 @@ function AnimatedNumber({ value }: { value: number }) {
 }
 
 const signedDelta = (value: number) => value > 0 ? `+${value}` : value < 0 ? `−${Math.abs(value)}` : '不变';
-function focusCabin(stage: HTMLElement | null, reduced: boolean) {
-  if (window.matchMedia('(max-width: 700px)').matches) stage?.scrollIntoView({ block: 'center', behavior: reduced ? 'instant' : 'smooth' });
-}
 type MetricEvent = { id: number; label: string; changes: MetricChange[] };
 
 function MetricResponse({ metric, event }: { metric: MetricKey; event: MetricEvent | null }) {
@@ -98,6 +95,7 @@ export default function ElevatorGame() {
   const [pendingOfferId, setPendingOfferId] = useState<string | null>(null);
   const [dragged, setDragged] = useState<DragPayload | null>(null); const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [guidedShift, setGuidedShift] = useState(false);
+  const [passengerDetails, setPassengerDetails] = useState<Rider | null>(null);
   const [intro, setIntro] = useState(true); const [help, setHelp] = useState(false); const [pressureHelp, setPressureHelp] = useState(false); const [archive, setArchive] = useState(false); const [sound, setSound] = useState(true);
   const [highest, setHighest] = useState(1); const [bestFloor, setBestFloor] = useState(1); const [runStartBest, setRunStartBest] = useState(1); const busyRef = useRef(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
@@ -106,7 +104,6 @@ export default function ElevatorGame() {
   const [receiptOpen, setReceiptOpen] = useState(false);
   const metricEventId = useRef(0);
   const feedbackId = useRef(0); const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null); const journeyTimers = useRef<Array<ReturnType<typeof setTimeout>>>([]);
-  const stageRef = useRef<HTMLElement>(null);
   const locked = doors !== 'open' || run.status !== 'playing';
   const flash = useCallback((event: Omit<Feedback, 'id'>) => {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
@@ -158,7 +155,6 @@ export default function ElevatorGame() {
     if (pendingOfferId === offer.id) { setPendingOfferId(null); setRun((current) => ({ ...current, message: '已取消安排。' })); return; }
     setPendingOfferId(offer.id); setSelectedSlot(null); setDragOverSlot(null); setFeedback(null);
     setRun((current) => ({ ...current, message: `已选择${PASSENGERS[offer.kind].name}，现在点一个空位。` })); playTone(sound, 'select');
-    if (window.matchMedia('(max-width: 700px)').matches) stageRef.current?.scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   };
   const clickSlot = (slot: number) => {
     if (locked) return;
@@ -210,10 +206,10 @@ export default function ElevatorGame() {
     ];
   }, [locked, sound, run, flash, reportMetrics]);
   useEffect(() => { const onKey = (event: KeyboardEvent) => {
-    if (intro || help || pressureHelp || archive || receiptOpen || event.repeat) return;
+    if (intro || help || pressureHelp || archive || receiptOpen || passengerDetails || event.repeat) return;
     if (event.key === 'Escape') { setPendingOfferId(null); setSelectedSlot(null); setDragged(null); setDragOverSlot(null); return; }
-    if (event.key === 'Enter' && !(event.target instanceof HTMLElement && event.target.closest('button,input,textarea,select,[contenteditable="true"]'))) { event.preventDefault(); focusCabin(stageRef.current, window.matchMedia('(prefers-reduced-motion: reduce)').matches); depart(); }
-  }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, [depart, intro, help, pressureHelp, archive, receiptOpen]);
+    if (event.key === 'Enter' && !(event.target instanceof HTMLElement && event.target.closest('button,input,textarea,select,[contenteditable="true"]'))) { event.preventDefault(); depart(); }
+  }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, [depart, intro, help, pressureHelp, archive, receiptOpen, passengerDetails]);
   const chooseUpgrade = (key: UpgradeKey) => {
     const updated = installUpgrade(run, key); if (updated === run) return;
     reportMetrics(run, updated, `购买${UPGRADES[key].name}`);
@@ -228,19 +224,19 @@ export default function ElevatorGame() {
     <section className="game-grid">
       <aside className="status-rail">
         <div className="floor-plaque"><span>当前楼层 · BEST {bestFloor}</span><strong>{String(run.floor).padStart(2, '0')}</strong><small>{phase}</small><progress className="floor-progress" aria-label={`距离 ${nextShop} 层商店还有 ${nextShop - run.floor} 站`} max={10} value={run.floor % 10} /></div>
-        <div data-metric="energy" className={`meter-card energy ${energyPreview.danger ? 'meter-danger' : ''}`} title={energyPreview.summary}><div><BatteryCharging /><span>能源</span><b><AnimatedNumber value={run.energy} /></b></div><MetricResponse metric="energy" event={metricEvent} /><div className="meter-track"><i style={{ width: `${Math.max(0, Math.min(100, run.energy / run.energyCap * 100))}%` }} /></div><small>NEXT {energyPreview.range} · {run.energyCap} MAX</small>{run.lastEnergy.sources.length > 0 && <div className={`energy-receipt ${run.lastEnergy.delta > 0 ? 'gained' : run.lastEnergy.delta < 0 ? 'spent' : 'balanced'}`} key={run.floor} aria-live="polite" title={energySummary}><b>{run.lastEnergy.delta === 0 ? '本层持平' : `本层 ${signedDelta(run.lastEnergy.delta)}`}</b><span>{energySummary}</span></div>}</div>
+        <div data-metric="energy" className={`meter-card energy ${energyPreview.danger ? 'meter-danger' : ''}`} title={energyPreview.summary}><div><BatteryCharging /><span>能源</span><b><AnimatedNumber value={run.energy} /></b></div><MetricResponse metric="energy" event={metricEvent} /><div className="meter-track"><i style={{ width: `${Math.max(0, Math.min(100, run.energy / run.energyCap * 100))}%` }} /></div><span className="mobile-meter-cap">上限 {run.energyCap}</span><small>NEXT {energyPreview.range} · {run.energyCap} MAX</small>{run.lastEnergy.sources.length > 0 && <div className={`energy-receipt ${run.lastEnergy.delta > 0 ? 'gained' : run.lastEnergy.delta < 0 ? 'spent' : 'balanced'}`} key={run.floor} aria-live="polite" title={energySummary}><b>{run.lastEnergy.delta === 0 ? '本层持平' : `本层 ${signedDelta(run.lastEnergy.delta)}`}</b><span>{energySummary}</span></div>}</div>
         <div data-metric="stress" className={`meter-card pressure ${agitated || pressurePreview.tone === 'danger' ? 'meter-danger' : ''}`} title={pressurePreview.summary}>
           <div><Gauge /><span className="meter-label">躁动<button className="meter-help" onClick={() => setPressureHelp(true)} aria-label="查看躁动规则"><HelpCircle /></button></span><b><AnimatedNumber value={run.stress} /></b></div>
           <MetricResponse metric="stress" event={metricEvent} /><div className="meter-track pressure-track"><span className="agitation-threshold" style={{ left: `${agitationThreshold(run.stressCap) / run.stressCap * 100}%` }} /><i style={{ width: `${Math.min(100, run.stress / run.stressCap * 100)}%` }} /></div>
-          <small>下站 {pressurePreview.range} · 上限 {run.stressCap}</small><div className="agitation-state"><b>{agitated ? '全员耐心每站 −2' : `${agitationThreshold(run.stressCap)} 起：耐心加速消耗`}</b><span>{crowdAgitation(occupied) > 0 ? `拥挤 +${crowdAgitation(occupied)} / 站` : occupied <= 2 ? '宽松 −1 / 站' : '3 人：不拥挤'}{shiftAgitation(run.floor + 1, occupied) > 0 ? ` · 疲劳 +${shiftAgitation(run.floor + 1, occupied)}` : ''}</span></div>
+          <span className="mobile-meter-cap">上限 {run.stressCap}</span><span className="mobile-agitation-state">{agitated ? '耐心每站 −2' : `${agitationThreshold(run.stressCap)} 起耐心 ×2`}</span><small>下站 {pressurePreview.range} · 上限 {run.stressCap}</small><div className="agitation-state"><b>{agitated ? '全员耐心每站 −2' : `${agitationThreshold(run.stressCap)} 起：耐心加速消耗`}</b><span>{crowdAgitation(occupied) > 0 ? `拥挤 +${crowdAgitation(occupied)} / 站` : occupied <= 2 ? '宽松 −1 / 站' : '3 人：不拥挤'}{shiftAgitation(run.floor + 1, occupied) > 0 ? ` · 疲劳 +${shiftAgitation(run.floor + 1, occupied)}` : ''}</span></div>
         </div>
         <div data-metric="weight" className={`load-card ${weight > 8 ? 'load-warn' : ''}`}><Weight /><span>载重</span><b><AnimatedNumber value={weight} /> / {run.weightCap}</b><MetricResponse metric="weight" event={metricEvent} /></div>
-        <div data-metric="coins" className="score-card wallet-card"><Coins /><span>可用金币</span><strong><AnimatedNumber value={run.coins} /></strong><MetricResponse metric="coins" event={metricEvent} /><small>本班累计赚取 {run.earned}<br />{nextShop} 层商店 · 还剩 {nextShop - run.floor} 站</small></div>
+        <div data-metric="coins" className="score-card wallet-card"><Coins /><span>可用金币</span><strong><AnimatedNumber value={run.coins} /></strong><MetricResponse metric="coins" event={metricEvent} /><span className="mobile-shop-note">{nextShop - run.floor} 站到商店</span><small>本班累计赚取 {run.earned}<br />{nextShop} 层商店 · 还剩 {nextShop - run.floor} 站</small></div>
 
         {metricEvent && <button className="receipt-button" onClick={() => setReceiptOpen(true)}><BookOpen /> 本次变化明细 <span>↗</span></button>}
         <div className="event-log">{run.log.slice(0, 3).map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}</div>
       </aside>
-      <section ref={stageRef} className={`elevator-stage doors-${doors} ${activeRider ? 'is-placing' : ''} ${agitated ? 'cabin-agitated' : ''}`} aria-label="电梯座舱" aria-busy={doors !== 'open'}>
+      <section className={`elevator-stage doors-${doors} ${activeRider ? 'is-placing' : ''} ${agitated ? 'cabin-agitated' : ''}`} aria-label="电梯座舱" aria-busy={doors !== 'open'}>
         <div className="elevator-image" /><div className="motion-lines" /><div className="floor-indicator"><ArrowUp /><b key={run.floor}>{String(run.floor).padStart(2, '0')}</b></div><div className="cabin-title"><span>CAR № 07</span><i /><span>{occupied} / 6 OCCUPIED</span></div>
         <div className="adjacency-key"><i />连线站位互为邻座</div>
         {feedback && <output key={feedback.id} className={`cabin-feedback feedback-${feedback.tone}`}>
@@ -267,27 +263,46 @@ export default function ElevatorGame() {
       <aside className="arrival-panel">
         <div className={`arrival-heading ${loverResponse || firstPairLesson ? 'lover-response' : ''}`}><div><span>{loverResponse ? 'LOVER SIGNAL · RESPONSE' : firstPairLesson ? 'FIRST PAIR · GUIDED SHIFT' : doors === 'open' ? 'DOORS OPEN' : 'IN TRANSIT'}</span><h2>{loverResponse ? '有人回应了呼唤' : firstPairLesson ? firstPairActive ? '配对完成，可以上行' : '先让恋人成为邻座' : '谁要上楼？'}</h2></div><div className="arrival-count">{offers.length} 位</div></div>
         <p className="arrival-explainer">送达后领取基础奖励 · 途中收益与人物联动另算</p>
-        <div className="passenger-list" key={run.floor} aria-label="候客乘客，可滚动查看">
+        <div className="passenger-list" key={run.floor} aria-label="本层候客乘客">
           {offers.map((offer) => {
             const spec = PASSENGERS[offer.kind]; const brief = passengerBrief(offer, run.floor);
             const boarded = run.cabin.some((rider) => rider?.id === offer.id); const pending = pendingOfferId === offer.id;
             const full = !boarded && cabinFull; const tooHeavy = !boarded && weight + spec.weight > run.weightCap;
             const unavailable = full || tooHeavy; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id;
             const partner = unavailable ? null : readyPartner(offer.kind, run.cabin, offer.id);
-            return <button className={`passenger-card tone-${spec.tone} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} key={offer.id} onClick={() => toggleOffer(offer)} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
+            return <div className="passenger-item" key={offer.id}><button className={`passenger-card tone-${spec.tone} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
+              <span className="mobile-passenger-summary">
+                <Portrait kind={offer.kind} /><strong>{spec.name}</strong><span className="mobile-trip">还剩 {brief.distance} 站</span>
+                <span className="mobile-facts">载重 {spec.weight} · 耐心 {offer.patience}</span>
+                <span className="mobile-reward"><span>到站金币 +{brief.coins + brief.tip}</span><span>能源 +{brief.energy}</span></span>
+                <span className={`mobile-card-state ${offer.fuse !== undefined ? 'fact-danger' : ''}`}>{boarded ? '已上车 · 撤回' : pending ? '已选 · 点空位' : full ? '车厢已满' : tooHeavy ? '载重不足' : offer.fuse !== undefined ? `引信 ${offer.fuse} · 危险` : partner ? `联动 · ${PASSENGERS[partner].name}` : '点选上车'}</span>
+              </span>
               <span className="passenger-heading"><Portrait kind={offer.kind} /><span className="passenger-identity"><strong>{spec.name}</strong><span className="passenger-destination"><b>还剩 {brief.distance} 站</b><span> · 送达后领取奖励</span></span></span></span>
               <span className="passenger-facts"><span>占载重 <b>{spec.weight}</b></span><span title="每站通常消耗 1 点，高躁动时消耗 2 点；归零提前离开，并增加 2 躁动。">耐心 <b>{offer.patience} 点</b></span>{offer.fuse !== undefined && <span className="fact-danger">引信 <b>{offer.fuse} 格</b></span>}{spec.risk && <span className="fact-danger">{spec.risk.label}</span>}</span>
               <span className="arrival-reward"><span>到站基础奖励</span><span className="reward-coins"><Coins />金币 <b>+{brief.coins}</b></span><span className="reward-energy"><BatteryCharging />能源 <b>{brief.energy ? `+${brief.energy}` : '0'}</b></span></span>
               {brief.tip > 0 && <span className="passenger-tip">另有升级小费 +{brief.tip} 金币，不参与车费倍率。</span>}
               <span className="passenger-rules">{brief.rules.map((rule) => <span key={rule}>{rule}</span>)}</span>
               <span className="passenger-action"><span>{boarded ? '已上车 · 点击可撤回' : pending ? '已选中 · 请安排站位' : full ? '轿厢已满 · 暂不能上车' : tooHeavy ? '剩余载重不足' : '拖入空位，或点选安排'}</span>{partner ? <b>可联动 · {PASSENGERS[partner].name}</b> : firstPairLesson && offer.kind === 'lover' ? <b>教学配对</b> : offer.calledByLover ? <b>回应呼唤</b> : null}</span>
-            </button>;
+            </button><button className="mobile-rule-button" onClick={() => setPassengerDetails(offer)} aria-label={`查看${spec.name}规则`}><HelpCircle /></button></div>;
           })}
         </div>
-        <button className="depart-button" onClick={() => { focusCabin(stageRef.current, window.matchMedia('(prefers-reduced-motion: reduce)').matches); depart(); }} disabled={locked}><span>{doors === 'open' ? '关门上行' : '正在上行'}</span><b>ENTER</b></button><p className={`panel-hint forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : firstPairLesson && !firstPairActive ? '第一班 · 把两位恋人放进连线相连的站位' : departureForecast}</p>
+        <div className="departure-controls">
+          <button className="mobile-inspect-button" disabled={!activeRider || locked} onClick={() => activeRider && setPassengerDetails(activeRider)} aria-label="查看选中人物规则"><BookOpen /><span>人物</span></button>
+          <button className="depart-button" onClick={depart} disabled={locked}><span>{doors === 'open' ? '关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
+          <p className={`mobile-departure-note forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? `已选${activeRider ? PASSENGERS[activeRider.kind].name : '乘客'} · 点下方空位` : selectedSlot !== null ? '点另一站位换位 · 再点原位取消' : firstPairLesson && !firstPairActive ? '先选上方恋人，再点相邻的两个空位' : `下一站：能源 ${energyPreview.range} · 躁动 ${pressurePreview.range}`}</p>
+          <p className={`panel-hint forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : firstPairLesson && !firstPairActive ? '第一班 · 把两位恋人放进连线相连的站位' : departureForecast}</p>
+        </div>
       </aside>
     </section>
-    <footer className="footer-line"><span>ELV–07 / v5.0</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
+    <footer className="footer-line"><span>ELV–07 / v5.1</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
+
+    <Dialog open={passengerDetails !== null} onOpenChange={(open) => !open && setPassengerDetails(null)}><DialogContent className="story-dialog passenger-detail-dialog">
+      {passengerDetails && <><p className="dialog-kicker">PASSENGER NOTES</p><DialogHeader><DialogTitle>{PASSENGERS[passengerDetails.kind].name}</DialogTitle><DialogDescription>还剩 {Math.max(0, passengerDetails.destination - run.floor)} 站 · 载重 {PASSENGERS[passengerDetails.kind].weight} · 耐心 {passengerDetails.patience}{passengerDetails.fuse !== undefined ? ` · 引信 ${passengerDetails.fuse}` : ''}</DialogDescription></DialogHeader>
+        <div className="passenger-detail-reward">到站基础奖励：金币 +{passengerBrief(passengerDetails, run.floor).coins} · 能源 +{passengerBrief(passengerDetails, run.floor).energy}{passengerDetails.fareBonus ? ` · 另有小费 +${passengerDetails.fareBonus}` : ''}</div>
+        <div className="passenger-detail-rules">{passengerBrief(passengerDetails, run.floor).rules.map((rule) => <p key={rule}>{rule}</p>)}</div>
+        <Button className="story-primary" onClick={() => setPassengerDetails(null)}>返回安排</Button>
+      </>}
+    </DialogContent></Dialog>
 
     <Dialog open={receiptOpen} onOpenChange={setReceiptOpen}><DialogContent className="story-dialog receipt-dialog">
       <p className="dialog-kicker">DECISION RECEIPT</p><DialogHeader><DialogTitle>这次，改变了什么？</DialogTitle><DialogDescription>{metricEvent?.label}。以下是实际变化，不是下一层预测。</DialogDescription></DialogHeader>
@@ -312,7 +327,7 @@ export default function ElevatorGame() {
     </div><div className={`pressure-now forecast-${pressurePreview.tone}`}><small>按现在的站位</small><b>{pressurePreview.summary}</b></div></DialogContent></Dialog>
     <Dialog open={archive} onOpenChange={setArchive}><DialogContent className="story-dialog archive-dialog"><p className="dialog-kicker">PASSENGER ARCHIVE</p><DialogHeader><DialogTitle>午夜乘客档案</DialogTitle><DialogDescription>最高抵达 {highest}F。更高楼层会出现更难处理的乘客。</DialogDescription></DialogHeader><div className="archive-grid">{PASSENGER_ORDER.map((kind) => { const open = unlocked.includes(kind); const spec = PASSENGERS[kind]; return <div className={`archive-item ${open ? '' : 'locked'}`} key={kind}>{open ? <Portrait kind={kind} /> : <LockKeyhole />}<span><b>{open ? spec.name : '未解锁'}</b><small>{open ? spec.short : '继续向上抵达新楼层'}</small></span></div>; })}</div></DialogContent></Dialog>
     <Dialog open={run.status === 'upgrade'}><DialogContent className={`story-dialog upgrade-dialog ${upgradeCrisis ? 'upgrade-crisis' : ''}`} showCloseButton={false}>
-      <p className="dialog-kicker">FLOOR {run.floor} · MAINTENANCE SHOP</p><DialogHeader><DialogTitle>{upgradeCrisis ? '先维修，再继续上行' : '把这一程收入，投进下一程。'}</DialogTitle><DialogDescription>每张卡本次限购一次；可以买多张，也可以攒钱离开。已安装的效果持续整班。</DialogDescription></DialogHeader>
+      <p className="dialog-kicker">FLOOR {run.floor} · MAINTENANCE SHOP</p><DialogHeader><DialogTitle><span className="desktop-shop-copy">{upgradeCrisis ? '先维修，再继续上行' : '把这一程收入，投进下一程。'}</span><span className="mobile-shop-copy">{run.floor} 层 · {upgradeCrisis ? '紧急维修' : '补给站'}</span></DialogTitle><DialogDescription><span className="desktop-shop-copy">每张卡本次限购一次；可以买多张，也可以攒钱离开。已安装的效果持续整班。</span><span className="mobile-shop-copy">按需购卡，可买多张，也可离开。</span></DialogDescription></DialogHeader>
       <div className="shop-wallet"><span><Coins />可用金币 <b key={run.coins}>{run.coins}</b></span><span>累计收入 {run.earned} · 已花费 {run.earned - run.coins}</span></div>
       {upgradeCrisis && <p className="shop-warning">{upgradeCrisis === 'both' ? '能源与躁动同时失控：需要购买回能卡和舒缓系统，两项都修复才能继续。' : upgradeCrisis === 'energy' ? '能源已耗尽：购买回能卡，将能源恢复到 0 以上才能继续。' : '躁动已超限：购买舒缓系统，将躁动降到上限以下才能继续。'} 若无力修复，本班将在这里结束。</p>}
       <div className="upgrade-grid">{run.shop.map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, upgradeCrisis); return <button key={key} className={`${rescue ? 'crisis-rescue' : ''} ${card.purchased ? 'shop-purchased' : ''}`} disabled={card.purchased || !affordable} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price} 金币${card.purchased ? '，已购入' : !affordable ? '，金币不足' : ''}`}>

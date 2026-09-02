@@ -1,7 +1,7 @@
 import { PASSENGERS, type PassengerKind } from './game-data';
 import type { Rider } from './game-engine';
 
-// Decision-critical copy is always shown in full; never hidden behind a tooltip.
+// Full rules are inline on desktop and available in a tap-open dialog on phones.
 export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
   commuter: ['没有特殊效果。送达目的地即可领取奖励。'],
   tourist: ['没有特殊效果。旅途较长、占用载重较多，到站报酬也更高。'],
