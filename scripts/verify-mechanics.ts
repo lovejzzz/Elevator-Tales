@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { emergencyEnergyRunway, expressTrip, failureLesson, initialRun, installUpgrade, makeOffers, NIGHT_RUSH_MAX, NIGHT_RUSH_MIN, nightRushBonus, readyPartner, resolveFloor, synergyPartnerAtSlot, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
+import { agitationThreshold, crowdAgitation, difficultyTier, expressTrip, failureLesson, initialRun, installUpgrade, leaveShop, makeOffers, nextShopFloor, patienceCost, previewUpgrade, readyPartner, resolveFloor, synergyPartnerAtSlot, travelEnergyCost, upgradeChoices, upgradePrice, type ChangeLine, type Rider, type RunState } from '../lib/game-engine';
 import { PASSENGER_ORDER, PASSENGERS, UPGRADES, type PassengerKind } from '../lib/game-data';
 import { energyForecast, stressForecast } from '../lib/game-forecast';
 import { activeConnection, planPlacement } from '../lib/game-interaction';
@@ -32,7 +32,7 @@ const newRider = rider('courier', 'new-arrival', { boardedAt: 2 });
 const afterBoarding = planPlacement(firstReseat.next, newRider, 3);
 assert.equal(planPlacement(afterBoarding.next, newRider, 4).ok, true, 'new riders still move freely after the old-rider swap was used');
 assert.equal(planPlacement(afterBoarding.next, newRider, 1).ok, false, 'a new rider cannot bypass the swap limit by targeting an old rider');
-assert.equal(planPlacement({ ...emptyPlacement, status: 'won' }, placedLover, 0).ok, false);
+assert.equal(planPlacement({ ...emptyPlacement, status: 'lost' }, placedLover, 0).ok, false);
 for (const target of [-1, 6, 0.5, NaN]) assert.equal(planPlacement(emptyPlacement, placedLover, target).ok, false);
 
 const guidedOffers = makeOffers(1, initialRun().upgrades, true, () => 0.5);
@@ -46,124 +46,142 @@ assert.equal(synergyPartnerAtSlot('lover', [guidedOffers[0], null, null, null, n
 const fullCabin = [rider('lover', 'full-lover'), rider('commuter', 'full-1'), rider('commuter', 'full-2'), rider('commuter', 'full-3'), rider('commuter', 'full-4'), rider('commuter', 'full-5')];
 assert.equal(readyPartner('lover', fullCabin, 'waiting-lover'), null, 'a full cabin must not advertise an impossible new pairing');
 
-const balanced = resolveFloor({ ...initialRun(), cabin: [rider('nurse', 'nurse'), rider('thief', 'thief'), null, null, null, null] }, () => 0.9);
-assert.equal(balanced.stress, 0, 'same-floor relief should cancel pressure regardless of slot order');
-assert.equal(balanced.lastPressure.delta, 0);
-assert.deepEqual(sourceMap(balanced.lastPressure.sources), { '护士安抚': -1, '小偷未受控': 1 });
 
-const impatient = resolveFloor({ ...initialRun(), cabin: [rider('commuter', 'late', { patience: 1 }), null, null, null, null, null] }, () => 0.9);
-assert.equal(impatient.stress, 2);
+for (let occupied = 0; occupied <= 6; occupied += 1) {
+  const cabin = Array.from({ length: 6 }, (_, i) => i < occupied ? rider('commuter', `crowd-${i}`) : null);
+  const before = { ...initialRun(), stress: 5, cabin };
+  const after = resolveFloor(before, () => .9);
+  assert.equal(after.lastPressure.delta, crowdAgitation(occupied));
+}
+assert.equal(agitationThreshold(15), 10);
+assert.equal(agitationThreshold(18), 12);
+assert.equal(patienceCost({ ...initialRun(), stress: 9 }), 1);
+assert.equal(patienceCost({ ...initialRun(), stress: 10 }), 2);
+const anxious = resolveFloor({ ...initialRun(), stress: 10, cabin: [rider('commuter', 'anxious', { patience: 5 }), null, null, null, null, null] }, () => .9);
+assert.equal(anxious.cabin[0]?.patience, 3, 'patience cost uses agitation at departure, before same-floor relief');
+
+const packed = Array.from({ length: 6 }, (_, i) => rider('commuter', `packed-${i}`));
+const crowdedLoss = resolveFloor({ ...initialRun(), stress: 14, cabin: packed }, () => .9);
+assert.equal(crowdedLoss.status, 'lost');
+assert.match(failureLesson(crowdedLoss), /躁动/);
+const allArrive = resolveFloor({ ...initialRun(), stress: 5, cabin: packed.map((p) => ({ ...p, destination: 2 })) }, () => .9);
+assert.equal(allArrive.stress, 1, 'six arrivals relieve six, after full-cabin agitation of two');
+assert.equal(sourceMap(allArrive.lastPressure.sources)['乘客到站舒缓'], -6);
+assert.equal(allArrive.earned, 42);
+assert.equal(allArrive.coins, 42);
+assert.equal(allArrive.cabin.filter(Boolean).length, 0);
+const impatient = resolveFloor({ ...initialRun(), cabin: [rider('commuter', 'late', { patience: 1 }), null, null, null, null, null] }, () => .9);
+assert.equal(impatient.stress, 1, 'wide-cabin relief offsets one of the two agitation points');
 assert.equal(sourceMap(impatient.lastPressure.sources)['耐心归零'], 2);
+assert.equal(impatient.coins, 0);
+assert.equal(impatient.lastEnergy.sources.some((s) => s.label.includes('到站')), false);
+const musical = resolveFloor({ ...initialRun(), stress: 4, cabin: [rider('musician', 'music'), ...packed.slice(0, 3), null, null] }, () => .9);
+assert.equal(musical.lastPressure.delta, 0, 'musician offsets four-person crowding');
+const controlled = resolveFloor({ ...initialRun(), cabin: [rider('thief', 'thief'), rider('cop', 'cop'), null, null, null, null] }, () => .9);
+assert.equal(sourceMap(controlled.lastEarnings.sources)['受控小偷'], 1);
+assert.equal(controlled.lastPressure.sources.some((s) => s.label === '小偷未受控'), false);
 
-const drunk = resolveFloor({ ...initialRun(), cabin: [rider('drunk', 'drunk'), null, null, null, null, null] }, () => 0.1);
-assert.equal(drunk.stress, 2);
-assert.equal(sourceMap(drunk.lastPressure.sources)['醉汉闹事'], 2);
+assert.equal(difficultyTier(30), 0); assert.equal(difficultyTier(31), 1);
+assert.deepEqual([travelEnergyCost(2), travelEnergyCost(31), travelEnergyCost(61), travelEnergyCost(301)], [2, 3, 4, 12]);
+for (const floor of [59, 60, 99, 999]) {
+  const offers = makeOffers(floor, initialRun().upgrades, false, () => .5);
+  assert.ok(offers.every((p) => p.destination > floor), 'destinations never clamp to a final floor');
+}
+const atSixty = resolveFloor({ ...initialRun(), floor: 59, energy: 20 }, () => .5);
+assert.equal(atSixty.floor, 60); assert.equal(atSixty.status, 'upgrade');
+assert.equal(atSixty.shop.length, 3);
+const beyondSixty = resolveFloor(leaveShop(atSixty), () => .5);
+assert.equal(beyondSixty.floor, 61); assert.equal(beyondSixty.status, 'playing');
+const thousand = resolveFloor({ ...initialRun(), floor: 999, energy: 100, energyCap: 100 }, () => .5);
+assert.equal(thousand.floor, 1000); assert.equal(thousand.status, 'upgrade');
+assert.equal(nextShopFloor(60), 70);
+assert.equal(resolveFloor(atSixty), atSixty, 'the shop cannot advance while open');
+assert.equal(resolveFloor(crowdedLoss), crowdedLoss, 'lost games cannot continue');
 
-assert.deepEqual([NIGHT_RUSH_MIN, NIGHT_RUSH_MAX], [5, 9]);
-assert.equal(nightRushBonus(5, 4), 2);
-assert.equal(nightRushBonus(9, 6), 3);
-assert.equal(nightRushBonus(4, 6), 0);
-assert.equal(nightRushBonus(5, 3), 0);
-const rushCabin = [rider('commuter', 'rush-1'), rider('commuter', 'rush-2'), rider('commuter', 'rush-3'), rider('commuter', 'rush-4'), null, null];
-const rushRide = resolveFloor({ ...initialRun(), stress: 5, cabin: rushCabin }, () => 0.9);
-assert.equal(sourceMap(rushRide.lastEarnings.sources)['午夜热区'], 2, 'four riders in the controlled pressure band should create two rush-tip coins');
-const nurseRush = resolveFloor({ ...initialRun(), stress: 10, cabin: [rider('nurse', 'rush-nurse'), ...rushCabin.slice(0, 3), null, null] }, () => 0.9);
-assert.equal(nurseRush.stress, 9, 'a nurse should be able to bring the cabin back into the rush zone');
-assert.equal(sourceMap(nurseRush.lastEarnings.sources)['午夜热区'], 2);
+const shop: RunState = { ...initialRun(), floor: 10, status: 'upgrade', energy: 10, stress: 8, coins: 70, earned: 70, shop: [
+  { key: 'battery', price: 35, purchased: false }, { key: 'calm', price: 35, purchased: false }, { key: 'solar', price: 55, purchased: false },
+] };
+assert.equal(installUpgrade(initialRun(), 'battery').upgrades.battery, 0, 'no free upgrade outside the shop');
+const preview = previewUpgrade(shop, 'battery');
+assert.equal(preview.coins, 70); assert.equal(shop.energy, 10, 'preview does not mutate actual state');
+const boughtBattery = installUpgrade(shop, 'battery');
+assert.equal(boughtBattery.coins, 35); assert.equal(boughtBattery.earned, 70);
+assert.equal(boughtBattery.energy, 18); assert.equal(boughtBattery.energyCap, 29);
+assert.equal(boughtBattery.status, 'upgrade', 'buying one card keeps other purchases available');
+assert.equal(installUpgrade(boughtBattery, 'battery'), boughtBattery, 'double click must not double-charge');
+assert.equal(installUpgrade(boughtBattery, 'solar'), boughtBattery, 'insufficient money must change nothing');
+assert.equal(installUpgrade(boughtBattery, 'concierge'), boughtBattery, 'only offered cards may be purchased');
+const boughtBoth = installUpgrade(boughtBattery, 'calm');
+assert.equal(boughtBoth.coins, 0); assert.equal(boughtBoth.stress, 2); assert.equal(boughtBoth.stressCap, 18);
+assert.equal(boughtBoth.shop.filter((card) => card.purchased).length, 2);
+const left = leaveShop(boughtBoth); assert.equal(left.status, 'playing'); assert.deepEqual(left.shop, []);
+assert.equal(installUpgrade(left, 'calm'), left, 'leaving cannot reopen/rebuy');
+assert.equal(leaveShop({ ...shop, coins: 0 }).status, 'playing', 'healthy players can leave without a purchase');
+assert.equal(leaveShop({ ...shop, coins: 0, energy: 0 }).status, 'lost', 'no unearned crisis rescue');
+const crisis = resolveFloor({ ...initialRun(), floor: 9, energy: 1, coins: 100, earned: 100 }, () => .5);
+assert.equal(crisis.status, 'upgrade');
+const rescue = crisis.shop.find((card) => card.key === 'battery' || card.key === 'reinforced')!;
+assert.ok(rescue);
+assert.equal(leaveShop(installUpgrade(crisis, rescue.key)).status, 'playing');
+const doubleCrisis = resolveFloor({ ...initialRun(), floor: 9, energy: 1, stress: 14, coins: 200, earned: 200, cabin: packed.map((p) => ({ ...p, destination: 16, patience: 20 })) }, () => .5);
+assert.equal(doubleCrisis.status, 'upgrade', 'a paid multi-card shop can rescue both issues when affordable');
+assert.ok(doubleCrisis.shop.some((c) => c.key === 'battery') && doubleCrisis.shop.some((c) => c.key === 'calm'));
+assert.equal(leaveShop(doubleCrisis).status, 'lost');
+assert.equal(leaveShop(installUpgrade(installUpgrade(doubleCrisis, 'battery'), 'calm')).status, 'playing');
+assert.ok(upgradePrice('battery', 70, 2) > upgradePrice('battery', 10, 0));
+assert.ok(upgradePrice('calm', 20, 1) > upgradePrice('calm', 20, 0));
+assert.ok(!upgradeChoices({ ...initialRun().upgrades, express: 1 }, () => .5).includes('express'));
+assert.equal(expressTrip(4, 1), 4); assert.equal(expressTrip(5, 1), 4);
 
-const ghostDelayState = { ...initialRun(), floor: 2, cabin: [rider('ghost', 'forecast-ghost', { destination: 8 }), rider('commuter', 'forecast-late', { destination: 3, patience: 1 }), null, rider('tourist', 'forecast-decoy', { destination: 8 }), null, null] };
-const ghostPressureForecast = stressForecast(ghostDelayState);
-assert.deepEqual([ghostPressureForecast.lowDelta, ghostPressureForecast.highDelta], [0, 2], 'the pressure forecast should include a ghost-delayed passenger losing patience');
-assert.match(ghostPressureForecast.details, /可能耐心归零/);
-const ghostDelayed = resolveFloor(ghostDelayState, () => 0);
-assert.equal(ghostDelayed.lastPressure.delta, 2);
-assert.ok(ghostDelayed.lastPressure.delta >= ghostPressureForecast.lowDelta && ghostDelayed.lastPressure.delta <= ghostPressureForecast.highDelta);
-const ghostEnergyForecast = energyForecast(ghostDelayState);
-assert.deepEqual([ghostEnergyForecast.lowDelta, ghostEnergyForecast.highDelta], [-2, -1], 'the energy forecast should show that the ghost may delay an arrival refill');
-
-const energyLoss = resolveFloor({ ...initialRun(), energy: 1 }, () => 0.9);
-assert.match(failureLesson(energyLoss), /短途和高回能乘客/);
-const pressureLoss = resolveFloor({ ...initialRun(), stress: 14, cabin: [rider('thief', 'risky-thief'), null, null, null, null, null] }, () => 0.9);
-assert.match(failureLesson(pressureLoss), /小偷未受控 \+1/);
-const bombLoss = resolveFloor({ ...initialRun(), cabin: [rider('bomb', 'bomb', { fuse: 1 }), null, null, null, null, null] }, () => 0.9);
-assert.match(failureLesson(bombLoss), /炸弹客与警察相邻/);
-
-const energyRescueChoices = upgradeChoices(initialRun().upgrades, () => 0.5, 'energy');
-assert.ok(energyRescueChoices.some((key) => key === 'battery' || key === 'reinforced'), 'an energy crisis checkpoint should always offer a rescue');
-const stressRescueChoices = upgradeChoices(initialRun().upgrades, () => 0.5, 'stress');
-assert.ok(stressRescueChoices.includes('calm'), 'a pressure crisis checkpoint should always offer calm control');
-const deepEnergyRescue = installUpgrade({ ...initialRun(), floor: 10, status: 'upgrade', energy: -8 }, 'battery');
-assert.equal(deepEnergyRescue.status, 'playing', 'a labeled energy rescue should restart even after a deep deficit');
-assert.equal(deepEnergyRescue.energy, emergencyEnergyRunway(10), 'an emergency energy restart should cover three baseline moves plus one point');
-assert.equal(emergencyEnergyRunway(10), 7);
-assert.equal(emergencyEnergyRunway(30), 10);
-assert.equal(emergencyEnergyRunway(50), 13);
-assert.equal(expressTrip(4, 1), 4, 'express should no longer erase the tradeoff on short trips');
-assert.equal(expressTrip(5, 1), 4, 'express should still accelerate medium and long-haul trips');
-assert.equal(expressTrip(8, 0), 8, 'express should do nothing before installation');
-const deepStressRescue = installUpgrade({ ...initialRun(), status: 'upgrade', stress: 21 }, 'calm');
-assert.equal(deepStressRescue.status, 'playing', 'a labeled pressure rescue should de-escalate even after a deep overrun');
-assert.equal(deepStressRescue.stress, deepStressRescue.stressCap - 1, 'an emergency pressure reset should leave one point of margin');
-const doubleCrisis = resolveFloor({ ...initialRun(), floor: 9, energy: 1, stress: 14, cabin: [rider('thief', 'double-crisis'), null, null, null, null, null] }, () => 0.9);
-assert.equal(doubleCrisis.status, 'lost', 'a simultaneous energy and pressure failure should not open a misleading upgrade choice');
-assert.match(doubleCrisis.message, /能源耗尽且压力/);
-assert.match(failureLesson(doubleCrisis), /双重失控/);
-
-const lovers = resolveFloor({ ...initialRun(), cabin: [rider('lover', 'lover-a'), rider('lover', 'lover-b'), null, null, null, null] }, () => 0.9);
+const lovers = resolveFloor({ ...initialRun(), cabin: [rider('lover', 'lover-a'), rider('lover', 'lover-b'), null, null, null, null] }, () => .9);
 assert.equal(lovers.lastEarnings.total, 2);
-assert.equal(sourceMap(lovers.lastEarnings.sources)['恋人连携'], 2);
-
-const soloLover = resolveFloor({ ...initialRun(), cabin: [rider('lover', 'solo', { patience: 10 }), null, null, null, null, null] }, () => 0.9);
-assert.equal(soloLover.cabin[0]?.patience, 9, 'solo lovers should only lose the normal one patience per floor');
-const calledOffers = makeOffers(2, initialRun().upgrades, false, () => 0.1, soloLover.cabin);
-assert.equal(calledOffers[0].kind, 'lover', 'a solo lover should sometimes call another lover into the next offer');
-assert.equal(calledOffers[0].calledByLover, true, 'the called lover should retain its causal marker');
-assert.equal(new Set(Object.values(UPGRADES).map((upgrade) => upgrade.strategy)).size, 6, 'every upgrade should expose a distinct strategic role');
+assert.equal(lovers.earned, 2);
+const solo = resolveFloor({ ...initialRun(), cabin: [rider('lover', 'solo'), null, null, null, null, null] }, () => .9);
+assert.equal(solo.cabin[0]?.patience, 9);
+assert.equal(makeOffers(2, solo.upgrades, false, () => .1, solo.cabin)[0].calledByLover, true);
+const bombLoss = resolveFloor({ ...initialRun(), cabin: [rider('bomb', 'bomb', { fuse: 1 }), null, null, null, null, null] }, () => .9);
+assert.equal(bombLoss.status, 'lost'); assert.match(failureLesson(bombLoss), /引信/);
+const safeBomb = resolveFloor({ ...initialRun(), cabin: [rider('bomb', 'safe-bomb', { fuse: 1, destination: 2 }), null, null, null, null, null] }, () => .9);
+assert.equal(safeBomb.status, 'playing'); assert.equal(safeBomb.coins, 26);
 
 for (const kind of PASSENGER_ORDER) {
   const brief = passengerBrief(rider(kind, `brief-${kind}`, { fareBonus: 4 }), 2);
-  assert.equal(brief.coins, PASSENGERS[kind].fare);
-  assert.equal(brief.tip, 4, 'upgrade tips are separate because fare multipliers do not apply to them');
-  assert.equal(brief.energy, PASSENGERS[kind].energy);
-  assert.equal(brief.distance, 6);
-  assert.ok(brief.rules.length > 0);
-  assert.ok(brief.rules.every((line) => line.endsWith('。')), `${kind} must have complete sentences`);
+  assert.equal(brief.coins, PASSENGERS[kind].fare); assert.equal(brief.tip, 4);
+  assert.equal(brief.energy, PASSENGERS[kind].energy); assert.equal(brief.distance, 6);
+  assert.ok(brief.rules.length > 0 && brief.rules.every((line) => line.endsWith('。')));
 }
-assert.equal(passengerBrief(rider('ghost', 'zero-energy'), 10).energy, 0);
-assert.equal(passengerBrief(rider('commuter', 'past-destination'), 10).distance, 0);
 assert.match(PASSENGER_RULES.inspector.join(''), /偶数层/);
-assert.match(PASSENGER_RULES.bomb.join(''), /到站当层归零则安全/);
-
+assert.equal(passengerBrief(rider('commuter', 'countdown'), 7).distance, 1);
+assert.equal(passengerBrief(rider('commuter', 'countdown'), 8).distance, 0);
 const placementMetrics = metricChanges(emptyPlacement, placeFirst.next, '恋人上车');
-assert.deepEqual(placementMetrics.map(({ key, delta, tone }) => ({ key, delta, tone })), [{ key: 'weight', delta: 1, tone: 'neutral' }]);
 assert.equal(metricSound(placementMetrics[0]), 'load');
-assert.deepEqual(metricChanges(placeFirst.next, placeFirst.next, '重复放置'), []);
-const removedMetrics = metricChanges(placeFirst.next, emptyPlacement, '恋人下车');
-assert.equal(removedMetrics[0].delta, -1);
-assert.equal(metricSound(removedMetrics[0]), 'unload');
-const pairedMetrics = metricChanges({ ...initialRun(), cabin: [rider('lover', 'lover-a'), rider('lover', 'lover-b'), null, null, null, null] }, lovers, '到站');
-assert.equal(pairedMetrics.find((change) => change.key === 'coins')?.delta, 2);
-assert.equal(metricSound(pairedMetrics.find((change) => change.key === 'coins')!), 'coin');
-assert.equal(metricSound(pairedMetrics.find((change) => change.key === 'energy')!), 'drain');
-const pressureUpMetrics = metricChanges(initialRun(), { ...initialRun(), stress: 2 }, '事件');
-assert.equal(pressureUpMetrics[0].tone, 'danger');
-assert.equal(metricSound(pressureUpMetrics[0]), 'pressure');
-const pressureDownMetrics = metricChanges({ ...initialRun(), stress: 2 }, initialRun(), '安抚');
-assert.equal(pressureDownMetrics[0].tone, 'gain', 'pressure decrease is relief, not a loss');
-assert.equal(metricSound(pressureDownMetrics[0]), 'relief');
-const zeroNetBefore = { ...initialRun(), cabin: [rider('courier', 'zero-net', { destination: 2 }), null, null, null, null, null] };
-const zeroNetMetrics = metricChanges(zeroNetBefore, resolveFloor(zeroNetBefore, () => .9), '到站');
-const balancedEnergy = zeroNetMetrics.find((change) => change.key === 'energy')!;
-assert.equal(balancedEnergy.delta, 0);
-assert.deepEqual(balancedEnergy.sources.map(({ amount }) => amount), [-2, 2]);
-assert.equal(metricSound(balancedEnergy), null, 'net-zero must not play a fake resource gain');
-const cappedBefore = { ...initialRun(), energy: 24, cabin: [rider('nurse', 'floor-zero'), rider('mechanic', 'capped-arrival', { destination: 2 }), null, null, null, null] };
-const cappedMetrics = metricChanges(cappedBefore, resolveFloor(cappedBefore, () => .9), '到站');
-for (const change of cappedMetrics) assert.equal(change.sources.reduce((sum, line) => sum + line.amount, 0), change.delta, 'receipts must reconcile to actual state changes');
-assert.ok(cappedMetrics.find((change) => change.key === 'stress')?.sources.some((source) => source.label === '压力下限修正'));
-const upgradeMetrics = metricChanges(initialRun(), installUpgrade(initialRun(), 'reinforced'), '升级');
-assert.equal(upgradeMetrics.find((change) => change.key === 'weight')?.capDelta, 3);
-assert.equal(upgradeMetrics.find((change) => change.key === 'energy')?.delta, 3);
-assert.equal(upgradeMetrics.find((change) => change.key === 'energy')?.capDelta, 3);
+assert.equal(metricSound(metricChanges(placeFirst.next, emptyPlacement, '下车')[0]), 'unload');
+assert.deepEqual(metricChanges(emptyPlacement, emptyPlacement, '未变'), []);
+assert.equal(metricSound(metricChanges(initialRun(), { ...initialRun(), stress: 2 }, '事件')[0]), 'pressure');
+assert.equal(metricSound(metricChanges({ ...initialRun(), stress: 2 }, initialRun(), '安抚')[0]), 'relief');
+const purchaseMetrics = metricChanges(shop, boughtBattery, '购买增容电池');
+assert.equal(purchaseMetrics.find((c) => c.key === 'coins')?.delta, -35);
+assert.equal(metricSound(purchaseMetrics.find((c) => c.key === 'coins')!), 'drain');
+const zeroBefore = { ...initialRun(), cabin: [rider('courier', 'zero', { destination: 2 }), null, null, null, null, null] };
+const zeroMetrics = metricChanges(zeroBefore, resolveFloor(zeroBefore, () => .9), '到站');
+assert.equal(zeroMetrics.find((c) => c.key === 'energy')?.delta, 0);
+assert.equal(zeroMetrics.find((c) => c.key === 'energy')?.sources.length, 2);
+assert.equal(metricSound(zeroMetrics.find((c) => c.key === 'energy')!), null);
 
-console.log('Mechanics and presentation verified: all 18 passenger briefs, placement/removal changes, net-zero and capped receipts, pressure direction, metric sound cues, upgrades, and existing game rules.');
+let seed = 47081;
+const rng = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+for (let i = 0; i < 2000; i += 1) {
+  const floor = 1 + Math.floor(rng() * 180);
+  const before: RunState = { ...initialRun(), floor, energy: 5 + Math.floor(rng() * 20), stress: Math.floor(rng() * 15), cabin: Array.from({ length: 6 }, (_, slot) => {
+    if (rng() < .25) return null;
+    const kind = PASSENGER_ORDER[Math.floor(rng() * PASSENGER_ORDER.length)];
+    return rider(kind, `random-${i}-${slot}`, { destination: floor + 1 + Math.floor(rng() * 8), patience: 1 + Math.floor(rng() * 12), fuse: 1 + Math.floor(rng() * 6) });
+  }) };
+  const pressure = stressForecast(before); const energy = energyForecast(before); const after = resolveFloor(before, rng);
+  assert.ok(after.lastPressure.delta >= pressure.lowDelta && after.lastPressure.delta <= pressure.highDelta, `pressure forecast ${i}`);
+  assert.ok(after.lastEnergy.delta >= energy.lowDelta && after.lastEnergy.delta <= energy.highDelta, `energy forecast ${i}`);
+  assert.equal(after.earned - before.earned, after.coins - before.coins);
+  for (const change of metricChanges(before, after, '到站')) assert.equal(change.sources.reduce((sum, line) => sum + line.amount, 0), change.delta);
+}
+assert.equal(new Set(Object.values(UPGRADES).map((upgrade) => upgrade.strategy)).size, 6);
+console.log('Verified: endless 60/1000-floor transitions; crowding, fatigue and high-agitation patience; paid multi-card shops; no overdraft/double purchase; 2,000 randomized forecast/receipt checks; passenger and placement regressions.');

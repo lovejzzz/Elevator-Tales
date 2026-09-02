@@ -8,10 +8,10 @@ const display = Cormorant_Garamond({ variable: '--font-display', subsets: ['lati
 
 export const metadata: Metadata = {
   title: 'Elevator Tales — Midnight Shift',
-  description: 'Six positions. Sixty floors. Everyone has somewhere to be.',
+  description: 'Six positions. Endless floors. Earn, upgrade, and keep the midnight shift alive.',
   openGraph: {
     title: 'Elevator Tales — Midnight Shift',
-    description: 'Six positions. Sixty floors. Everyone has somewhere to be.',
+    description: 'Six positions. Endless floors. Earn, upgrade, and keep the midnight shift alive.',
     images: ['/assets/elevator-cabin.png'],
   },
 };

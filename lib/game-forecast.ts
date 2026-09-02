@@ -1,5 +1,5 @@
 import { PASSENGERS } from './game-data';
-import { hasNeighbour, neighbourCount, neighbours, totalWeight, travelEnergyCost, type RunState } from './game-engine';
+import { crowdAgitation, hasNeighbour, neighbourCount, neighbours, patienceCost, shiftAgitation, totalWeight, travelEnergyCost, type RunState } from './game-engine';
 
 export type StressForecast = {
   range: string;
@@ -39,7 +39,7 @@ export function stressForecast(state: RunState, weight = totalWeight(state.cabin
   const patience = state.cabin.map((rider, slot) => {
     if (!rider) return null;
     const unattendedChild = rider.kind === 'child' && !hasNeighbour(state.cabin, slot, ['lover', 'musician', 'nurse']);
-    return rider.patience - 1 - (nextFloor % 2 === 0 && unattendedChild ? 1 : 0);
+    return rider.patience - patienceCost(state) - (nextFloor % 2 === 0 && unattendedChild ? 1 : 0);
   });
   state.cabin.forEach((rider, slot) => {
     if (!rider) return;
@@ -52,17 +52,28 @@ export function stressForecast(state: RunState, weight = totalWeight(state.cabin
       case 'inspector': if (nextFloor % 2 === 0 && weight > 8) inspectors += 1; break;
     }
   });
-  const impatientCounts = projectedDestinationVariants(state).map((destinations) => state.cabin.reduce((count, rider, index) => count + (rider && destinations[index] !== null && nextFloor < destinations[index]! && patience[index] !== null && patience[index]! <= 0 ? 1 : 0), 0));
-  const minImpatient = Math.min(...impatientCounts); const maxImpatient = Math.max(...impatientCounts);
-  const fixedRise = thieves + celebrities + inspectors;
-  const low = Math.max(0, state.stress + fixedRise + minImpatient * 2 - relief);
-  const high = Math.max(0, state.stress + fixedRise + maxImpatient * 2 + drunks * 2 - relief);
+  const variants = projectedDestinationVariants(state).map((destinations) => ({
+    impatient: state.cabin.reduce((count, rider, index) => count + (rider && destinations[index] !== null && nextFloor < destinations[index]! && patience[index] !== null && patience[index]! <= 0 ? 1 : 0), 0),
+    arrivals: state.cabin.reduce((count, rider, index) => count + (rider && destinations[index] !== null && nextFloor >= destinations[index]! ? 1 : 0), 0),
+  }));
+  const minImpatient = Math.min(...variants.map((variant) => variant.impatient)); const maxImpatient = Math.max(...variants.map((variant) => variant.impatient));
+  const minArrivals = Math.min(...variants.map((variant) => variant.arrivals)); const maxArrivals = Math.max(...variants.map((variant) => variant.arrivals));
+  const arrivalReason = !maxArrivals ? '' : minArrivals === maxArrivals ? `到站舒缓 −${maxArrivals}` : minArrivals === 0 ? `到站舒缓最多 −${maxArrivals}` : `到站舒缓 −${minArrivals}～−${maxArrivals}`;
+  const crowd = crowdAgitation(occupied); const fatigue = shiftAgitation(nextFloor, occupied);
+  const fixedRise = thieves + celebrities + inspectors + crowd + fatigue;
+  const lows = variants.map((variant) => Math.max(0, state.stress + fixedRise + variant.impatient * 2 - relief - variant.arrivals));
+  const highs = variants.map((variant) => Math.max(0, state.stress + fixedRise + variant.impatient * 2 + drunks * 2 - relief - variant.arrivals));
+  const low = Math.min(...lows); const high = Math.max(...highs);
   const lowDelta = low - state.stress; const highDelta = high - state.stress;
   const range = lowDelta === highDelta ? signedDelta(lowDelta) : `${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
   const impatienceReason = !maxImpatient ? '' : minImpatient === maxImpatient
     ? `${maxImpatient} 人耐心归零 +${maxImpatient * 2}`
     : minImpatient === 0 ? `最多 ${maxImpatient} 人可能耐心归零 +${maxImpatient * 2}` : `${minImpatient}～${maxImpatient} 人可能耐心归零 +${minImpatient * 2}～${maxImpatient * 2}`;
   const reasons = [
+    crowd ? crowd > 0 ? `拥挤 +${crowd}` : '宽松 −1' : '',
+    fatigue ? `长班疲劳 +${fatigue}` : '',
+    arrivalReason,
+    patienceCost(state) > 1 ? '高躁动：耐心每站 −2' : '',
     impatienceReason,
     thieves ? `小偷 +${thieves}` : '',
     celebrities ? `名人 +${celebrities}` : '',
@@ -71,7 +82,7 @@ export function stressForecast(state: RunState, weight = totalWeight(state.cabin
     relief ? `安抚 −${relief}` : '',
   ].filter(Boolean);
   const details = reasons.join(' · ');
-  const summary = details ? `下一层 ${range} · ${details}` : '下一层压力不变 · 没有已知来源';
+  const summary = details ? `下一层 ${range} · ${details}` : '下一层躁动不变 · 没有已知来源';
   const tone = state.stress + highDelta >= state.stressCap || lowDelta >= 2 ? 'danger' : highDelta > 0 ? 'caution' : 'safe';
   return { range, details, summary, tone, lowDelta, highDelta };
 }

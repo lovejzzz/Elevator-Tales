@@ -345,6 +345,19 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .load-card { order:1; }.receipt-button { order:2; grid-column:1/-1; margin:0; }.meter-card,.score-card { align-content:start; }.metric-response .metric-pulse>b { font-size:21px; }
   .feedback-values { gap:10px; }.feedback-values>span { font-size:20px; }.feedback-values small { font-size:11px; }.feedback-values svg { display:none; }.feedback-cause { font-size:11px; }
 }
+/* Endless shift: agitation, station countdowns and earned upgrades. */
+.slot-destination { top:7px; right:auto; left:50%; transform:translateX(-50%); width:max-content; font-size:11px; padding:4px 7px; }
+.slot-state { top:36px; max-width:calc(100% - 12px); font-size:9px; }
+.agitation-threshold { position:absolute; z-index:2; top:-3px; height:11px; border-left:2px solid #e3a07b; }
+.agitation-state { border-top:1px solid var(--border); margin-top:7px; padding-top:7px; display:grid; gap:4px; }
+.agitation-state b { font:500 11px/1.5 var(--font-sans); color:#d7b793; }.agitation-state span { font:400 10px/1.5 var(--font-sans); color:#a6b7a5; }
+.cabin-agitated { box-shadow:inset 0 0 60px #8f382433; border-color:#ad7854; }.cabin-agitated .floor-indicator { border-color:#d58a66; }
+.wallet-card small { font:400 11px/1.7 var(--font-sans); color:#aeb9a7; text-align:left; }
+.shop-wallet { display:flex; align-items:center; flex-wrap:wrap; gap:10px; justify-content:space-between; padding:13px 16px; border:1px solid #92704466; background:#c0984710; color:#d8c498; font:400 13px/1.5 var(--font-sans); }.shop-wallet>span:first-child { display:flex; align-items:center; gap:9px; font-size:16px; }.shop-wallet svg { width:19px; height:19px; }.shop-wallet b { font:600 28px var(--font-mono); color:#efca7b; animation:metric-impact 700ms ease both; }
+.upgrade-dialog { max-height:90dvh; overflow-y:auto; }.upgrade-grid button { display:flex; flex-direction:column; gap:9px; min-width:0; min-height:270px; }.upgrade-grid button:disabled { cursor:not-allowed; opacity:.62; }.upgrade-grid .shop-purchased { border-color:#8abf9f; background:#244f3529; opacity:.85; }.upgrade-grid .shop-purchased:hover { transform:none; }
+.shop-price { width:100%; margin-top:auto; padding-top:12px; border-top:1px solid var(--border); display:flex; align-items:center; gap:7px; color:#efca7b; }.shop-price svg { width:17px; height:17px; margin:0; }.shop-price strong { font:600 25px var(--font-mono); }.shop-price>span { margin-left:auto; font:500 12px/1.5 var(--font-sans); }
+.shop-warning { margin:0; border-left:2px solid #d7996d; padding:9px 13px; background:#48281a44; color:#efbfa0; font:400 13px/1.65 var(--font-sans); }.shop-receipt { margin:0; min-height:23px; color:#c9d6bc; font:400 13px/1.7 var(--font-sans); }.result-investment { color:#afbca8; font:400 13px/1.7 var(--font-sans); }
+@media (max-width:700px) { .slot-destination { font-size:10px; padding:3px 5px; }.slot-state { top:32px; font-size:8px; }.upgrade-grid button { min-height:230px; }.shop-wallet>span:last-child { width:100%; }.agitation-state b { font-size:10px; }.wallet-card small { white-space:normal; font-size:10px; } }
 @media (prefers-reduced-motion:reduce) {
   .game-shell *,.game-shell *::before,.game-shell *::after,.story-dialog,.story-dialog * { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
   .motion-lines { display:none; }.slot-reaction { display:none; }.metric-ring { display:none; }

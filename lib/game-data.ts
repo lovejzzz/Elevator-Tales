@@ -27,18 +27,18 @@ export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   courier: { kind: 'courier', name: '快递员', title: 'The Courier', weight: 1, fare: 6, energy: 2, trip: [1, 3], patience: 2, rarity: 9, sheet: '01', cell: 2, tone: 'support', short: '短途快速周转', detail: '目的地很近，适合迅速回收能源并腾出座位。' },
   mechanic: { kind: 'mechanic', name: '维修工', title: 'The Mechanic', weight: 2, fare: 7, energy: 3, trip: [3, 7], patience: 3, rarity: 7, sheet: '01', cell: 3, tone: 'support', short: '每三层修复 1 能源', detail: '每到三的倍数楼层额外恢复1点能源。抵达时也能提供大量能源。' },
   lover: { kind: 'lover', name: '恋人', title: 'The Lover', weight: 1, fare: 6, energy: 1, trip: [3, 7], patience: 4, rarity: 10, sheet: '01', cell: 4, tone: 'social', short: '独处：25%呼唤同伴 · 配对后持续增收', detail: '独处时，每层有25%概率让下一批候选出现另一位恋人。回应者会带有专属标记。两位恋人相邻后，每层合计获得2金币，且各自到站车费翻倍。' },
-  musician: { kind: 'musician', name: '音乐家', title: 'The Musician', weight: 1, fare: 8, energy: 1, trip: [4, 8], patience: 3, rarity: 7, sheet: '01', cell: 5, tone: 'social', short: '车内 ≥4人：每层压力 −1', detail: '车内至少有4名乘客时，每层降低1点压力；也能安抚醉汉与儿童。' },
-  thief: { kind: 'thief', name: '小偷', title: 'The Thief', weight: 1, fare: 5, energy: 1, trip: [3, 7], patience: 2, rarity: 8, sheet: '02', cell: 0, tone: 'risk', short: '未控制 +3 金币/层 · 偶数层 +1 压力', detail: '未受控制时每层赚3金币、每两层增加1压力。相邻警察或律师后每层赚1金币且不再制造压力，抵达再奖励5金币。', risk: { label: '风险交易', guide: '警察 / 律师邻座可控' } },
+  musician: { kind: 'musician', name: '音乐家', title: 'The Musician', weight: 1, fare: 8, energy: 1, trip: [4, 8], patience: 3, rarity: 7, sheet: '01', cell: 5, tone: 'social', short: '车内 ≥4人：每层躁动 −1', detail: '车内至少有4名乘客时，每层降低1点躁动；也能安抚醉汉与儿童。' },
+  thief: { kind: 'thief', name: '小偷', title: 'The Thief', weight: 1, fare: 5, energy: 1, trip: [3, 7], patience: 2, rarity: 8, sheet: '02', cell: 0, tone: 'risk', short: '未控制 +3 金币/层 · 偶数层 +1 躁动', detail: '未受控制时每层赚3金币、每两层增加1躁动。相邻警察或律师后每层赚1金币且不再制造躁动，抵达再奖励5金币。', risk: { label: '风险交易', guide: '警察 / 律师邻座可控' } },
   cop: { kind: 'cop', name: '警察', title: 'The Officer', weight: 2, fare: 8, energy: 2, trip: [3, 7], patience: 4, rarity: 8, sheet: '02', cell: 1, tone: 'support', short: '控制小偷，延缓炸弹', detail: '控制相邻小偷。与炸弹相邻时，炸弹每两层暂停一次倒计时。' },
   lawyer: { kind: 'lawyer', name: '律师', title: 'The Counsel', weight: 1, fare: 10, energy: 1, trip: [3, 7], patience: 4, rarity: 6, sheet: '02', cell: 2, tone: 'support', short: '轻量的小偷控制者', detail: '控制相邻小偷，并让其抵达时获得额外车费；不能延缓炸弹。' },
-  drunk: { kind: 'drunk', name: '醉汉', title: 'The Drifter', weight: 2, fare: 14, energy: 1, trip: [2, 6], patience: 1, rarity: 7, sheet: '02', cell: 3, tone: 'risk', short: '未安抚每层 25% 闹事 · 压力 +2', detail: '高额底价补偿风险。被音乐家或护士安抚时每层再赚1金币；否则有25%概率增加2压力并随机换位。', risk: { label: '风险交易', guide: '音乐家 / 护士邻座可安抚' } },
-  nurse: { kind: 'nurse', name: '护士', title: 'The Nurse', weight: 2, fare: 9, energy: 2, trip: [3, 7], patience: 4, rarity: 7, sheet: '02', cell: 4, tone: 'support', short: '每逢偶数层：压力 −1', detail: '每逢偶数层降低1点压力，并安抚相邻的醉汉与儿童。' },
+  drunk: { kind: 'drunk', name: '醉汉', title: 'The Drifter', weight: 2, fare: 14, energy: 1, trip: [2, 6], patience: 1, rarity: 7, sheet: '02', cell: 3, tone: 'risk', short: '未安抚每层 25% 闹事 · 躁动 +2', detail: '高额底价补偿风险。被音乐家或护士安抚时每层再赚1金币；否则有25%概率增加2躁动并随机换位。', risk: { label: '风险交易', guide: '音乐家 / 护士邻座可安抚' } },
+  nurse: { kind: 'nurse', name: '护士', title: 'The Nurse', weight: 2, fare: 9, energy: 2, trip: [3, 7], patience: 4, rarity: 7, sheet: '02', cell: 4, tone: 'support', short: '每逢偶数层：躁动 −1', detail: '每逢偶数层降低1点躁动，并安抚相邻的醉汉与儿童。' },
   child: { kind: 'child', name: '儿童', title: 'The Child', weight: 1, fare: 5, energy: 1, trip: [3, 7], patience: 1, rarity: 7, sheet: '02', cell: 5, tone: 'social', short: '无照顾者：偶数层额外 −1耐心', detail: '没有恋人、音乐家或护士相邻时，每逢偶数层额外失去1点耐心。' },
   ghost: { kind: 'ghost', name: '幽灵', title: 'The Apparition', weight: 0, fare: 8, energy: 0, trip: [4, 9], patience: 5, rarity: 6, sheet: '03', cell: 0, tone: 'occult', short: '零重量，但会延误邻座', detail: '相邻驱魔师时每层恢复1能源且抵达多得6金币；否则每三层让随机邻座多坐一层。' },
   exorcist: { kind: 'exorcist', name: '驱魔师', title: 'The Warden', weight: 1, fare: 9, energy: 2, trip: [3, 7], patience: 3, rarity: 6, sheet: '03', cell: 1, tone: 'occult', short: '把幽灵变成能源', detail: '控制相邻幽灵，使其不再延误邻座，并让它每层恢复能源。' },
   coach: { kind: 'coach', name: '教练', title: 'The Coach', weight: 3, fare: 10, energy: 1, trip: [4, 8], patience: 3, rarity: 6, sheet: '03', cell: 2, tone: 'social', short: '邻座抵达车费 ×1.5', detail: '相邻乘客抵达时车费提高50%；自己抵达时，每名邻座额外支付3金币。' },
-  celebrity: { kind: 'celebrity', name: '名人', title: 'The Celebrity', weight: 1, fare: 18, energy: 1, trip: [4, 8], patience: 2, rarity: 5, sheet: '03', cell: 3, tone: 'risk', short: '恰好 1 邻座 +3 金币/层 · 2+ 邻座会加压', detail: '恰好一名邻座时每层赚3金币；两名以上邻座时只在偶数层增加1压力。', risk: { label: '条件风险', guide: '保持恰好 1 名邻座' } },
-  inspector: { kind: 'inspector', name: '检查员', title: 'The Inspector', weight: 2, fare: 12, energy: 3, trip: [4, 8], patience: 4, rarity: 5, sheet: '03', cell: 4, tone: 'risk', short: '总载重 ≤8 回能 · 超过则 +1 压力', detail: '总载重不超过8时恢复1能源，否则增加1压力。', risk: { label: '条件风险', guide: '每两层检查总载重' } },
+  celebrity: { kind: 'celebrity', name: '名人', title: 'The Celebrity', weight: 1, fare: 18, energy: 1, trip: [4, 8], patience: 2, rarity: 5, sheet: '03', cell: 3, tone: 'risk', short: '恰好 1 邻座 +3 金币/层 · 2+ 邻座会加压', detail: '恰好一名邻座时每层赚3金币；两名以上邻座时只在偶数层增加1躁动。', risk: { label: '条件风险', guide: '保持恰好 1 名邻座' } },
+  inspector: { kind: 'inspector', name: '检查员', title: 'The Inspector', weight: 2, fare: 12, energy: 3, trip: [4, 8], patience: 4, rarity: 5, sheet: '03', cell: 4, tone: 'risk', short: '总载重 ≤8 回能 · 超过则 +1 躁动', detail: '总载重不超过8时恢复1能源，否则增加1躁动。', risk: { label: '条件风险', guide: '每两层检查总载重' } },
   bomb: { kind: 'bomb', name: '炸弹客', title: 'The Fuse', weight: 1, fare: 26, energy: 2, trip: [2, 6], patience: 1, rarity: 4, sheet: '03', cell: 5, tone: 'risk', short: '引信归零则本局立即结束', detail: '高额悬赏补偿整局失败风险。上车时获得3–6格引信；到站前归零会结束本局，警察可让倒计时每两层暂停一次。', risk: { label: '致命风险', guide: '警察邻座可延缓引信' } },
 };
 
@@ -56,15 +56,11 @@ export const UNLOCK_TIERS: { floor: number; kinds: PassengerKind[] }[] = [
 ];
 
 export type UpgradeKey = 'battery' | 'solar' | 'calm' | 'concierge' | 'reinforced' | 'express';
-export const SCORE_RANKS = [
-  { min: 0, grade: 'D', name: '临时值班' }, { min: 150, grade: 'C', name: '稳定运行' }, { min: 325, grade: 'B', name: '夜班熟手' },
-  { min: 550, grade: 'A', name: '午夜王牌' }, { min: 900, grade: 'S', name: '城市传说' },
-] as const;
 export const UPGRADES: Record<UpgradeKey, { name: string; label: string; description: string; strategy: string; tone: 'sustain' | 'control' | 'score' | 'capacity' | 'tempo' }> = {
-  battery: { name: '增容电池', label: 'BATTERY', description: '能源上限 +5，并立即恢复 5 能源。', strategy: '即时续航', tone: 'sustain' },
+  battery: { name: '增容电池', label: 'BATTERY', description: '能源上限 +5，并立即恢复 8 能源。', strategy: '即时续航', tone: 'sustain' },
   solar: { name: '应急回充', label: 'TRICKLE CHARGE', description: '此后每四层恢复 1 能源，可叠加。', strategy: '长期续航', tone: 'sustain' },
-  calm: { name: '镇静标识', label: 'CALM SIGNAGE', description: '压力上限 +3，并立即降低 3 压力。', strategy: '压力保险', tone: 'control' },
-  concierge: { name: '礼宾服务', label: 'CONCIERGE', description: '此后新乘客初始耐心 +3，到站小费 +2。', strategy: '高分路线', tone: 'score' },
+  calm: { name: '舒缓系统', label: 'CALM SYSTEM', description: '躁动上限 +3，并立即降低 6 躁动。', strategy: '控场缓冲', tone: 'control' },
+  concierge: { name: '礼宾服务', label: 'CONCIERGE', description: '此后新乘客初始耐心 +3，到站小费 +2。', strategy: '收入投资', tone: 'score' },
   reinforced: { name: '轿厢加固', label: 'REINFORCED', description: '载重上限 +3，能源上限 +3，并立即恢复 3 能源。', strategy: '载重扩张', tone: 'capacity' },
   express: { name: '快速电梯', label: 'EXPRESS', description: '此后新乘客原定路程至少 5 层时，目的地提前 1 层；每局限装一次。', strategy: '长途周转', tone: 'tempo' },
 };
