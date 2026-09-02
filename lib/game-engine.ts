@@ -107,6 +107,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   let message = arrivals ? `${arrivals} 位乘客抵达。门再次开启。` : '电梯继续向上，新的面孔正在等候。';
   if (impatient) message = `${impatient} 位乘客失去耐心离开，压力上升。`;
   if (bombFailed) { status = 'lost'; message = '引信熄灭前没能抵达。午夜班次戛然而止。'; }
+  else if (checkpoint && energy <= 0 && stress >= state.stressCap) { status = 'lost'; message = '能源耗尽且压力突破上限，维修层也无法同时挽回。'; }
   else if (!checkpoint && energy <= 0) { status = 'lost'; message = '能源耗尽，轿厢停在了楼层之间。'; }
   else if (!checkpoint && stress >= state.stressCap) { status = 'lost'; message = '压力突破上限，午夜班次失控。'; }
   else if (nextFloor >= 60) { status = 'won'; message = '六十层。城市在脚下安静下来，午夜班次完成。'; }
@@ -116,10 +117,17 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   return { ...state, floor: nextFloor, energy, stress, coins, cabin, swapped: false, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
 }
 
-export const upgradeChoices = (upgrades: Record<UpgradeKey, number> = EMPTY_UPGRADES, rng: () => number = Math.random): UpgradeKey[] => shuffle((Object.keys(UPGRADES) as UpgradeKey[]).filter((key) => key !== 'express' || upgrades.express < 1), rng).slice(0, 3);
+export type UpgradeCrisis = 'energy' | 'stress' | null;
+export const upgradeChoices = (upgrades: Record<UpgradeKey, number> = EMPTY_UPGRADES, rng: () => number = Math.random, crisis: UpgradeCrisis = null): UpgradeKey[] => {
+  const pool = (Object.keys(UPGRADES) as UpgradeKey[]).filter((key) => key !== 'express' || upgrades.express < 1); const choices = shuffle(pool, rng).slice(0, 3);
+  const rescues: UpgradeKey[] = crisis === 'energy' ? ['battery', 'reinforced'] : crisis === 'stress' ? ['calm'] : [];
+  if (rescues.length && !choices.some((key) => rescues.includes(key))) { const rescue = shuffle(rescues.filter((key) => pool.includes(key)), rng)[0]; if (rescue) choices[choices.length - 1] = rescue; }
+  return choices;
+};
 
 export function failureLesson(state: RunState): string {
   if (state.status !== 'lost') return '';
+  if (state.message.includes('能源') && state.message.includes('压力')) return '双重失控 · 下一班不要同时透支能源与压力；关门前先处理更接近上限的一项。';
   if (state.message.includes('引信')) return '引信归零 · 下一班让炸弹客与警察相邻以延缓；来不及送达就拒载。';
   if (state.message.includes('能源')) return '能源耗尽 · 下一班优先短途和高回能乘客；低于下一层耗能时不要空驶。';
   if (state.message.includes('压力')) {
@@ -130,9 +138,12 @@ export function failureLesson(state: RunState): string {
 }
 
 export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
+  const energyCrisis = current.energy <= 0; const stressCrisis = current.stress >= current.stressCap;
   const upgrades = { ...current.upgrades, [key]: current.upgrades[key] + 1 }; let energyCap = current.energyCap; let energy = current.energy; let stressCap = current.stressCap; let stress = current.stress; let weightCap = current.weightCap;
   if (key === 'battery') { energyCap += 5; energy += 5; } if (key === 'calm') { stressCap += 3; stress = Math.max(0, stress - 3); } if (key === 'reinforced') { weightCap += 3; energyCap += 3; energy += 3; }
-  const rescued = energy <= 0 || stress >= stressCap; const status: RunState['status'] = rescued ? 'lost' : 'playing';
+  if (energyCrisis && (key === 'battery' || key === 'reinforced')) energy = Math.max(1, energy);
+  if (stressCrisis && key === 'calm') stress = Math.min(stress, stressCap - 1);
+  const stillFailed = energy <= 0 || stress >= stressCap; const status: RunState['status'] = stillFailed ? 'lost' : 'playing';
   const message = energy <= 0 ? '能源仍未恢复，轿厢停在维修层。' : stress >= stressCap ? '压力仍然超出上限，班次在维修层终止。' : `${UPGRADES[key].name}已安装。继续上行。`;
   return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap, status, message, lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] }, log: [`${String(current.floor).padStart(2, '0')}F · 安装 ${UPGRADES[key].name}`, ...current.log].slice(0, 4) };
 }

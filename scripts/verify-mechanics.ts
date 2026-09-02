@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { failureLesson, initialRun, makeOffers, resolveFloor, type ChangeLine, type Rider } from '../lib/game-engine';
+import { failureLesson, initialRun, installUpgrade, makeOffers, resolveFloor, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
 import { UPGRADES, type PassengerKind } from '../lib/game-data';
 
 const rider = (kind: PassengerKind, id: string, overrides: Partial<Rider> = {}): Rider => ({
@@ -31,6 +31,21 @@ assert.match(failureLesson(pressureLoss), /小偷未受控 \+1/);
 const bombLoss = resolveFloor({ ...initialRun(), cabin: [rider('bomb', 'bomb', { fuse: 1 }), null, null, null, null, null] }, () => 0.9);
 assert.match(failureLesson(bombLoss), /炸弹客与警察相邻/);
 
+const energyRescueChoices = upgradeChoices(initialRun().upgrades, () => 0.5, 'energy');
+assert.ok(energyRescueChoices.some((key) => key === 'battery' || key === 'reinforced'), 'an energy crisis checkpoint should always offer a rescue');
+const stressRescueChoices = upgradeChoices(initialRun().upgrades, () => 0.5, 'stress');
+assert.ok(stressRescueChoices.includes('calm'), 'a pressure crisis checkpoint should always offer calm control');
+const deepEnergyRescue = installUpgrade({ ...initialRun(), status: 'upgrade', energy: -8 }, 'battery');
+assert.equal(deepEnergyRescue.status, 'playing', 'a labeled energy rescue should restart even after a deep deficit');
+assert.equal(deepEnergyRescue.energy, 1, 'an emergency energy restart should leave one point');
+const deepStressRescue = installUpgrade({ ...initialRun(), status: 'upgrade', stress: 21 }, 'calm');
+assert.equal(deepStressRescue.status, 'playing', 'a labeled pressure rescue should de-escalate even after a deep overrun');
+assert.equal(deepStressRescue.stress, deepStressRescue.stressCap - 1, 'an emergency pressure reset should leave one point of margin');
+const doubleCrisis = resolveFloor({ ...initialRun(), floor: 9, energy: 1, stress: 14, cabin: [rider('thief', 'double-crisis'), null, null, null, null, null] }, () => 0.9);
+assert.equal(doubleCrisis.status, 'lost', 'a simultaneous energy and pressure failure should not open a misleading upgrade choice');
+assert.match(doubleCrisis.message, /能源耗尽且压力/);
+assert.match(failureLesson(doubleCrisis), /双重失控/);
+
 const lovers = resolveFloor({ ...initialRun(), cabin: [rider('lover', 'lover-a'), rider('lover', 'lover-b'), null, null, null, null] }, () => 0.9);
 assert.equal(lovers.lastEarnings.total, 2);
 assert.equal(sourceMap(lovers.lastEarnings.sources)['恋人连携'], 2);
@@ -42,4 +57,4 @@ assert.equal(calledOffers[0].kind, 'lover', 'a solo lover should sometimes call 
 assert.equal(calledOffers[0].calledByLover, true, 'the called lover should retain its causal marker');
 assert.equal(new Set(Object.values(UPGRADES).map((upgrade) => upgrade.strategy)).size, 6, 'every upgrade should expose a distinct strategic role');
 
-console.log('Mechanics verified: pressure rules, lover pairing, and the lover call.');
+console.log('Mechanics verified: pressure rules, lover pairing, crisis rescue, and the lover call.');
