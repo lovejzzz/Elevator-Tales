@@ -1,0 +1,112 @@
+import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, type PassengerKind, type UpgradeKey } from './game-data';
+
+export type Rider = { id: string; kind: PassengerKind; destination: number; patience: number; boardedAt: number; fareBonus: number; fuse?: number };
+export type RunState = {
+  floor: number; energy: number; energyCap: number; stress: number; stressCap: number; weightCap: number; coins: number;
+  cabin: Array<Rider | null>; swapped: boolean; upgrades: Record<UpgradeKey, number>;
+  status: 'playing' | 'upgrade' | 'lost' | 'won'; message: string; log: string[];
+};
+
+export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 };
+export const initialRun = (): RunState => ({ floor: 1, energy: 15, energyCap: 24, stress: 0, stressCap: 15, weightCap: 10, coins: 0, cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 午夜班次开始'] });
+
+export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);
+export const hasNeighbour = (cabin: Array<Rider | null>, slot: number, kinds: PassengerKind[]) => neighbours(slot).some((i) => cabin[i] && kinds.includes(cabin[i]!.kind));
+export const neighbourCount = (cabin: Array<Rider | null>, slot: number) => neighbours(slot).filter((i) => cabin[i]).length;
+export const totalWeight = (cabin: Array<Rider | null>) => cabin.reduce((sum, rider) => sum + (rider ? PASSENGERS[rider.kind].weight : 0), 0);
+export const unlockedAt = (floor: number) => UNLOCK_TIERS.flatMap((tier) => tier.floor <= floor ? tier.kinds : []);
+export const rand = (min: number, max: number, rng: () => number = Math.random) => Math.floor(rng() * (max - min + 1)) + min;
+
+export function shuffle<T>(items: T[], rng: () => number = Math.random): T[] {
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index -= 1) { const target = rand(0, index, rng); [result[index], result[target]] = [result[target], result[index]]; }
+  return result;
+}
+
+function weightedKind(floor: number, rng: () => number): PassengerKind {
+  const pool = unlockedAt(floor);
+  const total = pool.reduce((sum, kind) => sum + PASSENGERS[kind].rarity, 0);
+  let roll = rng() * total;
+  for (const kind of pool) { roll -= PASSENGERS[kind].rarity; if (roll <= 0) return kind; }
+  return pool[0];
+}
+
+export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, tutorial = false, rng: () => number = Math.random): Rider[] {
+  const used = new Set<PassengerKind>();
+  const firstShift: PassengerKind[] = ['commuter', 'courier', 'mechanic'];
+  return Array.from({ length: 3 }, (_, index) => {
+    let kind = floor === 1 && tutorial ? firstShift[index] : weightedKind(floor, rng); let guard = 0;
+    while (used.has(kind) && guard++ < 15) kind = weightedKind(floor, rng);
+    used.add(kind);
+    const spec = PASSENGERS[kind];
+    const trip = Math.max(1, rand(spec.trip[0], spec.trip[1], rng) - upgrades.express);
+    return { id: `f${floor}-${index}-${rng().toString(36).slice(2, 7)}`, kind, destination: Math.min(60, floor + trip), patience: trip + spec.patience + upgrades.concierge * 3, boardedAt: floor, fareBonus: upgrades.concierge * 2, fuse: kind === 'bomb' ? rand(3, 6, rng) : undefined };
+  });
+}
+
+export function resolveFloor(state: RunState, rng: () => number = Math.random): RunState {
+  const nextFloor = state.floor + 1;
+  let energy = state.energy - (nextFloor < 25 ? 2 : nextFloor < 50 ? 3 : 4); let stress = state.stress; let coins = state.coins;
+  let cabin = state.cabin.map((rider) => rider ? { ...rider, patience: rider.patience - 1 } : null);
+  const notes: string[] = []; const stressReasons: string[] = []; const occupied = cabin.filter(Boolean).length; const weight = totalWeight(cabin);
+  const effectCabin = [...cabin]; const deferredSwaps: Array<[number, number]> = [];
+  effectCabin.forEach((rider, slot) => {
+    if (!rider) return;
+    const calmDrunk = hasNeighbour(effectCabin, slot, ['musician', 'nurse']); const controlledThief = hasNeighbour(effectCabin, slot, ['cop', 'lawyer']);
+    const pairedLover = hasNeighbour(effectCabin, slot, ['lover']); const controlledGhost = hasNeighbour(effectCabin, slot, ['exorcist']);
+    switch (rider.kind) {
+      case 'mechanic': if (nextFloor % 3 === 0) { energy += 1; notes.push('维修工回充 +1'); } break;
+      case 'lover': if (pairedLover) coins += 1; else if (nextFloor % 2 === 0) rider.patience -= 1; break;
+      case 'thief': coins += controlledThief ? 1 : 3; if (!controlledThief && nextFloor % 2 === 0) { stress += 1; stressReasons.push('小偷未受控制，压力 +1'); } break;
+      case 'drunk': if (calmDrunk) coins += 1; else if (rng() < .25) { stress += 2; const options = neighbours(slot); deferredSwaps.push([slot, options[rand(0, options.length - 1, rng)]]); stressReasons.push('醉汉闹事并乱换位，压力 +2'); } break;
+      case 'musician': if (occupied >= 4) stress = Math.max(0, stress - 1); break;
+      case 'nurse': if (nextFloor % 2 === 0) stress = Math.max(0, stress - 1); break;
+      case 'child': if (!hasNeighbour(effectCabin, slot, ['lover', 'musician', 'nurse']) && nextFloor % 2 === 0) rider.patience -= 1; break;
+      case 'ghost': if (controlledGhost) energy += 1; else if (nextFloor % 3 === 0) { const nearby = neighbours(slot).filter((i) => effectCabin[i]); if (nearby.length) { effectCabin[nearby[rand(0, nearby.length - 1, rng)]]!.destination += 1; notes.push('幽灵令邻座延误一层'); } } break;
+      case 'celebrity': { const count = neighbourCount(effectCabin, slot); if (count === 1) coins += 3; if (count > 1 && nextFloor % 2 === 0) { stress += 1; stressReasons.push('名人被多人围住，压力 +1'); } break; }
+      case 'inspector': if (nextFloor % 2 === 0) { if (weight <= 8) energy += 1; else { stress += 1; stressReasons.push('检查员发现超载，压力 +1'); } } break;
+      case 'bomb': { const paused = hasNeighbour(effectCabin, slot, ['cop']) && nextFloor % 2 === 0; if (!paused) rider.fuse = (rider.fuse ?? 1) - 1; break; }
+    }
+  });
+  deferredSwaps.forEach(([from, to]) => { [cabin[from], cabin[to]] = [cabin[to], cabin[from]]; });
+  if (state.upgrades.solar && nextFloor % 4 === 0) { energy += state.upgrades.solar; notes.push(`应急回充 +${state.upgrades.solar}`); }
+  let arrivals = 0;
+  cabin = cabin.map((rider, slot) => {
+    if (!rider) return null;
+    if (rider.kind === 'bomb' && (rider.fuse ?? 0) <= 0 && nextFloor < rider.destination) return rider;
+    if (nextFloor < rider.destination) return rider;
+    const spec = PASSENGERS[rider.kind]; let fare = spec.fare;
+    if (rider.kind === 'lover' && hasNeighbour(cabin, slot, ['lover'])) fare *= 2;
+    if (rider.kind === 'thief' && hasNeighbour(cabin, slot, ['cop', 'lawyer'])) fare += 5;
+    if (rider.kind === 'ghost' && hasNeighbour(cabin, slot, ['exorcist'])) fare += 6;
+    if (rider.kind === 'coach') fare += neighbourCount(cabin, slot) * 3;
+    if (hasNeighbour(cabin, slot, ['coach']) && rider.kind !== 'coach') fare = Math.ceil(fare * 1.5);
+    fare += rider.fareBonus;
+    coins += fare; energy += spec.energy; arrivals += 1; return null;
+  });
+  let impatient = 0;
+  cabin = cabin.map((rider) => { if (rider && rider.patience <= 0) { impatient += 1; stress += 2; return null; } return rider; });
+  if (impatient) stressReasons.push(`${impatient} 位乘客失去耐心，压力 +${impatient * 2}`);
+  energy = Math.min(state.energyCap, energy); stress = Math.max(0, stress);
+  const bombFailed = cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0); const checkpoint = nextFloor % 10 === 0 && nextFloor < 60;
+  let status: RunState['status'] = checkpoint ? 'upgrade' : 'playing';
+  let message = arrivals ? `${arrivals} 位乘客抵达。门再次开启。` : '电梯继续向上，新的面孔正在等候。';
+  if (impatient) message = `${impatient} 位乘客失去耐心离开，压力上升。`;
+  if (bombFailed) { status = 'lost'; message = '引信熄灭前没能抵达。午夜班次戛然而止。'; }
+  else if (!checkpoint && energy <= 0) { status = 'lost'; message = '能源耗尽，轿厢停在了楼层之间。'; }
+  else if (!checkpoint && stress >= state.stressCap) { status = 'lost'; message = '压力突破上限，午夜班次失控。'; }
+  else if (nextFloor >= 60) { status = 'won'; message = '六十层。城市在脚下安静下来，午夜班次完成。'; }
+  if (stressReasons.length && status === 'playing') message = stressReasons.slice(0, 2).join(' · ');
+  else if (notes.length && status === 'playing') message = notes.slice(0, 2).join(' · ');
+  return { ...state, floor: nextFloor, energy, stress, coins, cabin, swapped: false, status, message, log: [`${String(nextFloor).padStart(2, '0')}F · ${message}`, ...state.log].slice(0, 4) };
+}
+
+export const upgradeChoices = (rng: () => number = Math.random): UpgradeKey[] => shuffle(Object.keys(UPGRADES) as UpgradeKey[], rng).slice(0, 3);
+
+export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
+  const upgrades = { ...current.upgrades, [key]: current.upgrades[key] + 1 }; let energyCap = current.energyCap; let energy = current.energy; let stressCap = current.stressCap; let stress = current.stress; let weightCap = current.weightCap;
+  if (key === 'battery') { energyCap += 5; energy += 5; } if (key === 'calm') { stressCap += 3; stress = Math.max(0, stress - 3); } if (key === 'reinforced') weightCap += 3;
+  const rescued = energy <= 0 || stress >= stressCap; const status: RunState['status'] = rescued ? 'lost' : 'playing';
+  const message = energy <= 0 ? '能源仍未恢复，轿厢停在维修层。' : stress >= stressCap ? '压力仍然超出上限，班次在维修层终止。' : `${UPGRADES[key].name}已安装。继续上行。`;
+  return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap, status, message, log: [`${String(current.floor).padStart(2, '0')}F · 安装 ${UPGRADES[key].name}`, ...current.log].slice(0, 4) };
+}
