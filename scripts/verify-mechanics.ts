@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { emergencyEnergyRunway, expressTrip, failureLesson, initialRun, installUpgrade, makeOffers, readyPartner, resolveFloor, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
+import { emergencyEnergyRunway, expressTrip, failureLesson, initialRun, installUpgrade, makeOffers, readyPartner, resolveFloor, synergyPartnerAtSlot, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
 import { UPGRADES, type PassengerKind } from '../lib/game-data';
 
 const rider = (kind: PassengerKind, id: string, overrides: Partial<Rider> = {}): Rider => ({
@@ -13,6 +13,10 @@ assert.deepEqual(guidedOffers.map((offer) => offer.destination), [6, 6, 3], 'the
 assert.equal(readyPartner('lover', [guidedOffers[0], null, null, null, null, null], guidedOffers[1].id), 'lover', 'the second guided lover should show that its pairing is ready');
 assert.equal(readyPartner('thief', [rider('cop', 'ready-cop'), null, null, null, null, null]), 'cop');
 assert.equal(readyPartner('commuter', [rider('cop', 'unused-cop'), null, null, null, null, null]), null);
+assert.equal(synergyPartnerAtSlot('lover', [guidedOffers[0], null, null, null, null, null], 1, guidedOffers[1].id), 'lover', 'an adjacent empty slot should be highlighted for the selected lover');
+assert.equal(synergyPartnerAtSlot('lover', [guidedOffers[0], null, null, null, null, null], 2, guidedOffers[1].id), null, 'a non-adjacent empty slot should not be highlighted');
+const fullCabin = [rider('lover', 'full-lover'), rider('commuter', 'full-1'), rider('commuter', 'full-2'), rider('commuter', 'full-3'), rider('commuter', 'full-4'), rider('commuter', 'full-5')];
+assert.equal(readyPartner('lover', fullCabin, 'waiting-lover'), null, 'a full cabin must not advertise an impossible new pairing');
 
 const balanced = resolveFloor({ ...initialRun(), cabin: [rider('nurse', 'nurse'), rider('thief', 'thief'), null, null, null, null] }, () => 0.9);
 assert.equal(balanced.stress, 0, 'same-floor relief should cancel pressure regardless of slot order');

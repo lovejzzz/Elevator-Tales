@@ -20,9 +20,15 @@ export const totalWeight = (cabin: Array<Rider | null>) => cabin.reduce((sum, ri
 export const isFreeReseat = (cabin: Array<Rider | null>, source: number, target: number, floor: number) => Boolean(cabin[source] && cabin[source]!.boardedAt === floor && (!cabin[target] || cabin[target]!.boardedAt === floor));
 export const unlockedAt = (floor: number) => UNLOCK_TIERS.flatMap((tier) => tier.floor <= floor ? tier.kinds : []);
 const READY_PARTNERS: Partial<Record<PassengerKind, PassengerKind[]>> = { lover: ['lover'], thief: ['cop', 'lawyer'], cop: ['thief', 'bomb'], lawyer: ['thief'], drunk: ['musician', 'nurse'], musician: ['drunk', 'child'], nurse: ['drunk', 'child'], child: ['lover', 'musician', 'nurse'], ghost: ['exorcist'], exorcist: ['ghost'], bomb: ['cop'] };
-export const readyPartner = (kind: PassengerKind, cabin: Array<Rider | null>, excludeId?: string): PassengerKind | null => {
+export const synergyPartnerAtSlot = (kind: PassengerKind, cabin: Array<Rider | null>, slot: number, excludeId?: string): PassengerKind | null => {
   const partners = READY_PARTNERS[kind] ?? [];
-  return partners.find((partner) => cabin.some((rider) => rider?.id !== excludeId && rider?.kind === partner)) ?? null;
+  return partners.find((partner) => neighbours(slot).some((nearby) => cabin[nearby]?.id !== excludeId && cabin[nearby]?.kind === partner)) ?? null;
+};
+export const readyPartner = (kind: PassengerKind, cabin: Array<Rider | null>, excludeId?: string): PassengerKind | null => {
+  const occupiedSlot = cabin.findIndex((rider) => rider?.id === excludeId);
+  if (occupiedSlot >= 0) return synergyPartnerAtSlot(kind, cabin, occupiedSlot, excludeId);
+  for (let slot = 0; slot < cabin.length; slot += 1) if (!cabin[slot]) { const partner = synergyPartnerAtSlot(kind, cabin, slot, excludeId); if (partner) return partner; }
+  return null;
 };
 export const rand = (min: number, max: number, rng: () => number = Math.random) => Math.floor(rng() * (max - min + 1)) + min;
 export const travelEnergyCost = (destinationFloor: number) => destinationFloor < 25 ? 2 : destinationFloor < 50 ? 3 : 4;

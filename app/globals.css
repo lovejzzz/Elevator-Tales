@@ -93,6 +93,7 @@ button:focus-visible { outline:1px solid var(--brass-pale); outline-offset:3px; 
 .standing-slot { position:relative; z-index:1; min-width:0; height:100%; border:1px solid rgba(228,181,99,.18); background:radial-gradient(ellipse at 50% 91%,rgba(210,159,75,.11),transparent 42%); color:rgba(230,198,134,.48); cursor:pointer; transition:.2s ease; overflow:visible; }
 .standing-slot::after { content:''; position:absolute; left:11%; right:11%; bottom:2%; height:13%; border:1px solid rgba(228,181,99,.38); border-radius:50%; transform:rotateX(58deg); }
 .standing-slot:hover,.standing-slot.selected { border-color:rgba(232,189,114,.65); background:rgba(207,158,78,.09); }.standing-slot.selected { box-shadow:inset 0 0 28px rgba(224,173,86,.18); }
+.standing-slot.synergy-target { border-color:rgba(113,205,151,.78); background:rgba(48,133,84,.16); box-shadow:inset 0 0 30px rgba(74,173,112,.2),0 0 18px rgba(83,177,119,.12); }.standing-slot.synergy-target::before { content:'联动位'; position:absolute; z-index:4; top:6px; left:6px; padding:4px 5px; border:1px solid rgba(116,204,150,.48); background:#0d291af0; color:#b9e5c8; font:600 8px var(--font-mono); letter-spacing:.05em; }
 .standing-slot[draggable='true'] { cursor:grab; }.standing-slot[draggable='true']:active { cursor:grabbing; }
 .standing-slot.drag-target { border-color:#f1c66f; background:rgba(222,171,81,.18); box-shadow:inset 0 0 34px rgba(224,173,86,.28),0 0 20px rgba(217,164,70,.16); }
 .slot-number { position:absolute; left:50%; bottom:5%; transform:translateX(-50%); z-index:2; font:500 8px var(--font-mono); }
