@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import { ArrowUp, BatteryCharging, BookOpen, Coins, Gauge, HelpCircle, LockKeyhole, RotateCcw, Sparkles, Volume2, VolumeX, Weight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UNLOCK_TIERS, UPGRADES, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
 
 type Rider = { id: string; kind: PassengerKind; destination: number; patience: number; boardedAt: number; fuse?: number };
+type DragPayload = { type: 'offer'; id: string } | { type: 'slot'; slot: number };
 type RunState = {
   floor: number; energy: number; energyCap: number; stress: number; stressCap: number; weightCap: number; coins: number;
   cabin: Array<Rider | null>; swapped: boolean; upgrades: Record<UpgradeKey, number>;
@@ -14,7 +15,7 @@ type RunState = {
 };
 
 const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 };
-const initialRun = (): RunState => ({ floor: 1, energy: 15, energyCap: 24, stress: 0, stressCap: 15, weightCap: 10, coins: 0, cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。今晚的第一批乘客正在等候。', log: ['01F · 午夜班次开始'] });
+const initialRun = (): RunState => ({ floor: 1, energy: 15, energyCap: 24, stress: 0, stressCap: 15, weightCap: 10, coins: 0, cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 午夜班次开始'] });
 const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);
 const hasNeighbour = (cabin: Array<Rider | null>, slot: number, kinds: PassengerKind[]) => neighbours(slot).some((i) => cabin[i] && kinds.includes(cabin[i]!.kind));
 const neighbourCount = (cabin: Array<Rider | null>, slot: number) => neighbours(slot).filter((i) => cabin[i]).length;
@@ -65,7 +66,7 @@ function resolveFloor(state: RunState): RunState {
   const nextFloor = state.floor + 1;
   let energy = state.energy - (state.floor < 25 ? 2 : state.floor < 50 ? 3 : 4); let stress = state.stress; let coins = state.coins;
   let cabin = state.cabin.map((rider) => rider ? { ...rider, patience: rider.patience - 1 } : null);
-  const notes: string[] = []; const occupied = cabin.filter(Boolean).length; const weight = totalWeight(cabin);
+  const notes: string[] = []; const stressReasons: string[] = []; const occupied = cabin.filter(Boolean).length; const weight = totalWeight(cabin);
   cabin.forEach((rider, slot) => {
     if (!rider) return;
     const calmDrunk = hasNeighbour(cabin, slot, ['musician', 'nurse']); const controlledThief = hasNeighbour(cabin, slot, ['cop', 'lawyer']);
@@ -73,14 +74,14 @@ function resolveFloor(state: RunState): RunState {
     switch (rider.kind) {
       case 'mechanic': if (nextFloor % 3 === 0) { energy += 1; notes.push('维修工回充 +1'); } break;
       case 'lover': if (pairedLover) coins += 1; else if (nextFloor % 2 === 0) rider.patience -= 1; break;
-      case 'thief': coins += controlledThief ? 1 : 2; if (!controlledThief && nextFloor % 2 === 0) stress += 1; break;
-      case 'drunk': if (calmDrunk) coins += 1; else if (Math.random() < .25) { stress += 2; const options = neighbours(slot); const target = options[rand(0, options.length - 1)]; [cabin[slot], cabin[target]] = [cabin[target], cabin[slot]]; notes.push('醉汉踉跄换位，压力 +2'); } break;
+      case 'thief': coins += controlledThief ? 1 : 2; if (!controlledThief && nextFloor % 2 === 0) { stress += 1; stressReasons.push('小偷未受控制，压力 +1'); } break;
+      case 'drunk': if (calmDrunk) coins += 1; else if (Math.random() < .25) { stress += 2; const options = neighbours(slot); const target = options[rand(0, options.length - 1)]; [cabin[slot], cabin[target]] = [cabin[target], cabin[slot]]; stressReasons.push('醉汉闹事并乱换位，压力 +2'); } break;
       case 'musician': if (occupied >= 4) stress = Math.max(0, stress - 1); break;
       case 'nurse': if (nextFloor % 2 === 0) stress = Math.max(0, stress - 1); break;
       case 'child': if (!hasNeighbour(cabin, slot, ['lover', 'musician', 'nurse']) && nextFloor % 2 === 0) rider.patience -= 1; break;
       case 'ghost': if (controlledGhost) energy += 1; else if (nextFloor % 3 === 0) { const nearby = neighbours(slot).filter((i) => cabin[i]); if (nearby.length) { cabin[nearby[rand(0, nearby.length - 1)]]!.destination += 1; notes.push('幽灵令邻座延误一层'); } } break;
-      case 'celebrity': { const count = neighbourCount(cabin, slot); if (count === 1) coins += 2; if (count > 1) stress += 1; break; }
-      case 'inspector': if (nextFloor % 2 === 0) weight <= 8 ? energy += 1 : stress += 1; break;
+      case 'celebrity': { const count = neighbourCount(cabin, slot); if (count === 1) coins += 2; if (count > 1) { stress += 1; stressReasons.push('名人被多人围住，压力 +1'); } break; }
+      case 'inspector': if (nextFloor % 2 === 0) { if (weight <= 8) energy += 1; else { stress += 1; stressReasons.push('检查员发现超载，压力 +1'); } } break;
       case 'bomb': { const paused = hasNeighbour(cabin, slot, ['cop']) && nextFloor % 2 === 0; if (!paused) rider.fuse = (rider.fuse ?? 1) - 1; break; }
     }
   });
@@ -100,6 +101,7 @@ function resolveFloor(state: RunState): RunState {
   });
   let impatient = 0;
   cabin = cabin.map((rider) => { if (rider && rider.patience <= 0) { impatient += 1; stress += 2; return null; } return rider; });
+  if (impatient) stressReasons.push(`${impatient} 位乘客失去耐心，压力 +${impatient * 2}`);
   energy = Math.min(state.energyCap, energy); stress = Math.max(0, stress);
   const bombFailed = cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0); const checkpoint = nextFloor % 10 === 0 && nextFloor < 60;
   let status: RunState['status'] = checkpoint ? 'upgrade' : 'playing';
@@ -109,7 +111,8 @@ function resolveFloor(state: RunState): RunState {
   else if (!checkpoint && energy <= 0) { status = 'lost'; message = '能源耗尽，轿厢停在了楼层之间。'; }
   else if (!checkpoint && stress >= state.stressCap) { status = 'lost'; message = '压力突破上限，午夜班次失控。'; }
   else if (nextFloor >= 60) { status = 'won'; message = '六十层。城市在脚下安静下来，午夜班次完成。'; }
-  if (notes.length && status === 'playing') message = notes.slice(0, 2).join(' · ');
+  if (stressReasons.length && status === 'playing') message = stressReasons.slice(0, 2).join(' · ');
+  else if (notes.length && status === 'playing') message = notes.slice(0, 2).join(' · ');
   return { ...state, floor: nextFloor, energy, stress, coins, cabin, swapped: false, status, message, log: [`${String(nextFloor).padStart(2, '0')}F · ${message}`, ...state.log].slice(0, 4) };
 }
 
@@ -118,6 +121,7 @@ const upgradeChoices = (): UpgradeKey[] => [...Object.keys(UPGRADES) as UpgradeK
 export default function ElevatorGame() {
   const [run, setRun] = useState<RunState>(initialRun); const [offers, setOffers] = useState<Rider[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null); const [doors, setDoors] = useState<'open' | 'closing' | 'moving'>('open');
+  const [dragged, setDragged] = useState<DragPayload | null>(null); const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [intro, setIntro] = useState(true); const [help, setHelp] = useState(false); const [archive, setArchive] = useState(false); const [sound, setSound] = useState(true);
   const [highest, setHighest] = useState(1); const [choices, setChoices] = useState<UpgradeKey[]>([]); const busyRef = useRef(false);
   const locked = doors !== 'open' || run.status !== 'playing';
@@ -126,7 +130,7 @@ export default function ElevatorGame() {
   useEffect(() => { if (run.floor > highest) { setHighest(run.floor); localStorage.setItem('elevator-tales-highest', String(run.floor)); } if (run.status === 'upgrade') setChoices(upgradeChoices()); }, [run.floor, run.status, highest]);
   const weight = useMemo(() => totalWeight(run.cabin), [run.cabin]); const unlocked = unlockedAt(Math.max(run.floor, highest));
 
-  const reset = useCallback(() => { const fresh = initialRun(); setRun(fresh); setOffers(makeOffers(1, fresh.upgrades)); setSelectedSlot(null); setDoors('open'); setIntro(false); busyRef.current = false; }, []);
+  const reset = useCallback(() => { const fresh = initialRun(); setRun(fresh); setOffers(makeOffers(1, fresh.upgrades)); setSelectedSlot(null); setDragged(null); setDragOverSlot(null); setDoors('open'); setIntro(false); busyRef.current = false; }, []);
   const toggleOffer = (offer: Rider) => {
     if (locked) return;
     const existing = run.cabin.findIndex((rider) => rider?.id === offer.id);
@@ -141,6 +145,46 @@ export default function ElevatorGame() {
     if (selectedSlot === slot) { setSelectedSlot(null); return; }
     setRun((current) => { const cabin = [...current.cabin]; [cabin[selectedSlot], cabin[slot]] = [cabin[slot], cabin[selectedSlot]]; return { ...current, cabin, swapped: true, message: '站位已调整。本层不能再次交换。' }; });
     setSelectedSlot(null); playTone(sound, 'select');
+  };
+  const startDrag = (event: DragEvent, payload: DragPayload) => {
+    if (locked) { event.preventDefault(); return; }
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('application/elevator-tales', JSON.stringify(payload));
+    setDragged(payload);
+  };
+  const endDrag = () => { setDragged(null); setDragOverSlot(null); };
+  const dropOnSlot = (event: DragEvent, target: number) => {
+    event.preventDefault();
+    if (locked) return;
+    let payload = dragged;
+    try { payload = JSON.parse(event.dataTransfer.getData('application/elevator-tales')) as DragPayload; } catch { /* state fallback */ }
+    if (!payload) return;
+    if (payload.type === 'offer') {
+      const offer = offers.find((candidate) => candidate.id === payload.id);
+      if (!offer) return;
+      setRun((current) => {
+        const cabin = [...current.cabin];
+        const source = cabin.findIndex((rider) => rider?.id === offer.id);
+        if (source === target) return current;
+        if (source >= 0) {
+          if (current.swapped) return { ...current, message: '本层唯一一次换位已经用过。' };
+          [cabin[source], cabin[target]] = [cabin[target], cabin[source]];
+          return { ...current, cabin, swapped: true, message: `${PASSENGERS[offer.kind].name}已拖到 ${target + 1} 号位，本层换位已用。` };
+        }
+        if (cabin[target]) return { ...current, message: `${target + 1} 号位已经有人，请拖到空位。` };
+        if (totalWeight(cabin) + PASSENGERS[offer.kind].weight > current.weightCap) return { ...current, message: `载重会超出 ${current.weightCap}，无法上车。` };
+        cabin[target] = offer;
+        return { ...current, cabin, message: `${PASSENGERS[offer.kind].name}已直接站到 ${target + 1} 号位。` };
+      });
+    } else if (payload.slot !== target) {
+      setRun((current) => {
+        if (current.swapped || !current.cabin[payload.slot]) return { ...current, message: current.swapped ? '本层唯一一次换位已经用过。' : current.message };
+        const cabin = [...current.cabin];
+        [cabin[payload.slot], cabin[target]] = [cabin[target], cabin[payload.slot]];
+        return { ...current, cabin, swapped: true, message: `乘客已拖到 ${target + 1} 号位，本层换位已用。` };
+      });
+    }
+    setDragged(null); setDragOverSlot(null); setSelectedSlot(null); playTone(sound, 'select');
   };
   const depart = useCallback(() => {
     if (locked || busyRef.current) return;
@@ -165,29 +209,29 @@ export default function ElevatorGame() {
       <aside className="status-rail">
         <div className="floor-plaque"><span>FLOOR</span><strong>{String(run.floor).padStart(2, '0')}</strong><small>午夜班次</small></div>
         <div className="meter-card energy"><div><BatteryCharging /><span>能源</span><b>{run.energy}</b></div><div className="meter-track"><i style={{ width: `${Math.max(0, Math.min(100, run.energy / run.energyCap * 100))}%` }} /></div><small>{run.energyCap} MAX</small></div>
-        <div className="meter-card pressure"><div><Gauge /><span>压力</span><b>{run.stress}</b></div><div className="meter-track"><i style={{ width: `${Math.min(100, run.stress / run.stressCap * 100)}%` }} /></div><small>{run.stressCap} LIMIT</small></div>
+        <div className="meter-card pressure" title="乘客失去耐心或危险角色失控时，压力会上升"><div><Gauge /><span>压力</span><b>{run.stress}</b></div><div className="meter-track"><i style={{ width: `${Math.min(100, run.stress / run.stressCap * 100)}%` }} /></div><small>失控 / 离开 · {run.stressCap} LIMIT</small></div>
         <div className={`load-card ${weight > 8 ? 'load-warn' : ''}`}><Weight /><span>载重</span><b>{weight} / {run.weightCap}</b></div>
         <div className="score-card"><Coins /><span>本次收入</span><strong>{run.coins}</strong></div>
         <div className="event-log">{run.log.slice(0, 3).map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}</div>
       </aside>
       <div className={`elevator-stage doors-${doors}`} role="region" aria-label="电梯座舱">
         <div className="elevator-image" /><div className="motion-lines" /><div className="floor-indicator"><ArrowUp /><b>{String(run.floor).padStart(2, '0')}</b></div><div className="cabin-title"><span>CAR № 07</span><i /><span>{run.cabin.filter(Boolean).length} / 6 OCCUPIED</span></div>
-        <div className="standing-grid">{run.cabin.map((rider, index) => <button key={index} className={`standing-slot ${rider ? 'occupied' : ''} ${selectedSlot === index ? 'selected' : ''}`} onClick={() => clickSlot(index)} aria-label={rider ? `${index + 1}号位，${PASSENGERS[rider.kind].name}` : `${index + 1}号空位`}>
-          {rider ? <><Portrait kind={rider.kind} large /><span className="slot-destination">{rider.destination}F</span><span className="rider-name">{PASSENGERS[rider.kind].name}</span><span className={`patience patience-${Math.min(3, rider.patience)}`}>{'◆'.repeat(Math.max(0, Math.min(5, rider.patience)))}</span>{rider.fuse !== undefined && <span className="fuse">引信 {rider.fuse}</span>}</> : <span className="slot-number">{String(index + 1).padStart(2, '0')}</span>}
+        <div className="standing-grid">{run.cabin.map((rider, index) => <button key={index} className={`standing-slot ${rider ? 'occupied' : ''} ${selectedSlot === index ? 'selected' : ''} ${dragOverSlot === index ? 'drag-target' : ''}`} onClick={() => clickSlot(index)} draggable={Boolean(rider) && !locked} onDragStart={(event) => rider && startDrag(event, { type: 'slot', slot: index })} onDragEnd={endDrag} onDragOver={(event) => { if (!locked) { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; setDragOverSlot(index); } }} onDragLeave={() => setDragOverSlot((current) => current === index ? null : current)} onDrop={(event) => dropOnSlot(event, index)} aria-label={rider ? `${index + 1}号位，${PASSENGERS[rider.kind].name}` : `${index + 1}号空位`}>
+          {rider ? <><Portrait kind={rider.kind} large /><span className="slot-destination">{rider.destination}F</span>{rider.kind === 'lover' && <span className={`synergy ${hasNeighbour(run.cabin, index, ['lover']) ? 'active' : ''}`}>{hasNeighbour(run.cabin, index, ['lover']) ? '已配对' : '等待配对'}</span>}<span className="rider-name">{PASSENGERS[rider.kind].name}</span><span className={`patience patience-${Math.min(3, rider.patience)}`}>{'◆'.repeat(Math.max(0, Math.min(5, rider.patience)))}</span>{rider.fuse !== undefined && <span className="fuse">引信 {rider.fuse}</span>}</> : <span className="slot-number">{String(index + 1).padStart(2, '0')}</span>}
         </button>)}</div>
         <div className="door door-left" /><div className="door door-right" />
-        <div className="cabin-message" aria-live="polite"><Sparkles /><span>{run.message}</span></div><div className="swap-status">{run.swapped ? <><LockKeyhole /> 本层换位已用</> : selectedSlot !== null ? '再选一个站位完成交换' : '点选乘客站位，可交换一次'}</div>
+        <div className="cabin-message" aria-live="polite"><Sparkles /><span>{run.message}</span></div><div className="swap-status">{run.swapped ? <><LockKeyhole /> 本层换位已用</> : selectedSlot !== null ? '再选一个站位完成交换' : '拖拽人物安排站位 · 也可点击换位'}</div>
       </div>
       <aside className="arrival-panel">
         <div className="arrival-heading"><div><span>{doors === 'open' ? 'DOORS OPEN' : 'IN TRANSIT'}</span><h2>谁要上楼？</h2></div><div className="arrival-count">3</div></div>
-        <div className="passenger-list">{offers.map((offer) => { const spec = PASSENGERS[offer.kind]; const boarded = run.cabin.some((rider) => rider?.id === offer.id); const tooHeavy = !boarded && weight + spec.weight > run.weightCap; return <button className={`passenger-card tone-${spec.tone} ${boarded ? 'boarded' : ''}`} key={offer.id} onClick={() => toggleOffer(offer)} disabled={locked || tooHeavy} aria-pressed={boarded} title={spec.detail}><Portrait kind={offer.kind} /><span className="passenger-copy"><strong>{spec.name}</strong><small>{spec.title} · 前往 {offer.destination}F</small><span className="tag-row"><i>{spec.weight} 载重</i><i>{offer.patience} 耐心</i>{offer.fuse !== undefined && <i>引信 {offer.fuse}</i>}</span><em>{spec.short}</em></span><span className="select-mark">{boarded ? '✓' : tooHeavy ? '×' : '＋'}</span></button>; })}</div>
-        <button className="depart-button" onClick={depart} disabled={locked}><span>{doors === 'open' ? '关门上行' : '正在上行'}</span><b>ENTER</b></button><p className="panel-hint">本层可自由接客；站位仅能交换一次。</p>
+        <div className="passenger-list">{offers.map((offer) => { const spec = PASSENGERS[offer.kind]; const boarded = run.cabin.some((rider) => rider?.id === offer.id); const tooHeavy = !boarded && weight + spec.weight > run.weightCap; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id; return <button className={`passenger-card tone-${spec.tone} ${boarded ? 'boarded' : ''} ${isDragging ? 'dragging' : ''}`} key={offer.id} onClick={() => toggleOffer(offer)} draggable={!locked && !tooHeavy} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || tooHeavy} aria-pressed={boarded} title={spec.detail}><Portrait kind={offer.kind} /><span className="passenger-copy"><strong>{spec.name}</strong><small>{spec.title} · 前往 {offer.destination}F</small><span className="tag-row"><i>{spec.weight} 载重</i><i>{offer.patience} 耐心</i>{offer.fuse !== undefined && <i>引信 {offer.fuse}</i>}</span><em>{spec.short}</em></span><span className="select-mark">{boarded ? '✓' : tooHeavy ? '×' : '↗'}</span></button>; })}</div>
+        <button className="depart-button" onClick={depart} disabled={locked}><span>{doors === 'open' ? '关门上行' : '正在上行'}</span><b>ENTER</b></button><p className="panel-hint">拖到空位直接上车；手机端点选也可以。</p>
       </aside>
     </section>
     <footer className="footer-line"><span>ELV–07 / MIDNIGHT</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
 
-    <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">CAR № 07 · 00:17 AM</p><DialogHeader><DialogTitle>今晚，所有人<br />都想再上一层。</DialogTitle><DialogDescription>安排六个站位，让合适的人彼此相邻。在能源耗尽、压力失控或危险爆发前，抵达六十层。</DialogDescription></DialogHeader><div className="intro-rules"><span><b>01</b> 选择乘客</span><span><b>02</b> 安排邻座</span><span><b>03</b> 关门上行</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始午夜班次 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
-    <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">NIGHT OPERATOR&apos;S MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>每次上行都消耗能源，等待会消耗乘客耐心。耐心归零的乘客离开并增加压力。</DialogDescription></DialogHeader><div className="manual-grid"><div><b>相邻关系</b><p>横向与纵向紧邻才算相邻。情侣、警察、音乐家等都会因此改变表现。</p></div><div><b>一次换位</b><p>每层可交换一次站位。先点一名乘客，再点目标位置。</p></div><div><b>十层升级</b><p>每十层选择一项永久升级。撑到60层即完成班次。</p></div><div><b>没有反悔键</b><p>旧乘客不能请下电梯；本层新上车的人可以再次点选取消。</p></div></div></DialogContent></Dialog>
+    <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">CAR № 07 · 00:17 AM</p><DialogHeader><DialogTitle>今晚，所有人<br />都想再上一层。</DialogTitle><DialogDescription>安排六个站位，让合适的人彼此相邻。在能源耗尽、压力失控或危险爆发前，抵达六十层。</DialogDescription></DialogHeader><div className="intro-rules"><span><b>01</b> 拖拽乘客</span><span><b>02</b> 安排邻座</span><span><b>03</b> 关门上行</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始午夜班次 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
+    <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">NIGHT OPERATOR&apos;S MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>每次上行都消耗能源，等待会消耗乘客耐心。耐心归零的乘客离开并增加压力。</DialogDescription></DialogHeader><div className="manual-grid"><div><b>拖拽站位</b><p>把候选人物直接拖进空位。轿厢内拖拽换位，每层只能使用一次。</p></div><div><b>相邻关系</b><p>横向与纵向紧邻才算相邻。恋人、警察、音乐家等会因此改变表现。</p></div><div><b>压力来源</b><p>乘客失去耐心会增加2压力；小偷、醉汉、拥挤的名人和超载检查也会增加压力。</p></div><div><b>十层升级</b><p>每十层选择一项永久升级。撑到60层即完成班次。</p></div><div><b>没有反悔键</b><p>旧乘客不能请下电梯；本层新上车的人可以再次点选取消。</p></div></div></DialogContent></Dialog>
     <Dialog open={archive} onOpenChange={setArchive}><DialogContent className="story-dialog archive-dialog"><p className="dialog-kicker">PASSENGER ARCHIVE</p><DialogHeader><DialogTitle>午夜乘客档案</DialogTitle><DialogDescription>最高抵达 {highest}F。更高楼层会出现更难处理的乘客。</DialogDescription></DialogHeader><div className="archive-grid">{PASSENGER_ORDER.map((kind) => { const open = unlocked.includes(kind); const spec = PASSENGERS[kind]; return <div className={`archive-item ${open ? '' : 'locked'}`} key={kind}>{open ? <Portrait kind={kind} /> : <LockKeyhole />}<span><b>{open ? spec.name : '未解锁'}</b><small>{open ? spec.short : '继续向上抵达新楼层'}</small></span></div>; })}</div></DialogContent></Dialog>
     <Dialog open={run.status === 'upgrade'}><DialogContent className="story-dialog upgrade-dialog" showCloseButton={false}><p className="dialog-kicker">FLOOR {run.floor} · MAINTENANCE STOP</p><DialogHeader><DialogTitle>选择一项轿厢升级</DialogTitle><DialogDescription>维修灯亮了。选定后不可撤销，它会陪你完成余下的班次。</DialogDescription></DialogHeader><div className="upgrade-grid">{choices.map((key) => <button key={key} onClick={() => chooseUpgrade(key)}><Sparkles /><small>{UPGRADES[key].label}</small><b>{UPGRADES[key].name}</b><p>{UPGRADES[key].description}</p></button>)}</div></DialogContent></Dialog>
     <Dialog open={run.status === 'lost' || run.status === 'won'}><DialogContent className="story-dialog result-dialog" showCloseButton={false}><p className="dialog-kicker">SHIFT REPORT · {String(run.floor).padStart(2, '0')}F</p><DialogHeader><DialogTitle>{run.status === 'won' ? '天亮以前，抵达顶层。' : '这趟电梯，停下了。'}</DialogTitle><DialogDescription>{run.message}</DialogDescription></DialogHeader><div className="result-score"><span>收入 <b>{run.coins}</b></span><span>最高楼层 <b>{Math.max(run.floor, highest)}</b></span></div><Button className="story-primary" onClick={reset}><RotateCcw /> 再值一次午夜班</Button><button className="story-link" onClick={() => setArchive(true)}><BookOpen /> 查看乘客档案</button></DialogContent></Dialog>
