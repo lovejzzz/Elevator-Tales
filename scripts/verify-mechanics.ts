@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import { emergencyEnergyRunway, expressTrip, failureLesson, initialRun, installUpgrade, makeOffers, NIGHT_RUSH_MAX, NIGHT_RUSH_MIN, nightRushBonus, readyPartner, resolveFloor, synergyPartnerAtSlot, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
-import { UPGRADES, type PassengerKind } from '../lib/game-data';
+import { PASSENGER_ORDER, PASSENGERS, UPGRADES, type PassengerKind } from '../lib/game-data';
 import { energyForecast, stressForecast } from '../lib/game-forecast';
 import { activeConnection, planPlacement } from '../lib/game-interaction';
+import { passengerBrief, PASSENGER_RULES } from '../lib/passenger-presentation';
+import { metricChanges } from '../lib/metric-feedback';
+import { metricSound } from '../lib/game-audio';
 
 const rider = (kind: PassengerKind, id: string, overrides: Partial<Rider> = {}): Rider => ({
   id, kind, destination: 8, patience: 10, boardedAt: 1, fareBonus: 0, ...overrides,
@@ -117,4 +120,50 @@ assert.equal(calledOffers[0].kind, 'lover', 'a solo lover should sometimes call 
 assert.equal(calledOffers[0].calledByLover, true, 'the called lover should retain its causal marker');
 assert.equal(new Set(Object.values(UPGRADES).map((upgrade) => upgrade.strategy)).size, 6, 'every upgrade should expose a distinct strategic role');
 
-console.log('Mechanics verified: placement previews and rejection, swap limits, pressure and energy forecasts, Midnight Rush rewards, lover pairing, crisis rescue, and the lover call.');
+for (const kind of PASSENGER_ORDER) {
+  const brief = passengerBrief(rider(kind, `brief-${kind}`, { fareBonus: 4 }), 2);
+  assert.equal(brief.coins, PASSENGERS[kind].fare);
+  assert.equal(brief.tip, 4, 'upgrade tips are separate because fare multipliers do not apply to them');
+  assert.equal(brief.energy, PASSENGERS[kind].energy);
+  assert.equal(brief.distance, 6);
+  assert.ok(brief.rules.length > 0);
+  assert.ok(brief.rules.every((line) => line.endsWith('。')), `${kind} must have complete sentences`);
+}
+assert.equal(passengerBrief(rider('ghost', 'zero-energy'), 10).energy, 0);
+assert.equal(passengerBrief(rider('commuter', 'past-destination'), 10).distance, 0);
+assert.match(PASSENGER_RULES.inspector.join(''), /偶数层/);
+assert.match(PASSENGER_RULES.bomb.join(''), /到站当层归零则安全/);
+
+const placementMetrics = metricChanges(emptyPlacement, placeFirst.next, '恋人上车');
+assert.deepEqual(placementMetrics.map(({ key, delta, tone }) => ({ key, delta, tone })), [{ key: 'weight', delta: 1, tone: 'neutral' }]);
+assert.equal(metricSound(placementMetrics[0]), 'load');
+assert.deepEqual(metricChanges(placeFirst.next, placeFirst.next, '重复放置'), []);
+const removedMetrics = metricChanges(placeFirst.next, emptyPlacement, '恋人下车');
+assert.equal(removedMetrics[0].delta, -1);
+assert.equal(metricSound(removedMetrics[0]), 'unload');
+const pairedMetrics = metricChanges({ ...initialRun(), cabin: [rider('lover', 'lover-a'), rider('lover', 'lover-b'), null, null, null, null] }, lovers, '到站');
+assert.equal(pairedMetrics.find((change) => change.key === 'coins')?.delta, 2);
+assert.equal(metricSound(pairedMetrics.find((change) => change.key === 'coins')!), 'coin');
+assert.equal(metricSound(pairedMetrics.find((change) => change.key === 'energy')!), 'drain');
+const pressureUpMetrics = metricChanges(initialRun(), { ...initialRun(), stress: 2 }, '事件');
+assert.equal(pressureUpMetrics[0].tone, 'danger');
+assert.equal(metricSound(pressureUpMetrics[0]), 'pressure');
+const pressureDownMetrics = metricChanges({ ...initialRun(), stress: 2 }, initialRun(), '安抚');
+assert.equal(pressureDownMetrics[0].tone, 'gain', 'pressure decrease is relief, not a loss');
+assert.equal(metricSound(pressureDownMetrics[0]), 'relief');
+const zeroNetBefore = { ...initialRun(), cabin: [rider('courier', 'zero-net', { destination: 2 }), null, null, null, null, null] };
+const zeroNetMetrics = metricChanges(zeroNetBefore, resolveFloor(zeroNetBefore, () => .9), '到站');
+const balancedEnergy = zeroNetMetrics.find((change) => change.key === 'energy')!;
+assert.equal(balancedEnergy.delta, 0);
+assert.deepEqual(balancedEnergy.sources.map(({ amount }) => amount), [-2, 2]);
+assert.equal(metricSound(balancedEnergy), null, 'net-zero must not play a fake resource gain');
+const cappedBefore = { ...initialRun(), energy: 24, cabin: [rider('nurse', 'floor-zero'), rider('mechanic', 'capped-arrival', { destination: 2 }), null, null, null, null] };
+const cappedMetrics = metricChanges(cappedBefore, resolveFloor(cappedBefore, () => .9), '到站');
+for (const change of cappedMetrics) assert.equal(change.sources.reduce((sum, line) => sum + line.amount, 0), change.delta, 'receipts must reconcile to actual state changes');
+assert.ok(cappedMetrics.find((change) => change.key === 'stress')?.sources.some((source) => source.label === '压力下限修正'));
+const upgradeMetrics = metricChanges(initialRun(), installUpgrade(initialRun(), 'reinforced'), '升级');
+assert.equal(upgradeMetrics.find((change) => change.key === 'weight')?.capDelta, 3);
+assert.equal(upgradeMetrics.find((change) => change.key === 'energy')?.delta, 3);
+assert.equal(upgradeMetrics.find((change) => change.key === 'energy')?.capDelta, 3);
+
+console.log('Mechanics and presentation verified: all 18 passenger briefs, placement/removal changes, net-zero and capped receipts, pressure direction, metric sound cues, upgrades, and existing game rules.');
