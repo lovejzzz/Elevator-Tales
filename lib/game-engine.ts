@@ -10,6 +10,7 @@ export type RunState = {
 };
 
 export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 };
+export const LOVER_CALL_CHANCE = .25;
 export const initialRun = (): RunState => ({ floor: 1, energy: 15, energyCap: 24, stress: 0, stressCap: 15, weightCap: 10, coins: 0, cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 午夜班次开始'], lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] } });
 
 export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);
@@ -34,11 +35,13 @@ function weightedKind(floor: number, rng: () => number): PassengerKind {
   return pool[0];
 }
 
-export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, tutorial = false, rng: () => number = Math.random): Rider[] {
+export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, tutorial = false, rng: () => number = Math.random, cabin: Array<Rider | null> = [], loverCallChance = LOVER_CALL_CHANCE): Rider[] {
   const used = new Set<PassengerKind>();
   const firstShift: PassengerKind[] = ['commuter', 'courier', 'mechanic'];
+  const waitingLover = cabin.some((rider, slot) => rider?.kind === 'lover' && !hasNeighbour(cabin, slot, ['lover']));
+  const loverCalled = !tutorial && waitingLover && loverCallChance > 0 && rng() < loverCallChance;
   return Array.from({ length: 3 }, (_, index) => {
-    let kind = floor === 1 && tutorial ? firstShift[index] : weightedKind(floor, rng); let guard = 0;
+    let kind = floor === 1 && tutorial ? firstShift[index] : loverCalled && index === 0 ? 'lover' : weightedKind(floor, rng); let guard = 0;
     while (used.has(kind) && guard++ < 15) kind = weightedKind(floor, rng);
     used.add(kind);
     const spec = PASSENGERS[kind];
@@ -66,7 +69,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
     const pairedLover = hasNeighbour(effectCabin, slot, ['lover']); const controlledGhost = hasNeighbour(effectCabin, slot, ['exorcist']);
     switch (rider.kind) {
       case 'mechanic': if (nextFloor % 3 === 0) { adjustEnergy('维修工回充', 1); notes.push('维修工回充 +1'); } break;
-      case 'lover': if (pairedLover) addCoins('恋人连携', 1); else if (nextFloor % 2 === 0) rider.patience -= 1; break;
+      case 'lover': if (pairedLover) addCoins('恋人连携', 1); break;
       case 'thief': addCoins(controlledThief ? '受控小偷' : '小偷', controlledThief ? 1 : 3); if (!controlledThief && nextFloor % 2 === 0) { adjustPressure('小偷', 1); stressReasons.push('小偷未受控制，压力 +1'); } break;
       case 'drunk': if (calmDrunk) addCoins('醉汉安抚', 1); else if (rng() < .25) { adjustPressure('醉汉闹事', 2); const options = neighbours(slot); deferredSwaps.push([slot, options[rand(0, options.length - 1, rng)]]); stressReasons.push('醉汉闹事并乱换位，压力 +2'); } break;
       case 'musician': if (occupied >= 4) adjustPressure('音乐家安抚', -1); break;

@@ -1,5 +1,5 @@
 import { PASSENGERS, SCORE_RANKS, type PassengerKind, type UpgradeKey } from '../lib/game-data';
-import { hasNeighbour, initialRun, installUpgrade, makeOffers, neighbourCount, neighbours, resolveFloor, totalWeight, upgradeChoices, type Rider, type RunState } from '../lib/game-engine';
+import { hasNeighbour, initialRun, installUpgrade, LOVER_CALL_CHANCE, makeOffers, neighbourCount, neighbours, resolveFloor, totalWeight, upgradeChoices, type Rider, type RunState } from '../lib/game-engine';
 
 type Policy = 'conservative' | 'calculated' | 'sprint' | 'reckless' | 'thief' | 'drunk' | 'celebrity' | 'bomb';
 type UpgradePlan = { label: string; prefer?: UpgradeKey; ban?: UpgradeKey };
@@ -8,9 +8,18 @@ type EndgamePlan = { label: string; before: Policy; after: Policy };
 type Aggregate = {
   runs: number; wins: number; floors: number; coins: number; winnerCoins: number; winnerEnergy: number;
   maxStress: number; riskBoardings: number; weightRejects: number; deaths: Record<string, number>;
-  loverPairedRiderTurns: number; loverSoloRiderTurns: number;
+  loverPairedRiderTurns: number; loverSoloRiderTurns: number; loverPairedArrivals: number;
   boarded: Record<PassengerKind, number>; upgrades: Record<UpgradeKey, number>;
 };
+
+const loverRarityOverride = Number(process.env.ET_LOVER_RARITY);
+const loverTripMinOverride = Number(process.env.ET_LOVER_TRIP_MIN);
+const loverTripMaxOverride = Number(process.env.ET_LOVER_TRIP_MAX);
+const loverCallChanceOverride = Number(process.env.ET_LOVER_CALL_CHANCE);
+const loverCallChance = Number.isFinite(loverCallChanceOverride) ? Math.max(0, Math.min(1, loverCallChanceOverride)) : LOVER_CALL_CHANCE;
+if (Number.isFinite(loverRarityOverride) && loverRarityOverride > 0) PASSENGERS.lover.rarity = loverRarityOverride;
+if (Number.isFinite(loverTripMinOverride) && Number.isFinite(loverTripMaxOverride) && loverTripMinOverride > 0 && loverTripMaxOverride >= loverTripMinOverride) PASSENGERS.lover.trip = [loverTripMinOverride, loverTripMaxOverride];
+const makeSimOffers = (floor: number, state: RunState, rng: () => number, tutorial = false) => makeOffers(floor, state.upgrades, tutorial, rng, state.cabin, loverCallChance);
 
 const RISK_KINDS = new Set<PassengerKind>(['thief', 'drunk', 'celebrity', 'bomb']);
 const CARETAKERS: PassengerKind[] = ['lover', 'musician', 'nurse'];
@@ -91,22 +100,25 @@ function deathReason(message: string) {
 }
 
 function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: UpgradePlan) {
-  const rng = mulberry32(seed); let state = initialRun(); let offers = makeOffers(1, state.upgrades, false, rng); let maxStress = 0;
+  const rng = mulberry32(seed); let state = initialRun(); let offers = makeSimOffers(1, state, rng); let maxStress = 0;
   while (state.status === 'playing' || state.status === 'upgrade') {
     if (state.status === 'upgrade') {
       const selected = chooseUpgrade(state, upgradeChoices(state.upgrades, rng), policy, plan); aggregate.upgrades[selected] += 1;
       state = installUpgrade(state, selected);
-      if (state.status === 'playing') offers = makeOffers(state.floor, state.upgrades, false, rng);
+      if (state.status === 'playing') offers = makeSimOffers(state.floor, state, rng);
       continue;
     }
     board(state, offers, policy, aggregate);
     state.cabin.forEach((rider, slot) => {
       if (rider?.kind !== 'lover') return;
-      if (hasNeighbour(state.cabin, slot, ['lover'])) aggregate.loverPairedRiderTurns += 1;
+      if (hasNeighbour(state.cabin, slot, ['lover'])) {
+        aggregate.loverPairedRiderTurns += 1;
+        if (rider.destination <= state.floor + 1) aggregate.loverPairedArrivals += 1;
+      }
       else aggregate.loverSoloRiderTurns += 1;
     });
     state = resolveFloor(state, rng); maxStress = Math.max(maxStress, state.stress);
-    if (state.status === 'playing') offers = makeOffers(state.floor, state.upgrades, false, rng);
+    if (state.status === 'playing') offers = makeSimOffers(state.floor, state, rng);
   }
   aggregate.floors += state.floor; aggregate.coins += state.coins; aggregate.maxStress += maxStress;
   if (state.status === 'won') { aggregate.wins += 1; aggregate.winnerCoins += state.coins; aggregate.winnerEnergy += state.energy; }
@@ -129,33 +141,33 @@ function boardOpening(state: RunState, offers: Rider[], plan: OpeningPlan, aggre
 
 function simulateOpening(seed: number, plan: OpeningPlan) {
   const rng = mulberry32(seed); const aggregate = emptyAggregate(1); let state = initialRun();
-  let offers = makeOffers(1, state.upgrades, plan.tutorial, rng); let peakStress = 0;
+  let offers = makeSimOffers(1, state, rng, plan.tutorial); let peakStress = 0;
   while (state.status === 'playing' && state.floor < 10) {
     boardOpening(state, offers, plan, aggregate); state = resolveFloor(state, rng); peakStress = Math.max(peakStress, state.stress);
-    if (state.status === 'playing') offers = makeOffers(state.floor, state.upgrades, false, rng);
+    if (state.status === 'playing') offers = makeSimOffers(state.floor, state, rng);
   }
   return { state, peakStress, risks: aggregate.riskBoardings, weightRejects: aggregate.weightRejects };
 }
 
 function simulateEndgame(seed: number, plan: EndgamePlan) {
-  const rng = mulberry32(seed); const aggregate = emptyAggregate(1); let state = initialRun(); let offers = makeOffers(1, state.upgrades, false, rng);
+  const rng = mulberry32(seed); const aggregate = emptyAggregate(1); let state = initialRun(); let offers = makeSimOffers(1, state, rng);
   let scoreAt50 = -1; let energyAt50 = 0; let stressAt50 = 0; let risksAt50 = 0;
   while (state.status === 'playing' || state.status === 'upgrade') {
     const policy = state.floor >= 50 ? plan.after : plan.before;
     if (state.status === 'upgrade') {
       if (state.floor === 50 && scoreAt50 < 0) { scoreAt50 = state.coins; energyAt50 = state.energy; stressAt50 = state.stress; risksAt50 = aggregate.riskBoardings; }
       const selected = chooseUpgrade(state, upgradeChoices(state.upgrades, rng), policy); aggregate.upgrades[selected] += 1;
-      state = installUpgrade(state, selected); if (state.status === 'playing') offers = makeOffers(state.floor, state.upgrades, false, rng); continue;
+      state = installUpgrade(state, selected); if (state.status === 'playing') offers = makeSimOffers(state.floor, state, rng); continue;
     }
     board(state, offers, policy, aggregate); state = resolveFloor(state, rng);
     if (state.floor === 50 && scoreAt50 < 0) { scoreAt50 = state.coins; energyAt50 = state.energy; stressAt50 = state.stress; risksAt50 = aggregate.riskBoardings; }
-    if (state.status === 'playing') offers = makeOffers(state.floor, state.upgrades, false, rng);
+    if (state.status === 'playing') offers = makeSimOffers(state.floor, state, rng);
   }
   return { state, scoreAt50, energyAt50, stressAt50, endgameRisks: Math.max(0, aggregate.riskBoardings - risksAt50) };
 }
 
 function emptyAggregate(runs: number): Aggregate {
-  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, boarded: Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>, upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
+  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, loverPairedArrivals: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, boarded: Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>, upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
 }
 
 function rounded(value: number) { return Math.round(value * 10) / 10; }
@@ -172,6 +184,8 @@ const summarize = (aggregate: Aggregate) => ({
   averagePeakStress: rounded(aggregate.maxStress / runs), riskBoardingsPerRun: rounded(aggregate.riskBoardings / runs), weightRejectsPerRun: rounded(aggregate.weightRejects / runs), deaths: aggregate.deaths,
   loverBoardingsPerRun: rounded(aggregate.boarded.lover / runs), pairedLoverTurnsPerRun: rounded(aggregate.loverPairedRiderTurns / runs),
   loverPairActivationRate: aggregate.loverPairedRiderTurns + aggregate.loverSoloRiderTurns ? rounded(aggregate.loverPairedRiderTurns / (aggregate.loverPairedRiderTurns + aggregate.loverSoloRiderTurns) * 100) : 0,
+  loverComboBonusCoinsPerRun: rounded((aggregate.loverPairedRiderTurns + aggregate.loverPairedArrivals * PASSENGERS.lover.fare) / runs),
+  loverParameters: { rarity: PASSENGERS.lover.rarity, trip: PASSENGERS.lover.trip, callChance: loverCallChance },
   upgradeMix: Object.fromEntries(Object.entries(aggregate.upgrades).map(([key, count]) => [key, rounded(count / runs)])),
 });
 

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { initialRun, resolveFloor, type ChangeLine, type Rider } from '../lib/game-engine';
+import { initialRun, makeOffers, resolveFloor, type ChangeLine, type Rider } from '../lib/game-engine';
 import type { PassengerKind } from '../lib/game-data';
 
 const rider = (kind: PassengerKind, id: string, overrides: Partial<Rider> = {}): Rider => ({
@@ -24,4 +24,9 @@ const lovers = resolveFloor({ ...initialRun(), cabin: [rider('lover', 'lover-a')
 assert.equal(lovers.lastEarnings.total, 2);
 assert.equal(sourceMap(lovers.lastEarnings.sources)['恋人连携'], 2);
 
-console.log('Mechanics verified: pressure cancellation, impatience, drunk risk, and lover pairing.');
+const soloLover = resolveFloor({ ...initialRun(), cabin: [rider('lover', 'solo', { patience: 10 }), null, null, null, null, null] }, () => 0.9);
+assert.equal(soloLover.cabin[0]?.patience, 9, 'solo lovers should only lose the normal one patience per floor');
+const calledOffers = makeOffers(2, initialRun().upgrades, false, () => 0.1, soloLover.cabin);
+assert.equal(calledOffers[0].kind, 'lover', 'a solo lover should sometimes call another lover into the next offer');
+
+console.log('Mechanics verified: pressure rules, lover pairing, and the lover call.');
