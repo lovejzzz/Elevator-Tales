@@ -27,10 +27,10 @@ export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   mechanic: { kind: 'mechanic', name: '维修工', title: 'The Mechanic', weight: 2, fare: 7, energy: 3, trip: [3, 7], patience: 3, rarity: 7, sheet: '01', cell: 3, tone: 'support', short: '每三层修复 1 能源', detail: '每到三的倍数楼层额外恢复1点能源。抵达时也能提供大量能源。' },
   lover: { kind: 'lover', name: '恋人', title: 'The Lover', weight: 1, fare: 6, energy: 1, trip: [3, 7], patience: 4, rarity: 10, sheet: '01', cell: 4, tone: 'social', short: '寻找另一位恋人', detail: '与另一位恋人相邻时每层获得1金币，抵达车费翻倍；独处时每两层额外失去1耐心。' },
   musician: { kind: 'musician', name: '音乐家', title: 'The Musician', weight: 1, fare: 8, energy: 1, trip: [4, 8], patience: 3, rarity: 7, sheet: '01', cell: 5, tone: 'social', short: '人多时每层降低压力', detail: '车内至少有4名乘客时，每层降低1点压力；也能安抚醉汉与儿童。' },
-  thief: { kind: 'thief', name: '小偷', title: 'The Thief', weight: 1, fare: 5, energy: 1, trip: [3, 7], patience: 2, rarity: 8, sheet: '02', cell: 0, tone: 'risk', short: '赚钱很快，也制造麻烦', detail: '未受控制时每层赚2金币、每两层增加1压力。相邻警察或律师后变得安全，抵达再奖励5金币。' },
+  thief: { kind: 'thief', name: '小偷', title: 'The Thief', weight: 1, fare: 5, energy: 1, trip: [3, 7], patience: 2, rarity: 8, sheet: '02', cell: 0, tone: 'risk', short: '冒险放任，能赚得更多', detail: '未受控制时每层赚3金币、每两层增加1压力。相邻警察或律师后每层赚1金币且不再制造压力，抵达再奖励5金币。' },
   cop: { kind: 'cop', name: '警察', title: 'The Officer', weight: 2, fare: 8, energy: 2, trip: [3, 7], patience: 4, rarity: 8, sheet: '02', cell: 1, tone: 'support', short: '控制小偷，延缓炸弹', detail: '控制相邻小偷。与炸弹相邻时，炸弹每两层暂停一次倒计时。' },
   lawyer: { kind: 'lawyer', name: '律师', title: 'The Counsel', weight: 1, fare: 10, energy: 1, trip: [3, 7], patience: 4, rarity: 6, sheet: '02', cell: 2, tone: 'support', short: '轻量的小偷控制者', detail: '控制相邻小偷，并让其抵达时获得额外车费；不能延缓炸弹。' },
-  drunk: { kind: 'drunk', name: '醉汉', title: 'The Drifter', weight: 2, fare: 11, energy: 1, trip: [2, 6], patience: 1, rarity: 7, sheet: '02', cell: 3, tone: 'risk', short: '可能制造压力并乱换位', detail: '被音乐家或护士安抚时每层赚1金币；否则有25%概率增加2压力并随机换位。' },
+  drunk: { kind: 'drunk', name: '醉汉', title: 'The Drifter', weight: 2, fare: 14, energy: 1, trip: [2, 6], patience: 1, rarity: 7, sheet: '02', cell: 3, tone: 'risk', short: '高底价，可能闹事换位', detail: '高额底价补偿风险。被音乐家或护士安抚时每层再赚1金币；否则有25%概率增加2压力并随机换位。' },
   nurse: { kind: 'nurse', name: '护士', title: 'The Nurse', weight: 2, fare: 9, energy: 2, trip: [3, 7], patience: 4, rarity: 7, sheet: '02', cell: 4, tone: 'support', short: '稳定降低压力', detail: '每两层降低1点压力，并安抚相邻的醉汉与儿童。' },
   child: { kind: 'child', name: '儿童', title: 'The Child', weight: 1, fare: 5, energy: 1, trip: [3, 7], patience: 1, rarity: 7, sheet: '02', cell: 5, tone: 'social', short: '需要有人照顾', detail: '没有情侣、音乐家或护士相邻时，每两层额外失去1点耐心。' },
   ghost: { kind: 'ghost', name: '幽灵', title: 'The Apparition', weight: 0, fare: 8, energy: 0, trip: [4, 9], patience: 5, rarity: 6, sheet: '03', cell: 0, tone: 'occult', short: '零重量，但会延误邻座', detail: '相邻驱魔师时每层恢复1能源且抵达多得6金币；否则每三层让随机邻座多坐一层。' },
@@ -38,7 +38,7 @@ export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   coach: { kind: 'coach', name: '教练', title: 'The Coach', weight: 3, fare: 10, energy: 1, trip: [4, 8], patience: 3, rarity: 6, sheet: '03', cell: 2, tone: 'social', short: '邻座抵达车费 ×1.5', detail: '相邻乘客抵达时车费提高50%；自己抵达时，每名邻座额外支付3金币。' },
   celebrity: { kind: 'celebrity', name: '名人', title: 'The Celebrity', weight: 1, fare: 18, energy: 1, trip: [4, 8], patience: 2, rarity: 5, sheet: '03', cell: 3, tone: 'risk', short: '只喜欢恰好一名邻座', detail: '恰好一名邻座时每层赚2金币；两名以上邻座时每层增加1压力。' },
   inspector: { kind: 'inspector', name: '检查员', title: 'The Inspector', weight: 2, fare: 12, energy: 3, trip: [4, 8], patience: 4, rarity: 5, sheet: '03', cell: 4, tone: 'risk', short: '每两层检查一次载重', detail: '总载重不超过8时恢复1能源，否则增加1压力。' },
-  bomb: { kind: 'bomb', name: '炸弹客', title: 'The Fuse', weight: 1, fare: 18, energy: 2, trip: [2, 6], patience: 1, rarity: 4, sheet: '03', cell: 5, tone: 'risk', short: '必须在引信归零前送达', detail: '上车时获得3–6格引信。到站前归零会结束本局；警察可让倒计时每两层暂停一次。' },
+  bomb: { kind: 'bomb', name: '炸弹客', title: 'The Fuse', weight: 1, fare: 26, energy: 2, trip: [2, 6], patience: 1, rarity: 4, sheet: '03', cell: 5, tone: 'risk', short: '高额悬赏，必须限时送达', detail: '高额悬赏补偿整局失败风险。上车时获得3–6格引信；到站前归零会结束本局，警察可让倒计时每两层暂停一次。' },
 };
 
 export const PASSENGER_ORDER: PassengerKind[] = [
