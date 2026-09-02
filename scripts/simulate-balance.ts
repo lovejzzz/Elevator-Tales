@@ -8,7 +8,7 @@ type EndgamePlan = { label: string; before: Policy; after: Policy };
 type Aggregate = {
   runs: number; wins: number; floors: number; coins: number; winnerCoins: number; winnerEnergy: number;
   maxStress: number; riskBoardings: number; weightRejects: number; deaths: Record<string, number>;
-  loverPairedRiderTurns: number; loverSoloRiderTurns: number; loverPairedArrivals: number;
+  loverPairedRiderTurns: number; loverSoloRiderTurns: number; loverPairedArrivals: number; loverCallsOffered: number; loverCallsBoarded: number;
   boarded: Record<PassengerKind, number>; upgrades: Record<UpgradeKey, number>;
 };
 
@@ -17,6 +17,8 @@ const loverTripMinOverride = Number(process.env.ET_LOVER_TRIP_MIN);
 const loverTripMaxOverride = Number(process.env.ET_LOVER_TRIP_MAX);
 const loverCallChanceOverride = Number(process.env.ET_LOVER_CALL_CHANCE);
 const loverCallChance = Number.isFinite(loverCallChanceOverride) ? Math.max(0, Math.min(1, loverCallChanceOverride)) : LOVER_CALL_CHANCE;
+const loverResponseBonusOverride = Number(process.env.ET_LOVER_RESPONSE_BONUS);
+const loverResponseBonus = Number.isFinite(loverResponseBonusOverride) ? Math.max(0, loverResponseBonusOverride) : 24;
 if (Number.isFinite(loverRarityOverride) && loverRarityOverride > 0) PASSENGERS.lover.rarity = loverRarityOverride;
 if (Number.isFinite(loverTripMinOverride) && Number.isFinite(loverTripMaxOverride) && loverTripMinOverride > 0 && loverTripMaxOverride >= loverTripMinOverride) PASSENGERS.lover.trip = [loverTripMinOverride, loverTripMaxOverride];
 const makeSimOffers = (floor: number, state: RunState, rng: () => number, tutorial = false) => makeOffers(floor, state.upgrades, tutorial, rng, state.cabin, loverCallChance);
@@ -50,7 +52,7 @@ function placementScore(cabin: Array<Rider | null>, rider: Rider, slot: number):
 
 function offerScore(state: RunState, rider: Rider, policy: Policy): number {
   const spec = PASSENGERS[rider.kind]; const trip = rider.destination - state.floor;
-  const base = spec.energy * 18 + spec.fare * .45 - trip * 2.4 - spec.weight * 2;
+  const base = spec.energy * 18 + spec.fare * .45 - trip * 2.4 - spec.weight * 2 + (rider.calledByLover ? loverResponseBonus : 0);
   if (policy === 'reckless') return base + (RISK_KINDS.has(rider.kind) ? 30 : 0);
   if (policy === 'sprint') return base + spec.fare * .9 + (RISK_KINDS.has(rider.kind) ? 42 : 0);
   const selectiveRisk = RISK_KINDS.has(policy as PassengerKind) ? policy as PassengerKind : null;
@@ -70,6 +72,7 @@ function offerScore(state: RunState, rider: Rider, policy: Policy): number {
 }
 
 function board(state: RunState, offers: Rider[], policy: Policy, aggregate: Aggregate) {
+  aggregate.loverCallsOffered += offers.filter((rider) => rider.calledByLover).length;
   const ordered = policy === 'reckless' ? [...offers] : [...offers].sort((a, b) => offerScore(state, b, policy) - offerScore(state, a, policy));
   for (const rider of ordered) {
     if (!Number.isFinite(offerScore(state, rider, policy))) continue;
@@ -78,6 +81,7 @@ function board(state: RunState, offers: Rider[], policy: Policy, aggregate: Aggr
     if (!empty.length) break;
     const target = empty.sort((a, b) => placementScore(state.cabin, rider, b) - placementScore(state.cabin, rider, a))[0];
     state.cabin[target] = rider; aggregate.boarded[rider.kind] += 1;
+    if (rider.calledByLover) aggregate.loverCallsBoarded += 1;
     if (RISK_KINDS.has(rider.kind)) aggregate.riskBoardings += 1;
   }
 }
@@ -127,6 +131,7 @@ function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: 
 }
 
 function boardOpening(state: RunState, offers: Rider[], plan: OpeningPlan, aggregate: Aggregate) {
+  aggregate.loverCallsOffered += offers.filter((rider) => rider.calledByLover).length;
   if (plan.boarding === 'none') return;
   if (plan.boarding === 'conservative') { board(state, offers, 'conservative', aggregate); return; }
   const candidates = plan.boarding === 'first' ? offers.slice(0, 1) : offers;
@@ -135,6 +140,7 @@ function boardOpening(state: RunState, offers: Rider[], plan: OpeningPlan, aggre
     const target = state.cabin.findIndex((current) => !current);
     if (target < 0) break;
     state.cabin[target] = rider; aggregate.boarded[rider.kind] += 1;
+    if (rider.calledByLover) aggregate.loverCallsBoarded += 1;
     if (RISK_KINDS.has(rider.kind)) aggregate.riskBoardings += 1;
   }
 }
@@ -167,7 +173,7 @@ function simulateEndgame(seed: number, plan: EndgamePlan) {
 }
 
 function emptyAggregate(runs: number): Aggregate {
-  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, loverPairedArrivals: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, boarded: Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>, upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
+  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, loverPairedArrivals: 0, loverCallsOffered: 0, loverCallsBoarded: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, boarded: Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>, upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
 }
 
 function rounded(value: number) { return Math.round(value * 10) / 10; }
@@ -185,7 +191,8 @@ const summarize = (aggregate: Aggregate) => ({
   loverBoardingsPerRun: rounded(aggregate.boarded.lover / runs), pairedLoverTurnsPerRun: rounded(aggregate.loverPairedRiderTurns / runs),
   loverPairActivationRate: aggregate.loverPairedRiderTurns + aggregate.loverSoloRiderTurns ? rounded(aggregate.loverPairedRiderTurns / (aggregate.loverPairedRiderTurns + aggregate.loverSoloRiderTurns) * 100) : 0,
   loverComboBonusCoinsPerRun: rounded((aggregate.loverPairedRiderTurns + aggregate.loverPairedArrivals * PASSENGERS.lover.fare) / runs),
-  loverParameters: { rarity: PASSENGERS.lover.rarity, trip: PASSENGERS.lover.trip, callChance: loverCallChance },
+  loverCallsPerRun: rounded(aggregate.loverCallsOffered / runs), loverCallAcceptanceRate: aggregate.loverCallsOffered ? rounded(aggregate.loverCallsBoarded / aggregate.loverCallsOffered * 100) : 0,
+  loverParameters: { rarity: PASSENGERS.lover.rarity, trip: PASSENGERS.lover.trip, callChance: loverCallChance, responsePriority: loverResponseBonus },
   upgradeMix: Object.fromEntries(Object.entries(aggregate.upgrades).map(([key, count]) => [key, rounded(count / runs)])),
 });
 

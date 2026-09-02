@@ -28,5 +28,6 @@ const soloLover = resolveFloor({ ...initialRun(), cabin: [rider('lover', 'solo',
 assert.equal(soloLover.cabin[0]?.patience, 9, 'solo lovers should only lose the normal one patience per floor');
 const calledOffers = makeOffers(2, initialRun().upgrades, false, () => 0.1, soloLover.cabin);
 assert.equal(calledOffers[0].kind, 'lover', 'a solo lover should sometimes call another lover into the next offer');
+assert.equal(calledOffers[0].calledByLover, true, 'the called lover should retain its causal marker');
 
 console.log('Mechanics verified: pressure rules, lover pairing, and the lover call.');

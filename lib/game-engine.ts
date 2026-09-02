@@ -1,6 +1,6 @@
 import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, type PassengerKind, type UpgradeKey } from './game-data';
 
-export type Rider = { id: string; kind: PassengerKind; destination: number; patience: number; boardedAt: number; fareBonus: number; fuse?: number };
+export type Rider = { id: string; kind: PassengerKind; destination: number; patience: number; boardedAt: number; fareBonus: number; fuse?: number; calledByLover?: boolean };
 export type ChangeLine = { label: string; amount: number };
 export type RunState = {
   floor: number; energy: number; energyCap: number; stress: number; stressCap: number; weightCap: number; coins: number;
@@ -47,7 +47,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
     const spec = PASSENGERS[kind];
     const baseTrip = rand(spec.trip[0], spec.trip[1], rng);
     const trip = baseTrip <= 3 ? baseTrip : Math.max(3, baseTrip - Math.min(1, upgrades.express));
-    return { id: `f${floor}-${index}-${rng().toString(36).slice(2, 7)}`, kind, destination: Math.min(60, floor + trip), patience: trip + spec.patience + upgrades.concierge * 3, boardedAt: floor, fareBonus: upgrades.concierge * 2, fuse: kind === 'bomb' ? rand(3, 6, rng) : undefined };
+    return { id: `f${floor}-${index}-${rng().toString(36).slice(2, 7)}`, kind, destination: Math.min(60, floor + trip), patience: trip + spec.patience + upgrades.concierge * 3, boardedAt: floor, fareBonus: upgrades.concierge * 2, fuse: kind === 'bomb' ? rand(3, 6, rng) : undefined, calledByLover: loverCalled && index === 0 };
   });
 }
 
