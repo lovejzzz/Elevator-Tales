@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { emergencyEnergyRunway, expressTrip, failureLesson, initialRun, installUpgrade, makeOffers, readyPartner, resolveFloor, synergyPartnerAtSlot, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
 import { UPGRADES, type PassengerKind } from '../lib/game-data';
+import { energyForecast, stressForecast } from '../lib/game-forecast';
 
 const rider = (kind: PassengerKind, id: string, overrides: Partial<Rider> = {}): Rider => ({
   id, kind, destination: 8, patience: 10, boardedAt: 1, fareBonus: 0, ...overrides,
@@ -30,6 +31,16 @@ assert.equal(sourceMap(impatient.lastPressure.sources)['耐心归零'], 2);
 const drunk = resolveFloor({ ...initialRun(), cabin: [rider('drunk', 'drunk'), null, null, null, null, null] }, () => 0.1);
 assert.equal(drunk.stress, 2);
 assert.equal(sourceMap(drunk.lastPressure.sources)['醉汉闹事'], 2);
+
+const ghostDelayState = { ...initialRun(), floor: 2, cabin: [rider('ghost', 'forecast-ghost', { destination: 8 }), rider('commuter', 'forecast-late', { destination: 3, patience: 1 }), null, rider('tourist', 'forecast-decoy', { destination: 8 }), null, null] };
+const ghostPressureForecast = stressForecast(ghostDelayState);
+assert.deepEqual([ghostPressureForecast.lowDelta, ghostPressureForecast.highDelta], [0, 2], 'the pressure forecast should include a ghost-delayed passenger losing patience');
+assert.match(ghostPressureForecast.details, /可能耐心归零/);
+const ghostDelayed = resolveFloor(ghostDelayState, () => 0);
+assert.equal(ghostDelayed.lastPressure.delta, 2);
+assert.ok(ghostDelayed.lastPressure.delta >= ghostPressureForecast.lowDelta && ghostDelayed.lastPressure.delta <= ghostPressureForecast.highDelta);
+const ghostEnergyForecast = energyForecast(ghostDelayState);
+assert.deepEqual([ghostEnergyForecast.lowDelta, ghostEnergyForecast.highDelta], [-2, -1], 'the energy forecast should show that the ghost may delay an arrival refill');
 
 const energyLoss = resolveFloor({ ...initialRun(), energy: 1 }, () => 0.9);
 assert.match(failureLesson(energyLoss), /短途和高回能乘客/);
@@ -70,4 +81,4 @@ assert.equal(calledOffers[0].kind, 'lover', 'a solo lover should sometimes call 
 assert.equal(calledOffers[0].calledByLover, true, 'the called lover should retain its causal marker');
 assert.equal(new Set(Object.values(UPGRADES).map((upgrade) => upgrade.strategy)).size, 6, 'every upgrade should expose a distinct strategic role');
 
-console.log('Mechanics verified: pressure rules, lover pairing, crisis rescue, and the lover call.');
+console.log('Mechanics verified: pressure and energy forecasts, lover pairing, crisis rescue, and the lover call.');

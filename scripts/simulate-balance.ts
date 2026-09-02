@@ -1,5 +1,6 @@
 import { PASSENGERS, SCORE_RANKS, type PassengerKind, type UpgradeKey } from '../lib/game-data';
 import { hasNeighbour, initialRun, installUpgrade, LOVER_CALL_CHANCE, makeOffers, neighbourCount, neighbours, resolveFloor, totalWeight, upgradeChoices, type Rider, type RunState } from '../lib/game-engine';
+import { energyForecast, stressForecast } from '../lib/game-forecast';
 
 type Policy = 'conservative' | 'calculated' | 'sprint' | 'reckless' | 'thief' | 'drunk' | 'celebrity' | 'bomb';
 type UpgradePlan = { label: string; prefer?: UpgradeKey; ban?: UpgradeKey };
@@ -13,6 +14,8 @@ type Aggregate = {
   recoveryEnergyRescues: number; recoveryStressRescues: number; recoveryAlive1: number; recoveryAlive3: number; recoveryAlive5: number;
   recoveryEnergyAlive1: number; recoveryEnergyAlive3: number; recoveryEnergyAlive5: number; recoveryStressAlive1: number; recoveryStressAlive3: number; recoveryStressAlive5: number;
   loverPairedRiderTurns: number; loverSoloRiderTurns: number; loverPairedArrivals: number; loverCallsOffered: number; loverCallsBoarded: number;
+  forecastFloors: number; stressForecastMisses: number; energyForecastMisses: number; stressUnsafeMisses: number; energyUnsafeMisses: number;
+  stressUncertaintyFloors: number; energyUncertaintyFloors: number;
   offered: Record<PassengerKind, number>; boarded: Record<PassengerKind, number>; upgrades: Record<UpgradeKey, number>;
 };
 
@@ -142,7 +145,16 @@ function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: 
       }
       else aggregate.loverSoloRiderTurns += 1;
     });
+    const pressurePrediction = stressForecast(state); const energyPrediction = energyForecast(state);
+    aggregate.forecastFloors += 1;
+    if (pressurePrediction.lowDelta !== pressurePrediction.highDelta) aggregate.stressUncertaintyFloors += 1;
+    if (energyPrediction.lowDelta !== energyPrediction.highDelta) aggregate.energyUncertaintyFloors += 1;
+    const stressBefore = state.stress; const energyBefore = state.energy; const stressCap = state.stressCap;
     state = resolveFloor(state, rng); recordPressure(aggregate, state); maxStress = Math.max(maxStress, state.stress);
+    if (state.lastPressure.delta < pressurePrediction.lowDelta || state.lastPressure.delta > pressurePrediction.highDelta) aggregate.stressForecastMisses += 1;
+    if (state.lastEnergy.delta < energyPrediction.lowDelta || state.lastEnergy.delta > energyPrediction.highDelta) aggregate.energyForecastMisses += 1;
+    if (stressBefore + pressurePrediction.highDelta < stressCap && state.stress >= stressCap) aggregate.stressUnsafeMisses += 1;
+    if (energyBefore + energyPrediction.lowDelta > 0 && state.energy <= 0) aggregate.energyUnsafeMisses += 1;
     if (state.status === 'playing') offers = makeSimOffers(state.floor, state, rng);
   }
   aggregate.floors += state.floor; aggregate.coins += state.coins; aggregate.maxStress += maxStress;
@@ -197,7 +209,7 @@ function simulateEndgame(seed: number, plan: EndgamePlan) {
 
 function emptyAggregate(runs: number): Aggregate {
   const emptyRoster = () => Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>;
-  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, pressureRiskFloors: 0, pressureReliefFloors: 0, pressureCancelledFloors: 0, pressureSources: {}, checkpointCrises: 0, checkpointEnergyCrises: 0, checkpointStressCrises: 0, checkpointRescueOffers: 0, checkpointRescues: 0, checkpointDeadEnds: 0, recoveryEnergyRescues: 0, recoveryStressRescues: 0, recoveryAlive1: 0, recoveryAlive3: 0, recoveryAlive5: 0, recoveryEnergyAlive1: 0, recoveryEnergyAlive3: 0, recoveryEnergyAlive5: 0, recoveryStressAlive1: 0, recoveryStressAlive3: 0, recoveryStressAlive5: 0, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, loverPairedArrivals: 0, loverCallsOffered: 0, loverCallsBoarded: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, offered: emptyRoster(), boarded: emptyRoster(), upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
+  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, pressureRiskFloors: 0, pressureReliefFloors: 0, pressureCancelledFloors: 0, pressureSources: {}, checkpointCrises: 0, checkpointEnergyCrises: 0, checkpointStressCrises: 0, checkpointRescueOffers: 0, checkpointRescues: 0, checkpointDeadEnds: 0, recoveryEnergyRescues: 0, recoveryStressRescues: 0, recoveryAlive1: 0, recoveryAlive3: 0, recoveryAlive5: 0, recoveryEnergyAlive1: 0, recoveryEnergyAlive3: 0, recoveryEnergyAlive5: 0, recoveryStressAlive1: 0, recoveryStressAlive3: 0, recoveryStressAlive5: 0, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, loverPairedArrivals: 0, loverCallsOffered: 0, loverCallsBoarded: 0, forecastFloors: 0, stressForecastMisses: 0, energyForecastMisses: 0, stressUnsafeMisses: 0, energyUnsafeMisses: 0, stressUncertaintyFloors: 0, energyUncertaintyFloors: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, offered: emptyRoster(), boarded: emptyRoster(), upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
 }
 
 function rounded(value: number) { return Math.round(value * 10) / 10; }
@@ -278,6 +290,16 @@ const report = mode === 'opening' ? ([
   const aggregate = emptyAggregate(runs);
   for (let run = 0; run < runs; run += 1) simulateRun(61001 + policyIndex * 1000003 + run * 97, policy, aggregate);
   return { policy, winRate: rounded(aggregate.wins / runs * 100), averagePeakStress: rounded(aggregate.maxStress / runs), ...summarize(aggregate).pressure, deaths: aggregate.deaths };
+}) : mode === 'forecast' ? (['conservative', 'calculated', 'reckless'] as Policy[]).map((policy, policyIndex) => {
+  const aggregate = emptyAggregate(runs);
+  for (let run = 0; run < runs; run += 1) simulateRun(69001 + policyIndex * 1000003 + run * 97, policy, aggregate);
+  return {
+    policy, runs, forecastFloors: aggregate.forecastFloors,
+    stressBoundMisses: aggregate.stressForecastMisses, energyBoundMisses: aggregate.energyForecastMisses,
+    stressUnsafeMisses: aggregate.stressUnsafeMisses, energyUnsafeMisses: aggregate.energyUnsafeMisses,
+    stressUncertaintyRate: rounded(aggregate.stressUncertaintyFloors / aggregate.forecastFloors * 100),
+    energyUncertaintyRate: rounded(aggregate.energyUncertaintyFloors / aggregate.forecastFloors * 100),
+  };
 }) : mode === 'roster' ? (['conservative', 'calculated', 'reckless'] as Policy[]).map((policy, policyIndex) => {
   const aggregate = emptyAggregate(runs);
   for (let run = 0; run < runs; run += 1) simulateRun(67001 + policyIndex * 1000003 + run * 97, policy, aggregate);
