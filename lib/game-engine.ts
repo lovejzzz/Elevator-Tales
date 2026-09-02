@@ -11,6 +11,9 @@ export type RunState = {
 
 export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 };
 export const LOVER_CALL_CHANCE = .25;
+export const NIGHT_RUSH_MIN = 5;
+export const NIGHT_RUSH_MAX = 9;
+export const nightRushBonus = (stress: number, occupied: number) => stress >= NIGHT_RUSH_MIN && stress <= NIGHT_RUSH_MAX && occupied >= 4 ? Math.floor(occupied / 2) : 0;
 export const initialRun = (): RunState => ({ floor: 1, energy: 15, energyCap: 24, stress: 0, stressCap: 15, weightCap: 10, coins: 0, cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 午夜班次开始'], lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] } });
 
 export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);
@@ -114,6 +117,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   let impatient = 0;
   cabin = cabin.map((rider) => { if (rider && rider.patience <= 0) { impatient += 1; adjustPressure('耐心归零', 2); return null; } return rider; });
   if (impatient) stressReasons.push(`${impatient} 位乘客失去耐心，压力 +${impatient * 2}`);
+  const rushBonus = nightRushBonus(stress, occupied);
+  if (rushBonus) { addCoins('午夜热区', rushBonus); notes.push(`午夜热区小费 +${rushBonus}`); }
   if (energy > state.energyCap) adjustEnergy('超额回充未储存', state.energyCap - energy);
   energy = Math.min(state.energyCap, energy); stress = Math.max(0, stress);
   const bombFailed = cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0); const checkpoint = nextFloor % 10 === 0 && nextFloor < 60;

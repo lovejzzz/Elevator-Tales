@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { emergencyEnergyRunway, expressTrip, failureLesson, initialRun, installUpgrade, makeOffers, readyPartner, resolveFloor, synergyPartnerAtSlot, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
+import { emergencyEnergyRunway, expressTrip, failureLesson, initialRun, installUpgrade, makeOffers, NIGHT_RUSH_MAX, NIGHT_RUSH_MIN, nightRushBonus, readyPartner, resolveFloor, synergyPartnerAtSlot, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
 import { UPGRADES, type PassengerKind } from '../lib/game-data';
 import { energyForecast, stressForecast } from '../lib/game-forecast';
 
@@ -31,6 +31,18 @@ assert.equal(sourceMap(impatient.lastPressure.sources)['耐心归零'], 2);
 const drunk = resolveFloor({ ...initialRun(), cabin: [rider('drunk', 'drunk'), null, null, null, null, null] }, () => 0.1);
 assert.equal(drunk.stress, 2);
 assert.equal(sourceMap(drunk.lastPressure.sources)['醉汉闹事'], 2);
+
+assert.deepEqual([NIGHT_RUSH_MIN, NIGHT_RUSH_MAX], [5, 9]);
+assert.equal(nightRushBonus(5, 4), 2);
+assert.equal(nightRushBonus(9, 6), 3);
+assert.equal(nightRushBonus(4, 6), 0);
+assert.equal(nightRushBonus(5, 3), 0);
+const rushCabin = [rider('commuter', 'rush-1'), rider('commuter', 'rush-2'), rider('commuter', 'rush-3'), rider('commuter', 'rush-4'), null, null];
+const rushRide = resolveFloor({ ...initialRun(), stress: 5, cabin: rushCabin }, () => 0.9);
+assert.equal(sourceMap(rushRide.lastEarnings.sources)['午夜热区'], 2, 'four riders in the controlled pressure band should create two rush-tip coins');
+const nurseRush = resolveFloor({ ...initialRun(), stress: 10, cabin: [rider('nurse', 'rush-nurse'), ...rushCabin.slice(0, 3), null, null] }, () => 0.9);
+assert.equal(nurseRush.stress, 9, 'a nurse should be able to bring the cabin back into the rush zone');
+assert.equal(sourceMap(nurseRush.lastEarnings.sources)['午夜热区'], 2);
 
 const ghostDelayState = { ...initialRun(), floor: 2, cabin: [rider('ghost', 'forecast-ghost', { destination: 8 }), rider('commuter', 'forecast-late', { destination: 3, patience: 1 }), null, rider('tourist', 'forecast-decoy', { destination: 8 }), null, null] };
 const ghostPressureForecast = stressForecast(ghostDelayState);
@@ -81,4 +93,4 @@ assert.equal(calledOffers[0].kind, 'lover', 'a solo lover should sometimes call 
 assert.equal(calledOffers[0].calledByLover, true, 'the called lover should retain its causal marker');
 assert.equal(new Set(Object.values(UPGRADES).map((upgrade) => upgrade.strategy)).size, 6, 'every upgrade should expose a distinct strategic role');
 
-console.log('Mechanics verified: pressure and energy forecasts, lover pairing, crisis rescue, and the lover call.');
+console.log('Mechanics verified: pressure and energy forecasts, Midnight Rush rewards, lover pairing, crisis rescue, and the lover call.');

@@ -1,8 +1,8 @@
 import { PASSENGERS, SCORE_RANKS, type PassengerKind, type UpgradeKey } from '../lib/game-data';
-import { hasNeighbour, initialRun, installUpgrade, LOVER_CALL_CHANCE, makeOffers, neighbourCount, neighbours, resolveFloor, totalWeight, upgradeChoices, type Rider, type RunState } from '../lib/game-engine';
+import { hasNeighbour, initialRun, installUpgrade, LOVER_CALL_CHANCE, makeOffers, neighbourCount, neighbours, readyPartner, resolveFloor, totalWeight, travelEnergyCost, upgradeChoices, type Rider, type RunState } from '../lib/game-engine';
 import { energyForecast, stressForecast } from '../lib/game-forecast';
 
-type Policy = 'conservative' | 'calculated' | 'sprint' | 'reckless' | 'thief' | 'drunk' | 'celebrity' | 'bomb';
+type Policy = 'conservative' | 'calculated' | 'pulse' | 'sprint' | 'reckless' | 'thief' | 'drunk' | 'celebrity' | 'bomb';
 type UpgradePlan = { label: string; prefer?: UpgradeKey; ban?: UpgradeKey };
 type OpeningPlan = { label: string; tutorial: boolean; boarding: 'all' | 'first' | 'conservative' | 'none' };
 type EndgamePlan = { label: string; before: Policy; after: Policy };
@@ -16,6 +16,10 @@ type Aggregate = {
   loverPairedRiderTurns: number; loverSoloRiderTurns: number; loverPairedArrivals: number; loverCallsOffered: number; loverCallsBoarded: number;
   forecastFloors: number; stressForecastMisses: number; energyForecastMisses: number; stressUnsafeMisses: number; energyUnsafeMisses: number;
   stressUncertaintyFloors: number; energyUncertaintyFloors: number;
+  decisionFloors: number; fullCabinFloors: number; openDecisionFloors: number; contestedChoiceFloors: number;
+  synergyChoiceFloors: number; riskVsSafeChoiceFloors: number; threeWayChoiceFloors: number; tensionChoiceFloors: number; goldenChoiceFloors: number;
+  rushZoneFloors: number; rushBonusFloors: number; rushBonusCoins: number; flowStateFloors: number; flowChoiceFloors: number;
+  occupancyBeforeBoard: number[];
   offered: Record<PassengerKind, number>; boarded: Record<PassengerKind, number>; upgrades: Record<UpgradeKey, number>;
 };
 
@@ -36,21 +40,21 @@ const CONTROLLERS: PassengerKind[] = ['cop', 'lawyer'];
 const mulberry32 = (seed: number) => () => { let value = seed += 0x6d2b79f5; value = Math.imul(value ^ value >>> 15, value | 1); value ^= value + Math.imul(value ^ value >>> 7, value | 61); return ((value ^ value >>> 14) >>> 0) / 4294967296; };
 const canPair = (cabin: Array<Rider | null>, partners: PassengerKind[]) => cabin.some((rider) => rider && partners.includes(rider.kind)) && cabin.some((rider, slot) => !rider && neighbours(slot).some((nearby) => cabin[nearby] && partners.includes(cabin[nearby]!.kind)));
 
-function placementScore(cabin: Array<Rider | null>, rider: Rider, slot: number): number {
+function placementScore(cabin: Array<Rider | null>, rider: Rider, slot: number, policy: Policy, stress: number): number {
   const placed = cabin.map((current, index) => index === slot ? rider : current);
   const weight = totalWeight(placed); const adjacent = neighbourCount(placed, slot);
   switch (rider.kind) {
     case 'lover': return hasNeighbour(placed, slot, ['lover']) ? 18 : 0;
-    case 'thief': return hasNeighbour(placed, slot, CONTROLLERS) ? 22 : -8;
+    case 'thief': return policy === 'pulse' && stress < 5 ? hasNeighbour(placed, slot, CONTROLLERS) ? 2 : 20 : hasNeighbour(placed, slot, CONTROLLERS) ? 22 : -8;
     case 'cop': return hasNeighbour(placed, slot, ['thief', 'bomb']) ? 20 : 2;
     case 'lawyer': return hasNeighbour(placed, slot, ['thief']) ? 18 : 2;
-    case 'drunk': return hasNeighbour(placed, slot, ['musician', 'nurse']) ? 22 : -9;
+    case 'drunk': return policy === 'pulse' && stress < 5 ? hasNeighbour(placed, slot, ['musician', 'nurse']) ? 2 : 20 : hasNeighbour(placed, slot, ['musician', 'nurse']) ? 22 : -9;
     case 'nurse': return hasNeighbour(placed, slot, ['drunk', 'child']) ? 20 : 4;
     case 'child': return hasNeighbour(placed, slot, CARETAKERS) ? 18 : -8;
     case 'ghost': return hasNeighbour(placed, slot, ['exorcist']) ? 24 : -7;
     case 'exorcist': return hasNeighbour(placed, slot, ['ghost']) ? 22 : 3;
     case 'coach': return adjacent * 5;
-    case 'celebrity': return adjacent === 1 ? 18 : adjacent > 1 ? -15 : 0;
+    case 'celebrity': return policy === 'pulse' && stress < 5 ? adjacent > 1 ? 20 : adjacent === 1 ? 8 : 0 : adjacent === 1 ? 18 : adjacent > 1 ? -15 : 0;
     case 'inspector': return weight <= 8 ? 12 : -10;
     case 'bomb': return hasNeighbour(placed, slot, ['cop']) ? 24 : -6;
     default: return adjacent;
@@ -62,6 +66,17 @@ function offerScore(state: RunState, rider: Rider, policy: Policy): number {
   const base = spec.energy * 18 + spec.fare * .45 - trip * 2.4 - spec.weight * 2 + (rider.calledByLover ? loverResponseBonus : 0);
   if (policy === 'reckless') return base + (RISK_KINDS.has(rider.kind) ? 30 : 0);
   if (policy === 'sprint') return base + spec.fare * .9 + (RISK_KINDS.has(rider.kind) ? 42 : 0);
+  if (policy === 'pulse') {
+    if (rider.kind === 'bomb' && (rider.fuse ?? 0) < trip && !canPair(state.cabin, ['cop'])) return Number.NEGATIVE_INFINITY;
+    if (rider.kind === 'child' && !canPair(state.cabin, CARETAKERS)) return Number.NEGATIVE_INFINITY;
+    if (rider.kind === 'ghost' && state.energy < 12 && !canPair(state.cabin, ['exorcist'])) return Number.NEGATIVE_INFINITY;
+    const pressureRisk = rider.kind === 'thief' || rider.kind === 'drunk' || rider.kind === 'celebrity';
+    const controlled = rider.kind === 'thief' ? canPair(state.cabin, CONTROLLERS) : rider.kind === 'drunk' ? canPair(state.cabin, ['musician', 'nurse']) : false;
+    if (state.stress >= 9 && pressureRisk && !controlled) return Number.NEGATIVE_INFINITY;
+    const buildPressure = state.stress < 5 && pressureRisk ? 34 : 0;
+    const relievePressure = state.stress >= 8 && (rider.kind === 'nurse' || rider.kind === 'musician') ? 28 : 0;
+    return base + buildPressure + relievePressure + (RISK_KINDS.has(rider.kind) ? 10 : 0);
+  }
   const selectiveRisk = RISK_KINDS.has(policy as PassengerKind) ? policy as PassengerKind : null;
   if ((policy === 'conservative' || selectiveRisk) && (['child', 'ghost'].includes(rider.kind) || (RISK_KINDS.has(rider.kind) && rider.kind !== selectiveRisk))) return Number.NEGATIVE_INFINITY;
   if (policy === 'calculated' || rider.kind === selectiveRisk) {
@@ -87,7 +102,7 @@ function board(state: RunState, offers: Rider[], policy: Policy, aggregate: Aggr
     if (totalWeight(state.cabin) + PASSENGERS[rider.kind].weight > state.weightCap) { aggregate.weightRejects += 1; continue; }
     const empty = state.cabin.map((current, slot) => current ? -1 : slot).filter((slot) => slot >= 0);
     if (!empty.length) break;
-    const target = empty.sort((a, b) => placementScore(state.cabin, rider, b) - placementScore(state.cabin, rider, a))[0];
+    const target = empty.sort((a, b) => placementScore(state.cabin, rider, b, policy, state.stress) - placementScore(state.cabin, rider, a, policy, state.stress))[0];
     state.cabin[target] = rider; aggregate.boarded[rider.kind] += 1;
     if (rider.calledByLover) aggregate.loverCallsBoarded += 1;
     if (RISK_KINDS.has(rider.kind)) aggregate.riskBoardings += 1;
@@ -122,6 +137,31 @@ function recordPressure(aggregate: Aggregate, state: RunState) {
   state.lastPressure.sources.forEach((source) => { aggregate.pressureSources[source.label] = (aggregate.pressureSources[source.label] ?? 0) + Math.abs(source.amount); });
 }
 
+function recordDecision(aggregate: Aggregate, state: RunState, offers: Rider[]) {
+  const occupied = state.cabin.filter(Boolean).length; const emptySlots = state.cabin.length - occupied; const weight = totalWeight(state.cabin);
+  aggregate.decisionFloors += 1; aggregate.occupancyBeforeBoard[occupied] += 1;
+  if (!emptySlots) { aggregate.fullCabinFloors += 1; return; }
+  const legal = offers.filter((rider) => weight + PASSENGERS[rider.kind].weight <= state.weightCap);
+  if (!legal.length) return;
+  aggregate.openDecisionFloors += 1;
+  const contested = legal.length > emptySlots; const hasSynergy = legal.some((rider) => readyPartner(rider.kind, state.cabin, rider.id));
+  const hasRisk = legal.some((rider) => RISK_KINDS.has(rider.kind)); const hasSafe = legal.some((rider) => !RISK_KINDS.has(rider.kind));
+  const hasSustain = legal.some((rider) => PASSENGERS[rider.kind].energy >= 2 || rider.kind === 'mechanic');
+  const hasScore = legal.some((rider) => PASSENGERS[rider.kind].fare >= 13 || RISK_KINDS.has(rider.kind) || rider.kind === 'lover');
+  const threeWay = legal.length >= 3 && hasSynergy && hasSustain && hasScore;
+  const pressure = stressForecast(state); const energy = energyForecast(state); const tense = state.energy + energy.lowDelta <= travelEnergyCost(state.floor + 2) + 3 || state.stress + pressure.highDelta >= state.stressCap - 4;
+  const flowState = occupied >= 4 && occupied <= 5 && state.stress >= 5 && state.stress <= 9 && state.energy >= 6 && state.energy <= 16;
+  if (occupied >= 4 && state.stress >= 5 && state.stress <= 9) aggregate.rushZoneFloors += 1;
+  if (contested) aggregate.contestedChoiceFloors += 1;
+  if (hasSynergy) aggregate.synergyChoiceFloors += 1;
+  if (hasRisk && hasSafe) aggregate.riskVsSafeChoiceFloors += 1;
+  if (threeWay) aggregate.threeWayChoiceFloors += 1;
+  if (contested && tense) aggregate.tensionChoiceFloors += 1;
+  if (occupied >= 4 && contested && threeWay && tense) aggregate.goldenChoiceFloors += 1;
+  if (flowState) aggregate.flowStateFloors += 1;
+  if (flowState && contested) aggregate.flowChoiceFloors += 1;
+}
+
 function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: UpgradePlan) {
   const rng = mulberry32(seed); let state = initialRun(); let offers = makeSimOffers(1, state, rng); let maxStress = 0;
   const recoveries: Array<{ floor: number; type: 'energy' | 'stress' }> = [];
@@ -136,6 +176,7 @@ function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: 
       if (state.status === 'playing') offers = makeSimOffers(state.floor, state, rng);
       continue;
     }
+    recordDecision(aggregate, state, offers);
     board(state, offers, policy, aggregate);
     state.cabin.forEach((rider, slot) => {
       if (rider?.kind !== 'lover') return;
@@ -151,6 +192,8 @@ function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: 
     if (energyPrediction.lowDelta !== energyPrediction.highDelta) aggregate.energyUncertaintyFloors += 1;
     const stressBefore = state.stress; const energyBefore = state.energy; const stressCap = state.stressCap;
     state = resolveFloor(state, rng); recordPressure(aggregate, state); maxStress = Math.max(maxStress, state.stress);
+    const rushEarning = state.lastEarnings.sources.find((source) => source.label === '午夜热区');
+    if (rushEarning) { aggregate.rushBonusFloors += 1; aggregate.rushBonusCoins += rushEarning.amount; }
     if (state.lastPressure.delta < pressurePrediction.lowDelta || state.lastPressure.delta > pressurePrediction.highDelta) aggregate.stressForecastMisses += 1;
     if (state.lastEnergy.delta < energyPrediction.lowDelta || state.lastEnergy.delta > energyPrediction.highDelta) aggregate.energyForecastMisses += 1;
     if (stressBefore + pressurePrediction.highDelta < stressCap && state.stress >= stressCap) aggregate.stressUnsafeMisses += 1;
@@ -209,7 +252,7 @@ function simulateEndgame(seed: number, plan: EndgamePlan) {
 
 function emptyAggregate(runs: number): Aggregate {
   const emptyRoster = () => Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>;
-  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, pressureRiskFloors: 0, pressureReliefFloors: 0, pressureCancelledFloors: 0, pressureSources: {}, checkpointCrises: 0, checkpointEnergyCrises: 0, checkpointStressCrises: 0, checkpointRescueOffers: 0, checkpointRescues: 0, checkpointDeadEnds: 0, recoveryEnergyRescues: 0, recoveryStressRescues: 0, recoveryAlive1: 0, recoveryAlive3: 0, recoveryAlive5: 0, recoveryEnergyAlive1: 0, recoveryEnergyAlive3: 0, recoveryEnergyAlive5: 0, recoveryStressAlive1: 0, recoveryStressAlive3: 0, recoveryStressAlive5: 0, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, loverPairedArrivals: 0, loverCallsOffered: 0, loverCallsBoarded: 0, forecastFloors: 0, stressForecastMisses: 0, energyForecastMisses: 0, stressUnsafeMisses: 0, energyUnsafeMisses: 0, stressUncertaintyFloors: 0, energyUncertaintyFloors: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, offered: emptyRoster(), boarded: emptyRoster(), upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
+  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, pressureRiskFloors: 0, pressureReliefFloors: 0, pressureCancelledFloors: 0, pressureSources: {}, checkpointCrises: 0, checkpointEnergyCrises: 0, checkpointStressCrises: 0, checkpointRescueOffers: 0, checkpointRescues: 0, checkpointDeadEnds: 0, recoveryEnergyRescues: 0, recoveryStressRescues: 0, recoveryAlive1: 0, recoveryAlive3: 0, recoveryAlive5: 0, recoveryEnergyAlive1: 0, recoveryEnergyAlive3: 0, recoveryEnergyAlive5: 0, recoveryStressAlive1: 0, recoveryStressAlive3: 0, recoveryStressAlive5: 0, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, loverPairedArrivals: 0, loverCallsOffered: 0, loverCallsBoarded: 0, forecastFloors: 0, stressForecastMisses: 0, energyForecastMisses: 0, stressUnsafeMisses: 0, energyUnsafeMisses: 0, stressUncertaintyFloors: 0, energyUncertaintyFloors: 0, decisionFloors: 0, fullCabinFloors: 0, openDecisionFloors: 0, contestedChoiceFloors: 0, synergyChoiceFloors: 0, riskVsSafeChoiceFloors: 0, threeWayChoiceFloors: 0, tensionChoiceFloors: 0, goldenChoiceFloors: 0, rushZoneFloors: 0, rushBonusFloors: 0, rushBonusCoins: 0, flowStateFloors: 0, flowChoiceFloors: 0, occupancyBeforeBoard: Array(7).fill(0), deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, offered: emptyRoster(), boarded: emptyRoster(), upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
 }
 
 function rounded(value: number) { return Math.round(value * 10) / 10; }
@@ -300,11 +343,25 @@ const report = mode === 'opening' ? ([
     stressUncertaintyRate: rounded(aggregate.stressUncertaintyFloors / aggregate.forecastFloors * 100),
     energyUncertaintyRate: rounded(aggregate.energyUncertaintyFloors / aggregate.forecastFloors * 100),
   };
+}) : mode === 'interest' ? (['conservative', 'calculated', 'pulse', 'reckless'] as Policy[]).map((policy, policyIndex) => {
+  const aggregate = emptyAggregate(runs);
+  for (let run = 0; run < runs; run += 1) simulateRun(77001 + policyIndex * 1000003 + run * 97, policy, aggregate);
+  const rate = (value: number) => rounded(value / aggregate.decisionFloors * 100);
+  return {
+    policy, runs, decisionFloors: aggregate.decisionFloors,
+    rates: { fullCabin: rate(aggregate.fullCabinFloors), openDecision: rate(aggregate.openDecisionFloors), contestedChoice: rate(aggregate.contestedChoiceFloors), synergyChoice: rate(aggregate.synergyChoiceFloors), riskVsSafeChoice: rate(aggregate.riskVsSafeChoiceFloors), threeWayChoice: rate(aggregate.threeWayChoiceFloors), tensionChoice: rate(aggregate.tensionChoiceFloors), goldenChoice: rate(aggregate.goldenChoiceFloors), rushZone: rate(aggregate.rushZoneFloors), flowState: rate(aggregate.flowStateFloors), flowChoice: rate(aggregate.flowChoiceFloors) },
+    perRun: { contestedChoice: rounded(aggregate.contestedChoiceFloors / runs), synergyChoice: rounded(aggregate.synergyChoiceFloors / runs), threeWayChoice: rounded(aggregate.threeWayChoiceFloors / runs), tensionChoice: rounded(aggregate.tensionChoiceFloors / runs), goldenChoice: rounded(aggregate.goldenChoiceFloors / runs), rushZone: rounded(aggregate.rushZoneFloors / runs), flowState: rounded(aggregate.flowStateFloors / runs), flowChoice: rounded(aggregate.flowChoiceFloors / runs) },
+    occupancy: Object.fromEntries(aggregate.occupancyBeforeBoard.map((count, occupied) => [occupied, rate(count)])),
+  };
 }) : mode === 'roster' ? (['conservative', 'calculated', 'reckless'] as Policy[]).map((policy, policyIndex) => {
   const aggregate = emptyAggregate(runs);
   for (let run = 0; run < runs; run += 1) simulateRun(67001 + policyIndex * 1000003 + run * 97, policy, aggregate);
   return { policy, winRate: rounded(aggregate.wins / runs * 100), roster: summarize(aggregate).roster };
-}) : mode === 'scores' ? (['conservative', 'thief', 'drunk', 'celebrity', 'bomb', 'calculated', 'reckless'] as Policy[]).map((policy, policyIndex) => {
+}) : mode === 'pulse' ? (['conservative', 'calculated', 'pulse', 'reckless'] as Policy[]).map((policy, policyIndex) => {
+  const aggregate = emptyAggregate(runs);
+  for (let run = 0; run < runs; run += 1) simulateRun(79001 + policyIndex * 1000003 + run * 97, policy, aggregate);
+  return { policy, winRate: rounded(aggregate.wins / runs * 100), averageFloor: rounded(aggregate.floors / runs), averageCoins: rounded(aggregate.coins / runs), winnerCoins: aggregate.wins ? rounded(aggregate.winnerCoins / aggregate.wins) : 0, averagePeakStress: rounded(aggregate.maxStress / runs), rushZoneFloorsPerRun: rounded(aggregate.rushZoneFloors / runs), rushBonusFloorsPerRun: rounded(aggregate.rushBonusFloors / runs), rushBonusCoinsPerRun: rounded(aggregate.rushBonusCoins / runs), flowFloorsPerRun: rounded(aggregate.flowStateFloors / runs), tensionChoicesPerRun: rounded(aggregate.tensionChoiceFloors / runs), deaths: aggregate.deaths };
+}) : mode === 'scores' ? (['conservative', 'thief', 'drunk', 'celebrity', 'bomb', 'calculated', 'pulse', 'reckless'] as Policy[]).map((policy, policyIndex) => {
   const aggregate = emptyAggregate(runs); const scores: number[] = [];
   for (let run = 0; run < runs; run += 1) {
     const state = simulateRun(31001 + policyIndex * 1000003 + run * 97, policy, aggregate);
