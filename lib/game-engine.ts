@@ -54,7 +54,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   let energy = state.energy; let stress = state.stress; let coins = state.coins;
   const earningSources: ChangeLine[] = []; const pressureSources: ChangeLine[] = []; const energySources: ChangeLine[] = [];
   const addCoins = (label: string, amount: number) => { coins += amount; const existing = earningSources.find((line) => line.label === label); if (existing) existing.amount += amount; else earningSources.push({ label, amount }); };
-  const adjustPressure = (label: string, amount: number) => { const before = stress; stress = Math.max(0, stress + amount); const applied = stress - before; if (!applied) return; const existing = pressureSources.find((line) => line.label === label); if (existing) existing.amount += applied; else pressureSources.push({ label, amount: applied }); };
+  const adjustPressure = (label: string, amount: number) => { if (!amount) return; stress += amount; const existing = pressureSources.find((line) => line.label === label); if (existing) existing.amount += amount; else pressureSources.push({ label, amount }); };
   const adjustEnergy = (label: string, amount: number) => { if (!amount) return; energy += amount; const existing = energySources.find((line) => line.label === label); if (existing) existing.amount += amount; else energySources.push({ label, amount }); };
   adjustEnergy('行驶', -energyCost);
   let cabin = state.cabin.map((rider) => rider ? { ...rider, patience: rider.patience - 1 } : null);

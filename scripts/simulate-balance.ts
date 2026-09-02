@@ -8,6 +8,7 @@ type EndgamePlan = { label: string; before: Policy; after: Policy };
 type Aggregate = {
   runs: number; wins: number; floors: number; coins: number; winnerCoins: number; winnerEnergy: number;
   maxStress: number; riskBoardings: number; weightRejects: number; deaths: Record<string, number>;
+  loverPairedRiderTurns: number; loverSoloRiderTurns: number;
   boarded: Record<PassengerKind, number>; upgrades: Record<UpgradeKey, number>;
 };
 
@@ -99,6 +100,11 @@ function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: 
       continue;
     }
     board(state, offers, policy, aggregate);
+    state.cabin.forEach((rider, slot) => {
+      if (rider?.kind !== 'lover') return;
+      if (hasNeighbour(state.cabin, slot, ['lover'])) aggregate.loverPairedRiderTurns += 1;
+      else aggregate.loverSoloRiderTurns += 1;
+    });
     state = resolveFloor(state, rng); maxStress = Math.max(maxStress, state.stress);
     if (state.status === 'playing') offers = makeOffers(state.floor, state.upgrades, false, rng);
   }
@@ -149,7 +155,7 @@ function simulateEndgame(seed: number, plan: EndgamePlan) {
 }
 
 function emptyAggregate(runs: number): Aggregate {
-  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, boarded: Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>, upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
+  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, boarded: Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>, upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
 }
 
 function rounded(value: number) { return Math.round(value * 10) / 10; }
@@ -164,6 +170,8 @@ const summarize = (aggregate: Aggregate) => ({
   runs, winRate: rounded(aggregate.wins / runs * 100), averageFloor: rounded(aggregate.floors / runs), averageCoins: rounded(aggregate.coins / runs),
   winnerCoins: aggregate.wins ? rounded(aggregate.winnerCoins / aggregate.wins) : 0, winnerEnergy: aggregate.wins ? rounded(aggregate.winnerEnergy / aggregate.wins) : 0,
   averagePeakStress: rounded(aggregate.maxStress / runs), riskBoardingsPerRun: rounded(aggregate.riskBoardings / runs), weightRejectsPerRun: rounded(aggregate.weightRejects / runs), deaths: aggregate.deaths,
+  loverBoardingsPerRun: rounded(aggregate.boarded.lover / runs), pairedLoverTurnsPerRun: rounded(aggregate.loverPairedRiderTurns / runs),
+  loverPairActivationRate: aggregate.loverPairedRiderTurns + aggregate.loverSoloRiderTurns ? rounded(aggregate.loverPairedRiderTurns / (aggregate.loverPairedRiderTurns + aggregate.loverSoloRiderTurns) * 100) : 0,
   upgradeMix: Object.fromEntries(Object.entries(aggregate.upgrades).map(([key, count]) => [key, rounded(count / runs)])),
 });
 
