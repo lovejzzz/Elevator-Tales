@@ -55,7 +55,7 @@ button:focus-visible { outline:1px solid var(--brass-pale); outline-offset:3px; 
 .score-card { margin-top:9px; min-height:98px; padding:12px 13px 10px; display:grid; grid-template-columns:auto 1fr; align-items:center; column-gap:8px; }
 .score-card svg { width:16px; color:var(--brass); }.score-card span { font-size:11px; color:#afb5af; }.score-card strong { grid-column:1/-1; text-align:right; font:500 25px var(--font-mono); color:#ead39f; }.score-card small { grid-column:1/-1; text-align:right; color:#929e96; font:500 9.5px/1.35 var(--font-mono); letter-spacing:.02em; }.score-card small b { color:#e5bd70; font-size:11px; }
 .score-card small .rank-full,.score-card small .rank-compact { color:inherit; font:inherit; }.rank-compact { display:none; }
-.rank-progress { grid-column:1/-1; height:2px; margin:3px 0 5px; overflow:hidden; background:#202923; }.rank-progress i { display:block; height:100%; background:linear-gradient(90deg,#9b6d32,#e7bc67); box-shadow:0 0 9px rgba(221,172,83,.5); transition:width .4s ease; }
+.rank-progress { grid-column:1/-1; width:100%; height:2px; margin:3px 0 5px; overflow:hidden; border:0; appearance:none; background:#202923; }.rank-progress::-webkit-progress-bar { background:#202923; }.rank-progress::-webkit-progress-value { background:linear-gradient(90deg,#9b6d32,#e7bc67); box-shadow:0 0 9px rgba(221,172,83,.5); transition:width .4s ease; }.rank-progress::-moz-progress-bar { background:linear-gradient(90deg,#9b6d32,#e7bc67); box-shadow:0 0 9px rgba(221,172,83,.5); }
 .event-log { margin-top:11px; padding:0 3px; color:#7e8a82; font:400 8.5px/1.55 var(--font-mono); }
 .event-log p { margin:0 0 5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }.event-log p:first-child { color:#a9ab9d; }
 
