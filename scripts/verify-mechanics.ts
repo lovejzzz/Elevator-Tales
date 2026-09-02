@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { emergencyEnergyRunway, failureLesson, initialRun, installUpgrade, makeOffers, resolveFloor, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
+import { emergencyEnergyRunway, expressTrip, failureLesson, initialRun, installUpgrade, makeOffers, resolveFloor, upgradeChoices, type ChangeLine, type Rider } from '../lib/game-engine';
 import { UPGRADES, type PassengerKind } from '../lib/game-data';
 
 const rider = (kind: PassengerKind, id: string, overrides: Partial<Rider> = {}): Rider => ({
@@ -41,6 +41,9 @@ assert.equal(deepEnergyRescue.energy, emergencyEnergyRunway(10), 'an emergency e
 assert.equal(emergencyEnergyRunway(10), 7);
 assert.equal(emergencyEnergyRunway(30), 10);
 assert.equal(emergencyEnergyRunway(50), 13);
+assert.equal(expressTrip(4, 1), 4, 'express should no longer erase the tradeoff on short trips');
+assert.equal(expressTrip(5, 1), 4, 'express should still accelerate medium and long-haul trips');
+assert.equal(expressTrip(8, 0), 8, 'express should do nothing before installation');
 const deepStressRescue = installUpgrade({ ...initialRun(), status: 'upgrade', stress: 21 }, 'calm');
 assert.equal(deepStressRescue.status, 'playing', 'a labeled pressure rescue should de-escalate even after a deep overrun');
 assert.equal(deepStressRescue.stress, deepStressRescue.stressCap - 1, 'an emergency pressure reset should leave one point of margin');

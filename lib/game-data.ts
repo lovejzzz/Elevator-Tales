@@ -66,7 +66,7 @@ export const UPGRADES: Record<UpgradeKey, { name: string; label: string; descrip
   calm: { name: '镇静标识', label: 'CALM SIGNAGE', description: '压力上限 +3，并立即降低 3 压力。', strategy: '压力保险', tone: 'control' },
   concierge: { name: '礼宾服务', label: 'CONCIERGE', description: '此后新乘客初始耐心 +3，到站小费 +2。', strategy: '高分路线', tone: 'score' },
   reinforced: { name: '轿厢加固', label: 'REINFORCED', description: '载重上限 +3，能源上限 +3，并立即恢复 3 能源。', strategy: '载重扩张', tone: 'capacity' },
-  express: { name: '快速电梯', label: 'EXPRESS', description: '此后长途新乘客的路程 -1，最低为三层；每局限装一次。', strategy: '周转核心', tone: 'tempo' },
+  express: { name: '快速电梯', label: 'EXPRESS', description: '此后新乘客原定路程至少 5 层时，目的地提前 1 层；每局限装一次。', strategy: '长途周转', tone: 'tempo' },
 };
 
 export const ADJACENT: [number, number][] = [[0,1],[1,2],[3,4],[4,5],[0,3],[1,4],[2,5]];

@@ -22,6 +22,7 @@ export const unlockedAt = (floor: number) => UNLOCK_TIERS.flatMap((tier) => tier
 export const rand = (min: number, max: number, rng: () => number = Math.random) => Math.floor(rng() * (max - min + 1)) + min;
 export const travelEnergyCost = (destinationFloor: number) => destinationFloor < 25 ? 2 : destinationFloor < 50 ? 3 : 4;
 export const emergencyEnergyRunway = (floor: number, floors = 3) => Array.from({ length: floors }, (_, index) => travelEnergyCost(Math.min(60, floor + index + 1))).reduce((sum, cost) => sum + cost, 1);
+export const expressTrip = (baseTrip: number, installed: number) => installed > 0 && baseTrip >= 5 ? baseTrip - 1 : baseTrip;
 
 export function shuffle<T>(items: T[], rng: () => number = Math.random): T[] {
   const result = [...items];
@@ -48,7 +49,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
     used.add(kind);
     const spec = PASSENGERS[kind];
     const baseTrip = guidedShift ? firstShiftTrips[index] : rand(spec.trip[0], spec.trip[1], rng);
-    const trip = baseTrip <= 3 ? baseTrip : Math.max(3, baseTrip - Math.min(1, upgrades.express));
+    const trip = expressTrip(baseTrip, upgrades.express);
     return { id: `f${floor}-${index}-${rng().toString(36).slice(2, 7)}`, kind, destination: Math.min(60, floor + trip), patience: trip + spec.patience + upgrades.concierge * 3, boardedAt: floor, fareBonus: upgrades.concierge * 2, fuse: kind === 'bomb' ? rand(3, 6, rng) : undefined, calledByLover: loverCalled && index === 0 };
   });
 }
