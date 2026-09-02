@@ -1,4 +1,4 @@
-import { PASSENGERS, type PassengerKind, type UpgradeKey } from '../lib/game-data';
+import { PASSENGERS, SCORE_RANKS, type PassengerKind, type UpgradeKey } from '../lib/game-data';
 import { hasNeighbour, initialRun, installUpgrade, makeOffers, neighbourCount, neighbours, resolveFloor, totalWeight, upgradeChoices, type Rider, type RunState } from '../lib/game-engine';
 
 type Policy = 'conservative' | 'calculated' | 'reckless' | 'thief' | 'drunk' | 'celebrity' | 'bomb';
@@ -103,6 +103,7 @@ function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: 
   aggregate.floors += state.floor; aggregate.coins += state.coins; aggregate.maxStress += maxStress;
   if (state.status === 'won') { aggregate.wins += 1; aggregate.winnerCoins += state.coins; aggregate.winnerEnergy += state.energy; }
   else aggregate.deaths[deathReason(state.message)] += 1;
+  return state;
 }
 
 function boardOpening(state: RunState, offers: Rider[], plan: OpeningPlan, aggregate: Aggregate) {
@@ -133,6 +134,11 @@ function emptyAggregate(runs: number): Aggregate {
 }
 
 function rounded(value: number) { return Math.round(value * 10) / 10; }
+function percentile(values: number[], position: number) { return values.length ? values[Math.min(values.length - 1, Math.floor((values.length - 1) * position))] : 0; }
+const rankDistribution = (scores: number[], thresholds: number[]) => Object.fromEntries(['D', 'C', 'B', 'A', 'S'].map((grade, index) => {
+  const low = thresholds[index]; const high = thresholds[index + 1] ?? Number.POSITIVE_INFINITY;
+  return [grade, scores.length ? rounded(scores.filter((score) => score >= low && score < high).length / scores.length * 100) : 0];
+}));
 const runs = Math.max(1, Number(process.argv[2] || 10000));
 const mode = process.argv[3] || 'risk';
 const summarize = (aggregate: Aggregate) => ({
@@ -161,6 +167,16 @@ const report = mode === 'opening' ? ([
     averageEnergyAt10: reachedTen ? rounded(energy / reachedTen) : 0, averageStressAt10: reachedTen ? rounded(stress / reachedTen) : 0,
     averageCoinsAt10: reachedTen ? rounded(coins / reachedTen) : 0, averagePeakStress: rounded(peakStress / runs),
     riskBoardings: rounded(risks / runs), weightRejects: rounded(weightRejects / runs), deaths };
+}) : mode === 'scores' ? (['conservative', 'thief', 'drunk', 'celebrity', 'bomb', 'calculated', 'reckless'] as Policy[]).map((policy, policyIndex) => {
+  const aggregate = emptyAggregate(runs); const scores: number[] = [];
+  for (let run = 0; run < runs; run += 1) {
+    const state = simulateRun(31001 + policyIndex * 1000003 + run * 97, policy, aggregate);
+    if (state.status === 'won') scores.push(state.coins);
+  }
+  scores.sort((a, b) => a - b);
+  return { policy, winRate: rounded(scores.length / runs * 100), winners: scores.length,
+    winnerScore: { p10: percentile(scores, .1), p25: percentile(scores, .25), p50: percentile(scores, .5), p75: percentile(scores, .75), p90: percentile(scores, .9) },
+    legacyRanks: rankDistribution(scores, [0, 125, 250, 450, 700]), currentRanks: rankDistribution(scores, SCORE_RANKS.map((rank) => rank.min)) };
 }) : mode === 'upgrades' ? [
   { label: 'baseline' },
   ...(['battery', 'solar', 'calm', 'concierge', 'reinforced', 'express'] as UpgradeKey[]).map((prefer) => ({ label: `prefer-${prefer}`, prefer })),

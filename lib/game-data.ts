@@ -55,6 +55,10 @@ export const UNLOCK_TIERS: { floor: number; kinds: PassengerKind[] }[] = [
 ];
 
 export type UpgradeKey = 'battery' | 'solar' | 'calm' | 'concierge' | 'reinforced' | 'express';
+export const SCORE_RANKS = [
+  { min: 0, grade: 'D', name: '临时值班' }, { min: 150, grade: 'C', name: '稳定运行' }, { min: 325, grade: 'B', name: '夜班熟手' },
+  { min: 550, grade: 'A', name: '午夜王牌' }, { min: 900, grade: 'S', name: '城市传说' },
+] as const;
 export const UPGRADES: Record<UpgradeKey, { name: string; label: string; description: string }> = {
   battery: { name: '增容电池', label: 'BATTERY', description: '能源上限 +5，并立即恢复 5 能源。' },
   solar: { name: '应急回充', label: 'TRICKLE CHARGE', description: '此后每四层恢复 1 能源，可叠加。' },
