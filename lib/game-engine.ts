@@ -70,7 +70,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
     switch (rider.kind) {
       case 'mechanic': if (nextFloor % 3 === 0) { adjustEnergy('维修工回充', 1); notes.push('维修工回充 +1'); } break;
       case 'lover': if (pairedLover) addCoins('恋人连携', 1); break;
-      case 'thief': addCoins(controlledThief ? '受控小偷' : '小偷', controlledThief ? 1 : 3); if (!controlledThief && nextFloor % 2 === 0) { adjustPressure('小偷', 1); stressReasons.push('小偷未受控制，压力 +1'); } break;
+      case 'thief': addCoins(controlledThief ? '受控小偷' : '小偷', controlledThief ? 1 : 3); if (!controlledThief && nextFloor % 2 === 0) { adjustPressure('小偷未受控', 1); stressReasons.push('小偷未受控制，压力 +1'); } break;
       case 'drunk': if (calmDrunk) addCoins('醉汉安抚', 1); else if (rng() < .25) { adjustPressure('醉汉闹事', 2); const options = neighbours(slot); deferredSwaps.push([slot, options[rand(0, options.length - 1, rng)]]); stressReasons.push('醉汉闹事并乱换位，压力 +2'); } break;
       case 'musician': if (occupied >= 4) adjustPressure('音乐家安抚', -1); break;
       case 'nurse': if (nextFloor % 2 === 0) adjustPressure('护士安抚', -1); break;

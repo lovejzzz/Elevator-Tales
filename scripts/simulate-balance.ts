@@ -8,6 +8,7 @@ type EndgamePlan = { label: string; before: Policy; after: Policy };
 type Aggregate = {
   runs: number; wins: number; floors: number; coins: number; winnerCoins: number; winnerEnergy: number;
   maxStress: number; riskBoardings: number; weightRejects: number; deaths: Record<string, number>;
+  pressureRiskFloors: number; pressureReliefFloors: number; pressureCancelledFloors: number; pressureSources: Record<string, number>;
   loverPairedRiderTurns: number; loverSoloRiderTurns: number; loverPairedArrivals: number; loverCallsOffered: number; loverCallsBoarded: number;
   boarded: Record<PassengerKind, number>; upgrades: Record<UpgradeKey, number>;
 };
@@ -103,6 +104,15 @@ function deathReason(message: string) {
   return 'other';
 }
 
+function recordPressure(aggregate: Aggregate, state: RunState) {
+  const hasRise = state.lastPressure.sources.some((source) => source.amount > 0);
+  const hasRelief = state.lastPressure.sources.some((source) => source.amount < 0);
+  if (hasRise) aggregate.pressureRiskFloors += 1;
+  if (hasRelief) aggregate.pressureReliefFloors += 1;
+  if (hasRise && hasRelief && state.lastPressure.delta === 0) aggregate.pressureCancelledFloors += 1;
+  state.lastPressure.sources.forEach((source) => { aggregate.pressureSources[source.label] = (aggregate.pressureSources[source.label] ?? 0) + Math.abs(source.amount); });
+}
+
 function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: UpgradePlan) {
   const rng = mulberry32(seed); let state = initialRun(); let offers = makeSimOffers(1, state, rng); let maxStress = 0;
   while (state.status === 'playing' || state.status === 'upgrade') {
@@ -121,7 +131,7 @@ function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: 
       }
       else aggregate.loverSoloRiderTurns += 1;
     });
-    state = resolveFloor(state, rng); maxStress = Math.max(maxStress, state.stress);
+    state = resolveFloor(state, rng); recordPressure(aggregate, state); maxStress = Math.max(maxStress, state.stress);
     if (state.status === 'playing') offers = makeSimOffers(state.floor, state, rng);
   }
   aggregate.floors += state.floor; aggregate.coins += state.coins; aggregate.maxStress += maxStress;
@@ -173,7 +183,7 @@ function simulateEndgame(seed: number, plan: EndgamePlan) {
 }
 
 function emptyAggregate(runs: number): Aggregate {
-  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, loverPairedArrivals: 0, loverCallsOffered: 0, loverCallsBoarded: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, boarded: Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>, upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
+  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, pressureRiskFloors: 0, pressureReliefFloors: 0, pressureCancelledFloors: 0, pressureSources: {}, loverPairedRiderTurns: 0, loverSoloRiderTurns: 0, loverPairedArrivals: 0, loverCallsOffered: 0, loverCallsBoarded: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, boarded: Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>, upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
 }
 
 function rounded(value: number) { return Math.round(value * 10) / 10; }
@@ -193,6 +203,7 @@ const summarize = (aggregate: Aggregate) => ({
   loverComboBonusCoinsPerRun: rounded((aggregate.loverPairedRiderTurns + aggregate.loverPairedArrivals * PASSENGERS.lover.fare) / runs),
   loverCallsPerRun: rounded(aggregate.loverCallsOffered / runs), loverCallAcceptanceRate: aggregate.loverCallsOffered ? rounded(aggregate.loverCallsBoarded / aggregate.loverCallsOffered * 100) : 0,
   loverParameters: { rarity: PASSENGERS.lover.rarity, trip: PASSENGERS.lover.trip, callChance: loverCallChance, responsePriority: loverResponseBonus },
+  pressure: { riskFloorsPerRun: rounded(aggregate.pressureRiskFloors / runs), reliefFloorsPerRun: rounded(aggregate.pressureReliefFloors / runs), cancelledFloorsPerRun: rounded(aggregate.pressureCancelledFloors / runs), sourcesPerRun: Object.fromEntries(Object.entries(aggregate.pressureSources).sort((a, b) => b[1] - a[1]).map(([label, total]) => [label, rounded(total / runs)])) },
   upgradeMix: Object.fromEntries(Object.entries(aggregate.upgrades).map(([key, count]) => [key, rounded(count / runs)])),
 });
 
@@ -238,6 +249,10 @@ const report = mode === 'opening' ? ([
     averageStressAt50: reached.length ? rounded(reached.reduce((sum, result) => sum + result.stressAt50, 0) / reached.length) : 0,
     winnerGain: { p10: percentile(gains, .1), p50: percentile(gains, .5), p90: percentile(gains, .9) },
     endgameRiskBoardings: reached.length ? rounded(reached.reduce((sum, result) => sum + result.endgameRisks, 0) / reached.length) : 0, scoreBands };
+}) : mode === 'pressure' ? (['conservative', 'calculated', 'reckless'] as Policy[]).map((policy, policyIndex) => {
+  const aggregate = emptyAggregate(runs);
+  for (let run = 0; run < runs; run += 1) simulateRun(61001 + policyIndex * 1000003 + run * 97, policy, aggregate);
+  return { policy, winRate: rounded(aggregate.wins / runs * 100), averagePeakStress: rounded(aggregate.maxStress / runs), ...summarize(aggregate).pressure, deaths: aggregate.deaths };
 }) : mode === 'scores' ? (['conservative', 'thief', 'drunk', 'celebrity', 'bomb', 'calculated', 'reckless'] as Policy[]).map((policy, policyIndex) => {
   const aggregate = emptyAggregate(runs); const scores: number[] = [];
   for (let run = 0; run < runs; run += 1) {

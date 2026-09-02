@@ -10,7 +10,7 @@ const sourceMap = (sources: ChangeLine[]) => Object.fromEntries(sources.map((lin
 const balanced = resolveFloor({ ...initialRun(), cabin: [rider('nurse', 'nurse'), rider('thief', 'thief'), null, null, null, null] }, () => 0.9);
 assert.equal(balanced.stress, 0, 'same-floor relief should cancel pressure regardless of slot order');
 assert.equal(balanced.lastPressure.delta, 0);
-assert.deepEqual(sourceMap(balanced.lastPressure.sources), { '护士安抚': -1, '小偷': 1 });
+assert.deepEqual(sourceMap(balanced.lastPressure.sources), { '护士安抚': -1, '小偷未受控': 1 });
 
 const impatient = resolveFloor({ ...initialRun(), cabin: [rider('commuter', 'late', { patience: 1 }), null, null, null, null, null] }, () => 0.9);
 assert.equal(impatient.stress, 2);
