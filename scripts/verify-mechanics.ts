@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { initialRun, makeOffers, resolveFloor, type ChangeLine, type Rider } from '../lib/game-engine';
-import type { PassengerKind } from '../lib/game-data';
+import { UPGRADES, type PassengerKind } from '../lib/game-data';
 
 const rider = (kind: PassengerKind, id: string, overrides: Partial<Rider> = {}): Rider => ({
   id, kind, destination: 8, patience: 10, boardedAt: 1, fareBonus: 0, ...overrides,
@@ -29,5 +29,6 @@ assert.equal(soloLover.cabin[0]?.patience, 9, 'solo lovers should only lose the 
 const calledOffers = makeOffers(2, initialRun().upgrades, false, () => 0.1, soloLover.cabin);
 assert.equal(calledOffers[0].kind, 'lover', 'a solo lover should sometimes call another lover into the next offer');
 assert.equal(calledOffers[0].calledByLover, true, 'the called lover should retain its causal marker');
+assert.equal(new Set(Object.values(UPGRADES).map((upgrade) => upgrade.strategy)).size, 6, 'every upgrade should expose a distinct strategic role');
 
 console.log('Mechanics verified: pressure rules, lover pairing, and the lover call.');
