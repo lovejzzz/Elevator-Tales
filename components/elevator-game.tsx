@@ -50,10 +50,10 @@ function upgradeImpact(key: UpgradeKey, run: RunState): string {
   switch (key) {
     case 'battery': return `能源 ${run.energy}/${run.energyCap} → ${Math.min(run.energyCap + 5, run.energy + 5)}/${run.energyCap + 5}`;
     case 'calm': return `压力 ${run.stress}/${run.stressCap} → ${Math.max(0, run.stress - 3)}/${run.stressCap + 3}`;
-    case 'reinforced': return `载重上限 ${run.weightCap} → ${run.weightCap + 3}`;
+    case 'reinforced': return `载重 ${run.weightCap} → ${run.weightCap + 3} · 能源 ${run.energy}/${run.energyCap} → ${Math.min(run.energyCap + 3, run.energy + 3)}/${run.energyCap + 3}`;
     case 'solar': return `每四层回充 ${run.upgrades.solar + 1} 能源`;
     case 'concierge': return `新乘客耐心 +${(run.upgrades.concierge + 1) * 3} · 到站小费 +${(run.upgrades.concierge + 1) * 2}`;
-    case 'express': return `新乘客路程缩短 ${run.upgrades.express + 1} 层`;
+    case 'express': return '长途新乘客路程缩短 1 层 · 最低 3 层 · 本局唯一';
   }
 }
 
@@ -147,7 +147,7 @@ export default function ElevatorGame() {
   const locked = doors !== 'open' || run.status !== 'playing';
 
   useEffect(() => { const savedBest = Math.max(0, Number(localStorage.getItem('elevator-tales-best-coins') || 0)); const savedHighest = Math.max(1, Number(localStorage.getItem('elevator-tales-highest') || 1)); setHighest(savedHighest); setBestCoins(savedBest); setRunStartBest(savedBest); setOffers(makeOffers(1, EMPTY_UPGRADES, savedHighest <= 1)); }, []);
-  useEffect(() => { if (run.floor > highest) { setHighest(run.floor); localStorage.setItem('elevator-tales-highest', String(run.floor)); } if (run.status === 'upgrade') setChoices(upgradeChoices()); }, [run.floor, run.status, highest]);
+  useEffect(() => { if (run.floor > highest) { setHighest(run.floor); localStorage.setItem('elevator-tales-highest', String(run.floor)); } if (run.status === 'upgrade') setChoices(upgradeChoices(run.upgrades)); }, [run.floor, run.status, run.upgrades, highest]);
   useEffect(() => { if ((run.status === 'lost' || run.status === 'won') && run.coins > bestCoins) { setBestCoins(run.coins); localStorage.setItem('elevator-tales-best-coins', String(run.coins)); } }, [run.status, run.coins, bestCoins]);
   const weight = useMemo(() => totalWeight(run.cabin), [run.cabin]); const unlocked = unlockedAt(Math.max(run.floor, highest));
   const pressurePreview = useMemo(() => stressForecast(run, weight), [run, weight]); const energyPreview = useMemo(() => energyForecast(run, weight), [run, weight]);
@@ -264,7 +264,7 @@ export default function ElevatorGame() {
         <button className="depart-button" onClick={depart} disabled={locked}><span>{doors === 'open' ? '关门上行' : '正在上行'}</span><b>ENTER</b></button><p className={`panel-hint forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : departureForecast}</p>
       </aside>
     </section>
-    <footer className="footer-line"><span>ELV–07 / v2.1</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
+    <footer className="footer-line"><span>ELV–07 / v2.2</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
 
     <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">CAR № 07 · 00:17 AM</p><DialogHeader><DialogTitle>今晚，所有人<br />都想再上一层。</DialogTitle><DialogDescription>安排六个站位，让合适的人彼此相邻。在能源耗尽、压力失控或危险爆发前，抵达六十层。</DialogDescription></DialogHeader><div className="intro-rules"><span><b>01</b> 拖拽或点选</span><span><b>02</b> 安排邻座</span><span><b>03</b> 关门上行</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始午夜班次 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
     <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">NIGHT OPERATOR&apos;S MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>每次上行都消耗能源，等待会消耗乘客耐心。耐心归零的乘客离开并增加压力。</DialogDescription></DialogHeader><div className="manual-grid"><div><b>安排站位</b><p>桌面端可把人物直接拖进空位；手机端点乘客，再点目标空位。</p></div><div><b>相邻关系</b><p>横向与纵向紧邻才算相邻。恋人、警察、音乐家等会因此改变表现。</p></div><div><b>压力预报</b><p>关门键下方会预报下一层变化，并列出耐心归零、失控乘客和安抚效果。</p></div><div><b>收益标记</b><p>候客卡右侧显示基础金币和到站能源；连携关系可能带来额外奖励。</p></div><div><b>一次换位</b><p>轿厢内拖拽，或连续点两个站位完成交换；每层只能一次。</p></div><div><b>十层升级</b><p>每十层选择一项永久升级。撑到60层即完成班次。</p></div></div></DialogContent></Dialog>

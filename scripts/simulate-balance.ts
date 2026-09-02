@@ -2,9 +2,11 @@ import { PASSENGERS, type PassengerKind, type UpgradeKey } from '../lib/game-dat
 import { hasNeighbour, initialRun, installUpgrade, makeOffers, neighbourCount, neighbours, resolveFloor, totalWeight, upgradeChoices, type Rider, type RunState } from '../lib/game-engine';
 
 type Policy = 'conservative' | 'calculated' | 'reckless' | 'thief' | 'drunk' | 'celebrity' | 'bomb';
+type UpgradePlan = { label: string; prefer?: UpgradeKey; ban?: UpgradeKey };
 type Aggregate = {
   runs: number; wins: number; floors: number; coins: number; winnerCoins: number; winnerEnergy: number;
-  maxStress: number; riskBoardings: number; deaths: Record<string, number>; boarded: Record<PassengerKind, number>;
+  maxStress: number; riskBoardings: number; weightRejects: number; deaths: Record<string, number>;
+  boarded: Record<PassengerKind, number>; upgrades: Record<UpgradeKey, number>;
 };
 
 const RISK_KINDS = new Set<PassengerKind>(['thief', 'drunk', 'celebrity', 'bomb']);
@@ -58,7 +60,7 @@ function board(state: RunState, offers: Rider[], policy: Policy, aggregate: Aggr
   const ordered = policy === 'reckless' ? [...offers] : [...offers].sort((a, b) => offerScore(state, b, policy) - offerScore(state, a, policy));
   for (const rider of ordered) {
     if (!Number.isFinite(offerScore(state, rider, policy))) continue;
-    if (totalWeight(state.cabin) + PASSENGERS[rider.kind].weight > state.weightCap) continue;
+    if (totalWeight(state.cabin) + PASSENGERS[rider.kind].weight > state.weightCap) { aggregate.weightRejects += 1; continue; }
     const empty = state.cabin.map((current, slot) => current ? -1 : slot).filter((slot) => slot >= 0);
     if (!empty.length) break;
     const target = empty.sort((a, b) => placementScore(state.cabin, rider, b) - placementScore(state.cabin, rider, a))[0];
@@ -67,13 +69,14 @@ function board(state: RunState, offers: Rider[], policy: Policy, aggregate: Aggr
   }
 }
 
-function chooseUpgrade(state: RunState, choices: UpgradeKey[], policy: Policy): UpgradeKey {
+function chooseUpgrade(state: RunState, choices: UpgradeKey[], policy: Policy, plan?: UpgradePlan): UpgradeKey {
   const priorities: UpgradeKey[] = policy === 'reckless'
     ? ['concierge', 'express', 'reinforced', 'calm', 'solar', 'battery']
-    : state.energy <= 10 ? ['battery', 'solar', 'express', 'calm', 'concierge', 'reinforced']
-      : state.stress >= 9 ? ['calm', 'solar', 'battery', 'express', 'concierge', 'reinforced']
-        : ['solar', 'battery', 'express', 'concierge', 'calm', 'reinforced'];
-  return priorities.find((key) => choices.includes(key)) ?? choices[0];
+    : state.energy <= 10 ? ['battery', 'solar', 'reinforced', 'express', 'calm', 'concierge']
+      : state.stress >= 9 ? ['calm', 'solar', 'battery', 'reinforced', 'express', 'concierge']
+        : ['solar', 'battery', 'express', 'reinforced', 'concierge', 'calm'];
+  if (plan?.prefer && choices.includes(plan.prefer)) return plan.prefer;
+  return priorities.find((key) => choices.includes(key) && key !== plan?.ban) ?? choices.find((key) => key !== plan?.ban) ?? choices[0];
 }
 
 function deathReason(message: string) {
@@ -83,11 +86,12 @@ function deathReason(message: string) {
   return 'other';
 }
 
-function simulateRun(seed: number, policy: Policy, aggregate: Aggregate) {
+function simulateRun(seed: number, policy: Policy, aggregate: Aggregate, plan?: UpgradePlan) {
   const rng = mulberry32(seed); let state = initialRun(); let offers = makeOffers(1, state.upgrades, false, rng); let maxStress = 0;
   while (state.status === 'playing' || state.status === 'upgrade') {
     if (state.status === 'upgrade') {
-      state = installUpgrade(state, chooseUpgrade(state, upgradeChoices(rng), policy));
+      const selected = chooseUpgrade(state, upgradeChoices(state.upgrades, rng), policy, plan); aggregate.upgrades[selected] += 1;
+      state = installUpgrade(state, selected);
       if (state.status === 'playing') offers = makeOffers(state.floor, state.upgrades, false, rng);
       continue;
     }
@@ -101,21 +105,32 @@ function simulateRun(seed: number, policy: Policy, aggregate: Aggregate) {
 }
 
 function emptyAggregate(runs: number): Aggregate {
-  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, boarded: Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number> };
+  return { runs, wins: 0, floors: 0, coins: 0, winnerCoins: 0, winnerEnergy: 0, maxStress: 0, riskBoardings: 0, weightRejects: 0, deaths: { energy: 0, stress: 0, bomb: 0, other: 0 }, boarded: Object.fromEntries(Object.keys(PASSENGERS).map((kind) => [kind, 0])) as Record<PassengerKind, number>, upgrades: { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 } };
 }
 
 function rounded(value: number) { return Math.round(value * 10) / 10; }
 const runs = Math.max(1, Number(process.argv[2] || 10000));
-const policies: Policy[] = ['conservative', 'thief', 'drunk', 'celebrity', 'bomb', 'calculated', 'reckless'];
-const report = policies.map((policy, policyIndex) => {
+const mode = process.argv[3] || 'risk';
+const summarize = (aggregate: Aggregate) => ({
+  runs, winRate: rounded(aggregate.wins / runs * 100), averageFloor: rounded(aggregate.floors / runs), averageCoins: rounded(aggregate.coins / runs),
+  winnerCoins: aggregate.wins ? rounded(aggregate.winnerCoins / aggregate.wins) : 0, winnerEnergy: aggregate.wins ? rounded(aggregate.winnerEnergy / aggregate.wins) : 0,
+  averagePeakStress: rounded(aggregate.maxStress / runs), riskBoardingsPerRun: rounded(aggregate.riskBoardings / runs), weightRejectsPerRun: rounded(aggregate.weightRejects / runs), deaths: aggregate.deaths,
+  upgradeMix: Object.fromEntries(Object.entries(aggregate.upgrades).map(([key, count]) => [key, rounded(count / runs)])),
+});
+
+const report = mode === 'upgrades' ? [
+  { label: 'baseline' },
+  ...(['battery', 'solar', 'calm', 'concierge', 'reinforced', 'express'] as UpgradeKey[]).map((prefer) => ({ label: `prefer-${prefer}`, prefer })),
+  ...(['battery', 'solar', 'calm', 'concierge', 'reinforced', 'express'] as UpgradeKey[]).map((ban) => ({ label: `ban-${ban}`, ban })),
+].map((plan) => {
+  const aggregate = emptyAggregate(runs);
+  for (let run = 0; run < runs; run += 1) simulateRun(82001 + run * 97, 'calculated', aggregate, plan);
+  return { plan: plan.label, ...summarize(aggregate) };
+}) : (['conservative', 'thief', 'drunk', 'celebrity', 'bomb', 'calculated', 'reckless'] as Policy[]).map((policy, policyIndex) => {
   const aggregate = emptyAggregate(runs);
   for (let run = 0; run < runs; run += 1) simulateRun(21001 + policyIndex * 1000003 + run * 97, policy, aggregate);
   const riskMix = Object.fromEntries([...RISK_KINDS].map((kind) => [kind, rounded(aggregate.boarded[kind] / runs)]));
-  return {
-    policy, runs, winRate: rounded(aggregate.wins / runs * 100), averageFloor: rounded(aggregate.floors / runs), averageCoins: rounded(aggregate.coins / runs),
-    winnerCoins: aggregate.wins ? rounded(aggregate.winnerCoins / aggregate.wins) : 0, winnerEnergy: aggregate.wins ? rounded(aggregate.winnerEnergy / aggregate.wins) : 0,
-    averagePeakStress: rounded(aggregate.maxStress / runs), riskBoardingsPerRun: rounded(aggregate.riskBoardings / runs), deaths: aggregate.deaths, riskMix,
-  };
+  return { policy, ...summarize(aggregate), riskMix };
 });
 
 console.log(JSON.stringify(report, null, 2));

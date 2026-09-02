@@ -60,8 +60,8 @@ export const UPGRADES: Record<UpgradeKey, { name: string; label: string; descrip
   solar: { name: '应急回充', label: 'TRICKLE CHARGE', description: '此后每四层恢复 1 能源，可叠加。' },
   calm: { name: '镇静标识', label: 'CALM SIGNAGE', description: '压力上限 +3，并立即降低 3 压力。' },
   concierge: { name: '礼宾服务', label: 'CONCIERGE', description: '此后新乘客初始耐心 +3，到站小费 +2。' },
-  reinforced: { name: '轿厢加固', label: 'REINFORCED', description: '载重上限永久 +3。' },
-  express: { name: '快速电梯', label: 'EXPRESS', description: '此后新乘客的路程 -1，最低为一层。' },
+  reinforced: { name: '轿厢加固', label: 'REINFORCED', description: '载重上限 +3，能源上限 +3，并立即恢复 3 能源。' },
+  express: { name: '快速电梯', label: 'EXPRESS', description: '此后长途新乘客的路程 -1，最低为三层；每局限装一次。' },
 };
 
 export const ADJACENT: [number, number][] = [[0,1],[1,2],[3,4],[4,5],[0,3],[1,4],[2,5]];

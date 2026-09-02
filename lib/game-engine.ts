@@ -39,7 +39,8 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
     while (used.has(kind) && guard++ < 15) kind = weightedKind(floor, rng);
     used.add(kind);
     const spec = PASSENGERS[kind];
-    const trip = Math.max(1, rand(spec.trip[0], spec.trip[1], rng) - upgrades.express);
+    const baseTrip = rand(spec.trip[0], spec.trip[1], rng);
+    const trip = baseTrip <= 3 ? baseTrip : Math.max(3, baseTrip - Math.min(1, upgrades.express));
     return { id: `f${floor}-${index}-${rng().toString(36).slice(2, 7)}`, kind, destination: Math.min(60, floor + trip), patience: trip + spec.patience + upgrades.concierge * 3, boardedAt: floor, fareBonus: upgrades.concierge * 2, fuse: kind === 'bomb' ? rand(3, 6, rng) : undefined };
   });
 }
@@ -101,11 +102,11 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   return { ...state, floor: nextFloor, energy, stress, coins, cabin, swapped: false, status, message, log: [`${String(nextFloor).padStart(2, '0')}F · ${message}`, ...state.log].slice(0, 4) };
 }
 
-export const upgradeChoices = (rng: () => number = Math.random): UpgradeKey[] => shuffle(Object.keys(UPGRADES) as UpgradeKey[], rng).slice(0, 3);
+export const upgradeChoices = (upgrades: Record<UpgradeKey, number> = EMPTY_UPGRADES, rng: () => number = Math.random): UpgradeKey[] => shuffle((Object.keys(UPGRADES) as UpgradeKey[]).filter((key) => key !== 'express' || upgrades.express < 1), rng).slice(0, 3);
 
 export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
   const upgrades = { ...current.upgrades, [key]: current.upgrades[key] + 1 }; let energyCap = current.energyCap; let energy = current.energy; let stressCap = current.stressCap; let stress = current.stress; let weightCap = current.weightCap;
-  if (key === 'battery') { energyCap += 5; energy += 5; } if (key === 'calm') { stressCap += 3; stress = Math.max(0, stress - 3); } if (key === 'reinforced') weightCap += 3;
+  if (key === 'battery') { energyCap += 5; energy += 5; } if (key === 'calm') { stressCap += 3; stress = Math.max(0, stress - 3); } if (key === 'reinforced') { weightCap += 3; energyCap += 3; energy += 3; }
   const rescued = energy <= 0 || stress >= stressCap; const status: RunState['status'] = rescued ? 'lost' : 'playing';
   const message = energy <= 0 ? '能源仍未恢复，轿厢停在维修层。' : stress >= stressCap ? '压力仍然超出上限，班次在维修层终止。' : `${UPGRADES[key].name}已安装。继续上行。`;
   return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap, status, message, log: [`${String(current.floor).padStart(2, '0')}F · 安装 ${UPGRADES[key].name}`, ...current.log].slice(0, 4) };
