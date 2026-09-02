@@ -96,6 +96,7 @@ button:focus-visible { outline:1px solid var(--brass-pale); outline-offset:3px; 
 .passenger-card:hover:not(:disabled) { transform:translateX(-4px); border-color:rgba(225,184,108,.65); background:linear-gradient(110deg,rgba(34,46,39,.98),rgba(13,21,18,.94)); }
 .passenger-card[draggable='true'] { cursor:grab; }.passenger-card[draggable='true']:active { cursor:grabbing; }.passenger-card.dragging { opacity:.48; transform:scale(.98); }
 .passenger-card.boarded { border-color:#cfa457; background:linear-gradient(110deg,rgba(47,57,42,.98),rgba(15,27,22,.95)); box-shadow:inset 3px 0 #cfa457; }.passenger-card:disabled { opacity:.42; cursor:not-allowed; }
+.passenger-card.pending { border-color:#f0c671; background:linear-gradient(110deg,rgba(53,61,43,.98),rgba(20,31,25,.96)); box-shadow:inset 3px 0 #e4b65d,0 0 18px rgba(216,165,73,.14); }
 .portrait-window { position:relative; width:80px; height:80px; aspect-ratio:1/1; overflow:hidden; background:#06110e; border:1px solid rgba(201,160,87,.24); display:block; flex:none; }
 .portrait-sheet { position:absolute; inset:0; background-size:300% 200%; background-repeat:no-repeat; }
 .passenger-copy { min-width:0; display:block; }.passenger-copy strong { display:block; font:600 22px var(--font-display); color:#f3e7d0; }.passenger-copy small { display:block; color:#adb4ae; font-size:10px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

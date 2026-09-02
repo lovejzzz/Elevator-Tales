@@ -124,6 +124,7 @@ const upgradeChoices = (): UpgradeKey[] => [...Object.keys(UPGRADES) as UpgradeK
 export default function ElevatorGame() {
   const [run, setRun] = useState<RunState>(initialRun); const [offers, setOffers] = useState<Rider[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null); const [doors, setDoors] = useState<'open' | 'closing' | 'moving'>('open');
+  const [pendingOfferId, setPendingOfferId] = useState<string | null>(null);
   const [dragged, setDragged] = useState<DragPayload | null>(null); const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [intro, setIntro] = useState(true); const [help, setHelp] = useState(false); const [archive, setArchive] = useState(false); const [sound, setSound] = useState(true);
   const [highest, setHighest] = useState(1); const [bestCoins, setBestCoins] = useState(0); const [choices, setChoices] = useState<UpgradeKey[]>([]); const busyRef = useRef(false);
@@ -145,17 +146,26 @@ export default function ElevatorGame() {
     return [];
   }))), [run.cabin, weight]);
 
-  const reset = useCallback(() => { const fresh = initialRun(); setRun(fresh); setOffers(makeOffers(1, fresh.upgrades)); setSelectedSlot(null); setDragged(null); setDragOverSlot(null); setDoors('open'); setIntro(false); busyRef.current = false; }, []);
+  const reset = useCallback(() => { const fresh = initialRun(); setRun(fresh); setOffers(makeOffers(1, fresh.upgrades)); setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setDoors('open'); setIntro(false); busyRef.current = false; }, []);
   const toggleOffer = (offer: Rider) => {
     if (locked) return;
     const existing = run.cabin.findIndex((rider) => rider?.id === offer.id);
-    if (existing >= 0) { setRun((current) => ({ ...current, cabin: current.cabin.map((rider, i) => i === existing ? null : rider), message: `${PASSENGERS[offer.kind].name}回到队伍中。` })); playTone(sound, 'select'); return; }
-    const empty = run.cabin.findIndex((rider) => !rider); const projected = weight + PASSENGERS[offer.kind].weight;
-    if (empty < 0 || projected > run.weightCap) { setRun((current) => ({ ...current, message: empty < 0 ? '六个站位已满。' : `载重会超出 ${run.weightCap}，无法上车。` })); playTone(sound, 'danger'); return; }
-    setRun((current) => ({ ...current, cabin: current.cabin.map((rider, i) => i === empty ? offer : rider), message: `${PASSENGERS[offer.kind].name}已站到 ${empty + 1} 号位。` })); playTone(sound, 'select');
+    if (existing >= 0) { setRun((current) => ({ ...current, cabin: current.cabin.map((rider, i) => i === existing ? null : rider), message: `${PASSENGERS[offer.kind].name}回到队伍中。` })); setPendingOfferId(null); playTone(sound, 'select'); return; }
+    if (pendingOfferId === offer.id) { setPendingOfferId(null); setRun((current) => ({ ...current, message: '已取消安排。' })); return; }
+    setPendingOfferId(offer.id); setSelectedSlot(null);
+    setRun((current) => ({ ...current, message: `已选择${PASSENGERS[offer.kind].name}，现在点一个空位。` })); playTone(sound, 'select');
   };
   const clickSlot = (slot: number) => {
-    if (locked || run.swapped) return;
+    if (locked) return;
+    if (pendingOfferId) {
+      const offer = offers.find((candidate) => candidate.id === pendingOfferId);
+      if (!offer) { setPendingOfferId(null); return; }
+      if (run.cabin[slot]) { setRun((current) => ({ ...current, message: `${slot + 1} 号位已经有人，请选择空位。` })); playTone(sound, 'danger'); return; }
+      if (weight + PASSENGERS[offer.kind].weight > run.weightCap) { setRun((current) => ({ ...current, message: `载重会超出 ${run.weightCap}，无法上车。` })); setPendingOfferId(null); playTone(sound, 'danger'); return; }
+      setRun((current) => ({ ...current, cabin: current.cabin.map((rider, i) => i === slot ? offer : rider), message: `${PASSENGERS[offer.kind].name}已站到 ${slot + 1} 号位。` }));
+      setPendingOfferId(null); playTone(sound, 'select'); return;
+    }
+    if (run.swapped) return;
     if (selectedSlot === null) { if (run.cabin[slot]) setSelectedSlot(slot); return; }
     if (selectedSlot === slot) { setSelectedSlot(null); return; }
     setRun((current) => { const cabin = [...current.cabin]; [cabin[selectedSlot], cabin[slot]] = [cabin[slot], cabin[selectedSlot]]; return { ...current, cabin, swapped: true, message: '站位已调整。本层不能再次交换。' }; });
@@ -165,7 +175,7 @@ export default function ElevatorGame() {
     if (locked) { event.preventDefault(); return; }
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('application/elevator-tales', JSON.stringify(payload));
-    setDragged(payload);
+    setPendingOfferId(null); setDragged(payload);
   };
   const endDrag = () => { setDragged(null); setDragOverSlot(null); };
   const dropOnSlot = (event: DragEvent, target: number) => {
@@ -199,11 +209,11 @@ export default function ElevatorGame() {
         return { ...current, cabin, swapped: true, message: `乘客已拖到 ${target + 1} 号位，本层换位已用。` };
       });
     }
-    setDragged(null); setDragOverSlot(null); setSelectedSlot(null); playTone(sound, 'select');
+    setDragged(null); setDragOverSlot(null); setSelectedSlot(null); setPendingOfferId(null); playTone(sound, 'select');
   };
   const depart = useCallback(() => {
     if (locked || busyRef.current) return;
-    busyRef.current = true; setSelectedSlot(null); setDoors('closing'); playTone(sound, 'depart'); setTimeout(() => setDoors('moving'), 420);
+    busyRef.current = true; setSelectedSlot(null); setPendingOfferId(null); setDoors('closing'); playTone(sound, 'depart'); setTimeout(() => setDoors('moving'), 420);
     setTimeout(() => { setRun((current) => { const resolved = resolveFloor(current); if (resolved.status === 'playing') setOffers(makeOffers(resolved.floor, resolved.upgrades)); playTone(sound, resolved.status === 'lost' ? 'danger' : 'arrive'); return resolved; }); setDoors('open'); busyRef.current = false; }, 920);
   }, [locked, sound]);
   useEffect(() => { const onKey = (event: KeyboardEvent) => { if (event.key === 'Enter' && !intro && !help && !archive) depart(); }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, [depart, intro, help, archive]);
@@ -235,18 +245,18 @@ export default function ElevatorGame() {
           {rider ? <><Portrait kind={rider.kind} large /><span className="slot-destination">{rider.destination}F</span>{rider.kind === 'lover' && <span className={`synergy ${hasNeighbour(run.cabin, index, ['lover']) ? 'active' : ''}`}>{hasNeighbour(run.cabin, index, ['lover']) ? '已配对' : '等待配对'}</span>}<span className="rider-name">{PASSENGERS[rider.kind].name}</span><span className={`patience patience-${Math.min(3, rider.patience)}`}>{'◆'.repeat(Math.max(0, Math.min(5, rider.patience)))}</span>{rider.fuse !== undefined && <span className="fuse">引信 {rider.fuse}</span>}</> : <span className="slot-number">{String(index + 1).padStart(2, '0')}</span>}
         </button>)}</div>
         <div className="door door-left" /><div className="door door-right" />
-        <div className="cabin-message" aria-live="polite"><Sparkles /><span>{run.message}</span></div><div className="swap-status">{run.swapped ? <><LockKeyhole /> 本层换位已用</> : selectedSlot !== null ? '再选一个站位完成交换' : '拖拽人物安排站位 · 也可点击换位'}</div>
+        <div className="cabin-message" aria-live="polite"><Sparkles /><span>{run.message}</span></div><div className="swap-status">{pendingOfferId ? '点一个空位安排乘客' : run.swapped ? <><LockKeyhole /> 本层换位已用</> : selectedSlot !== null ? '再选一个站位完成交换' : '拖拽人物安排站位 · 也可点击换位'}</div>
       </div>
       <aside className="arrival-panel">
         <div className="arrival-heading"><div><span>{doors === 'open' ? 'DOORS OPEN' : 'IN TRANSIT'}</span><h2>谁要上楼？</h2></div><div className="arrival-count">3</div></div>
-        <div className="passenger-list">{offers.map((offer) => { const spec = PASSENGERS[offer.kind]; const boarded = run.cabin.some((rider) => rider?.id === offer.id); const tooHeavy = !boarded && weight + spec.weight > run.weightCap; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id; return <button className={`passenger-card tone-${spec.tone} ${boarded ? 'boarded' : ''} ${isDragging ? 'dragging' : ''}`} key={offer.id} onClick={() => toggleOffer(offer)} draggable={!locked && !tooHeavy} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || tooHeavy} aria-pressed={boarded} title={spec.detail}><Portrait kind={offer.kind} /><span className="passenger-copy"><strong>{spec.name}</strong><small>{spec.title} · 前往 {offer.destination}F</small><span className="tag-row"><i>{spec.weight} 载重</i><i>{offer.patience} 耐心</i>{offer.fuse !== undefined && <i>引信 {offer.fuse}</i>}</span><em>{spec.short}</em></span><span className="select-mark">{boarded ? '✓' : tooHeavy ? '×' : '↗'}</span></button>; })}</div>
-        <button className="depart-button" onClick={depart} disabled={locked}><span>{doors === 'open' ? '关门上行' : '正在上行'}</span><b>ENTER</b></button><p className={`panel-hint ${riskWarnings.length ? 'risk' : ''}`}>{riskWarnings.length ? `风险预警 · ${riskWarnings.slice(0, 2).join(' · ')}` : run.floor === 1 ? '先接1–2人即可；不必把每个人都带上。' : '当前布局稳定 · 可安全关门'}</p>
+        <div className="passenger-list">{offers.map((offer) => { const spec = PASSENGERS[offer.kind]; const boarded = run.cabin.some((rider) => rider?.id === offer.id); const pending = pendingOfferId === offer.id; const tooHeavy = !boarded && weight + spec.weight > run.weightCap; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id; return <button className={`passenger-card tone-${spec.tone} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} key={offer.id} onClick={() => toggleOffer(offer)} draggable={!locked && !tooHeavy} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || tooHeavy} aria-pressed={boarded || pending} title={spec.detail}><Portrait kind={offer.kind} /><span className="passenger-copy"><strong>{spec.name}</strong><small>{spec.title} · 前往 {offer.destination}F</small><span className="tag-row"><i>{spec.weight} 载重</i><i>{offer.patience} 耐心</i>{offer.fuse !== undefined && <i>引信 {offer.fuse}</i>}</span><em>{spec.short}</em></span><span className="select-mark">{boarded ? '✓' : pending ? '→' : tooHeavy ? '×' : '↗'}</span></button>; })}</div>
+        <button className="depart-button" onClick={depart} disabled={locked}><span>{doors === 'open' ? '关门上行' : '正在上行'}</span><b>ENTER</b></button><p className={`panel-hint ${riskWarnings.length ? 'risk' : ''}`}>{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : riskWarnings.length ? `风险预警 · ${riskWarnings.slice(0, 2).join(' · ')}` : run.floor === 1 ? '拖拽，或点乘客再点空位；不必全部接上。' : '当前布局稳定 · 可安全关门'}</p>
       </aside>
     </section>
-    <footer className="footer-line"><span>ELV–07 / v1.2</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
+    <footer className="footer-line"><span>ELV–07 / v1.3</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
 
-    <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">CAR № 07 · 00:17 AM</p><DialogHeader><DialogTitle>今晚，所有人<br />都想再上一层。</DialogTitle><DialogDescription>安排六个站位，让合适的人彼此相邻。在能源耗尽、压力失控或危险爆发前，抵达六十层。</DialogDescription></DialogHeader><div className="intro-rules"><span><b>01</b> 拖拽乘客</span><span><b>02</b> 安排邻座</span><span><b>03</b> 关门上行</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始午夜班次 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
-    <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">NIGHT OPERATOR&apos;S MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>每次上行都消耗能源，等待会消耗乘客耐心。耐心归零的乘客离开并增加压力。</DialogDescription></DialogHeader><div className="manual-grid"><div><b>拖拽站位</b><p>把候选人物直接拖进空位。轿厢内拖拽换位，每层只能使用一次。</p></div><div><b>相邻关系</b><p>横向与纵向紧邻才算相邻。恋人、警察、音乐家等会因此改变表现。</p></div><div><b>压力来源</b><p>乘客失去耐心会增加2压力；小偷、醉汉、拥挤的名人和超载检查也会增加压力。</p></div><div><b>十层升级</b><p>每十层选择一项永久升级。撑到60层即完成班次。</p></div><div><b>没有反悔键</b><p>旧乘客不能请下电梯；本层新上车的人可以再次点选取消。</p></div></div></DialogContent></Dialog>
+    <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">CAR № 07 · 00:17 AM</p><DialogHeader><DialogTitle>今晚，所有人<br />都想再上一层。</DialogTitle><DialogDescription>安排六个站位，让合适的人彼此相邻。在能源耗尽、压力失控或危险爆发前，抵达六十层。</DialogDescription></DialogHeader><div className="intro-rules"><span><b>01</b> 拖拽或点选</span><span><b>02</b> 安排邻座</span><span><b>03</b> 关门上行</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始午夜班次 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
+    <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">NIGHT OPERATOR&apos;S MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>每次上行都消耗能源，等待会消耗乘客耐心。耐心归零的乘客离开并增加压力。</DialogDescription></DialogHeader><div className="manual-grid"><div><b>安排站位</b><p>桌面端可把人物直接拖进空位；手机端点乘客，再点目标空位。</p></div><div><b>相邻关系</b><p>横向与纵向紧邻才算相邻。恋人、警察、音乐家等会因此改变表现。</p></div><div><b>压力来源</b><p>乘客失去耐心会增加2压力；小偷、醉汉、拥挤的名人和超载检查也会增加压力。</p></div><div><b>一次换位</b><p>轿厢内拖拽，或连续点两个站位完成交换；每层只能一次。</p></div><div><b>十层升级</b><p>每十层选择一项永久升级。撑到60层即完成班次。</p></div></div></DialogContent></Dialog>
     <Dialog open={archive} onOpenChange={setArchive}><DialogContent className="story-dialog archive-dialog"><p className="dialog-kicker">PASSENGER ARCHIVE</p><DialogHeader><DialogTitle>午夜乘客档案</DialogTitle><DialogDescription>最高抵达 {highest}F。更高楼层会出现更难处理的乘客。</DialogDescription></DialogHeader><div className="archive-grid">{PASSENGER_ORDER.map((kind) => { const open = unlocked.includes(kind); const spec = PASSENGERS[kind]; return <div className={`archive-item ${open ? '' : 'locked'}`} key={kind}>{open ? <Portrait kind={kind} /> : <LockKeyhole />}<span><b>{open ? spec.name : '未解锁'}</b><small>{open ? spec.short : '继续向上抵达新楼层'}</small></span></div>; })}</div></DialogContent></Dialog>
     <Dialog open={run.status === 'upgrade'}><DialogContent className="story-dialog upgrade-dialog" showCloseButton={false}><p className="dialog-kicker">FLOOR {run.floor} · MAINTENANCE STOP</p><DialogHeader><DialogTitle>选择一项轿厢升级</DialogTitle><DialogDescription>维修灯亮了。选定后不可撤销，它会陪你完成余下的班次。</DialogDescription></DialogHeader><div className="upgrade-grid">{choices.map((key) => <button key={key} onClick={() => chooseUpgrade(key)}><Sparkles /><small>{UPGRADES[key].label}</small><b>{UPGRADES[key].name}</b><p>{UPGRADES[key].description}</p></button>)}</div></DialogContent></Dialog>
     <Dialog open={run.status === 'lost' || run.status === 'won'}><DialogContent className="story-dialog result-dialog" showCloseButton={false}><p className="dialog-kicker">SHIFT REPORT · {String(run.floor).padStart(2, '0')}F</p><DialogHeader><DialogTitle>{run.status === 'won' ? '天亮以前，抵达顶层。' : '这趟电梯，停下了。'}</DialogTitle><DialogDescription>{run.message}</DialogDescription></DialogHeader><div className="result-score"><span>本次收入 <b>{run.coins}</b></span><span>最佳收入 <b>{Math.max(run.coins, bestCoins)}</b></span><span>最高楼层 <b>{Math.max(run.floor, highest)}</b></span></div><Button className="story-primary" onClick={reset}><RotateCcw /> 再值一次午夜班</Button><button className="story-link" onClick={() => setArchive(true)}><BookOpen /> 查看乘客档案</button></DialogContent></Dialog>
