@@ -1217,3 +1217,33 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .rider-name { font-size:17px; }
  .game-shell .slot-destination { font-size:12px; }
 }
+
+/* v7.8: desktop passenger identity and decision metrics share one readable header. */
+@media (min-width:1101px) and (min-height:501px) {
+ .game-shell .passenger-card { position:relative; }
+ .game-shell .card-head { min-height:40px; padding-right:174px; }
+ .game-shell .card-values {
+  position:absolute;
+  top:10px;
+  right:44px;
+  display:flex;
+  flex-wrap:nowrap;
+  align-items:center;
+  gap:10px;
+  padding:0;
+  border:0;
+ }
+ .game-shell .card-values>* { gap:5px; white-space:nowrap; font-size:14px; }
+ .game-shell .card-values svg { width:16px; height:16px; }
+ .game-shell .card-fare { font-size:16px; }
+ .game-shell .passenger-card.boarded .boarded-status { top:auto; right:10px; bottom:8px; }
+}
+
+@media (min-width:1101px) and (min-height:760px) {
+ .game-shell .passenger-card>.unified-passenger-summary { gap:5px; font-size:13.5px; line-height:1.4; }
+ .game-shell .card-head strong { font-size:22px; }
+ .game-shell .card-trip,.game-shell .unified-passenger-summary>.card-action { font-size:13px; }
+ .game-shell .card-values>* { font-size:15px; }
+ .game-shell .card-values svg { width:17px; height:17px; }
+ .game-shell .card-fare { font-size:17px; }
+}
