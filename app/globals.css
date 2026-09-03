@@ -1161,3 +1161,14 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  }
  .game-shell .status-rail .wallet-summary span:last-child { color:#d0b77f; }
 }
+
+/* v7.2: desktop riders scale with their standing bay instead of staying thumbnail-sized. */
+@media (min-width:1101px) and (min-height:501px) {
+ .game-shell .standing-slot .seat-art .portrait-large {
+  width:min(92%,260px);
+  height:min(100%,260px);
+  max-height:260px;
+ }
+ .game-shell .rider-name { font-size:17px; }
+ .game-shell .slot-destination { font-size:12px; }
+}
