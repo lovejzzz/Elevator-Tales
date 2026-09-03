@@ -22,7 +22,7 @@ export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
   exorcist: ['镇压相邻幽灵：阻止延误，每层抵消1点额外耗电，受控幽灵到站车费 +6。',SHARED_SAVING_RULE],
   coach: ['非教练邻座到站时，车费 ×1.5（向上取整）；多位教练不叠加。', '本人到站时，每位仍在身旁的邻座使车费 +3。'],
   celebrity: ['恰好 1 位邻座：每层 +3 金币。', '至少 2 位邻座：偶数层躁动 +1。没有邻座则无额外效果。'],
-  inspector: [`每逢偶数层：抵消后的额外耗电为0，金币 +${INSPECTOR_COMPLIANCE_REWARD}；否则躁动 +1。`,'稳压模块和节能可帮忙通过检查，基础行驶耗电不计入。'],
+  inspector: [`每逢偶数层：人物额外耗电合计为0，金币 +${INSPECTOR_COMPLIANCE_REWARD}；否则躁动 +1。`,'检查原始额外耗电，稳压模块和节能不改变检查结果。'],
   bomb: ['引信每层减少 1 格；到站前归零，本局立即结束。到站当层归零则安全。', '有警察邻座：偶数层暂停倒计时。'],
   mystery: ['额外耗电、自身躁动、路程及协作/冲突对象每次出现时随机。','车费已封存，到站才揭晓；请离不结算隐藏车费。'],
   shifter: ['每到一层重新抽取额外耗电（0–1）、自身躁动（0–1）、车费（28–48）和联动偏好。','目的地不延长。开门后先看新数值，再决定去留。'],
@@ -50,7 +50,7 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'mechanic':energy.push('3的倍数层：节能1');break;
   case 'ghost':special='无驱魔师：3的倍数层随机延误邻座1站';moneyNote='邻驱魔师：不延误，每站节能1，到站再+6币';break;
   case 'exorcist':special='邻幽灵：阻止延误，每站节能1；幽灵到站再+6币';break;
-  case 'inspector':moneyNote=`偶数层额外耗电清零：+${INSPECTOR_COMPLIANCE_REWARD}币`;pressure.splice(0,1,`仍有额外耗电：偶数层 +${m}`);special='按稳压、节能后的额外耗电检查';break;
+  case 'inspector':moneyNote=`偶数层无人额外耗电：+${INSPECTOR_COMPLIANCE_REWARD}币`;pressure.splice(0,1,`有人额外耗电：偶数层 +${m}`);special='检查抵消前的额外耗电';break;
   case 'coach':moneyNote='非教练邻座到站车费×1.5（不叠加）；本人到站每邻座+3币';break;
   case 'cop':special='邻小偷：每站改赚1币，免偷窃躁动；邻炸弹：偶数层不减引信';break;
   case 'lawyer':special='邻小偷：每站改赚1币，免偷窃躁动；不延缓炸弹';break;

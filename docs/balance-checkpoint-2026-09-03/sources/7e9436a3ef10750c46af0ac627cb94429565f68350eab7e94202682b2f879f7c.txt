@@ -1,0 +1,300 @@
+import assert from 'node:assert/strict';
+import { PASSENGER_ORDER, type PassengerKind } from '../lib/game-data';
+import { initialRun, makeOffers, resolveFloor, hasNeighbour, neighbours, totalWeight, energySavings, cooperationBonus, chargingPlan, chargeBattery, installUpgrade, leaveShop, dismissRider, dismissalCost, nextShopFloor, CHARGE_PRICE, REST_STOP_CAP, type RunState } from '../lib/game-engine';
+import { bondStatus, riderProfile } from '../lib/rider-profile';
+import { planPlacement } from '../lib/game-interaction';
+import { stressForecast, energyForecast } from '../lib/game-forecast';
+
+type Policy={id:string;cap:number;risk:number;favorite:PassengerKind[];bias:number;shop:'balanced'|'calm'|'economy'|'none';moves:number;adaptive?:boolean;earlyRush?:boolean;safe?:boolean;rogue?:boolean;quick?:boolean;lookahead?:boolean;cashoutAt?:number;mustServe?:boolean;restAware?:boolean;relay?:boolean;chargeFull?:boolean;banUpgrade?:string;pairSearch?:boolean;contract?:boolean;contractOnly?:boolean;stackContract?:boolean;zeroExtra?:boolean;banKind?:PassengerKind};
+const policy=(id:string,options:Partial<Policy>={}):Policy=>({id,cap:3,risk:3,favorite:[],bias:2,shop:'balanced',moves:1,...options});
+const policies:Policy[]=[
+ ...[1,2,3,4,6].map(cap=>policy('balanced-'+cap,{cap})),
+ policy('cautious-4',{cap:4,risk:6}),policy('cautious-6',{cap:6,risk:9}),
+ policy('greedy-6',{cap:6,risk:1}),
+ ...[3,4].map(cap=>policy('lovers-'+cap,{cap,favorite:['lover']})),
+ policy('police-thief-4',{cap:4,favorite:['thief','cop','lawyer']}),
+ policy('rogue-thief-3',{favorite:['thief'],rogue:true}),
+ policy('occult-3',{favorite:['ghost','exorcist']}),
+ ...[4,6].map(cap=>policy('calming-'+cap,{cap,risk:5,favorite:['musician','nurse']})),
+ ...[3,4].map(cap=>policy('high-fare-'+cap,{cap,favorite:['mystery','shifter','celebrity','bomb']})),
+ ...[2,3,4].map(cap=>policy('shifter-'+cap,{cap,favorite:['shifter'],bias:3})),
+ ...[3,4].map(cap=>policy('mimic-'+cap,{cap,favorite:['mimic','shifter'],moves:6})),
+ ...[4,6].map(cap=>policy('coach-'+cap,{cap,favorite:['coach','shifter','celebrity']})),
+ policy('courier-3',{favorite:['courier'],quick:true}),
+ policy('safe-only-3',{safe:true}),
+ policy('adaptive',{adaptive:true,risk:4}),
+ policy('early-rush',{earlyRush:true}),
+ policy('calm-only-3',{shop:'calm'}),
+ policy('economy-3',{shop:'economy'}),
+ policy('high-fare-calm',{shop:'calm',favorite:['mystery','shifter','celebrity','bomb']}),
+ policy('adaptive-calm',{adaptive:true,risk:4,shop:'calm'}),
+ policy('lookahead-3',{lookahead:true}),
+ ...[40,60,80].map(cashoutAt=>policy('cashout-'+cashoutAt,{cap:6,risk:9,cashoutAt})),
+ policy('no-upgrades',{cap:6,risk:9,shop:'none'}),
+ policy('cautious-calm',{cap:6,risk:9,shop:'calm'}),
+ policy('cautious-full-charge',{cap:6,risk:9,chargeFull:true}),
+ policy('relay-full-charge',{cap:2,risk:6,restAware:true,relay:true,quick:true,shop:'calm',chargeFull:true}),
+ ...['calm','battery','concierge','solar','reinforced','express'].map(banUpgrade=>policy('without-'+banUpgrade,{cap:6,risk:9,banUpgrade})),
+ policy('pair-cautious',{cap:6,risk:9,pairSearch:true}),
+ policy('pair-balanced',{pairSearch:true}),
+ policy('pair-police',{cap:4,pairSearch:true,favorite:['thief','cop','lawyer']}),
+ policy('pair-occult',{pairSearch:true,favorite:['ghost','exorcist']}),
+ ...[4,6].flatMap(cap=>[2,6,12].flatMap(bias=>['musician','nurse'].map(kind=>policy(kind+'-stack-'+cap+'-'+bias,{cap,risk:6,bias,favorite:[kind as PassengerKind],shop:'calm'})))),
+ policy('pair-calming',{cap:4,risk:6,pairSearch:true,favorite:['musician','nurse'],shop:'calm'}),
+ policy('pair-lovers',{cap:4,risk:6,pairSearch:true,favorite:['lover'],shop:'calm'}),
+ ...[3,4,6].flatMap(cap=>[
+    policy('contract-mixed-'+cap,{cap,risk:9,contract:true}),
+    policy('contract-no-calm-'+cap,{cap,risk:9,contract:true,banUpgrade:'calm'}),
+    policy('contract-only-'+cap,{cap,risk:9,contract:true,contractOnly:true}),
+  ]),
+  ...['pair','police','lovers','calming'].flatMap(group=>[false,true].map(noCalm=>policy('contract-'+group+(noCalm?'-no-calm':'-mixed'),{cap:4,risk:9,contract:true,pairSearch:true,banUpgrade:noCalm?'calm':undefined,favorite:group==='police'?['thief','cop','lawyer']:group==='lovers'?['lover']:group==='calming'?['musician','nurse']:[]}))),
+  policy('contract-stack',{cap:6,risk:9,contract:true,stackContract:true}),
+  policy('contract-lookahead',{cap:4,risk:6,restAware:true,lookahead:true,contract:true}),
+  policy('contract-lookahead-no-calm',{cap:4,risk:6,restAware:true,lookahead:true,contract:true,banUpgrade:'calm'}),
+  policy('zero-extra-6',{cap:6,risk:6,lookahead:true,restAware:true,contract:true,zeroExtra:true}),
+ policy('planning-pairs-6',{cap:6,risk:6,lookahead:true,restAware:true,pairSearch:true,contract:true}),
+ policy('planning-pairs-4',{cap:4,risk:6,lookahead:true,restAware:true,pairSearch:true,contract:true}),
+ policy('support-stack-music',{cap:6,risk:6,lookahead:true,restAware:true,contract:true,favorite:['musician'],bias:12}),
+ policy('support-stack-nurse',{cap:6,risk:6,lookahead:true,restAware:true,contract:true,favorite:['nurse'],bias:12}),
+ policy('sparse-planner',{cap:2,risk:6,lookahead:true,restAware:true,contract:true}),
+ ...PASSENGER_ORDER.map(kind=>policy('favor-'+kind,{cap:4,risk:6,lookahead:true,restAware:true,contract:true,pairSearch:true,favorite:[kind],bias:4})),
+ ...PASSENGER_ORDER.map(kind=>policy('ban-'+kind,{cap:4,risk:6,lookahead:true,restAware:true,contract:true,pairSearch:true,banKind:kind})),
+ policy('profit-only-6',{cap:6,risk:0}),
+ policy('cautious-working',{cap:6,risk:9,mustServe:true}),
+ ...[3,6,9].map(risk=>policy('rest-aware-'+risk,{cap:6,risk,restAware:true})),
+ policy('rest-lookahead',{cap:4,risk:6,restAware:true,lookahead:true}),
+ policy('rest-relay',{cap:1,risk:6,restAware:true,relay:true,quick:true}),
+ policy('rest-relay-calm',{cap:2,risk:6,restAware:true,relay:true,quick:true,shop:'calm'}),
+];
+const mode=process.argv[2]??'train',runs=Number(process.argv[3]??100);
+const selected=(process.argv[4]??'all').split(','),context=process.argv[5]??'normal';
+assert.ok(['train','validate','stress'].includes(mode));assert.ok(Number.isInteger(runs)&&runs>0);
+const active=selected.includes('all')?policies:policies.filter(p=>selected.includes(p.id));
+assert.ok(active.length>0);for(const id of selected)assert.ok(id==='all'||policies.some(p=>p.id===id));
+assert.ok(['normal','cash-poor','agitated','late-build','midgame'].includes(context));
+const seedBase=90113477;
+const horizon=600,round=(v:number)=>Math.round(v*100)/100;
+const seeded=(seed:number)=>()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+const rngFor=(game:number,floor:number,phase:number)=>seeded(seedBase+game*100003+floor*991+phase*29009);
+function initial(){
+ const s=initialRun();
+ if(context==='normal')return s;
+ if(context==='cash-poor')return {...s,floor:41,coins:0,earned:400,energy:20,stress:3};
+ if(context==='agitated')return {...s,floor:41,coins:120,earned:500,energy:20,stress:12};
+ if(context==='midgame')return {...s,floor:41,coins:80,earned:400,energy:20,stress:6};
+ return {...s,floor:81,coins:150,earned:900,energy:22,stress:10,stressCap:24,weightCap:13,
+  upgrades:{...s.upgrades,calm:3,concierge:1,reinforced:1,solar:1}};
+}
+function capFor(p:Policy,s:RunState){
+ if(p.cashoutAt&&s.floor>=p.cashoutAt)return 0;
+ if(p.relay&&s.floor>=60&&s.restStops>0)return 0;
+ if(p.relay&&s.floor<60)return 4;
+ if(p.adaptive)return s.stress>=s.stressCap*.6||s.floor>=61?3:4;
+ if(p.earlyRush)return s.floor<40?5:3;
+ return p.cap;
+}
+function publicState(s:RunState):RunState{
+ return {...s,cabin:s.cabin.map(r=>r?.kind==='mystery'&&r.traits?{...r,traits:{...r.traits,fare:24}}:r)};
+}
+function evaluator(p:Policy){
+ const cache=new WeakMap<RunState,number>();
+ return (state:RunState)=>{
+  const cached=cache.get(state);if(cached!==undefined)return cached;
+  const forecast=stressForecast(state),near=state.stress>state.stressCap*.55;
+  const electric=energyForecast(state);
+ let score=-Math.max(0,-electric.lowDelta-1)*CHARGE_PRICE*1.5;
+ if(p.zeroExtra&&state.cabin.some((r,i)=>r&&riderProfile(r,state.cabin,i).energy))score-=500;
+ if(state.energy+electric.lowDelta<=0&&(state.floor+1)%10!==0)score-=500;
+ 
+  state.cabin.forEach((r,slot)=>{
+   if(!r)return;
+   const profile=riderProfile(r,state.cabin,slot),trip=Math.max(1,r.destination-state.floor);
+   let fare=profile.hidden?24:profile.fare;
+   const paired=r.kind==='lover'&&hasNeighbour(state.cabin,slot,['lover']);
+   const controlled=r.kind==='thief'&&hasNeighbour(state.cabin,slot,['cop','lawyer']);
+   if(paired)fare*=2;if(controlled)fare+=5;
+   if(r.kind==='ghost'&&hasNeighbour(state.cabin,slot,['exorcist']))fare+=6;
+   if(r.kind==='coach')fare+=neighbours(slot).filter(i=>state.cabin[i]).length*3;
+   if(r.kind!=='coach'&&hasNeighbour(state.cabin,slot,['coach']))fare=Math.ceil(fare*1.5);
+   fare+=r.fareBonus+(bondStatus(r,state.cabin,slot).supported?cooperationBonus(state):0);
+   const cost=0;
+   score+=fare/trip*1.5*(cost > r.patience ? .3 : 1);
+   if(p.restAware&&cost<=r.patience)score+=Math.min(REST_STOP_CAP,REST_STOP_CAP-state.restStops)*Math.max(1,Math.floor(state.floor/30))*2/trip;
+   if(paired)score+=1.5;
+   if(r.kind==='thief')score+=controlled?1:3;
+   if(r.kind==='drunk'&&hasNeighbour(state.cabin,slot,['musician','nurse']))score+=1;
+   if(r.kind==='celebrity'&&neighbours(slot).filter(i=>state.cabin[i]).length===1)score+=3;
+ if(r.kind==='inspector'&&electric.lowDelta===-1)score+=.5;
+   if(p.favorite.includes(r.kind))score+=p.bias;
+   if(p.rogue&&r.kind==='thief'&&!controlled)score+=3;
+   if(p.quick)score+=2/trip;
+   if(r.kind==='bomb'){
+    const cops=neighbours(slot).flatMap(i=>state.cabin[i]?.kind==='cop'?[state.cabin[i]!]:[]);
+    let fuse=r.fuse??0;
+    for(let floor=state.floor+1;floor<=r.destination;floor++){
+     if(!(floor%2===0&&cops.some(c=>c.destination>=floor)))fuse--;
+     // These policies do NOT intentionally use the impatience/fuse loophole.
+     if(fuse<=0&&floor<r.destination){score-=1000;break;}
+    }
+   }
+  });
+  score-=(forecast.lowDelta+forecast.highDelta)/2*(near?p.risk*3:p.risk);
+  if(state.stress+forecast.highDelta>=state.stressCap)score-=80;
+  if(totalWeight(state.cabin)>state.weightCap)score-=20;
+  if(p.lookahead){
+   let future=publicState(state);const rng=seeded(34327+state.floor*13);
+   for(let i=0;i<3&&future.status==='playing';i++)future=resolveFloor(future,rng);
+   // Planner samples are independent of real future RNG and contain no future
+   // offers. Mystery fare is masked even when a simulated arrival reveals it.
+   score+=.3*((future.earned-state.earned)-(future.stress-state.stress)*p.risk+(future.energy-state.energy)*2-(future.status==='lost'?1000:0));
+  }
+  cache.set(state,score);return score;
+ };
+}
+const summaries=[],outcomes:number[][]=[];
+let transitions=0,forecastFailures=0;
+for(const config of active){
+ let duplicateCalmerSteps=0,maxMusicians=0,maxNurses=0;
+ const exposed=Object.fromEntries(PASSENGER_ORDER.map(k=>[k,0])),delivered=Object.fromEntries(PASSENGER_ORDER.map(k=>[k,0])),riderSteps=Object.fromEntries(PASSENGER_ORDER.map(k=>[k,0]));
+ let extraEnergy=0,agitatedSteps=0,recoveries=0;
+ 
+ let gamesWithCalm=0,gamesWithContract=0;
+ const scores:number[]=[],boarded=Object.fromEntries(PASSENGER_ORDER.map(k=>[k,0])) as Record<PassengerKind,number>;
+ const purchases:Record<string,number>={},spending:Record<string,number>={},pressureSources:Record<string,number>={};let chargeSpend=0,shopVisits=0,firstShopPassed=0,deliveryCount=0,patienceLosses=0;
+ const deaths={power:0,agitation:0,fuse:0,censored:0},phaseEnd:number[][]=[[],[],[]];
+ let earned=0,steps=0,headcount=0,changes=0,dismissals=0,emptySteps=0,lateSteps=0,lateEmptySteps=0,lastBoardingSum=0;
+ const firstGameTrace:Array<{floor:number;coins:number;earned:number;stress:number;occupants:number}>=[];
+ for(let game=0;game<runs;game++){
+  const value=evaluator(config);let inDanger=false;
+  let state=initial(),offers=makeOffers(state.floor,state.upgrades,game%2===0&&context==='normal',rngFor(game,state.floor,1),state.cabin),lastBoarding=state.floor;
+  while(state.status!=='lost'&&state.floor<horizon){
+   if(state.status==='upgrade'){shopVisits++;const cashBeforeCharge=state.coins;
+    const charge=chargingPlan(state);state=chargeBattery(state,Math.min(config.chargeFull?state.energyCap-state.energy:charge.units,Math.floor(state.coins/CHARGE_PRICE)));
+    chargeSpend+=cashBeforeCharge-state.coins;
+    for(;;){
+     if(config.shop==='none')break;
+     if(config.cashoutAt&&state.floor>=config.cashoutAt)break;
+     const options=state.shop.filter(c=>!c.purchased&&(!config.contractOnly||c.key==='battery')&&(!config.contract||config.stackContract||c.key!=='battery'||state.upgrades.battery===0)&&c.key!==config.banUpgrade&&c.price<=state.coins&&(config.shop!=='calm'||c.key==='calm')).map(c=>{
+      let worth=c.key==='calm'?12+Math.min(state.stress,6)*8:c.key==='concierge'?32:c.key==='express'?35:c.key==='solar'?38:c.key==='reinforced'?38:24;
+      if(config.shop==='calm')worth=1000;
+      if(config.shop==='economy'&&state.floor<=60&&['battery','concierge'].includes(c.key))worth*=2;
+      const priority=config.contract&&c.key==='calm'&&state.stress>=state.stressCap?10000:config.contract&&c.key==='battery'&&(state.upgrades.battery===0||config.stackContract)?1000:0;
+      return {...c,score:priority||worth/c.price};
+     }).sort((a,b)=>b.score-a.score);
+     if(!options[0]||options[0].score<.3)break;
+     const next=installUpgrade(state,options[0].key);if(next===state)break;const key=options[0].key;purchases[key]=(purchases[key]??0)+1;spending[key]=(spending[key]??0)+state.coins-next.coins;state=next;
+    }
+    state=leaveShop(state);if(state.floor===10&&state.status==='playing')firstShopPassed++;
+    if(state.status==='playing')offers=makeOffers(state.floor,state.upgrades,false,rngFor(game,state.floor,1),state.cabin);
+    continue;
+   }
+   for(const r of offers)exposed[r.kind]++;
+   // Pay for relief, retaining a conservative next-shop electricity reserve.
+   for(let n=0;n<6;n++){
+    let best=value(state)+4,next=state;
+    const remaining=nextShopFloor(state.floor)-state.floor;
+    const reserve=CHARGE_PRICE*Math.max(0,Math.min(20,state.energyCap)-Math.max(0,state.energy-remaining));
+    for(const r of state.cabin){
+     if(!r)continue;const price=dismissalCost(state,r);
+     if(state.coins-price<reserve)continue;
+     const trial=dismissRider(state,r.id);if(trial===state)continue;
+     const utility=value(trial)-price/4;
+     if(utility>best){best=utility;next=trial;}
+    }
+    if(next===state)break;dismissals++;state=next;
+   }
+   // All three current offers are visible. Greedy marginal selection chooses
+   // the best offer AND position, rather than trusting their display order.
+   const waiting=offers.filter(r=>r.kind!==config.banKind);
+   if(config.pairSearch&&capFor(config,state)-state.cabin.filter(Boolean).length>=2){
+    let best=value(state)+.1,next=state,chosen:number[]=[];
+    for(const offer of waiting)for(let slot=0;slot<6;slot++)if(!state.cabin[slot]){
+     const plan=planPlacement(state,offer,slot);if(plan.ok)best=Math.max(best,value(plan.next));
+    }
+    for(let i=0;i<waiting.length;i++)for(let j=i+1;j<waiting.length;j++)for(let a=0;a<6;a++)if(!state.cabin[a]){
+     const first=planPlacement(state,waiting[i],a);if(!first.ok)continue;
+     for(let b=0;b<6;b++)if(!first.next.cabin[b]){
+      const second=planPlacement(first.next,waiting[j],b);if(!second.ok)continue;
+      const score=value(second.next);if(score>best){best=score;next=second.next;chosen=[i,j];}
+     }
+    }
+    if(chosen.length){for(const index of chosen)boarded[waiting[index].kind]++;for(const index of [...chosen].reverse())waiting.splice(index,1);state=next;lastBoarding=state.floor;}
+   }
+   for(let n=0;n<3&&state.cabin.filter(Boolean).length<capFor(config,state);n++){
+    let best=value(state)+.1,next=state,chosen=-1;
+    for(let i=0;i<waiting.length;i++){
+     const offer=waiting[i];
+     if(config.safe&&['ghost','drunk','bomb','child','shifter'].includes(offer.kind))continue;
+     for(let slot=0;slot<6;slot++){
+      if(state.cabin[slot])continue;
+      const plan=planPlacement(state,offer,slot);if(!plan.ok)continue;
+      const score=value(plan.next);
+      if(score>best){best=score;next=plan.next;chosen=i;}
+     }
+    }
+    if(chosen<0)break;
+    boarded[waiting[chosen].kind]++;waiting.splice(chosen,1);state=next;lastBoarding=state.floor;
+   }
+   // Ablation: same policy but voluntarily always carry at least one rider.
+ if((config.mustServe || config.relay && state.restStops === 0)&&!state.cabin.some(Boolean)){
+    let best=-Infinity,next=state,kind:PassengerKind|null=null;
+    for(const offer of waiting)for(let slot=0;slot<6;slot++){
+     const plan=planPlacement(state,offer,slot);if(!plan.ok)continue;
+     const utility=value(plan.next);
+     if(utility>best){best=utility;next=plan.next;kind=offer.kind;}
+    }
+    if(kind){boarded[kind]++;state=next;lastBoarding=state.floor;}
+   }
+   for(let n=0;n<config.moves;n++){
+    let best=value(state)+.1,next=state;
+    for(let a=0;a<6;a++)for(let b=a+1;b<6;b++){
+     const r=state.cabin[a]??state.cabin[b];if(!r)continue;
+     const target=state.cabin[a]?b:a,plan=planPlacement(state,r,target);
+     if(!plan.ok||!plan.changed)continue;
+     const score=value(plan.next);if(score>best){best=score;next=plan.next;}
+    }
+    if(next===state)break;changes++;state=next;
+   }
+   const pressure=stressForecast(state),electricity=energyForecast(state);
+   const next=resolveFloor(state,rngFor(game,state.floor,3));
+ for(const r of state.cabin){if(!r)continue;riderSteps[r.kind]++;if(!next.cabin.some(n=>n?.id===r.id))delivered[r.kind]++;}
+ extraEnergy+=Math.max(0,-next.lastEnergy.delta-1);
+ if(next.stress>=Math.ceil(next.stressCap*2/3)){inDanger=true;agitatedSteps++;}
+ else if(inDanger&&next.stress<=next.stressCap/2&&next.status!=='lost'){inDanger=false;recoveries++;}
+ 
+   if(next.lastPressure.delta<pressure.lowDelta||next.lastPressure.delta>pressure.highDelta||next.lastEnergy.delta!==electricity.lowDelta)forecastFailures++;
+   assert.ok(next.coins>=0&&next.earned>=next.coins&&next.energy<state.energy);
+   for(const line of next.lastPressure.sources){pressureSources[line.label]=(pressureSources[line.label]??0)+line.amount;if(line.label==='乘客到站舒缓')deliveryCount-=line.amount;if(line.label==='耐心归零')patienceLosses+=line.amount/2;}
+   const musicians=state.cabin.filter(r=>r?.kind==='musician').length,nurses=state.cabin.filter(r=>r?.kind==='nurse').length;
+   maxMusicians=Math.max(maxMusicians,musicians);maxNurses=Math.max(maxNurses,nurses);if(musicians>=2||nurses>=2)duplicateCalmerSteps++;
+   const occupied=state.cabin.filter(Boolean).length;headcount+=occupied;
+   if(!occupied)emptySteps++;
+   if(state.floor>=80){lateSteps++;if(!occupied)lateEmptySteps++;}
+   if(game===0&&state.floor%25===0)firstGameTrace.push({floor:state.floor,coins:state.coins,earned:state.earned,stress:state.stress,occupants:occupied});
+   state=next;steps++;transitions++;
+   if(state.status==='playing')offers=makeOffers(state.floor,state.upgrades,false,rngFor(game,state.floor,1),state.cabin);
+  }
+  gamesWithCalm+=Number(state.upgrades.calm>0);gamesWithContract+=Number(state.upgrades.battery>0);scores.push(state.floor);earned+=state.earned-initial().earned;lastBoardingSum+=lastBoarding;
+  deaths[state.status!=='lost'?'censored':state.message.includes('引信')?'fuse':state.energy<=0?'power':'agitation']++;
+  phaseEnd[game%3].push(state.floor);
+ }
+ outcomes.push(scores);
+ const sorted=[...scores].sort((a,b)=>a-b);
+ const summary={id:config.id,config,runs,exposed,delivered,riderSteps,extraEnergy,agitatedSteps,recoveries,gamesWithCalm,gamesWithContract,duplicateCalmerSteps,maxMusicians,maxNurses,purchases,spending,chargeSpend,shopVisits,firstShopPassed,deliveryCount,patienceLosses,pressureSources,mean:round(scores.reduce((a,b)=>a+b,0)/runs),median:sorted[Math.floor(runs/2)],p10:sorted[Math.floor(runs*.1)],p90:sorted[Math.floor(runs*.9)],max:sorted.at(-1),
+  reach100Pct:round(scores.filter(v=>v>=100).length/runs*100),reach150Pct:round(scores.filter(v=>v>=150).length/runs*100),deaths,meanIncome:round(earned/runs),meanOccupancy:round(headcount/steps),steps,changes,dismissals,boarded,floors:scores,
+  seedThirdMeans:phaseEnd.map(g=>round(g.reduce((s,v)=>s+v,0)/g.length)),
+  emptyStepPct:round(emptySteps/steps*100),lateEmptyStepPct:lateSteps?round(lateEmptySteps/lateSteps*100):0,meanLastBoardingFloor:round(lastBoardingSum/runs),firstGameTrace};
+ summaries.push(summary);console.error(JSON.stringify({id:summary.id,mean:summary.mean,median:summary.median,p10:summary.p10,max:summary.max}));
+}
+const rank=[...summaries].sort((a,b)=>b.mean-a.mean),leader=rank[0];
+const comparisons=summaries.filter(s=>s.id!==leader.id).map(s=>{
+ const differences=leader.floors.map((v,i)=>v-s.floors[i]),rng=seeded(30017),samples=[];
+ for(let b=0;b<500;b++){let sum=0;for(let i=0;i<runs;i++)sum+=differences[Math.floor(rng()*runs)];samples.push(sum/runs);}
+ samples.sort((a,b)=>a-b);
+ return {leader:leader.id,other:s.id,meanDifference:round(differences.reduce((s,v)=>s+v,0)/runs),bootstrap95:[round(samples[12]),round(samples[487])],
+  winPct:round(differences.filter(v=>v>0).length/runs*100),tiePct:round(differences.filter(v=>v===0).length/runs*100)};
+});
+assert.equal(forecastFailures,0);
+console.log(JSON.stringify({source:'v6.1-service-rest',mode,context,seedBase,initial:initial(),horizon,totalGames:runs*active.length,transitions,forecastFailures,
+ rank:rank.map(s=>s.id),summaries,comparisons,
+ limits:'Finite heuristic policy pool, not a proof of global nondominance. Training/validation/stress seeds are disjoint. Shop and phase RNG are floor-seeded; lover calls remain state-dependent. Scenario fixtures are conditional stress tests, not weighted normal-run probabilities. Intervals against the post-hoc best policy are descriptive and uncorrected for multiple comparisons. Bomb/impatience collision is fixed. Policies conservatively reject predicted early-fuse failure.'}));

@@ -8,8 +8,8 @@ for(const floor of [1,2,3,4])for(const extraEnergy of [0,1])for(const upgraded o
  const run=state({floor,stress,cabin:[rider('inspector'),null,extraEnergy?rider('tourist'):null,null,null,null]});
  if(upgraded)run.upgrades={...run.upgrades,reinforced:1,solar:1};
  const after=resolveFloor(run,()=>.9),even=(floor+1)%2===0;
- assert.equal(after.lastEarnings.sources.find(s=>s.label==='检查员合规奖励')?.amount??0,even&&!extraEnergy?1:0);
- assert.equal(riderAgitation(run,0).low,even&&extraEnergy?(stress>=10?2:1):0);
+ assert.equal(after.lastEarnings.sources.find(s=>s.label==='检查员合规奖励')?.amount??0,even&&(!extraEnergy||upgraded)?1:0);
+ assert.equal(riderAgitation(run,0).low,even&&extraEnergy&&!upgraded?(stress>=10?2:1):0);
  assert.equal(energySavings(run),0,'stabilizer consumes the one available extra cost before savings');
  assert.equal(after.energy,run.energy-1-(extraEnergy&&!upgraded?1:0));
  checks++;
@@ -33,4 +33,4 @@ for(const kind of ['mechanic','ghost','exorcist'] as const){
 const duplicate=state({cabin:[rider('inspector','a'),rider('inspector','b'),null,null,null,null]});
 assert.equal(resolveFloor(duplicate,()=>.9).coins,2,'each inspector grants one bounded reward');
 assert.equal(resolveFloor(duplicate,()=>.9).energy,19);
-console.log(JSON.stringify({version:'v6.6',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,savingsCopy:true}));
+console.log(JSON.stringify({version:'v6.7',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,savingsCopy:true}));

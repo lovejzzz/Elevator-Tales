@@ -63,7 +63,7 @@ export function riderAgitation(state: RunState, slot: number) {
     case 'child': if (even && !hasNeighbour(state.cabin, slot, ['lover', 'musician', 'nurse'])) add('儿童无人照顾', 1); break;
     case 'drunk': if (!hasNeighbour(state.cabin, slot, ['musician', 'nurse'])) random = 2 * multiplier; break;
     case 'celebrity': if (even && neighbourCount(state.cabin, slot) > 1) add('名人被围', 1); break;
-    case 'inspector': if (even && inspectionExtraEnergy(state) > 0) add('检查员发现额外耗电', 1); break;
+    case 'inspector': if (even && passengerEnergy(state) > 0) add('检查员发现额外耗电', 1); break;
     case 'musician': if (state.cabin.filter(Boolean).length >= 4) add('音乐家安抚', -1); break;
     case 'nurse': if (even) add('护士安抚', -1); break;
   }
@@ -103,8 +103,6 @@ export const energySavings = (state: RunState) => {
     if(rider?.kind==='ghost'&&hasNeighbour(state.cabin,slot,['exorcist']))saved++;
   });return Math.min(1,saved,Math.max(0,travelEnergyCost(next)+passengerEnergy(state)-stabilizedEnergy(state)-1));
 };
-// Inspection recognizes genuine savings; the base travel cost is never inspected.
-export const inspectionExtraEnergy = (state: RunState) => Math.max(0, passengerEnergy(state) - stabilizedEnergy(state) - energySavings(state));
 export const expressTrip = (baseTrip: number, installed: number) => installed > 0 && baseTrip >= 5 ? baseTrip - 1 : baseTrip;
 
 export function shuffle<T>(items: T[], rng: () => number = Math.random): T[] {
@@ -179,7 +177,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
       case 'drunk': if (calmDrunk) addCoins('醉汉安抚', 1); else if (rng() < .25) { const rise = riderAgitation(state, slot).random; adjustPressure('醉汉闹事', rise); const options = neighbours(slot); deferredSwaps.push([slot, options[rand(0, options.length - 1, rng)]]); stressReasons.push(`醉汉闹事并乱换位，躁动 +${rise}`); } break;
       case 'ghost': if (controlledGhost) notes.push('幽灵受控，不再延误邻座'); else if (nextFloor % 3 === 0) { const nearby = neighbours(slot).filter((i) => effectCabin[i]); if (nearby.length) { effectCabin[nearby[rand(0, nearby.length - 1, rng)]]!.destination += 1; notes.push('幽灵令邻座延误一层'); } } break;
       case 'celebrity': if (neighbourCount(effectCabin, slot) === 1) addCoins('名人关注', 3); break;
-      case 'inspector': if (nextFloor % 2 === 0 && inspectionExtraEnergy(state) === 0) addCoins('检查员合规奖励', INSPECTOR_COMPLIANCE_REWARD); break;
+      case 'inspector': if (nextFloor % 2 === 0 && passengerEnergy(state) === 0) addCoins('检查员合规奖励', INSPECTOR_COMPLIANCE_REWARD); break;
       case 'bomb': { const paused = hasNeighbour(effectCabin, slot, ['cop']) && nextFloor % 2 === 0; if (!paused) rider.fuse = (rider.fuse ?? 1) - 1; break; }
     }
   });

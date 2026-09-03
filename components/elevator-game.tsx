@@ -5,7 +5,7 @@ import { ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Check, Coins, Ga
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
-import { CHARGE_PRICE, passengerEnergy, eventPressureMultiplier, riderAgitation, shiftOutlook, COOPERATION_RELIEF, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, crowdAgitation, difficultyTier, EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, shiftAgitation, unlockedAt, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
+import { CHARGE_PRICE, inspectionExtraEnergy, eventPressureMultiplier, riderAgitation, shiftOutlook, COOPERATION_RELIEF, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, crowdAgitation, difficultyTier, EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, shiftAgitation, unlockedAt, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, stressForecast } from '@/lib/game-forecast';
 import { conflictingConnection, activeConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
@@ -156,7 +156,7 @@ export default function ElevatorGame() {
   useEffect(() => { const frame=requestAnimationFrame(() => { const savedBest = Math.max(1, Number(localStorage.getItem('elevator-tales-endless-best-floor') || 1)); const savedHighest = Math.max(1, Number(localStorage.getItem('elevator-tales-highest') || 1)); const shouldGuide = savedBest <= 1 || new URLSearchParams(window.location.search).get('tutorial') === '1'; setHighest(savedHighest); setBestFloor(savedBest); setRunStartBest(savedBest); setGuidedShift(shouldGuide); setOffers(makeOffers(1, EMPTY_UPGRADES, shouldGuide)); });return()=>cancelAnimationFrame(frame); }, []);
   useEffect(() => { const frame=requestAnimationFrame(()=>{ if (run.floor > highest) { setHighest(run.floor); localStorage.setItem('elevator-tales-highest', String(run.floor)); } if (run.floor > bestFloor) { setBestFloor(run.floor); localStorage.setItem('elevator-tales-endless-best-floor', String(run.floor)); } });return()=>cancelAnimationFrame(frame); }, [run.floor, highest, bestFloor]);
 
-  const extraEnergy = passengerEnergy(run); const occupied = run.cabin.filter(Boolean).length; const cabinFull = occupied === run.cabin.length; const unlocked = unlockedAt(Math.max(run.floor, highest));
+  const extraEnergy = inspectionExtraEnergy(run); const occupied = run.cabin.filter(Boolean).length; const cabinFull = occupied === run.cabin.length; const unlocked = unlockedAt(Math.max(run.floor, highest));
   const pressurePreview = useMemo(() => stressForecast(run), [run]); const energyPreview = useMemo(() => energyForecast(run), [run]);
   const forecastTone = energyPreview.danger ? 'danger' : pressurePreview.tone;
   const phase = shiftPhase(run.floor); const upgradeCount = Object.values(run.upgrades).reduce((sum, count) => sum + count, 0); const nextShop = nextShopFloor(run.floor); const agitated = run.stress >= agitationThreshold(run.stressCap);
@@ -337,7 +337,7 @@ export default function ElevatorGame() {
         </div>
       </aside>
     </section>
-    <footer className="footer-line"><span>ELV–07 / v6.6</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
+    <footer className="footer-line"><span>ELV–07 / v6.7</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
 
 
     <Dialog open={passengerDetails !== null} onOpenChange={(open) => {if(!open){setPassengerDetails(null);setEjectArmed(false);}}}><DialogContent className="story-dialog passenger-detail-dialog">
