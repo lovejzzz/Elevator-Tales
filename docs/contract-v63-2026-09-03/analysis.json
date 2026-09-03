@@ -1,0 +1,1034 @@
+{
+  "normalGames": 36800,
+  "scenarioRuns": 4320,
+  "transitions": 4376360,
+  "forecastFailures": 0,
+  "censored": 0,
+  "effects": [
+    {
+      "id": "cautious-6",
+      "before": 119.92,
+      "after": 123.98,
+      "n": 250,
+      "delta": 4.06,
+      "bootstrap95": [
+        2.72,
+        5.48
+      ],
+      "winPct": 48.4,
+      "tiePct": 32.4,
+      "oldCalmPerGame": 3.64,
+      "calmPerGame": 3.34,
+      "contractPerGame": 0.34,
+      "gamesWithCalm": 245
+    },
+    {
+      "id": "no-upgrades",
+      "before": 98.03,
+      "after": 98.03,
+      "n": 250,
+      "delta": 0,
+      "bootstrap95": [
+        0,
+        0
+      ],
+      "winPct": 0,
+      "tiePct": 100,
+      "oldCalmPerGame": 0,
+      "calmPerGame": 0,
+      "contractPerGame": 0,
+      "gamesWithCalm": 0
+    },
+    {
+      "id": "cautious-calm",
+      "before": 124.26,
+      "after": 124.26,
+      "n": 250,
+      "delta": 0,
+      "bootstrap95": [
+        0,
+        0
+      ],
+      "winPct": 0,
+      "tiePct": 100,
+      "oldCalmPerGame": 5.68,
+      "calmPerGame": 5.68,
+      "contractPerGame": 0,
+      "gamesWithCalm": 250
+    },
+    {
+      "id": "without-calm",
+      "before": 98.07,
+      "after": 103.17,
+      "n": 250,
+      "delta": 5.1,
+      "bootstrap95": [
+        3.91,
+        6.39
+      ],
+      "winPct": 52.8,
+      "tiePct": 29.2,
+      "oldCalmPerGame": 0,
+      "calmPerGame": 0,
+      "contractPerGame": 0.38,
+      "gamesWithCalm": 0
+    },
+    {
+      "id": "without-battery",
+      "before": 121.27,
+      "after": 121.27,
+      "n": 250,
+      "delta": 0,
+      "bootstrap95": [
+        0,
+        0
+      ],
+      "winPct": 0,
+      "tiePct": 100,
+      "oldCalmPerGame": 3.61,
+      "calmPerGame": 3.61,
+      "contractPerGame": 0,
+      "gamesWithCalm": 249
+    },
+    {
+      "id": "musician-stack-4-12",
+      "before": 120.06,
+      "after": 120.06,
+      "n": 250,
+      "delta": 0,
+      "bootstrap95": [
+        0,
+        0
+      ],
+      "winPct": 0,
+      "tiePct": 100,
+      "oldCalmPerGame": 5.09,
+      "calmPerGame": 5.09,
+      "contractPerGame": 0,
+      "gamesWithCalm": 250
+    },
+    {
+      "id": "contract-mixed-4",
+      "before": 120.75,
+      "after": 130.13,
+      "n": 250,
+      "delta": 9.38,
+      "bootstrap95": [
+        7.86,
+        10.96
+      ],
+      "winPct": 80,
+      "tiePct": 6.8,
+      "oldCalmPerGame": 2.96,
+      "calmPerGame": 2.59,
+      "contractPerGame": 1,
+      "gamesWithCalm": 244
+    },
+    {
+      "id": "contract-no-calm-4",
+      "before": 100.08,
+      "after": 110.06,
+      "n": 250,
+      "delta": 9.98,
+      "bootstrap95": [
+        8.79,
+        11.2
+      ],
+      "winPct": 82.4,
+      "tiePct": 3.6,
+      "oldCalmPerGame": 0,
+      "calmPerGame": 0,
+      "contractPerGame": 1,
+      "gamesWithCalm": 0
+    },
+    {
+      "id": "contract-mixed-6",
+      "before": 119.73,
+      "after": 130.15,
+      "n": 250,
+      "delta": 10.42,
+      "bootstrap95": [
+        8.84,
+        12.01
+      ],
+      "winPct": 80.8,
+      "tiePct": 6,
+      "oldCalmPerGame": 3.67,
+      "calmPerGame": 2.81,
+      "contractPerGame": 1,
+      "gamesWithCalm": 243
+    },
+    {
+      "id": "contract-no-calm-6",
+      "before": 98.12,
+      "after": 111.85,
+      "n": 250,
+      "delta": 13.73,
+      "bootstrap95": [
+        12.36,
+        15.17
+      ],
+      "winPct": 89.6,
+      "tiePct": 1.2,
+      "oldCalmPerGame": 0,
+      "calmPerGame": 0,
+      "contractPerGame": 1,
+      "gamesWithCalm": 0
+    },
+    {
+      "id": "contract-police-mixed",
+      "before": 116.53,
+      "after": 126.82,
+      "n": 250,
+      "delta": 10.3,
+      "bootstrap95": [
+        8.54,
+        12.03
+      ],
+      "winPct": 80.8,
+      "tiePct": 3.2,
+      "oldCalmPerGame": 3.02,
+      "calmPerGame": 2.56,
+      "contractPerGame": 1,
+      "gamesWithCalm": 228
+    },
+    {
+      "id": "contract-police-no-calm",
+      "before": 97.32,
+      "after": 108.04,
+      "n": 250,
+      "delta": 10.72,
+      "bootstrap95": [
+        9.52,
+        11.98
+      ],
+      "winPct": 84.4,
+      "tiePct": 3.6,
+      "oldCalmPerGame": 0,
+      "calmPerGame": 0,
+      "contractPerGame": 1,
+      "gamesWithCalm": 0
+    },
+    {
+      "id": "contract-lovers-mixed",
+      "before": 118.16,
+      "after": 128.76,
+      "n": 250,
+      "delta": 10.6,
+      "bootstrap95": [
+        9,
+        12.14
+      ],
+      "winPct": 82,
+      "tiePct": 4,
+      "oldCalmPerGame": 3.22,
+      "calmPerGame": 2.64,
+      "contractPerGame": 1,
+      "gamesWithCalm": 237
+    },
+    {
+      "id": "contract-lovers-no-calm",
+      "before": 97.34,
+      "after": 110.98,
+      "n": 250,
+      "delta": 13.64,
+      "bootstrap95": [
+        12.43,
+        14.9
+      ],
+      "winPct": 89.6,
+      "tiePct": 4,
+      "oldCalmPerGame": 0,
+      "calmPerGame": 0,
+      "contractPerGame": 1,
+      "gamesWithCalm": 0
+    },
+    {
+      "id": "contract-calming-mixed",
+      "before": 118.57,
+      "after": 129.55,
+      "n": 250,
+      "delta": 10.98,
+      "bootstrap95": [
+        9.36,
+        12.73
+      ],
+      "winPct": 81.6,
+      "tiePct": 2,
+      "oldCalmPerGame": 3.03,
+      "calmPerGame": 2.62,
+      "contractPerGame": 1,
+      "gamesWithCalm": 236
+    },
+    {
+      "id": "contract-calming-no-calm",
+      "before": 98.42,
+      "after": 110.77,
+      "n": 250,
+      "delta": 12.36,
+      "bootstrap95": [
+        11.05,
+        13.7
+      ],
+      "winPct": 88,
+      "tiePct": 3.2,
+      "oldCalmPerGame": 0,
+      "calmPerGame": 0,
+      "contractPerGame": 1,
+      "gamesWithCalm": 0
+    },
+    {
+      "id": "contract-stack",
+      "before": 110.93,
+      "after": 129.88,
+      "n": 250,
+      "delta": 18.95,
+      "bootstrap95": [
+        17.47,
+        20.43
+      ],
+      "winPct": 94.8,
+      "tiePct": 0.4,
+      "oldCalmPerGame": 3,
+      "calmPerGame": 2.72,
+      "contractPerGame": 7.76,
+      "gamesWithCalm": 244
+    },
+    {
+      "id": "contract-lookahead",
+      "before": 122.8,
+      "after": 132.81,
+      "n": 250,
+      "delta": 10.01,
+      "bootstrap95": [
+        8.4,
+        11.6
+      ],
+      "winPct": 83.6,
+      "tiePct": 1.6,
+      "oldCalmPerGame": 3.36,
+      "calmPerGame": 2.57,
+      "contractPerGame": 1,
+      "gamesWithCalm": 242
+    },
+    {
+      "id": "contract-lookahead-no-calm",
+      "before": 100.6,
+      "after": 112.82,
+      "n": 250,
+      "delta": 12.22,
+      "bootstrap95": [
+        11.02,
+        13.49
+      ],
+      "winPct": 87.6,
+      "tiePct": 2.4,
+      "oldCalmPerGame": 0,
+      "calmPerGame": 0,
+      "contractPerGame": 1,
+      "gamesWithCalm": 0
+    },
+    {
+      "id": "rest-lookahead",
+      "before": 123.54,
+      "after": 123.69,
+      "n": 250,
+      "delta": 0.14,
+      "bootstrap95": [
+        -0.53,
+        0.84
+      ],
+      "winPct": 20.4,
+      "tiePct": 66.8,
+      "oldCalmPerGame": 3.32,
+      "calmPerGame": 3.26,
+      "contractPerGame": 0.03,
+      "gamesWithCalm": 248
+    }
+  ],
+  "priceEffects": [
+    {
+      "id": "cautious-6",
+      "n": 250,
+      "delta": -4.45,
+      "bootstrap95": [
+        -5.6,
+        -3.39
+      ],
+      "winPct": 5.2,
+      "tiePct": 57.2
+    },
+    {
+      "id": "no-upgrades",
+      "n": 250,
+      "delta": 0,
+      "bootstrap95": [
+        0,
+        0
+      ],
+      "winPct": 0,
+      "tiePct": 100
+    },
+    {
+      "id": "cautious-calm",
+      "n": 250,
+      "delta": 0,
+      "bootstrap95": [
+        0,
+        0
+      ],
+      "winPct": 0,
+      "tiePct": 100
+    },
+    {
+      "id": "without-calm",
+      "n": 250,
+      "delta": -5.31,
+      "bootstrap95": [
+        -6.53,
+        -4.22
+      ],
+      "winPct": 4.8,
+      "tiePct": 57.6
+    },
+    {
+      "id": "without-battery",
+      "n": 250,
+      "delta": 0,
+      "bootstrap95": [
+        0,
+        0
+      ],
+      "winPct": 0,
+      "tiePct": 100
+    },
+    {
+      "id": "musician-stack-4-12",
+      "n": 250,
+      "delta": 0,
+      "bootstrap95": [
+        0,
+        0
+      ],
+      "winPct": 0,
+      "tiePct": 100
+    },
+    {
+      "id": "contract-mixed-4",
+      "n": 250,
+      "delta": 0.41,
+      "bootstrap95": [
+        -0.28,
+        1.08
+      ],
+      "winPct": 13.2,
+      "tiePct": 74
+    },
+    {
+      "id": "contract-no-calm-4",
+      "n": 250,
+      "delta": -0.36,
+      "bootstrap95": [
+        -1.08,
+        0.33
+      ],
+      "winPct": 8.8,
+      "tiePct": 79.2
+    },
+    {
+      "id": "contract-mixed-6",
+      "n": 250,
+      "delta": -0.41,
+      "bootstrap95": [
+        -1.32,
+        0.39
+      ],
+      "winPct": 12.4,
+      "tiePct": 72.4
+    },
+    {
+      "id": "contract-no-calm-6",
+      "n": 250,
+      "delta": 0.61,
+      "bootstrap95": [
+        -0.18,
+        1.33
+      ],
+      "winPct": 14.8,
+      "tiePct": 77.2
+    },
+    {
+      "id": "contract-police-mixed",
+      "n": 250,
+      "delta": -1.41,
+      "bootstrap95": [
+        -2.57,
+        -0.37
+      ],
+      "winPct": 12,
+      "tiePct": 70.8
+    },
+    {
+      "id": "contract-police-no-calm",
+      "n": 250,
+      "delta": -0.12,
+      "bootstrap95": [
+        -0.78,
+        0.53
+      ],
+      "winPct": 11.6,
+      "tiePct": 76.8
+    },
+    {
+      "id": "contract-lovers-mixed",
+      "n": 250,
+      "delta": -0.1,
+      "bootstrap95": [
+        -1.03,
+        0.8
+      ],
+      "winPct": 14.8,
+      "tiePct": 71.2
+    },
+    {
+      "id": "contract-lovers-no-calm",
+      "n": 250,
+      "delta": -0.04,
+      "bootstrap95": [
+        -0.7,
+        0.62
+      ],
+      "winPct": 12,
+      "tiePct": 76
+    },
+    {
+      "id": "contract-calming-mixed",
+      "n": 250,
+      "delta": 0.03,
+      "bootstrap95": [
+        -1.01,
+        0.99
+      ],
+      "winPct": 14,
+      "tiePct": 69.6
+    },
+    {
+      "id": "contract-calming-no-calm",
+      "n": 250,
+      "delta": -0.04,
+      "bootstrap95": [
+        -0.92,
+        0.79
+      ],
+      "winPct": 14,
+      "tiePct": 76
+    },
+    {
+      "id": "contract-stack",
+      "n": 250,
+      "delta": -1.42,
+      "bootstrap95": [
+        -2.55,
+        -0.33
+      ],
+      "winPct": 21.2,
+      "tiePct": 46.8
+    },
+    {
+      "id": "contract-lookahead",
+      "n": 250,
+      "delta": -0.74,
+      "bootstrap95": [
+        -1.68,
+        0.14
+      ],
+      "winPct": 13.2,
+      "tiePct": 69.2
+    },
+    {
+      "id": "contract-lookahead-no-calm",
+      "n": 250,
+      "delta": -0.74,
+      "bootstrap95": [
+        -1.73,
+        0.24
+      ],
+      "winPct": 10.4,
+      "tiePct": 76
+    },
+    {
+      "id": "rest-lookahead",
+      "n": 250,
+      "delta": -4.6,
+      "bootstrap95": [
+        -5.61,
+        -3.58
+      ],
+      "winPct": 3.6,
+      "tiePct": 61.6
+    }
+  ],
+  "scenarios": [
+    {
+      "context": "cash-poor",
+      "effects": [
+        {
+          "id": "cautious-calm",
+          "before": 110.16,
+          "after": 110.16,
+          "n": 80,
+          "delta": 0,
+          "bootstrap95": [
+            0,
+            0
+          ],
+          "winPct": 0,
+          "tiePct": 100
+        },
+        {
+          "id": "contract-mixed-4",
+          "before": 101.03,
+          "after": 108.56,
+          "n": 80,
+          "delta": 7.54,
+          "bootstrap95": [
+            5.2,
+            9.98
+          ],
+          "winPct": 65,
+          "tiePct": 27.5
+        },
+        {
+          "id": "contract-no-calm-4",
+          "before": 94.83,
+          "after": 100.36,
+          "n": 80,
+          "delta": 5.54,
+          "bootstrap95": [
+            4,
+            7.1
+          ],
+          "winPct": 63.75,
+          "tiePct": 28.75
+        },
+        {
+          "id": "contract-stack",
+          "before": 101.18,
+          "after": 113.51,
+          "n": 80,
+          "delta": 12.34,
+          "bootstrap95": [
+            9.61,
+            15.2
+          ],
+          "winPct": 76.25,
+          "tiePct": 16.25
+        },
+        {
+          "id": "contract-lookahead",
+          "before": 108.29,
+          "after": 120.01,
+          "n": 80,
+          "delta": 11.73,
+          "bootstrap95": [
+            9.1,
+            14.41
+          ],
+          "winPct": 78.75,
+          "tiePct": 12.5
+        },
+        {
+          "id": "contract-lookahead-no-calm",
+          "before": 98.44,
+          "after": 109.16,
+          "n": 80,
+          "delta": 10.73,
+          "bootstrap95": [
+            8.59,
+            13
+          ],
+          "winPct": 81.25,
+          "tiePct": 11.25
+        }
+      ]
+    },
+    {
+      "context": "agitated",
+      "effects": [
+        {
+          "id": "cautious-calm",
+          "before": 114.78,
+          "after": 114.78,
+          "n": 80,
+          "delta": 0,
+          "bootstrap95": [
+            0,
+            0
+          ],
+          "winPct": 0,
+          "tiePct": 100
+        },
+        {
+          "id": "contract-mixed-4",
+          "before": 105,
+          "after": 114.68,
+          "n": 80,
+          "delta": 9.68,
+          "bootstrap95": [
+            6.91,
+            12.53
+          ],
+          "winPct": 72.5,
+          "tiePct": 10
+        },
+        {
+          "id": "contract-no-calm-4",
+          "before": 96.4,
+          "after": 105.01,
+          "n": 80,
+          "delta": 8.61,
+          "bootstrap95": [
+            6.34,
+            10.91
+          ],
+          "winPct": 75,
+          "tiePct": 10
+        },
+        {
+          "id": "contract-stack",
+          "before": 102.66,
+          "after": 117.8,
+          "n": 80,
+          "delta": 15.14,
+          "bootstrap95": [
+            12.26,
+            17.98
+          ],
+          "winPct": 82.5,
+          "tiePct": 8.75
+        },
+        {
+          "id": "contract-lookahead",
+          "before": 109.25,
+          "after": 124.25,
+          "n": 80,
+          "delta": 15,
+          "bootstrap95": [
+            11.76,
+            18.41
+          ],
+          "winPct": 83.75,
+          "tiePct": 5
+        },
+        {
+          "id": "contract-lookahead-no-calm",
+          "before": 97.78,
+          "after": 109.21,
+          "n": 80,
+          "delta": 11.44,
+          "bootstrap95": [
+            9.05,
+            13.79
+          ],
+          "winPct": 72.5,
+          "tiePct": 17.5
+        }
+      ]
+    },
+    {
+      "context": "late-build",
+      "effects": [
+        {
+          "id": "cautious-calm",
+          "before": 110.99,
+          "after": 110.99,
+          "n": 80,
+          "delta": 0,
+          "bootstrap95": [
+            0,
+            0
+          ],
+          "winPct": 0,
+          "tiePct": 100
+        },
+        {
+          "id": "contract-mixed-4",
+          "before": 109.14,
+          "after": 112.84,
+          "n": 80,
+          "delta": 3.7,
+          "bootstrap95": [
+            2.26,
+            5.15
+          ],
+          "winPct": 45,
+          "tiePct": 47.5
+        },
+        {
+          "id": "contract-no-calm-4",
+          "before": 107.74,
+          "after": 110.96,
+          "n": 80,
+          "delta": 3.23,
+          "bootstrap95": [
+            1.93,
+            4.59
+          ],
+          "winPct": 42.5,
+          "tiePct": 48.75
+        },
+        {
+          "id": "contract-stack",
+          "before": 107.94,
+          "after": 111.29,
+          "n": 80,
+          "delta": 3.35,
+          "bootstrap95": [
+            2.19,
+            4.6
+          ],
+          "winPct": 48.75,
+          "tiePct": 41.25
+        },
+        {
+          "id": "contract-lookahead",
+          "before": 109.51,
+          "after": 114.78,
+          "n": 80,
+          "delta": 5.26,
+          "bootstrap95": [
+            3.61,
+            6.83
+          ],
+          "winPct": 48.75,
+          "tiePct": 45
+        },
+        {
+          "id": "contract-lookahead-no-calm",
+          "before": 107.54,
+          "after": 112.61,
+          "n": 80,
+          "delta": 5.08,
+          "bootstrap95": [
+            3.45,
+            6.63
+          ],
+          "winPct": 50,
+          "tiePct": 42.5
+        }
+      ]
+    }
+  ],
+  "leader": "contract-lookahead",
+  "leaderComparisons": [
+    {
+      "id": "cautious-6",
+      "n": 250,
+      "delta": -8.84,
+      "bootstrap95": [
+        -10.34,
+        -7.28
+      ],
+      "winPct": 18.8,
+      "tiePct": 2.8
+    },
+    {
+      "id": "no-upgrades",
+      "n": 250,
+      "delta": -34.78,
+      "bootstrap95": [
+        -36.09,
+        -33.44
+      ],
+      "winPct": 0.4,
+      "tiePct": 0
+    },
+    {
+      "id": "cautious-calm",
+      "n": 250,
+      "delta": -8.55,
+      "bootstrap95": [
+        -10.2,
+        -6.9
+      ],
+      "winPct": 20,
+      "tiePct": 2.8
+    },
+    {
+      "id": "without-calm",
+      "n": 250,
+      "delta": -29.64,
+      "bootstrap95": [
+        -31.26,
+        -27.97
+      ],
+      "winPct": 2.4,
+      "tiePct": 0
+    },
+    {
+      "id": "without-battery",
+      "n": 250,
+      "delta": -11.54,
+      "bootstrap95": [
+        -12.95,
+        -10.18
+      ],
+      "winPct": 10.4,
+      "tiePct": 2
+    },
+    {
+      "id": "musician-stack-4-12",
+      "n": 250,
+      "delta": -12.75,
+      "bootstrap95": [
+        -14.38,
+        -11.02
+      ],
+      "winPct": 11.2,
+      "tiePct": 2.8
+    },
+    {
+      "id": "contract-mixed-4",
+      "n": 250,
+      "delta": -2.68,
+      "bootstrap95": [
+        -4.19,
+        -1.17
+      ],
+      "winPct": 38.8,
+      "tiePct": 2.4
+    },
+    {
+      "id": "contract-no-calm-4",
+      "n": 250,
+      "delta": -22.76,
+      "bootstrap95": [
+        -24.4,
+        -21.12
+      ],
+      "winPct": 6.8,
+      "tiePct": 1.2
+    },
+    {
+      "id": "contract-mixed-6",
+      "n": 250,
+      "delta": -2.66,
+      "bootstrap95": [
+        -4.26,
+        -1.14
+      ],
+      "winPct": 33.2,
+      "tiePct": 5.6
+    },
+    {
+      "id": "contract-no-calm-6",
+      "n": 250,
+      "delta": -20.96,
+      "bootstrap95": [
+        -22.7,
+        -19.25
+      ],
+      "winPct": 5.2,
+      "tiePct": 0.8
+    },
+    {
+      "id": "contract-police-mixed",
+      "n": 250,
+      "delta": -5.99,
+      "bootstrap95": [
+        -7.92,
+        -4.19
+      ],
+      "winPct": 32,
+      "tiePct": 2.4
+    },
+    {
+      "id": "contract-police-no-calm",
+      "n": 250,
+      "delta": -24.77,
+      "bootstrap95": [
+        -26.44,
+        -23.12
+      ],
+      "winPct": 5.2,
+      "tiePct": 0.4
+    },
+    {
+      "id": "contract-lovers-mixed",
+      "n": 250,
+      "delta": -4.05,
+      "bootstrap95": [
+        -5.72,
+        -2.34
+      ],
+      "winPct": 32.4,
+      "tiePct": 5.2
+    },
+    {
+      "id": "contract-lovers-no-calm",
+      "n": 250,
+      "delta": -21.83,
+      "bootstrap95": [
+        -23.44,
+        -20.12
+      ],
+      "winPct": 4.8,
+      "tiePct": 0.8
+    },
+    {
+      "id": "contract-calming-mixed",
+      "n": 250,
+      "delta": -3.26,
+      "bootstrap95": [
+        -5.04,
+        -1.47
+      ],
+      "winPct": 37.6,
+      "tiePct": 4.8
+    },
+    {
+      "id": "contract-calming-no-calm",
+      "n": 250,
+      "delta": -22.04,
+      "bootstrap95": [
+        -23.71,
+        -20.27
+      ],
+      "winPct": 4.8,
+      "tiePct": 1.2
+    },
+    {
+      "id": "contract-stack",
+      "n": 250,
+      "delta": -2.93,
+      "bootstrap95": [
+        -4.57,
+        -1.34
+      ],
+      "winPct": 35.6,
+      "tiePct": 3.6
+    },
+    {
+      "id": "contract-lookahead-no-calm",
+      "n": 250,
+      "delta": -20,
+      "bootstrap95": [
+        -21.55,
+        -18.42
+      ],
+      "winPct": 4.8,
+      "tiePct": 4
+    },
+    {
+      "id": "rest-lookahead",
+      "n": 250,
+      "delta": -9.12,
+      "bootstrap95": [
+        -10.59,
+        -7.63
+      ],
+      "winPct": 16,
+      "tiePct": 4.8
+    }
+  ]
+}

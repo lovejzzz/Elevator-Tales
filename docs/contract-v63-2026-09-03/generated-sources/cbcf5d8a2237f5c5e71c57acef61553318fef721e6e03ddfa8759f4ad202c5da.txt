@@ -76,7 +76,7 @@ export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|n
   neighbor:`旁边仍有${partnerNames.join('或')}`,
   reward:`额外 +${bonus} 金币`,
   relief:relief>0 ? `额外躁动 −${relief}` : null,
-  limit:relief>0 ? '舒缓全车每层1次' : null,
+  limit:relief>0 ? '减躁动全车每层1次' : null,
  };
  const skillRules=PASSENGER_RULES[rider.kind],bondRules=bondLines(rider,cabin,bonus);
  const detailRules=[...(['thief','cop','lawyer'].includes(rider.kind)?[]:skillRules),bondRules[1],'协作免除的只是邻座冲突，其他角色技能仍按各自条件触发。',...bondRules.slice(3)];

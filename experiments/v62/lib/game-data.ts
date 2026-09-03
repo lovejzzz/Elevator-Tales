@@ -62,7 +62,7 @@ export const UNLOCK_TIERS: { floor: number; kinds: PassengerKind[] }[] = [
 
 export type UpgradeKey = 'battery' | 'solar' | 'calm' | 'concierge' | 'reinforced' | 'express';
 export const UPGRADES: Record<UpgradeKey, { name: string; label: string; description: string; strategy: string; tone: 'sustain' | 'control' | 'score' | 'capacity' | 'tempo' }> = {
-  battery: { name: '默契契约', label: 'COOPERATION', description: '每级协作到站再 +2 金币，并解锁协作送达舒缓。减躁动全车每层最多一次，强度不随等级叠加；购买时不立即舒缓。', strategy: '协作控场', tone: 'control' },
+  battery: { name: '默契契约', label: 'COOPERATION', description: '每位协作乘客的到站联动奖励再 +2 金币，可叠加。', strategy: '联动投资', tone: 'score' },
   solar: { name: '节能线路', label: 'ECO CIRCUIT', description: '每四层少耗 1 电；总耗电最低为 1。本局限装一次。', strategy: '长期节能', tone: 'sustain' },
   calm: { name: '舒缓系统', label: 'CALM SYSTEM', description: '躁动上限 +3，并立即降低 6 躁动。', strategy: '控场缓冲', tone: 'control' },
   concierge: { name: '礼宾服务', label: 'CONCIERGE', description: '此后新乘客初始耐心 +3，到站小费 +2。', strategy: '收入投资', tone: 'score' },

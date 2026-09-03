@@ -415,6 +415,8 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .mobile-cooperation>span,.mobile-cooperation>b { display:block; }
   .mobile-cooperation .mobile-partner { display:inline-block; white-space:nowrap; }
   .mobile-cooperation>b { color:#d0e7bd; font-weight:600; }
+  .mobile-cooperation .mobile-contract-limit { font-size:11px; color:#a4bfac; }
+  .has-contract .game-grid { grid-template-rows:clamp(264px,33dvh,276px) minmax(0,1fr) 68px; }
   .mobile-card-state { margin-top:auto; color:#aab7a3; font:500 11px/1.4 var(--font-sans); min-height:16px; white-space:nowrap; }
   .boarded .mobile-card-state,.pending .mobile-card-state { color:#f1cf8a; }
   .mobile-card-state.fact-danger { color:#efac88; }
@@ -513,6 +515,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 }
 @media (max-width:700px) and (max-height:700px) {
   .game-grid { grid-template-rows:204px minmax(0,1fr) 65px; gap:5px; }
+  .has-contract .game-grid { grid-template-rows:240px minmax(0,1fr) 65px; }
   .brand-bar { flex-basis:34px; height:34px; }.brand-bar h1 { font-size:24px; }
   .brand-actions .icon-button { width:36px; height:34px; }
   .passenger-card { padding:5px 4px; }
@@ -540,6 +543,25 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .status-rail .meter-card,.status-rail .score-card { padding-block:1px; }
   .status-rail .receipt-button { position:absolute; right:calc(100% + 11px); top:8px; width:48px; min-height:30px; padding:3px; z-index:9; background:#122019; font-size:10px; line-height:1.25; }
   .cabin-title { display:none; }
+}
+/* Contract explanations need more card height; keep every metric above the
+   departure controls on short phones without hiding its value or limit. */
+@media (max-width:700px) and (max-height:580px) {
+  .has-contract .game-grid { grid-template-columns:minmax(0,1fr) 80px; }
+  .has-contract .status-rail { grid-template-rows:40px 78px 24px minmax(49px,1fr); gap:3px; }
+  .has-contract .status-rail .meter-card,.has-contract .status-rail .score-card { gap:0; }
+  .has-contract .status-rail .meter-track { display:none; }
+  .has-contract .status-rail .rest-stops { margin-top:0; }
+  .has-contract .status-rail .load-card { flex-direction:row; align-items:center; justify-content:space-between; padding:0 4px; gap:1px; }
+  .has-contract .status-rail .load-card>span { font-size:10px; white-space:nowrap; }
+  .has-contract .status-rail .load-card>b { font-size:13px; white-space:nowrap; }
+  .has-contract .status-rail .score-card>span { font-size:11px; }
+  .has-contract .status-rail .score-card>strong { font-size:18px; }
+  .has-contract .standing-grid { top:58px; bottom:30px; gap:4px; }
+  .has-contract .standing-slot .portrait-large { width:min(74cqw,calc(100cqh - 20px),80px); bottom:10px; }
+  .has-contract .standing-slot .rider-name { bottom:4px; font-size:11px; }
+  .has-contract .standing-slot .patience { bottom:0; }
+  .has-contract .standing-slot .slot-destination { top:1px; font-size:9px; }
 }
 @media (prefers-reduced-motion:reduce) {
   .game-shell *,.game-shell *::before,.game-shell *::after,.story-dialog,.story-dialog * { animation:none!important; transition:none!important; scroll-behavior:auto!important; }

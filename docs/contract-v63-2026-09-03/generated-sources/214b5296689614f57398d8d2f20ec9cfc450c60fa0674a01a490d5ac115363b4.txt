@@ -31,7 +31,7 @@ export type PassengerRuleBlock = {
  tone: 'neutral' | 'good' | 'risk'; heading: string; lines: string[]; note?: string;
 };
 
-export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bonus=3, relief=0): PassengerRuleBlock[] {
+export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bonus=3): PassengerRuleBlock[] {
  const bond=bondSummary(rider,cabin,bonus),name=PASSENGERS[rider.kind].name;
  const partners=bond.partners.replaceAll(' / ','或'),opponents=bond.opponents.replaceAll(' / ','或');
  const short=PASSENGERS[rider.kind].short;
@@ -55,10 +55,6 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
   ability.lines=['旁边的小偷：每层收益从 3 降为 1 金币，不再产生偷窃躁动。'];
   ability.note='律师不能延缓炸弹引信。';
  }
- if(relief>0){
-  cooperation.lines.push(`契约生效：${name}协作到站，额外躁动 −${relief}。`);
-  cooperation.note='到站时仍相邻才生效。减躁动全车每层仅一次，送达多人或多装契约不叠加。';
- }
  return [ability,cooperation,{
   tone:'risk',heading:`冲突：旁边有${opponents}`,
   lines:['每到偶数层，额外躁动 +1。'],
@@ -66,7 +62,7 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
  }];
 }
 
-export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|null>=[], bonus=3, relief=0) {
+export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|null>=[], bonus=3) {
  const profile=riderProfile(rider,cabin);
  const bond=bondSummary(rider,cabin,bonus);
  const partnerNames=profile.bond.likes.map(kind=>(kind===rider.kind?'另一位':'')+PASSENGERS[kind].name);
@@ -75,11 +71,9 @@ export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|n
   partners:partnerNames,
   neighbor:`旁边仍有${partnerNames.join('或')}`,
   reward:`额外 +${bonus} 金币`,
-  relief:relief>0 ? `额外躁动 −${relief}` : null,
-  limit:relief>0 ? '舒缓全车每层1次' : null,
  };
  const skillRules=PASSENGER_RULES[rider.kind],bondRules=bondLines(rider,cabin,bonus);
  const detailRules=[...(['thief','cop','lawyer'].includes(rider.kind)?[]:skillRules),bondRules[1],'协作免除的只是邻座冲突，其他角色技能仍按各自条件触发。',...bondRules.slice(3)];
  return {coins:profile.hidden?null:profile.fare, tip:rider.fareBonus, energy:0,weight:profile.weight,hidden:profile.hidden,
-  distance:Math.max(0,rider.destination-floor),bond,cooperation,cardRules:passengerCardRules(rider,cabin,bonus,relief),detailRules,skillRules,bondRules,rules:[...skillRules,...bondRules]};
+  distance:Math.max(0,rider.destination-floor),bond,cooperation,cardRules:passengerCardRules(rider,cabin,bonus),detailRules,skillRules,bondRules,rules:[...skillRules,...bondRules]};
 }

@@ -210,7 +210,7 @@ export function previewUpgrade(current: RunState, key: UpgradeKey): RunState {
   return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap };
 }
 
-const BASE_PRICES: Record<UpgradeKey, number> = { battery: 60, solar: 55, calm: 35, concierge: 50, reinforced: 45, express: 65 };
+const BASE_PRICES: Record<UpgradeKey, number> = { battery: 75, solar: 55, calm: 35, concierge: 50, reinforced: 45, express: 65 };
 export const upgradePrice = (key: UpgradeKey, floor: number, installed: number) => BASE_PRICES[key] + Math.max(0, Math.floor(floor / 10) - 1) * 12 + installed * 15;
 export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
   const card = current.shop.find((item) => item.key === key);

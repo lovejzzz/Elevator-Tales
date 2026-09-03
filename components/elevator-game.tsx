@@ -5,7 +5,7 @@ import { ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Check, Coins, Ga
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
-import { chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, crowdAgitation, difficultyTier, EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, shiftAgitation, totalWeight, unlockedAt, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
+import { COOPERATION_RELIEF, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, crowdAgitation, difficultyTier, EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, shiftAgitation, totalWeight, unlockedAt, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, stressForecast } from '@/lib/game-forecast';
 import { conflictingConnection, activeConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
@@ -96,7 +96,7 @@ const rescuesCrisis = (key: UpgradeKey, run: RunState) => {
 function upgradeImpact(key: UpgradeKey, run: RunState): string {
   const preview = previewUpgrade(run, key);
   switch (key) {
-    case 'battery': return `协作到站加成 ${cooperationBonus(run)} → ${cooperationBonus(preview)} 金币`;
+    case 'battery': return `协作到站 +${cooperationBonus(run)} → +${cooperationBonus(preview)} 金币；${run.upgrades.battery ? '舒缓仍为' : '另减'} ${cooperationRelief(preview)} 躁动，全车每层仅1次，不叠加。购买时不立即减躁动。`;
     case 'calm': return `躁动 ${run.stress}/${run.stressCap} → ${preview.stress}/${preview.stressCap}`;
     case 'reinforced': return `载重上限 ${run.weightCap} → ${preview.weightCap}`;
     case 'solar': return '每四层少耗1电 · 本局唯一，不重复叠加';
@@ -161,7 +161,7 @@ export default function ElevatorGame() {
   const resultChallenge = failureLesson(run);
   const chargePlan=chargingPlan(run);
   const detailRider=passengerDetails ? run.cabin.find(r=>r?.id===passengerDetails.id) ?? offers.find(r=>r.id===passengerDetails.id) ?? passengerDetails : null;
-  const detailBrief=detailRider ? passengerBrief(detailRider,run.floor,run.cabin,cooperationBonus(run)) : null;
+  const detailBrief=detailRider ? passengerBrief(detailRider,run.floor,run.cabin,cooperationBonus(run),cooperationRelief(run)) : null;
   const detailOnboard=detailRider ? run.cabin.some(r=>r?.id===detailRider.id) : false;
   const canDismiss=Boolean(detailRider&&detailOnboard&&detailRider.boardedAt<run.floor&&run.status==='playing'&&doors==='open');
   const penalty=detailRider?dismissalCost(run,detailRider):0;
@@ -252,7 +252,7 @@ export default function ElevatorGame() {
     flash({tone:'place',label:`已请离 · 赔偿 ${penalty} 金币`,slots:[]});playTone(sound,'place');
   };
 
-  return <main className={`game-shell ${difficultyTier(run.floor) % 2 ? 'phase-dawn' : ''}`}>
+  return <main className={`game-shell ${cooperationRelief(run) ? 'has-contract' : ''} ${difficultyTier(run.floor) % 2 ? 'phase-dawn' : ''}`}>
     <div className="ambient-grain" />
     <header className="brand-bar"><div><p className="eyebrow">A MIDNIGHT MANAGEMENT TALE</p><h1>Elevator Tales</h1></div><div className="brand-actions"><button className="icon-button" onClick={() => setHelp(true)} aria-label="玩法说明"><HelpCircle /></button><button className="icon-button" onClick={() => { soundEnabled.current = !sound; if (sound) disposeGameAudio(); setSound(!sound); }} aria-label={sound ? '关闭声音' : '打开声音'}>{sound ? <Volume2 /> : <VolumeX />}</button><button className="icon-button inventory-button" onClick={() => setInventoryOpen(true)} aria-label={`查看已装升级，共 ${upgradeCount} 次`}><Layers /><span>{upgradeCount}</span></button><button className="text-button" onClick={() => setArchive(true)}>乘客档案 <span>{String(unlocked.length).padStart(2, '0')} / {PASSENGER_ORDER.length}</span></button></div></header>
     <section className="game-grid">
@@ -301,7 +301,7 @@ export default function ElevatorGame() {
         <p className="arrival-explainer">送达后领取基础奖励 · 途中收益与人物联动另算</p>
         <div className="passenger-list" key={run.floor} aria-label="本层候客乘客">
           {offers.map((offer) => {
-            const spec = PASSENGERS[offer.kind]; const brief = passengerBrief(offer, run.floor, run.cabin, cooperationBonus(run));
+            const spec = PASSENGERS[offer.kind]; const brief = passengerBrief(offer, run.floor, run.cabin, cooperationBonus(run),cooperationRelief(run));
             const boarded = run.cabin.some((rider) => rider?.id === offer.id); const pending = pendingOfferId === offer.id;
             const full = !boarded && cabinFull; const tooHeavy = !boarded && !run.cabin.some((r,slot)=>!r && planPlacement(run,offer,slot).ok);
             const unavailable = full || tooHeavy; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id;
@@ -315,6 +315,7 @@ export default function ElevatorGame() {
                   <span>{brief.cooperation.arrival}</span>
                   <span>旁边仍有{brief.cooperation.partners.map((name,index)=><span className="mobile-partner" key={name}>{index>0?'或':''}{name}</span>)}</span>
                   <b>{brief.cooperation.reward}</b>
+                  {brief.cooperation.relief && <><b>{brief.cooperation.relief}</b><span className="mobile-contract-limit">{brief.cooperation.limit}</span></>}
                 </span>
                 <span className={`mobile-card-state ${offer.fuse !== undefined ? 'fact-danger' : ''}`}>{boarded ? '已上车 · 撤回' : pending ? '已选 · 点空位' : full ? '车厢已满' : tooHeavy ? '载重不足' : offer.fuse !== undefined ? `引信 ${offer.fuse} · 危险` : partner ? `联动 · ${PASSENGERS[partner].name}` : '点选上车'}</span>
               </span>
@@ -335,7 +336,7 @@ export default function ElevatorGame() {
         </div>
       </aside>
     </section>
-    <footer className="footer-line"><span>ELV–07 / v6.2</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
+    <footer className="footer-line"><span>ELV–07 / v6.3</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
 
 
     <Dialog open={passengerDetails !== null} onOpenChange={(open) => {if(!open){setPassengerDetails(null);setEjectArmed(false);}}}><DialogContent className="story-dialog passenger-detail-dialog">
@@ -374,6 +375,7 @@ export default function ElevatorGame() {
       <div><b>十层补给</b><p>充电每点2金币，先留路费再买卡；右上角叠层图标可查看已装升级。</p></div><div><b>协作与冲突</b><p>每个人都有协作和冲突对象。本人到站时仍与任意协作对象相邻，额外 +{cooperationBonus(run)} 金币，每人只领一次。角色技能另算；没有协作邻座时，冲突邻座会在偶数层增加1躁动。</p></div><div><b>到层请离</b><p>选中车内人物，打开人物详情后请离。赔偿4+剩余站数×2金币，不结算到站奖励。本层刚上车仍可免费撤回。</p></div>
       <div><b>空驶休整</b><p>开局3次；每送达1人恢复1次，最多3次。空车上行自动消耗1次，免除本层长班疲劳。用尽后仍能空驶，但不再免疲劳。接客、撤回、请离与购物都不恢复次数。</p></div>
       <div><b>无尽难度</b><p>初始20电、容量24。每站基础耗2电，节能最低耗1。每过30层增加长班疲劳；电量不足要到补给站付费充电。</p></div>
+      <div><b>默契契约 · 协作送达</b><p>购买后，本层有乘客到站且仍挨着自己的协作对象，额外躁动 −{COOPERATION_RELIEF}。全车每层仅触发一次，送达多人或多次升级不叠加；请离、失去耐心离开不算送达，购买时也不立即舒缓。</p></div>
     </div></DialogContent></Dialog>
     <Dialog open={pressureHelp} onOpenChange={setPressureHelp}><DialogContent className="story-dialog pressure-dialog"><p className="dialog-kicker">CABIN AGITATION</p><DialogHeader><DialogTitle>人多、等得久，就会躁动。</DialogTitle><DialogDescription>躁动达到 {agitationThreshold(run.stressCap)}：全员耐心每站消耗2点；达到 {run.stressCap}：本班失控。音乐家、护士和快速送达能缓解。</DialogDescription></DialogHeader><div className="pressure-rule-grid">
       <section className="pressure-rise"><small>会增加躁动</small><b>轿厢拥挤</b><p>5人每站 +1；满6人每站 +2。</p><b>长班疲劳</b><p>每过30层，每站多 +1；空车有休整次数时免除。下一站 +{shiftAgitation(run.floor + 1, occupied, run.restStops)}。</p><b>人物事件</b><p>未受控小偷、醉汉、被围住的名人和超载检查，会按卡片规则增加躁动。</p><b>耐心归零</b><p>每位提前离开的乘客 +2。</p></section>

@@ -28,10 +28,6 @@ export const hasNeighbour = (cabin: Array<Rider | null>, slot: number, kinds: Pa
 export const neighbourCount = (cabin: Array<Rider | null>, slot: number) => neighbours(slot).filter((i) => cabin[i]).length;
 export const totalWeight = profileWeight;
 export const cooperationBonus = (state: RunState) => 3 + state.upgrades.battery * 2;
-// One cabin-wide reward per travelled floor. Further contract levels improve
-// coins, not soothing; boarding, reseating and dismissing cannot trigger it.
-export const COOPERATION_RELIEF = 3;
-export const cooperationRelief = (state: Pick<RunState, 'upgrades'>) => state.upgrades.battery > 0 ? COOPERATION_RELIEF : 0;
 export const isFreeReseat = (cabin: Array<Rider | null>, source: number, target: number, floor: number) => Boolean(cabin[source] && cabin[source]!.boardedAt === floor && (!cabin[target] || cabin[target]!.boardedAt === floor));
 export const unlockedAt = (floor: number) => UNLOCK_TIERS.flatMap((tier) => tier.floor <= floor ? tier.kinds : []);
 const READY_PARTNERS: Partial<Record<PassengerKind, PassengerKind[]>> = { lover: ['lover'], thief: ['cop', 'lawyer'], cop: ['thief', 'bomb'], lawyer: ['thief'], drunk: ['musician', 'nurse'], musician: ['drunk', 'child'], nurse: ['drunk', 'child'], child: ['lover', 'musician', 'nurse'], ghost: ['exorcist'], exorcist: ['ghost'], bomb: ['cop'] };
@@ -140,7 +136,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   });
   deferredSwaps.forEach(([from, to]) => { [cabin[from], cabin[to]] = [cabin[to], cabin[from]]; });
   if (state.upgrades.solar && nextFloor % 4 === 0) notes.push('节能线路生效');
-  let arrivals = 0; let cooperativeArrival = false;
+  let arrivals = 0;
   cabin = cabin.map((rider, slot) => {
     if (!rider) return null;
     if (rider.kind === 'bomb' && (rider.fuse ?? 0) <= 0 && nextFloor < rider.destination) return rider;
@@ -152,7 +148,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
     if (rider.kind === 'coach') fare += neighbourCount(cabin, slot) * 3;
     if (hasNeighbour(cabin, slot, ['coach']) && rider.kind !== 'coach') fare = Math.ceil(fare * 1.5);
     fare += rider.fareBonus;
-    if (bondStatus(rider,cabin,slot).supported) { fare += cooperationBonus(state); cooperativeArrival = true; }
+    if (bondStatus(rider,cabin,slot).supported) fare += cooperationBonus(state);
     if (profile.hidden) notes.push(`${spec.name}封存车费揭晓：${profile.fare} 金币`);
     addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare); arrivals += 1; return null;
   });
@@ -163,7 +159,6 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   cabin = cabin.map((rider) => { if (rider && rider.patience <= 0) { impatient += 1; adjustPressure('耐心归零', 2); return null; } return rider; });
   if (impatient) stressReasons.push(`${impatient} 位乘客失去耐心，躁动 +${impatient * 2}`);
   if (arrivals) adjustPressure('乘客到站舒缓', -arrivals);
-  if (cooperativeArrival) adjustPressure('默契契约 · 协作送达', -cooperationRelief(state));
   if (energy > state.energyCap) adjustEnergy('超额回充未储存', state.energyCap - energy);
   energy = Math.min(state.energyCap, energy); stress = Math.max(0, stress);
   const checkpoint = nextFloor % 10 === 0;
@@ -210,7 +205,7 @@ export function previewUpgrade(current: RunState, key: UpgradeKey): RunState {
   return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap };
 }
 
-const BASE_PRICES: Record<UpgradeKey, number> = { battery: 60, solar: 55, calm: 35, concierge: 50, reinforced: 45, express: 65 };
+const BASE_PRICES: Record<UpgradeKey, number> = { battery: 45, solar: 55, calm: 35, concierge: 50, reinforced: 45, express: 65 };
 export const upgradePrice = (key: UpgradeKey, floor: number, installed: number) => BASE_PRICES[key] + Math.max(0, Math.floor(floor / 10) - 1) * 12 + installed * 15;
 export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
   const card = current.shop.find((item) => item.key === key);
@@ -249,7 +244,7 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  const count=state.upgrades[key];
  if(!count)return '未安装';
  switch(key){
-  case 'battery':return `协作乘客到站加成共 +${cooperationBonus(state)} 金币（基础3 + 升级${count*2}）；本层有协作乘客送达，全车额外 −${cooperationRelief(state)} 躁动。每层最多一次，减躁动不随等级叠加。`;
+  case 'battery':return `协作乘客到站加成共 +${cooperationBonus(state)} 金币（基础3 + 升级${count*2}）`;
   case 'solar':return '每逢4的倍数层少耗1电；与其他节能共用最低1电限制';
   case 'calm':return `躁动上限 ${state.stressCap}；每次购买时立即舒缓6点`;
   case 'concierge':return `新乘客耐心 +${count*3}；到站小费 +${count*2}`;

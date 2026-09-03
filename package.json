@@ -12,7 +12,7 @@
     "lint": "oxlint",
     "format": "oxfmt",
     "simulate": "tsx scripts/simulate-balance.ts",
-    "verify": "tsx scripts/verify-mechanics.ts && tsx scripts/verify-v6.ts && tsx scripts/verify-v61.ts && tsx scripts/verify-v62.ts && tsx scripts/verify-audio.ts"
+    "verify": "tsx scripts/verify-mechanics.ts && tsx scripts/verify-v6.ts && tsx scripts/verify-v61.ts && tsx scripts/verify-v62.ts && tsx scripts/verify-v63.ts && tsx scripts/verify-audio.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

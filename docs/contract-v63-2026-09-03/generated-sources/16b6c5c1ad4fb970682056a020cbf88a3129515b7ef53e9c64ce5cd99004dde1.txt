@@ -1,5 +1,5 @@
 import { bondStatus } from './rider-profile';
-import { cooperationRelief, energySavings, crowdAgitation, hasNeighbour, neighbourCount, neighbours, patienceCost, shiftAgitation, totalWeight, travelEnergyCost, type RunState } from './game-engine';
+import { energySavings, crowdAgitation, hasNeighbour, neighbourCount, neighbours, patienceCost, shiftAgitation, totalWeight, travelEnergyCost, type RunState } from './game-engine';
 
 export type StressForecast = {
   range: string;
@@ -52,19 +52,10 @@ export function stressForecast(state: RunState, weight = totalWeight(state.cabin
       case 'inspector': if (nextFloor % 2 === 0 && weight > 8) inspectors += 1; break;
     }
   });
-  const contract = cooperationRelief(state);
-  const variants = projectedDestinationVariants(state).map((destinations) => {
-    const arriving = state.cabin.flatMap((rider, slot) => rider && destinations[slot] !== null && nextFloor >= destinations[slot]! ? [slot] : []);
-    const supported = arriving.some(slot => bondStatus(state.cabin[slot]!, state.cabin, slot).supported);
-    // Drunks can change the arrival-time neighbor before settlement. Do not
-    // promise a bonus using the departure layout; include either outcome.
-    const contractLow = !drunks && supported ? contract : 0;
-    const contractHigh = (drunks ? arriving.length > 0 : supported) ? contract : 0;
-    return {
-    contractLow, contractHigh,
+  const variants = projectedDestinationVariants(state).map((destinations) => ({
     impatient: state.cabin.reduce((count, rider, index) => count + (rider && destinations[index] !== null && nextFloor < destinations[index]! && patience[index] !== null && patience[index]! <= 0 ? 1 : 0), 0),
     arrivals: state.cabin.reduce((count, rider, index) => count + (rider && destinations[index] !== null && nextFloor >= destinations[index]! ? 1 : 0), 0),
-  }; });
+  }));
   const minImpatient = Math.min(...variants.map((variant) => variant.impatient)); const maxImpatient = Math.max(...variants.map((variant) => variant.impatient));
   const minArrivals = Math.min(...variants.map((variant) => variant.arrivals)); const maxArrivals = Math.max(...variants.map((variant) => variant.arrivals));
   const arrivalReason = !maxArrivals ? '' : minArrivals === maxArrivals ? `到站舒缓 −${maxArrivals}` : minArrivals === 0 ? `到站舒缓最多 −${maxArrivals}` : `到站舒缓 −${minArrivals}～−${maxArrivals}`;
@@ -72,10 +63,8 @@ export function stressForecast(state: RunState, weight = totalWeight(state.cabin
   const conflicts = nextFloor % 2 === 0 ? state.cabin.reduce((sum,rider,slot)=>sum+(rider && bondStatus(rider,state.cabin,slot).conflict ? 1 : 0),0) : 0;
   const overload = weight > state.weightCap ? 2 : 0;
   const fixedRise = thieves + celebrities + inspectors + crowd + fatigue + conflicts + overload;
-  const lows = variants.map((variant) => Math.max(0, state.stress + fixedRise + variant.impatient * 2 - relief - variant.arrivals - variant.contractHigh));
-  const highs = variants.map((variant) => Math.max(0, state.stress + fixedRise + variant.impatient * 2 + drunks * 2 - relief - variant.arrivals - variant.contractLow));
-  const minContract = Math.min(...variants.map(v => v.contractLow)), maxContract = Math.max(...variants.map(v => v.contractHigh));
-  const contractReason = maxContract ? minContract === maxContract ? `契约舒缓 −${maxContract}（本层一次）` : `契约舒缓可能 −${maxContract}（本层一次）` : '';
+  const lows = variants.map((variant) => Math.max(0, state.stress + fixedRise + variant.impatient * 2 - relief - variant.arrivals));
+  const highs = variants.map((variant) => Math.max(0, state.stress + fixedRise + variant.impatient * 2 + drunks * 2 - relief - variant.arrivals));
   const low = Math.min(...lows); const high = Math.max(...highs);
   const lowDelta = low - state.stress; const highDelta = high - state.stress;
   const range = lowDelta === highDelta ? signedDelta(lowDelta) : `${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
@@ -89,7 +78,6 @@ export function stressForecast(state: RunState, weight = totalWeight(state.cabin
     fatigue ? `长班疲劳 +${fatigue}` : '',
     occupied === 0 ? state.restStops > 0 ? `休整 ${state.restStops}→${state.restStops - 1}，免疲劳` : '休整用尽，空驶不免疲劳' : '',
     arrivalReason,
-    contractReason,
     patienceCost(state) > 1 ? '高躁动：耐心每站 −2' : '',
     impatienceReason,
     thieves ? `小偷 +${thieves}` : '',
