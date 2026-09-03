@@ -346,7 +346,7 @@ export default function ElevatorGame() {
         </div>
       </aside>
     </section>
-    <footer className="footer-line"><span>ELV–07 / v7.8</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
+    <footer className="footer-line"><span>ELV–07 / v7.9</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
 
 
     <Dialog open={passengerDetails !== null} onOpenChange={(open) => {if(!open){setPassengerDetails(null);setEjectArmed(false);}}}><DialogContent className="story-dialog passenger-detail-dialog">
@@ -376,7 +376,7 @@ export default function ElevatorGame() {
         {change.capDelta !== 0 && <p><span>{change.label}上限</span><b>{signedDelta(change.capDelta)}</b></p>}
       </section>)}</div>
     </DialogContent></Dialog>
-    <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">CAR № 07 · 00:17 AM</p><DialogHeader><DialogTitle>今晚，所有人<br />都想再上一层。</DialogTitle><DialogDescription>安排六个站位，让合适的人彼此相邻。没有终点，越往上越难。送客赚取金币，每十层购买升级，挑战自己的最高楼层。</DialogDescription></DialogHeader><div className="intro-rules"><span><b>01</b> 拖拽或点选</span><span><b>02</b> {guidedShift ? '先让恋人相邻' : '看连线配邻座'}</span><span><b>03</b> 关门上行</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始午夜班次 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
+    <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">CAR № 07 · 00:17 AM</p><DialogHeader><DialogTitle>今晚，所有人<br />都想再上一层。</DialogTitle><DialogDescription>安排六个站位，促成协作，避开冲突。没有终点，越往上越难。送客赚取金币，每十层购买升级，挑战自己的最高楼层。</DialogDescription></DialogHeader><div className="intro-rules"><span><b>01</b> 选人安排站位</span><span><b>02</b> 绿线协作 · 红线冲突</span><span><b>03</b> 权衡代价后上行</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始午夜班次 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
     <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">ENDLESS SHIFT MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>楼层就是成绩；金币是购买升级的预算。没有最后一层。</DialogDescription></DialogHeader><div className="manual-grid">
       <div><b>拖拽安排</b><p>把人物拖进站位，或先点乘客再点空位。连线两端互为邻座。旧乘客每层只能换位一次；新上客移到空位或与新上客互换不消耗次数。</p></div>
       <div><b>还剩几站</b><p>每次关门上行算一站，人物身上的剩余站数会递减；幽灵可能延误邻座。</p></div>
