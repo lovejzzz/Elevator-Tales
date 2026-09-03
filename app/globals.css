@@ -130,7 +130,16 @@ button:focus-visible { outline:1px solid var(--brass-pale); outline-offset:3px; 
 .passenger-card.tone-risk { border-color:rgba(204,119,77,.35); background:linear-gradient(110deg,rgba(47,29,23,.94),rgba(13,18,15,.94)); box-shadow:inset 2px 0 rgba(211,116,72,.45); }
 .passenger-card.tone-risk:hover:not(:disabled) { border-color:rgba(234,146,99,.7); background:linear-gradient(110deg,rgba(58,34,26,.98),rgba(18,24,20,.97)); }
 .passenger-card[draggable='true'] { cursor:grab; }.passenger-card[draggable='true']:active { cursor:grabbing; }.passenger-card.dragging { opacity:.48; transform:scale(.98); }
-.passenger-card.boarded { border-color:#cfa457; background:linear-gradient(110deg,rgba(47,57,42,.98),rgba(15,27,22,.95)); box-shadow:inset 3px 0 #cfa457; }.passenger-card:disabled { opacity:.42; cursor:not-allowed; }
+.passenger-card.boarded { position:relative; border:2px solid #efc36d; background:radial-gradient(circle at 85% 12%,rgba(236,190,99,.17),transparent 34%),linear-gradient(110deg,rgba(49,59,43,.99),rgba(15,27,22,.97)); box-shadow:inset 5px 0 #e7b653,inset 0 0 0 1px rgba(255,225,158,.18),0 0 18px rgba(226,173,78,.2); }
+.passenger-card.boarded::after { content:''; position:absolute; inset:4px; border:1px solid rgba(255,226,164,.22); pointer-events:none; }
+.boarded-status { position:absolute; z-index:3; top:8px; right:42px; display:flex; align-items:center; gap:4px; min-height:25px; padding:3px 8px; border:1px solid #efc36d; background:#332711f2; color:#ffe0a0; font:700 11px/1 var(--font-sans); letter-spacing:.06em; box-shadow:0 0 14px rgba(234,182,80,.22); }
+.boarded-status svg { width:13px; height:13px; stroke-width:3; }
+.passenger-card:disabled { opacity:.42; cursor:not-allowed; }
+
+@media (max-width:700px) {
+ .game-shell .passenger-card>.boarded-status { display:flex; top:4px; right:auto; left:4px; min-height:21px; padding:2px 5px; gap:2px; font-size:9px; }
+ .game-shell .passenger-card>.boarded-status svg { width:11px; height:11px; }
+}
 .passenger-card.pending { border-color:#f0c671; background:linear-gradient(110deg,rgba(53,61,43,.98),rgba(20,31,25,.96)); box-shadow:inset 3px 0 #e4b65d,0 0 18px rgba(216,165,73,.14); }
 .portrait-window { position:relative; width:80px; height:80px; aspect-ratio:1/1; overflow:hidden; background:#06110e; border:1px solid rgba(201,160,87,.24); display:block; flex:none; }
 .portrait-sheet { position:absolute; inset:0; background-size:300% 200%; background-repeat:no-repeat; }
