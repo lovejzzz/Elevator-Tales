@@ -65,9 +65,12 @@ export function riderProfile(rider:Rider,cabin:Array<Rider|null>=[],slot=cabin.f
 export function bondStatus(rider:Rider,cabin:Array<Rider|null>,slot=cabin.findIndex(r=>r?.id===rider.id)){
  const profile=riderProfile(rider,cabin,slot);
  const kinds=slot<0?[]:nearby(slot).flatMap(i=>cabin[i]?[cabin[i]!.kind]:[]);
- const supported=kinds.some(kind=>profile.bond.likes.includes(kind));
- const conflict=!supported&&kinds.some(kind=>profile.bond.avoids.includes(kind));
- return {supported,conflict,...profile};
+ const supportCount=kinds.filter(kind=>profile.bond.likes.includes(kind)).length;
+ const rawConflictCount=kinds.filter(kind=>profile.bond.avoids.includes(kind)).length;
+ const supported=supportCount>0;
+ const conflictCount=supported?0:rawConflictCount;
+ const conflict=conflictCount>0;
+ return {supported,conflict,supportCount,conflictCount,...profile};
 }
 export const profileWeight=(cabin:Array<Rider|null>)=>cabin.reduce((sum,r,i)=>sum+(r?riderProfile(r,cabin,i).weight:0),0);
 export function bondSummary(rider:Rider,cabin:Array<Rider|null>=[],bonus=3){
@@ -75,18 +78,18 @@ export function bondSummary(rider:Rider,cabin:Array<Rider|null>=[],bonus=3){
  const names=(kinds:PassengerKind[])=>kinds.map(k=>PASSENGERS[k].name).join(' / ');
  return {
   partners:names(bond.likes),opponents:names(bond.avoids),bonus,
-  benefit:`本人到站额外 +${bonus} 金币`,
-  condition:'到站时仍与任意协作对象相邻',
-  conflict:'相邻时，偶数层躁动 +1；有协作邻座时免除',
+  benefit:`每条协作连接：本人到站额外 +${bonus} 金币`,
+  condition:'到站时每位仍相邻的协作对象各算一条',
+  conflict:'每条冲突连接：偶数层躁动 +1；有协作邻座时全部免除',
  };
 }
 export function bondLines(rider:Rider,cabin:Array<Rider|null>=[],bonus=3){
  const {copies}=riderProfile(rider,cabin);
  const summary=bondSummary(rider,cabin,bonus);
  return [
-  `协作：${summary.partners}。本人到站时，仍与其中任意一人相邻 → 额外 +${bonus} 金币。`,
-  '每位乘客只领一次协作奖励，多个协作邻座不叠加；恋人翻倍、途中收入等角色技能另外计算。',
-  `冲突：${summary.opponents}。${summary.conflict}；只免除这项冲突，不改变角色自身技能的触发规则。`,
+  `协作：${summary.partners}。本人到站时，每位仍相邻的协作对象 → 额外 +${bonus} 金币。`,
+  '多条绿色连接逐条叠加；恋人、教练、途中收入等人物技能另外计算。',
+  `冲突：${summary.opponents}。${summary.conflict}；只免除邻座冲突，不改变人物自身技能。`,
   ...copies.map(c=>'复制 '+PASSENGERS[c.sourceKind].name+' 的'+COPY_LABELS[c.field]+'。'),
  ];
 }

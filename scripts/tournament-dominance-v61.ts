@@ -12,6 +12,7 @@ const policies:Policy[]=[
  policy('cautious-4',{cap:4,risk:6}),policy('cautious-6',{cap:6,risk:9}),
  policy('greedy-6',{cap:6,risk:1}),
  ...[3,4].map(cap=>policy('lovers-'+cap,{cap,favorite:['lover']})),
+ ...[3,4].map(cap=>policy('mechanics-'+cap,{cap,favorite:['mechanic','tourist','inspector'],bias:3})),
  policy('police-thief-4',{cap:4,favorite:['thief','cop','lawyer']}),
  policy('rogue-thief-3',{favorite:['thief'],rogue:true}),
  policy('occult-3',{favorite:['ghost','exorcist']}),
@@ -20,6 +21,7 @@ const policies:Policy[]=[
  ...[2,3,4].map(cap=>policy('shifter-'+cap,{cap,favorite:['shifter'],bias:3})),
  ...[3,4].map(cap=>policy('mimic-'+cap,{cap,favorite:['mimic','shifter'],moves:6})),
  ...[4,6].map(cap=>policy('coach-'+cap,{cap,favorite:['coach','shifter','celebrity']})),
+ policy('green-links-4',{cap:4,favorite:['tourist','celebrity','courier','mechanic','inspector'],bias:3,moves:6}),
  policy('courier-3',{favorite:['courier'],quick:true}),
  policy('safe-only-3',{safe:true}),
  policy('adaptive',{adaptive:true,risk:4}),
@@ -76,17 +78,18 @@ function evaluator(p:Policy){
    if(!r)return;
    const profile=riderProfile(r,state.cabin,slot),trip=Math.max(1,r.destination-state.floor);
    let fare=profile.hidden?24:profile.fare;
-   const paired=r.kind==='lover'&&hasNeighbour(state.cabin,slot,['lover']);
+   const loverLinks=r.kind==='lover'?neighbours(slot).filter(i=>state.cabin[i]?.kind==='lover').length:0;
+   const paired=loverLinks>0;
    const controlled=r.kind==='thief'&&hasNeighbour(state.cabin,slot,['cop','lawyer']);
-   if(paired)fare*=2;if(controlled)fare+=5;
+   if(paired)fare*=1+loverLinks;if(controlled)fare+=5;
    if(r.kind==='ghost'&&hasNeighbour(state.cabin,slot,['exorcist']))fare+=6;
    if(r.kind==='coach')fare+=neighbours(slot).filter(i=>state.cabin[i]).length*3;
-   if(r.kind!=='coach'&&hasNeighbour(state.cabin,slot,['coach']))fare=Math.ceil(fare*1.5);
-   fare+=r.fareBonus+(bondStatus(r,state.cabin,slot).supported?cooperationBonus(state):0);
+   if(r.kind!=='coach')fare=Math.ceil(fare*(1+.5*neighbours(slot).filter(i=>state.cabin[i]?.kind==='coach').length));
+   fare+=r.fareBonus+bondStatus(r,state.cabin,slot).supportCount*cooperationBonus(state);
    const cost=trip*(near?2:1)+(r.kind==='child'&&!hasNeighbour(state.cabin,slot,['lover','musician','nurse'])?trip*.5:0);
    score+=fare/trip*1.5*(cost > r.patience ? .3 : 1);
    if(p.restAware&&cost<=r.patience)score+=Math.min(3,3-state.restStops)*Math.max(1,Math.floor(state.floor/30))*2/trip;
-   if(paired)score+=1.5;
+   if(paired)score+=loverLinks*1.5;
    if(r.kind==='thief')score+=controlled?1:3;
    if(r.kind==='drunk'&&hasNeighbour(state.cabin,slot,['musician','nurse']))score+=1;
    if(r.kind==='celebrity'&&neighbours(slot).filter(i=>state.cabin[i]).length===1)score+=3;

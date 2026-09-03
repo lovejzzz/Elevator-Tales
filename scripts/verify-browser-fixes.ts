@@ -22,11 +22,11 @@ assert.equal(paid.lastEarnings.sources.filter(s=>s.label==='恋人到站').reduc
 assert.equal(paid.coins,38);
 const face=passengerBrief(lovers.cabin[0]!,4,lovers.cabin);
 assert.equal(face.coins,6);assert.equal(face.tip,3);
-assert.match(passengerFace(lovers.cabin[0]!,lovers).moneyNote,/基价×2/);
+assert.match(passengerFace(lovers.cabin[0]!,lovers).moneyNote,/基价\+100%/);
 const coaches=state({cabin:[rider('coach','a',{destination:2}),rider('coach','b',{destination:2}),null,null,null,null]});
 assert.equal(resolveFloor(coaches,()=>.9).coins,46,'coaches do not multiply one another');
 const coachFace=passengerFace(coaches.cabin[0]!,coaches);
-assert.match(coachFace.moneyNote,/非教练/);assert.match(coachFace.moneyNote,/不叠加/);assert.match(coachFace.moneyNote,/每邻座\+3/);
+assert.match(coachFace.moneyNote,/每位相邻教练/);assert.match(coachFace.moneyNote,/基础车费\+50%/);assert.match(coachFace.moneyNote,/每邻座\+3/);
 for(const kind of ['mechanic','ghost','exorcist'] as const){
  const brief=passengerBrief(rider(kind),1);
  assert.ok(brief.skillRules.includes(SHARED_SAVING_RULE));

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } fro
 import { ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Check, Coins, Flame, HelpCircle, Info, LockKeyhole, RotateCcw, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ADJACENT, MECHANIC_SAVING, PASSENGER_ORDER, PASSENGERS, UPGRADES, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
+import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
 import { CHARGE_PRICE, INITIAL_ENERGY, ENERGY_CAPACITY, INSPECTOR_ENERGY_LIMIT, energyBreakdown, eventPressureMultiplier, riderAgitation, shiftOutlook, COOPERATION_RELIEF, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, crowdAgitation, difficultyTier, EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, shiftAgitation, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, stressForecast } from '@/lib/game-forecast';
 import { conflictingConnection, activeConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
@@ -66,6 +66,7 @@ function Portrait({ kind, large = false }: { kind: PassengerKind; large?: boolea
 function PassengerCardFace({ rider, run, action }: { rider: Rider; run: RunState; action: string }) {
   const brief=passengerBrief(rider,run.floor,run.cabin,cooperationBonus(run),cooperationRelief(run),eventPressureMultiplier(run));
   const face=passengerFace(rider,run);
+  const links=bondStatus(rider,run.cabin).supportCount;
   const agitationText=face.pressure[0].replace('自身躁动','自身');
   return <span className="unified-passenger-summary">
     <span className="card-overview">
@@ -83,7 +84,7 @@ function PassengerCardFace({ rider, run, action }: { rider: Rider; run: RunState
       {face.moneyNote&&<span className="skill-money"><Coins aria-hidden="true" />{face.moneyNote}</span>}
       {face.special&&<span>{face.special}</span>}
     </span>
-    <span className="card-cooperation"><span>本人到站仍邻{brief.cooperation.partners.join('或')}</span><b aria-label={`协作奖励 ${cooperationBonus(run)} 金币${cooperationRelief(run)>0?`，减少 ${cooperationRelief(run)} 躁动`:''}`}><span><Coins aria-hidden="true" />+{cooperationBonus(run)}</span>{cooperationRelief(run)>0&&<span><Flame aria-hidden="true" />−{cooperationRelief(run)}</span>}</b></span>
+    <span className="card-cooperation"><span>到站每邻{brief.cooperation.partners.join('或')}</span><b aria-label={`每条协作连接奖励 ${cooperationBonus(run)} 金币${links?`，当前 ${links} 条生效`:''}${cooperationRelief(run)>0?`；送达减少 ${cooperationRelief(run)} 躁动`:''}`}><span><Coins aria-hidden="true" />{links?`+${cooperationBonus(run)}×${links}`:`+${cooperationBonus(run)}/条`}</span>{cooperationRelief(run)>0&&<span><Flame aria-hidden="true" />−{cooperationRelief(run)}</span>}</b></span>
     <span className="card-conflict"><Flame aria-hidden="true" />{face.conflict.replace('挨','邻')} 躁动</span>
     <span className="card-action">{action}</span>
   </span>;
@@ -125,10 +126,10 @@ const rescuesCrisis = (key: UpgradeKey, run: RunState) => {
 function upgradeImpact(key: UpgradeKey, run: RunState): string {
   const preview = previewUpgrade(run, key);
   switch (key) {
-    case 'battery': return `协作到站 +${cooperationBonus(run)} → +${cooperationBonus(preview)} 金币；${run.upgrades.battery ? '舒缓仍为' : '另减'} ${cooperationRelief(preview)} 躁动，全车每层仅1次，不叠加。购买时不立即减躁动。`;
+    case 'battery': return `每条协作连接 +${cooperationBonus(run)} → +${cooperationBonus(preview)} 金币；${run.upgrades.battery ? '每位协作送达仍' : '每位协作送达另'}减 ${cooperationRelief(preview)} 躁动。购买时不立即减躁动。`;
     case 'calm': return `躁动 ${run.stress}/${run.stressCap} → ${preview.stress}/${preview.stressCap}`;
     case 'reinforced': return '每站抵消1点人物耗电 · 本局唯一';
-    case 'solar': return `4的倍数层抵消1点人物耗电 · 通常共享1电上限，有维修工时每层上限${MECHANIC_SAVING}`;
+    case 'solar': return '4的倍数层节能1电 · 与维修工、受控幽灵逐项叠加';
     case 'concierge': return `新乘客到站小费 +${(run.upgrades.concierge + 1) * 3}`;
     case 'express': return '新乘客原定 ≥5 层时，目的地提前 1 层 · 本局唯一';
   }
@@ -346,7 +347,7 @@ export default function ElevatorGame() {
               <PassengerCardFace rider={offer} run={run} action={boarded?'点此撤回':pending?'已选中 · 点空位':full?'车厢已满':partner?`上车可联动 · ${PASSENGERS[partner].name}`:'拖入空位 / 点选上车'}/>
             </button><button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(offer);}} aria-label={`查看${spec.name}规则`}><HelpCircle /></button></div>;
           })}
-        </div><div className="candidate-notes"><span>协作免邻座冲突，技能另算{cooperationRelief(run)>0?'；契约全车每站减躁1次。':'。'}</span>{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
+        </div><div className="candidate-notes"><span>每条绿线奖励都叠加；有绿线时免邻座冲突，人物技能另算{cooperationRelief(run)>0?'；每位协作送达各舒缓一次。':'。'}</span>{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
         <div className="departure-controls">
           <button className="mobile-inspect-button" disabled={!activeRider || locked} onClick={() => {if(activeRider){setEjectArmed(false);setPassengerDetails(activeRider);}}} aria-label="查看选中人物规则"><BookOpen /><span>人物/请离</span></button>
           <button className="depart-button" onClick={depart} disabled={locked}><span>{doors === 'open' ? '关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
@@ -357,7 +358,7 @@ export default function ElevatorGame() {
         </div>
       </aside>
     </section>
-    <footer className="footer-line"><span>ELV–07 / v8.3</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
+    <footer className="footer-line"><span>ELV–07 / v8.4</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
 
 
     <Dialog open={passengerDetails !== null} onOpenChange={(open) => {if(!open){setPassengerDetails(null);setEjectArmed(false);}}}><DialogContent className="story-dialog passenger-detail-dialog">
@@ -393,10 +394,10 @@ export default function ElevatorGame() {
       <div><b>还剩几站</b><p>每次关门上行算一站，人物身上的剩余站数会递减；幽灵可能延误邻座。</p></div>
       <div><b>三个值，六个站位</b><p>人物只看金钱、耗电和躁动；没有独立载重或耐心。人数由六个站位限制。金钱到站结算，途中收入另标。每站总耗电＝电梯运转1＋所有人物耗电−节能。卡片上的耗电是该人物每坐一站的成本，到站这一站也计费。</p></div><div><b>人数与躁动</b><p>3–4人不增加拥挤躁动；5人每站 +1，满6人 +2；最多2人时 −1。每位乘客到站再 −1。人物事件和长班疲劳另算。</p></div>
       <div><b>人物直接影响躁动</b><p>卡片写明何时加减躁动。达到上限三分之二时，人物技能与邻座冲突造成的正向躁动翻倍；安抚、拥挤和班次压力不翻倍。按关门前的躁动判断，卡片显示已换算数值。</p></div>
-      <div><b>十层补给</b><p>充电每点{CHARGE_PRICE}金币，先留路费再买卡；右上角叠层图标可查看已装升级。</p></div><div><b>协作与冲突</b><p>每个人都有协作和冲突对象。本人到站时仍与任意协作对象相邻，额外 +{cooperationBonus(run)} 金币，每人只领一次。角色技能另算；没有协作邻座时，冲突邻座会在偶数层增加1躁动。绿线表示联动，红虚线表示冲突。</p></div><div><b>到层请离</b><p>选中车内人物，打开人物详情后请离。赔偿4+剩余站数×2金币，不结算到站奖励。本层刚上车仍可免费撤回。</p></div>
+      <div><b>十层补给</b><p>充电每点{CHARGE_PRICE}金币，先留路费再买卡；右上角叠层图标可查看已装升级。</p></div><div><b>协作、冲突与堆叠</b><p>绿线表示协作：本人到站时，每条仍连接的绿线额外 +{cooperationBonus(run)} 金币，多条逐条叠加。没有绿线保护时，每条红色冲突线会在偶数层增加1躁动。有任意绿线时免除该人物全部邻座冲突；人物技能另算。</p></div><div><b>到层请离</b><p>选中车内人物，打开人物详情后请离。赔偿4+剩余站数×2金币，不结算到站奖励。本层刚上车仍可免费撤回。</p></div>
       <div><b>空驶休整</b><p>开局3次；每送达1人恢复1次，最多3次。空车上行自动消耗1次，免除本层长班疲劳。用尽后仍能空驶，但不再免疲劳。接客、撤回、请离与购物都不恢复次数。</p></div>
       <div><b>先准备，再闯高压段</b><p>初始{INITIAL_ENERGY}电、容量{ENERGY_CAPACITY}。大多数人物每站耗1电，游客、教练耗2电，幽灵不耗电；神秘人、百变人按当前属性耗1–2电。节能只抵消人物耗电，空驶仍耗1电。首10层不加班次压力；之后尾数1–3的楼层用于准备，4–6每站额外 +1 躁动，7–9高压三层每站额外 +5。整十层补给时撤去这部分压力，但不会自动清零躁动。51层起基础压力 +1，此后每40层再 +1。时段固定，不会因为你变强而临时加难。</p></div>
-      <div><b>默契契约 · 协作送达</b><p>购买后，本层有乘客到站且仍挨着自己的协作对象，额外躁动 −{COOPERATION_RELIEF}。全车每层仅触发一次，送达多人或多次升级不叠加；请离不算送达，购买时也不立即舒缓。</p></div>
+      <div><b>默契契约 · 协作送达</b><p>购买后，每位带着至少一条绿线到站的乘客都会使躁动 −{COOPERATION_RELIEF}。同层送达多人可分别触发；契约等级只提高每条绿线的金币，不提高单次舒缓。请离不算送达，购买时也不立即舒缓。</p></div>
     </div></DialogContent></Dialog>
     <Dialog open={pressureHelp} onOpenChange={setPressureHelp}><DialogContent className="story-dialog pressure-dialog"><p className="dialog-kicker">CABIN AGITATION</p><DialogHeader><DialogTitle>人多、等得久，就会躁动。</DialogTitle><DialogDescription>躁动达到 {agitationThreshold(run.stressCap)}：人物造成的正向躁动翻倍；达到 {run.stressCap}：本班失控。音乐家、护士和快速送达能缓解。</DialogDescription></DialogHeader><div className="pressure-rule-grid">
       <section className="pressure-rise"><small>会增加躁动</small><b>轿厢拥挤</b><p>5人每站 +1；满6人每站 +2。</p><b>班次压力 · 提前准备</b><p>首10层不增加。之后每段尾数1–3与整十层只算基础压力，4–6再 +1，7–9再 +5。51层起基础 +1，此后每40层再 +1。空车且有休整次数时免除本层班次压力。下一站实际 +{shiftAgitation(run.floor + 1, occupied, run.restStops)}。</p><b>人物事件</b><p>未受控小偷、无人照顾的儿童、醉汉、被围住的名人和耗电检查，会按卡片规则增加躁动。</p><b>高躁动放大人物风险</b><p>技能和邻座冲突的正向增量 ×2；安抚不变。卡片已显示当前倍率后的数值。</p></section>

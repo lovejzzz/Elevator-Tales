@@ -58,7 +58,8 @@ export function riderAgitation(state: RunState, slot: number) {
   const add = (label: string, amount: number) => fixed.push({ label, amount: amount > 0 ? amount * multiplier : amount });
   const base = riderProfile(rider,state.cabin,slot).agitation;
   if (base) add(`${PASSENGERS[rider.kind].name}自身躁动`, base);
-  if (even && bondStatus(rider, state.cabin, slot).conflict) add('邻座冲突', 1);
+  const bonds=bondStatus(rider,state.cabin,slot);
+  if (even && bonds.conflictCount) add('邻座冲突', bonds.conflictCount);
   switch (rider.kind) {
     case 'thief': if (even && !hasNeighbour(state.cabin, slot, ['cop', 'lawyer'])) add('小偷未受控', 1); break;
     case 'child': if (even && !hasNeighbour(state.cabin, slot, ['lover', 'musician', 'nurse'])) add('儿童无人照顾', 1); break;
@@ -98,13 +99,13 @@ export const readyPartner = (kind: PassengerKind, cabin: Array<Rider | null>, ex
 export const rand = (min: number, max: number, rng: () => number = Math.random) => Math.floor(rng() * (max - min + 1)) + min;
 export const travelEnergyCost = (_destinationFloor: number) => 1;
 export const energySavings = (state: RunState) => {
-  const next=state.floor+1;const mechanicActive=state.cabin.some(rider=>rider?.kind==='mechanic');
+  const next=state.floor+1;
   let saved=state.upgrades.solar&&next%4===0?1:0;
   state.cabin.forEach((rider,slot)=>{
+    if(rider?.kind==='mechanic')saved+=MECHANIC_SAVING;
     if(rider?.kind==='ghost'&&hasNeighbour(state.cabin,slot,['exorcist']))saved++;
   });
-  if(mechanicActive)saved=Math.max(saved,MECHANIC_SAVING);
-  return Math.min(mechanicActive?MECHANIC_SAVING:1,saved,Math.max(0,passengerEnergy(state)-stabilizedEnergy(state)));
+  return Math.min(saved,Math.max(0,passengerEnergy(state)-stabilizedEnergy(state)));
 };
 // Compatibility export for archived callers: the remaining passenger cost.
 export const inspectionExtraEnergy = (state: RunState) => Math.max(0, passengerEnergy(state) - stabilizedEnergy(state) - energySavings(state));
@@ -179,10 +180,10 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   effectCabin.forEach((rider, slot) => {
     if (!rider) return;
     const calmDrunk = hasNeighbour(effectCabin, slot, ['musician', 'nurse']); const controlledThief = hasNeighbour(effectCabin, slot, ['cop', 'lawyer']);
-    const pairedLover = hasNeighbour(effectCabin, slot, ['lover']); const controlledGhost = hasNeighbour(effectCabin, slot, ['exorcist']);
+    const loverLinks = neighbours(slot).filter(nearby=>effectCabin[nearby]?.kind==='lover').length; const controlledGhost = hasNeighbour(effectCabin, slot, ['exorcist']);
     switch (rider.kind) {
       case 'mechanic': break; // Shared savings are itemized in lastEnergy.
-      case 'lover': if (pairedLover) addCoins('恋人连携', 1); break;
+      case 'lover': if (loverLinks) addCoins('恋人连携', loverLinks); break;
       case 'thief': addCoins(controlledThief ? '受控小偷' : '小偷', controlledThief ? 1 : 3); break;
       case 'drunk': if (calmDrunk) addCoins('醉汉安抚', 1); else if (rng() < .25) { const rise = riderAgitation(state, slot).random; adjustPressure('醉汉闹事', rise); const options = neighbours(slot); deferredSwaps.push([slot, options[rand(0, options.length - 1, rng)]]); stressReasons.push(`醉汉闹事并乱换位，躁动 +${rise}`); } break;
       case 'ghost': if (controlledGhost) notes.push('幽灵受控，不再延误邻座'); else if (nextFloor % 3 === 0) { const nearby = neighbours(slot).filter((i) => effectCabin[i]); if (nearby.length) { effectCabin[nearby[rand(0, nearby.length - 1, rng)]]!.destination += 1; notes.push('幽灵令邻座延误一层'); } } break;
@@ -192,27 +193,28 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
     }
   });
   deferredSwaps.forEach(([from, to]) => { [cabin[from], cabin[to]] = [cabin[to], cabin[from]]; });
-  if (state.upgrades.solar && nextFloor % 4 === 0 && energySavings(state)>0) notes.push(`节能已计入：通常共享1电上限${state.cabin.some(rider=>rider?.kind==='mechanic')?`，维修工将每层上限提升到${MECHANIC_SAVING}`:''}`);
-  let arrivals = 0; let cooperativeArrival = false;
+  if (state.upgrades.solar && nextFloor % 4 === 0 && energySavings(state)>0) notes.push('节能线路已计入；所有节能效果逐项叠加');
+  let arrivals = 0; let cooperativeArrivals = 0;
   cabin = cabin.map((rider, slot) => {
     if (!rider) return null;
     if (rider.kind === 'bomb' && (rider.fuse ?? 0) <= 0 && nextFloor < rider.destination) return rider;
     if (nextFloor < rider.destination) return rider;
     const spec = PASSENGERS[rider.kind]; const profile = riderProfile(rider, cabin, slot); let fare = profile.fare;
-    if (rider.kind === 'lover' && hasNeighbour(cabin, slot, ['lover'])) fare *= 2;
+    if (rider.kind === 'lover') fare *= 1 + neighbours(slot).filter(nearby=>cabin[nearby]?.kind==='lover').length;
     if (rider.kind === 'thief' && hasNeighbour(cabin, slot, ['cop', 'lawyer'])) fare += 5;
     if (rider.kind === 'ghost' && hasNeighbour(cabin, slot, ['exorcist'])) fare += 6;
     if (rider.kind === 'coach') fare += neighbourCount(cabin, slot) * 3;
-    if (hasNeighbour(cabin, slot, ['coach']) && rider.kind !== 'coach') fare = Math.ceil(fare * 1.5);
+    if (rider.kind !== 'coach') fare = Math.ceil(fare * (1 + .5 * neighbours(slot).filter(nearby=>cabin[nearby]?.kind==='coach').length));
     fare += rider.fareBonus;
-    if (bondStatus(rider,cabin,slot).supported) { fare += cooperationBonus(state); cooperativeArrival = true; }
+    const supportCount=bondStatus(rider,cabin,slot).supportCount;
+    if (supportCount) { fare += cooperationBonus(state)*supportCount; cooperativeArrivals += 1; }
     if (profile.hidden) notes.push(`${spec.name}封存车费揭晓：${profile.fare} 金币`);
     addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare); arrivals += 1; return null;
   });
   // Arriving on the same floor as fuse expiry is still safe.
   const bombFailed = cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0);
   if (arrivals) adjustPressure('乘客到站舒缓', -arrivals);
-  if (cooperativeArrival) adjustPressure('默契契约 · 协作送达', -cooperationRelief(state));
+  if (cooperativeArrivals) adjustPressure('默契契约 · 协作送达', -cooperationRelief(state)*cooperativeArrivals);
   if (energy > state.energyCap) adjustEnergy('超额回充未储存', state.energyCap - energy);
   energy = Math.min(state.energyCap, energy); stress = Math.max(0, stress);
   const checkpoint = nextFloor % 10 === 0;
@@ -297,8 +299,8 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  const count=state.upgrades[key];
  if(!count)return '未安装';
  switch(key){
-  case 'battery':return `协作乘客到站加成共 +${cooperationBonus(state)} 金币（基础3 + 升级${count*2}）；本层有协作乘客送达，全车额外 −${cooperationRelief(state)} 躁动。每层最多一次，减躁动不随等级叠加。`;
-  case 'solar':return `到4的倍数层抵消1电；通常与幽灵配对共享1电上限，有维修工时每层上限为${MECHANIC_SAVING}。只抵人物耗电，稳压先算。`;
+  case 'battery':return `每条协作连接的到站加成 +${cooperationBonus(state)} 金币（基础3 + 升级${count*2}）；每位协作乘客送达，全车额外 −${cooperationRelief(state)} 躁动。减躁动不随等级叠加。`;
+  case 'solar':return '到4的倍数层抵消1点人物耗电；与维修工、受控幽灵逐项叠加。所有节能最多抵完人物耗电，稳压先算。';
   case 'calm':return `躁动上限 ${state.stressCap}；每次购买时立即舒缓6点`;
   case 'concierge':return `此后新乘客到站小费 +${count*3}；不参与车费倍率`;
   case 'reinforced':return '每站抵消1点人物耗电，不影响运转1电；无人耗电时不触发，本局唯一。';

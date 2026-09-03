@@ -42,11 +42,11 @@ export function stressForecast(state: RunState, _legacyWeight?: number): StressF
   const contract = cooperationRelief(state);
   const variants = projectedDestinationVariants(state).map((destinations) => {
     const arriving = state.cabin.flatMap((rider, slot) => rider && destinations[slot] !== null && nextFloor >= destinations[slot]! ? [slot] : []);
-    const supported = arriving.some(slot => bondStatus(state.cabin[slot]!, state.cabin, slot).supported);
+    const supportedArrivals = arriving.filter(slot => bondStatus(state.cabin[slot]!, state.cabin, slot).supported).length;
     // Drunks can change the arrival-time neighbor before settlement. Do not
     // promise a bonus using the departure layout; include either outcome.
-    const contractLow = !drunks && supported ? contract : 0;
-    const contractHigh = (drunks ? arriving.length > 0 : supported) ? contract : 0;
+    const contractLow = !drunks ? supportedArrivals * contract : 0;
+    const contractHigh = (drunks ? arriving.length : supportedArrivals) * contract;
     return {
     contractLow, contractHigh,
     arrivals: state.cabin.reduce((count, rider, index) => count + (rider && destinations[index] !== null && nextFloor >= destinations[index]! ? 1 : 0), 0),
@@ -58,7 +58,7 @@ export function stressForecast(state: RunState, _legacyWeight?: number): StressF
   const lows = variants.map((variant) => Math.max(0, state.stress + fixedRise - variant.arrivals - variant.contractHigh));
   const highs = variants.map((variant) => Math.max(0, state.stress + fixedRise + passengerRandom - variant.arrivals - variant.contractLow));
   const minContract = Math.min(...variants.map(v => v.contractLow)), maxContract = Math.max(...variants.map(v => v.contractHigh));
-  const contractReason = maxContract ? minContract === maxContract ? `契约舒缓 −${maxContract}（本层一次）` : `契约舒缓可能 −${maxContract}（本层一次）` : '';
+  const contractReason = maxContract ? minContract === maxContract ? `契约舒缓 −${maxContract}` : `契约舒缓可能 −${maxContract}` : '';
   const low = Math.min(...lows); const high = Math.max(...highs);
   const lowDelta = low - state.stress; const highDelta = high - state.stress;
   const range = lowDelta === highDelta ? signedDelta(lowDelta) : `${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
