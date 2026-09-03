@@ -743,6 +743,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .game-shell .passenger-card:disabled { opacity:.82; }
 .game-shell .passenger-card>.unified-passenger-summary { display:flex; flex-direction:column; align-items:stretch; gap:4px; height:100%; font:400 13px/1.4 var(--font-sans); color:#d7dece; text-align:left; overflow-wrap:anywhere; }
 .unified-passenger-summary>span { flex:none; }
+.card-overview { display:contents; }
 .card-head { display:flex; gap:9px; align-items:center; padding-right:24px; }
 .card-head .portrait-window { width:42px; height:42px; }
 .card-head strong { display:block; font:600 22px/1.2 var(--font-display); color:#f5e8cb; }
@@ -1218,18 +1219,28 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .slot-destination { font-size:12px; }
 }
 
-/* v7.8: desktop passenger identity and decision metrics share one readable header. */
+/* v8.0: identity and metrics own separate columns; long conditions wrap inside the metric column. */
 @media (min-width:1101px) and (min-height:501px) {
  .game-shell .passenger-card { position:relative; }
- .game-shell .card-head { min-height:40px; padding-right:174px; }
- .game-shell .card-values {
-  position:absolute;
-  top:10px;
-  right:44px;
-  display:flex;
-  flex-wrap:nowrap;
+ .game-shell .card-overview {
+  display:grid;
+  grid-template-columns:minmax(104px,1fr) minmax(0,210px);
   align-items:center;
-  gap:10px;
+  gap:8px;
+  min-width:0;
+  padding-right:34px;
+ }
+ .game-shell .card-head { min-width:0; min-height:40px; padding:0; }
+ .game-shell .card-head>span:last-child { min-width:0; }
+ .game-shell .card-values {
+  position:static;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  align-items:center;
+  gap:2px 9px;
+  min-width:0;
+  max-width:210px;
   padding:0;
   border:0;
  }

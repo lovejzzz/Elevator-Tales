@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { initialRun, resolveFloor, energySavings, riderAgitation, type Rider, type RunState } from '../lib/game-engine';
 import { passengerBrief, passengerFace, SHARED_SAVING_RULE } from '../lib/passenger-presentation';
+import { addDiscoveredPassengers, sanitizeDiscoveredPassengers } from '../lib/passenger-discovery';
 const rider=(kind:Rider['kind'],id=kind as string,extra:Partial<Rider>={}):Rider=>({kind,id,destination:8,boardedAt:1,patience:0,fareBonus:0,...extra});
 const state=(extra:Partial<RunState>={}):RunState=>({...initialRun(),...extra});
 let checks=0;
@@ -34,4 +35,8 @@ for(const kind of ['mechanic','ghost','exorcist'] as const){
 const duplicate=state({cabin:[rider('inspector','a'),rider('inspector','b'),null,null,null,null]});
 assert.equal(resolveFloor(duplicate,()=>.9).coins,2,'each inspector grants one bounded reward');
 assert.equal(resolveFloor(duplicate,()=>.9).energy,69);
-console.log(JSON.stringify({version:'v6.8',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,savingsCopy:true}));
+assert.deepEqual(sanitizeDiscoveredPassengers(null),[],'an old save does not unlock the archive');
+assert.deepEqual(sanitizeDiscoveredPassengers(['lover','bogus','lover']),['lover'],'saved discoveries are validated and deduplicated');
+assert.deepEqual(addDiscoveredPassengers([],['lover','lover','courier']),['courier','lover'],'only passengers actually seen are collected');
+assert.equal(addDiscoveredPassengers(['courier','lover'],['thief']).length,3,'new encounters extend the archive');
+console.log(JSON.stringify({version:'v8.0',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,savingsCopy:true,archiveDiscovery:true}));
