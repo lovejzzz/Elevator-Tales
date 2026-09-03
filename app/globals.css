@@ -1028,6 +1028,23 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .candidate-notes { flex:none; padding:6px 2px 0; }
 }
 
+/* v7.5: desktop controls are actions only; the instrument rail owns all forecasts. */
+@media (min-width:1101px) and (min-height:501px) {
+ .game-shell .departure-controls {
+  grid-template-columns:88px minmax(0,1fr);
+  grid-template-rows:minmax(0,1fr);
+  gap:10px;
+ }
+ .game-shell .departure-controls .mobile-departure-note,
+ .game-shell .departure-controls .energy-equation,
+ .game-shell .departure-controls .reseat-allowance { display:none; }
+ .game-shell .mobile-inspect-button { height:100%; min-height:0; font-size:13px; }
+ .game-shell .mobile-inspect-button svg { width:22px; height:22px; }
+ .game-shell .depart-button { height:100%; min-height:0; padding:0 24px; }
+ .game-shell .depart-button span { font-size:27px; }
+ .game-shell .depart-button b { font-size:12px; padding:10px 12px; }
+}
+
 /* v7.1 desktop instrument rail: readable at a glance, with icon, name, value, and forecast hierarchy. */
 .rail-metric-name { white-space:nowrap; }
 
