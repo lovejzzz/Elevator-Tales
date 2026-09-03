@@ -8,9 +8,32 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.8';
+export const GAME_VERSION = '8.9';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.9',
+    date: '2026-09-03',
+    title: '乘客卡获得价值材质',
+    summary: '候客卡不再像同一批印刷品：出现稀有度与基础回报共同决定材质层级，高价值人物会在第一眼就显得不同，同时彻底避免规则被截断。',
+    changes: [
+      '新增常规、精良、稀有、传奇四档卡牌材质：常规为深色纸面，精良为拉丝铜，稀有为金箔漆面，传奇为克制的虹彩黑曜石。',
+      '分级阈值固定为：出现权重≤4或基础车费≥30为传奇；权重≤6或车费≥20为稀有；权重≤8或车费≥14为精良；其余为常规。教练为稀有，百变人与炸弹客为传奇。',
+      '神秘人只按公开出现权重分级，不读取隐藏车费，因此卡面不会泄露封存奖励。',
+      '桌面候客区改为内容决定卡高；三张完整规则超过可用高度时只滚动右侧候客区，不再在卡片内部截掉文字。',
+      '补齐教练与隐藏车费的结算回归：神秘人的封存基价仍会接受每位相邻教练50%的线性倍率，但不把特殊组合写进卡面。',
+      '本次未改变任何实际人物、耗电、躁动、金币、出现概率或升级数值。',
+    ],
+    experiments: [
+      '新增双教练夹住神秘人的结算回归：隐藏基础车费31经两位教练线性叠加后精确结算62金币，揭晓日志仍只在到站时出现。',
+      '验证常规、精良、稀有、传奇四档代表人物，并确认分级函数不接收神秘人的隐藏参数。',
+      '完整规则验证继续覆盖52,920个定向人物配对/站位案例、48,000次随机状态跳转、60个连接案例、8类堆叠与768个交互案例。',
+    ],
+    watch: [
+      '材质现在表达“出现稀有度或基础回报”，不是无条件强度；继续观察玩家是否会把金卡误解成必选。',
+      '右侧候客区只在长规则组合时出现内部滚动；继续观察是否需要更明显的末端渐隐提示。',
+    ],
+  },
   {
     version: '8.8',
     date: '2026-09-03',
@@ -173,6 +196,27 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.9', date: '2026-09-03', title: 'Rider value becomes a physical material',
+    summary: 'Candidate cards no longer look like one uniform print run. Appearance rarity and base reward now determine the material tier, while full rules can never be clipped inside a card.',
+    changes: [
+      'Added four card materials: Standard dark stock, Fine brushed copper, Rare gilt lacquer, and restrained Legendary iridescent obsidian.',
+      'Tiers use fixed public values: appearance weight ≤4 or base fare ≥30 is Legendary; weight ≤6 or fare ≥20 is Rare; weight ≤8 or fare ≥14 is Fine; everything else is Standard. Coach is Rare; Shifter and Bomb Carrier are Legendary.',
+      'Mystery uses public appearance weight only and never reads its hidden fare, so its material cannot leak the sealed reward.',
+      'Desktop candidate cards now size to their complete rules. If three full cards exceed the available height, only the candidate rail scrolls; text is never clipped inside a card.',
+      'Added a Coach-and-hidden-fare regression: sealed Mystery base fare still receives the linear 50% multiplier from every adjacent Coach, without adding special-case copy to the card.',
+      'No rider, power, agitation, coin, appearance, or upgrade value changed in this release.',
+    ],
+    experiments: [
+      'Added an exact two-Coach Mystery regression: a sealed base fare of 31 resolves to 62 coins, while the original value remains hidden until arrival.',
+      'Verified representatives of all four material tiers and that the grading function accepts no hidden Mystery traits.',
+      'Full verification still covers 52,920 targeted rider-pair and position cases, 48,000 random state transitions, 60 connection cases, 8 stacking families, and 768 interaction cases.',
+    ],
+    watch: [
+      'Materials communicate appearance rarity or base reward, not unconditional strength. Watch whether players mistake a gilt card for an automatic pick.',
+      'The candidate rail scrolls only for combinations of long rules; watch whether it needs a stronger end fade.',
+    ],
+  },
   {
     version: '8.8', date: '2026-09-03', title: 'Candidate cards keep only useful feedback',
     summary: 'Removed the repeated boarding instruction from every candidate card so rider rules have room to breathe. Contextual states that affect the next action remain visible.',

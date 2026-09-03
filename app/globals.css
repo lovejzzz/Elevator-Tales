@@ -1145,7 +1145,11 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .mobile-inspect-button { height:100%; min-height:0; font-size:13px; }
  .game-shell .mobile-inspect-button svg { width:22px; height:22px; }
  .game-shell .depart-button { height:100%; min-height:0; padding:0 24px; }
- .game-shell .depart-button span { font-size:27px; }
+ .game-shell .depart-button span {
+  font-size:clamp(19px,1.35vw,25px);
+  letter-spacing:-.015em;
+  white-space:nowrap;
+ }
  .game-shell .depart-button b { font-size:12px; padding:10px 12px; }
 }
 
@@ -1416,4 +1420,105 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .seat-info-button { display:none; }
  .seat-metrics { padding-block:2px; }
  .seat-metrics>span { font-size:8px; }
+}
+
+/* v8.9: contract value and rarity become physical card materials. */
+.card-meta { display:flex; align-items:center; flex-wrap:wrap; gap:3px 7px; margin-top:2px; }
+.card-meta .card-trip { margin:0; }
+.card-grade {
+ display:inline-flex;
+ align-items:center;
+ min-height:18px;
+ padding:1px 6px;
+ border:1px solid currentColor;
+ border-radius:999px;
+ font:700 11px/1 var(--font-mono);
+ letter-spacing:.08em;
+ text-transform:uppercase;
+ white-space:nowrap;
+}
+.card-grade.grade-standard { color:#aeb9aa; background:#17221dbd; }
+.card-grade.grade-fine { color:#e0aa7d; background:#3a241ec2; box-shadow:inset 0 1px #ffd6ac20; }
+.card-grade.grade-rare { color:#f2d288; background:#40351cc9; box-shadow:0 0 10px #d6a84b20,inset 0 1px #fff0c238; }
+.card-grade.grade-legendary { color:#f7e7a8; background:linear-gradient(105deg,#513348d9,#234e49d9,#57451fd9); box-shadow:0 0 12px #8ad5c530,inset 0 1px #fff5cc52; }
+
+.game-shell .passenger-card {
+ --card-edge:#6f755f;
+ --card-accent:#9aaa8f;
+ --card-surface:radial-gradient(circle at 12% 0,rgba(188,210,183,.08),transparent 34%),linear-gradient(125deg,rgba(28,40,34,.98),rgba(8,15,13,.98));
+ --card-sheen:linear-gradient(108deg,transparent 28%,rgba(220,236,217,.12) 45%,transparent 62%);
+ --card-depth:inset 3px 0 var(--card-accent),inset 0 1px rgba(255,255,255,.045),0 5px 15px #0005;
+ isolation:isolate;
+ border-color:var(--card-edge);
+ background:var(--card-surface);
+ box-shadow:var(--card-depth);
+ overflow:hidden;
+}
+.game-shell .passenger-card.grade-fine {
+ --card-edge:#9a694d;
+ --card-accent:#c8875d;
+ --card-surface:radial-gradient(circle at 12% 0,rgba(225,151,100,.17),transparent 36%),repeating-linear-gradient(102deg,rgba(255,230,202,.025) 0 1px,transparent 1px 5px),linear-gradient(125deg,#35271f,#142019 58%,#0a1411);
+ --card-sheen:linear-gradient(108deg,transparent 26%,rgba(255,190,135,.18) 45%,transparent 63%);
+}
+.game-shell .passenger-card.grade-rare {
+ --card-edge:#d6b05d;
+ --card-accent:#edc66d;
+ --card-surface:radial-gradient(circle at 10% -5%,rgba(255,221,139,.24),transparent 34%),repeating-linear-gradient(118deg,rgba(255,249,219,.03) 0 1px,transparent 1px 6px),linear-gradient(132deg,#40351f,#173027 54%,#0b1613);
+ --card-sheen:linear-gradient(108deg,transparent 24%,rgba(255,236,173,.29) 42%,rgba(125,210,179,.12) 49%,transparent 65%);
+ --card-depth:inset 4px 0 var(--card-accent),inset 0 0 0 1px rgba(255,225,152,.13),0 7px 20px #0007,0 0 16px rgba(205,160,68,.12);
+}
+.game-shell .passenger-card.grade-legendary {
+ --card-edge:#e7cf87;
+ --card-accent:#f6d57e;
+ --card-surface:radial-gradient(circle at 9% 0,rgba(255,220,130,.28),transparent 30%),radial-gradient(circle at 92% 12%,rgba(100,211,192,.19),transparent 36%),radial-gradient(circle at 70% 100%,rgba(177,106,180,.16),transparent 42%),linear-gradient(135deg,#392c29,#12312d 50%,#1a1724);
+ --card-sheen:linear-gradient(108deg,transparent 18%,rgba(255,223,134,.34) 36%,rgba(111,220,201,.22) 44%,rgba(203,130,205,.23) 51%,transparent 68%);
+ --card-depth:inset 5px 0 var(--card-accent),inset 0 0 0 1px rgba(255,240,190,.2),0 8px 24px #0009,0 0 22px rgba(108,204,186,.14);
+}
+.game-shell .passenger-card::before {
+ content:'';
+ position:absolute;
+ z-index:0;
+ inset:-20% -45%;
+ pointer-events:none;
+ background:var(--card-sheen);
+ opacity:.35;
+ transform:translateX(-38%);
+ transition:transform 650ms var(--ease-settle),opacity 250ms ease;
+}
+.game-shell .passenger-card:hover:not(:disabled)::before,
+.game-shell .passenger-card:focus-visible::before,
+.game-shell .passenger-card.boarded::before { opacity:.9; transform:translateX(34%); }
+.game-shell .passenger-card>* { position:relative; z-index:1; }
+.game-shell .passenger-card.boarded { border-color:#ffd878; box-shadow:inset 6px 0 #efbf5b,inset 0 0 0 1px rgba(255,237,187,.24),0 0 22px rgba(231,183,83,.28),var(--card-depth); }
+.game-shell .passenger-card.pending { border-color:#f3ce7c; box-shadow:inset 5px 0 #e9bb63,0 0 20px rgba(224,175,80,.22),var(--card-depth); }
+
+/* Content determines card height. The right rail scrolls only when three full
+   rule sets genuinely exceed its height; no rule is clipped inside a card. */
+@media (min-width:1101px) and (min-height:501px) {
+ .game-shell .passenger-list {
+  display:flex;
+  flex-direction:column;
+  align-content:start;
+  overflow-x:hidden;
+  overflow-y:auto;
+  padding-right:4px;
+  scrollbar-width:thin;
+  scrollbar-color:#a98548 #101914;
+ }
+ .game-shell .passenger-item { flex:0 0 auto; min-height:0; }
+ .game-shell .passenger-card { height:auto; min-height:0; }
+ .game-shell .passenger-card>.unified-passenger-summary { height:auto; min-height:100%; overflow-wrap:normal; }
+}
+
+@media (prefers-reduced-motion:no-preference) {
+ .game-shell .passenger-card.grade-legendary::before { animation:legendary-card-foil 7s ease-in-out infinite alternate; }
+}
+@keyframes legendary-card-foil {
+ from { transform:translateX(-42%) rotate(-1deg); }
+ to { transform:translateX(38%) rotate(1deg); }
+}
+
+@media (max-width:700px) {
+ .card-meta { justify-content:center; gap:2px 5px; }
+ .card-grade { min-height:16px; padding-inline:4px; font-size:9px; letter-spacing:.04em; }
 }

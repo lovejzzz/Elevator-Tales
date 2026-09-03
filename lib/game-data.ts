@@ -22,6 +22,8 @@ export type PassengerSpec = {
   risk?: { label: '风险交易' | '条件风险' | '致命风险'; guide: string };
 };
 
+export type PassengerCardGrade = 'standard' | 'fine' | 'rare' | 'legendary';
+
 export const MECHANIC_SAVING = 2;
 
 export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
@@ -53,6 +55,16 @@ export const PASSENGER_ORDER: PassengerKind[] = [
   'thief', 'cop', 'lawyer', 'drunk', 'nurse', 'child',
   'ghost', 'exorcist', 'coach', 'celebrity', 'inspector', 'bomb', 'mystery', 'shifter', 'mimic',
 ];
+
+// Lower rarity values mean a lower appearance weight. The material grade also
+// recognizes high base fares, but never reads a Mystery rider's hidden fare.
+export function passengerCardGrade(kind: PassengerKind): PassengerCardGrade {
+  const passenger = PASSENGERS[kind];
+  if (passenger.rarity <= 4 || passenger.fare >= 30) return 'legendary';
+  if (passenger.rarity <= 6 || passenger.fare >= 20) return 'rare';
+  if (passenger.rarity <= 8 || passenger.fare >= 14) return 'fine';
+  return 'standard';
+}
 
 export const UNLOCK_TIERS: { floor: number; kinds: PassengerKind[] }[] = [
   { floor: 1, kinds: ['commuter', 'tourist', 'courier', 'mechanic', 'lover', 'musician', 'thief', 'cop'] },

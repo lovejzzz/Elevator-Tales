@@ -1,6 +1,19 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.8**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.9**.
+
+## v8.9 — 2026-09-03 — Rider value becomes a physical material
+
+- Added four materials: Standard dark stock, Fine brushed copper, Rare gilt lacquer, and restrained Legendary iridescent obsidian.
+- Fixed public thresholds: appearance weight ≤4 or base fare ≥30 is Legendary; weight ≤6 or fare ≥20 is Rare; weight ≤8 or fare ≥14 is Fine; everything else is Standard. Coach is Rare; Shifter and Bomb Carrier are Legendary.
+- Mystery grades from public appearance weight only, never its sealed fare, so the card material cannot leak the reward.
+- Desktop cards now size to complete rules. If all three exceed the rail height, only the candidate rail scrolls; card text is never clipped.
+- Added a Coach-and-hidden-fare regression: Mystery base fare still receives 50% per adjacent Coach, without adding special-case copy to the card.
+- No rider, power, agitation, coin, appearance, or upgrade value changed.
+- Added an exact two-Coach Mystery regression: sealed base fare 31 resolves to 62 coins and is logged only on arrival.
+- Full verification still covers 52,920 targeted pair/position cases, 48,000 random transitions, 60 connection cases, 8 stacking families, and 768 interaction cases.
+- Watch item: material means appearance rarity or base reward, not automatic strength.
+- Watch item: observe whether the candidate rail needs a stronger end fade when long-rule combinations require internal scrolling.
 
 ## v8.8 — 2026-09-03 — Candidate cards keep only useful feedback
 

@@ -120,6 +120,7 @@ const exactPairs: Array<[string, string]> = [
   ['乘客档案', 'Passenger Archive'], ['玩法说明', 'How to Play'], ['关闭声音', 'Mute sound'], ['打开声音', 'Enable sound'],
   ['午夜启程', 'Midnight Departure'], ['无尽班次', 'Endless Shift'], ['电量', 'Power'], ['躁动', 'Agitation'], ['余额', 'Balance'],
   ['本次变化明细', 'Decision details'], ['电梯座舱', 'Elevator cabin'], ['绿实线协作 · 红虚线冲突', 'Solid green: cooperation · dashed red: conflict'],
+  ['卡牌稀有度', 'Card rarity'], ['常规', 'Standard'], ['精良', 'Fine'], ['稀有', 'Rare'], ['传奇', 'Legendary'],
   ['门已开启。把候选人物直接拖进指定站位。', 'Doors open. Drag a candidate directly into a position.'],
   ['拖拽人物安排站位 · 有效组合会亮起', 'Drag riders into position · valid links will glow'],
   ['谁要上楼？', 'Who is going up?'], ['送达后领取基础奖励 · 途中收益与人物联动另算', 'Collect the base fare on arrival · floor income and links resolve separately'],

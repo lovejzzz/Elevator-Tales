@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { initialRun, resolveFloor, energySavings, riderAgitation, type Rider, type RunState } from '../lib/game-engine';
+import { passengerCardGrade } from '../lib/game-data';
 import { passengerBrief, passengerFace, SHARED_SAVING_RULE } from '../lib/passenger-presentation';
 import { addDiscoveredPassengers, sanitizeDiscoveredPassengers } from '../lib/passenger-discovery';
 const rider=(kind:Rider['kind'],id=kind as string,extra:Partial<Rider>={}):Rider=>({kind,id,destination:8,boardedAt:1,patience:0,fareBonus:0,...extra});
@@ -27,6 +28,17 @@ const coaches=state({cabin:[rider('coach','a',{destination:2}),rider('coach','b'
 assert.equal(resolveFloor(coaches,()=>.9).coins,46,'coaches do not multiply one another');
 const coachFace=passengerFace(coaches.cabin[0]!,coaches);
 assert.match(coachFace.moneyNote,/每位相邻教练/);assert.match(coachFace.moneyNote,/基础车费\+50%/);assert.match(coachFace.moneyNote,/每邻座\+3/);
+const mysteryBetweenCoaches=state({floor:1,cabin:[
+ rider('coach','coach-left'),
+ rider('mystery','hidden',{destination:2,traits:{weight:0,energy:1,agitation:0,fare:31,bond:{likes:['nurse'],avoids:['ghost']},revision:0}}),
+ rider('coach','coach-right'),null,null,null,
+]});
+const revealedMystery=resolveFloor(mysteryBetweenCoaches,()=>.9);
+assert.equal(revealedMystery.lastEarnings.sources.find(line=>line.label==='神秘人揭晓车费')?.amount,62,'two adjacent Coaches double the Mystery rider hidden base fare before reveal');
+assert.ok(revealedMystery.log.some(line=>line.includes('神秘人封存车费揭晓：31 金币')),'the log reveals the original hidden base fare only on arrival');
+assert.deepEqual(['standard','fine','rare','legendary'],[
+ passengerCardGrade('commuter'),passengerCardGrade('mechanic'),passengerCardGrade('coach'),passengerCardGrade('shifter'),
+]);
 for(const kind of ['mechanic','ghost','exorcist'] as const){
  const brief=passengerBrief(rider(kind),1);
  assert.ok(brief.skillRules.includes(SHARED_SAVING_RULE));
@@ -39,4 +51,4 @@ assert.deepEqual(sanitizeDiscoveredPassengers(null),[],'an old save does not unl
 assert.deepEqual(sanitizeDiscoveredPassengers(['lover','bogus','lover']),['lover'],'saved discoveries are validated and deduplicated');
 assert.deepEqual(addDiscoveredPassengers([],['lover','lover','courier']),['courier','lover'],'only passengers actually seen are collected');
 assert.equal(addDiscoveredPassengers(['courier','lover'],['thief']).length,3,'new encounters extend the archive');
-console.log(JSON.stringify({version:'v8.0',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,savingsCopy:true,archiveDiscovery:true}));
+console.log(JSON.stringify({version:'v8.9',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:4,savingsCopy:true,archiveDiscovery:true}));
