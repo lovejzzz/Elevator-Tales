@@ -21,6 +21,7 @@ const exactPairs: Array<[string, string]> = [
   ['旅途较长，送达车费较高。', 'A longer trip with a higher arrival fare.'],
   ['短途周转，快速送达赚取金币。', 'A short trip that pays quickly and frees a position.'],
   ['每位每层节能2电 · 可叠加', 'Each saves 2 power/floor · stacks'],
+  ['每位每层：节能2 · 可叠加', 'Each saves 2 power/floor · stacks'],
   ['每位维修工每层抵消2点人物耗电，多位逐个叠加。维修工本人耗1电；节能总量最多抵完本层人物耗电，不能抵消电梯运转的1电，也不会倒充电。', 'Each Mechanic cancels 2 passenger power per floor, and multiple Mechanics stack. A Mechanic consumes 1 power. Savings can cancel passenger use only, never the elevator’s 1-power motor cost, and cannot generate power.'],
   ['每位维修工每层节能2电，多位逐个叠加。', 'Each Mechanic saves 2 passenger power per floor. Multiple Mechanics stack.'],
   ['维修工、受控幽灵和节能线路逐项相加；总节能最多抵完人物耗电，不能抵运转1电。', 'Mechanics, controlled Ghosts, and Eco Circuit stack. Savings can cancel passenger use, but never the 1-power motor cost.'],

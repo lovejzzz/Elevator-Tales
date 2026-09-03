@@ -8,9 +8,23 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.10';
+export const GAME_VERSION = '8.11';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.11', date: '2026-09-03', title: '维修工节能行完成本地化',
+    summary: '最终线上检查发现维修工独有的紧凑能源行仍为中文；现已补齐，并把能源行加入全人物运行时翻译回归。',
+    changes: [
+      '维修工卡面的“每位每层节能2电、可叠加”现在完整显示为英文。',
+      '21类人物的英文回归现在同时检查能源、收益、躁动与技能四类运行时行。',
+      '教练仍保持通用说明，不点名神秘人；本次未改变任何玩法数值或材质分级。',
+    ],
+    experiments: [
+      '普通与高躁动两种状态共检查21类人物的全部紧凑卡面字段，确认不再残留中文。',
+      '完整规则验证继续覆盖52,920个定向配对/站位案例、48,000次随机状态跳转、60个连接案例、8类堆叠与768个交互案例。',
+    ],
+    watch: ['持续用线上实际候客组合验证新增动态文案。'],
+  },
   {
     version: '8.10',
     date: '2026-09-03',
@@ -214,6 +228,20 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.11', date: '2026-09-03', title: 'Mechanic savings reads fully in English',
+    summary: 'The final production pass found the Mechanic’s compact power-savings line still in Chinese. It is now localized, and energy rows are included in the all-rider runtime regression.',
+    changes: [
+      'The Mechanic card now renders its stackable 2-power-per-floor saving fully in English.',
+      'Runtime localization coverage for all 21 riders now checks power, income, agitation, and ability rows.',
+      'Coach copy remains general and does not name Mystery. No gameplay value or material tier changed.',
+    ],
+    experiments: [
+      'Checked every compact card field for all 21 riders at normal and high agitation, with no Chinese fragments remaining.',
+      'Full verification still covers 52,920 targeted pair/position cases, 48,000 random transitions, 60 connection cases, 8 stacking families, and 768 interaction cases.',
+    ],
+    watch: ['Keep validating new dynamic copy against actual production candidate combinations.'],
+  },
   {
     version: '8.10', date: '2026-09-03', title: 'Every English rider rule reads cleanly',
     summary: 'Production visual testing found Chinese fragments in several compact rider rules. All 21 runtime card faces are now fully localized, and those dynamic phrases are covered by regression tests.',

@@ -1,6 +1,15 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.10**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.11**.
+
+## v8.11 — 2026-09-03 — Mechanic savings reads fully in English
+
+- The Mechanic card now renders its stackable 2-power-per-floor saving fully in English.
+- Runtime localization coverage for all 21 riders now checks power, income, agitation, and ability rows at normal and high agitation.
+- Coach copy remains general and does not name Mystery.
+- No gameplay value or material tier changed.
+- Full verification still covers 52,920 targeted pair/position cases, 48,000 random transitions, 60 connection cases, 8 stacking families, and 768 interaction cases.
+- Watch item: keep validating new dynamic copy against actual production candidate combinations.
 
 ## v8.10 — 2026-09-03 — Every English rider rule reads cleanly
 

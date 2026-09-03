@@ -26,7 +26,7 @@ const runtimeFaceSamples=PASSENGER_ORDER.flatMap((kind)=>[0,10].flatMap((agitati
   const rider:Rider={kind,id:`i18n-${kind}-${agitation}`,destination:5,boardedAt:1,patience:0,fareBonus:0,fuse:kind==='bomb'?4:undefined};
   run.cabin=[rider,null,null,null,null,null];
   const face=passengerFace(rider,run);
-  return [face.moneyNote,...face.pressure,face.special];
+  return [...face.energy,face.moneyNote,...face.pressure,face.special];
 }));
 const corpus = [
   ...I18N_CORE_SAMPLES,
