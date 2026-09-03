@@ -130,7 +130,7 @@ const exactPairs: Array<[string, string]> = [
   ['每条绿线奖励都叠加；有绿线时免邻座冲突，人物技能另算。', 'Every green link stacks. Any green link blocks neighbor conflicts; rider abilities still resolve.'],
   ['每条绿线奖励都叠加；有绿线时免邻座冲突，人物技能另算', 'Every green link stacks. Any green link blocks neighbor conflicts; rider abilities still resolve'],
   ['每条绿线奖励都叠加；有绿线时免邻座冲突，人物技能另算；每位协作送达各舒缓一次。', 'Every green link stacks. Any green link blocks neighbor conflicts; each cooperative arrival also calms the cabin once.'],
-  ['点此撤回', 'Click to undo'], ['已选中 · 点空位', 'Selected · choose a position'], ['车厢已满', 'Cabin full'], ['拖入空位 / 点选上车', 'Drag to a position / click to board'],
+  ['点此撤回', 'Click to undo'], ['已选中 · 点空位', 'Selected · choose a position'], ['车厢已满', 'Cabin full'],
   ['已上车', 'On board'], ['不可放置', 'Cannot place'], ['松手', 'Drop'], ['点击', 'Click'], ['联动', 'Link'], ['就位', 'Place'],
   ['选中人物 · 查看 / 请离', 'Select a rider · inspect / dismiss'], ['旧乘客换位已用 · 新上客仍可调整', 'Existing-rider move used · new riders may still move'],
   ['选择发光站位 · ESC 取消', 'Choose a glowing position · ESC to cancel'], ['再选一个站位完成调整 · ESC 取消', 'Choose another position to complete the move · ESC to cancel'],

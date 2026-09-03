@@ -8,9 +8,29 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.7';
+export const GAME_VERSION = '8.8';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.8',
+    date: '2026-09-03',
+    title: '候客卡只保留有用反馈',
+    summary: '移除每张候客卡底部重复出现的操作说明，让空间留给人物规则；真正影响下一步操作的状态仍会即时显示。',
+    changes: [
+      '未选中且可正常上车的候客卡不再显示“拖入空位 / 点选上车”。',
+      '“已选中 · 点空位”“点此撤回”“车厢已满”以及可立即形成联动的提示继续按状态显示。',
+      '本次未改变人物、耗电、躁动、金币、难度段或升级的任何玩法数值。',
+    ],
+    experiments: [
+      '中英文界面均检查默认候客卡、选中、已上车、满载与可联动状态，确认只有默认重复说明被移除。',
+      '完整规则验证继续覆盖 52,920 个定向人物配对/站位案例、48,000 次随机状态跳转、60 个连接案例、8 类堆叠与 768 个交互案例。',
+      '生产构建与 GitHub Pages 静态构建通过；候客卡渲染路径中不再包含被删除的中英文默认提示。',
+    ],
+    watch: [
+      '规则较少的人物卡底部会自然留白；暂时保留这段呼吸空间，不再用通用说明填满。',
+      '继续观察首次游玩的玩家是否能仅凭拖拽反馈和选中状态顺利完成上车操作。',
+    ],
+  },
   {
     version: '8.7',
     date: '2026-09-03',
@@ -153,6 +173,24 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.8', date: '2026-09-03', title: 'Candidate cards keep only useful feedback',
+    summary: 'Removed the repeated boarding instruction from every candidate card so rider rules have room to breathe. Contextual states that affect the next action remain visible.',
+    changes: [
+      'Available, unselected candidate cards no longer show “Drag to a position / click to board.”',
+      'Selected, on-board, cabin-full, and immediate-link messages still appear when their state makes them useful.',
+      'No rider, power, agitation, coin, difficulty-wave, or upgrade values changed in this release.',
+    ],
+    experiments: [
+      'Checked default, selected, boarded, full-cabin, and link-ready cards in both English and Chinese; only the redundant default instruction is removed.',
+      'Full rules verification still covers 52,920 targeted rider-pair and position cases, 48,000 random state transitions, 60 connection cases, 8 stacking families, and 768 interaction cases.',
+      'Production and GitHub Pages static builds pass, and the candidate-card render path no longer contains the removed English or Chinese default message.',
+    ],
+    watch: [
+      'Riders with short rules now retain deliberate breathing room at the bottom of the card instead of filling it with generic instructions.',
+      'Keep watching whether first-time players can board smoothly from drag feedback and the selected state alone.',
+    ],
+  },
   {
     version: '8.7', date: '2026-09-03', title: 'The midnight shift goes bilingual',
     summary: 'The complete game now opens in English by default, with one-click access to the full Chinese interface. Gameplay and balance values are unchanged.',

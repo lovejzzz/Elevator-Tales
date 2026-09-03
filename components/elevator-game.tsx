@@ -65,7 +65,7 @@ function Portrait({ kind, large = false }: { kind: PassengerKind; large?: boolea
 }
 
 // One card face at every breakpoint: no separate mobile rulebook to drift.
-function PassengerCardFace({ rider, run, action, locale }: { rider: Rider; run: RunState; action: string; locale: GameLocale }) {
+function PassengerCardFace({ rider, run, action, locale }: { rider: Rider; run: RunState; action?: string; locale: GameLocale }) {
   const brief=passengerBrief(rider,run.floor,run.cabin,cooperationBonus(run),cooperationRelief(run),eventPressureMultiplier(run));
   const face=passengerFace(rider,run);
   const links=bondStatus(rider,run.cabin).supportCount;
@@ -89,7 +89,7 @@ function PassengerCardFace({ rider, run, action, locale }: { rider: Rider; run: 
     </span>
     <span className="card-cooperation"><span>到站每邻{brief.cooperation.partners.join('或')}</span><b aria-label={`每条协作连接奖励 ${cooperationBonus(run)} 金币${links?`，当前 ${links} 条生效`:''}${cooperationRelief(run)>0?`；送达减少 ${cooperationRelief(run)} 躁动`:''}`}><span><Coins aria-hidden="true" />{links?`+${cooperationBonus(run)}×${links}`:`+${cooperationBonus(run)}/条`}</span>{cooperationRelief(run)>0&&<span><Flame aria-hidden="true" />−{cooperationRelief(run)}</span>}</b></span>
     <span className="card-conflict"><Flame aria-hidden="true" />{conflictText}</span>
-    <span className="card-action">{action}</span>
+    {action&&<span className="card-action">{action}</span>}
   </span>, locale);
 }
 
@@ -366,7 +366,7 @@ export default function ElevatorGame() {
             const partner = unavailable ? null : readyPartner(offer.kind, run.cabin, offer.id, offer);
             return <div className="passenger-item" role="listitem" key={offer.id}><button className={`passenger-card tone-${spec.tone} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
               {boarded && <span className="boarded-status" aria-hidden="true"><Check />已上车</span>}
-              <PassengerCardFace rider={offer} run={run} action={boarded?'点此撤回':pending?'已选中 · 点空位':full?'车厢已满':partner?`上车可联动 · ${PASSENGERS[partner].name}`:'拖入空位 / 点选上车'} locale={language}/>
+              <PassengerCardFace rider={offer} run={run} action={boarded?'点此撤回':pending?'已选中 · 点空位':full?'车厢已满':partner?`上车可联动 · ${PASSENGERS[partner].name}`:undefined} locale={language}/>
             </button><button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(offer);}} aria-label={`查看${spec.name}规则`}><HelpCircle /></button></div>;
           })}
         </div><div className="candidate-notes"><span>每条绿线奖励都叠加；有绿线时免邻座冲突，人物技能另算{cooperationRelief(run)>0?'；每位协作送达各舒缓一次。':'。'}</span>{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>

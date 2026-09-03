@@ -1,6 +1,17 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.7**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.8**.
+
+## v8.8 — 2026-09-03 — Candidate cards keep only useful feedback
+
+- Removed “Drag to a position / click to board” from available, unselected candidate cards so rider rules have more room.
+- Kept contextual messages for selected riders, boarded riders, a full cabin, and candidates that can immediately create a link.
+- No rider, power, agitation, coin, difficulty-wave, or upgrade values changed in this release.
+- Checked default, selected, boarded, full-cabin, and link-ready states in both English and Chinese.
+- Full verification still covers 52,920 targeted rider-pair and position cases, 48,000 random state transitions, 60 connection cases, 8 stacking families, and 768 interaction cases.
+- Production and GitHub Pages static builds must pass, and the candidate-card render path must no longer contain the removed English or Chinese default message.
+- Watch item: short-rule cards now keep deliberate breathing room instead of filling it with a generic instruction.
+- Watch item: keep observing whether first-time players can board smoothly from drag feedback and the selected state alone.
 
 ## v8.7 — 2026-09-03 — The midnight shift goes bilingual
 
