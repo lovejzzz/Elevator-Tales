@@ -1,0 +1,4200 @@
+{
+  "id": "inspect3",
+  "params": {
+    "initial": 60,
+    "cap": 72,
+    "price": 1,
+    "target": 62,
+    "inspection": 3
+  },
+  "phase": "contexts",
+  "hashes": {
+    "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+    "game-data.ts": "9ee6c624ded99dcc8dfd63b7cf35ed9e494e381df2524b729113df261675194a",
+    "game-engine.ts": "497c21fa9f55e535241696e16c457c99fb032a9421beb71802e22a704eecde65",
+    "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+    "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+    "metric-feedback.ts": "1d293005af9bc2d4ebebd2caa01f68f2cb61a59a020d4457822436d2191f0958",
+    "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+    "passenger-presentation.ts": "8f1120306dad881110e39030175959651d4e034d30c4db88056fc661e04f8bae",
+    "rider-profile.ts": "836a01e14ea2aa129b5a53e5637ef028f765f043d35ea82b4f6b9e7955ceb1a3",
+    "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+  },
+  "runnerHash": "14e94d16b3d0b8643ac5521ca5c7ea37257807c8f0b651dfe288b38c4cb9b6d5",
+  "source": "v6.1-service-rest",
+  "mode": "validate",
+  "context": "late-build",
+  "seedBase": 96071453,
+  "initial": {
+    "floor": 81,
+    "restStops": 3,
+    "energy": 62,
+    "energyCap": 72,
+    "stress": 10,
+    "stressCap": 24,
+    "weightCap": 13,
+    "coins": 150,
+    "earned": 900,
+    "shop": [],
+    "cabin": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "swapped": false,
+    "upgrades": {
+      "battery": 0,
+      "solar": 1,
+      "calm": 3,
+      "concierge": 1,
+      "reinforced": 1,
+      "express": 0
+    },
+    "status": "playing",
+    "message": "门已开启。把候选人物直接拖进指定站位。",
+    "log": [
+      "01F · 无尽班次开始"
+    ],
+    "lastEarnings": {
+      "total": 0,
+      "sources": []
+    },
+    "lastPressure": {
+      "delta": 0,
+      "sources": []
+    },
+    "lastEnergy": {
+      "delta": 0,
+      "sources": []
+    }
+  },
+  "horizon": 600,
+  "totalGames": 180,
+  "transitions": 4887,
+  "forecastFailures": 0,
+  "rank": [
+    "low-power-6",
+    "planning-pairs-6",
+    "support-stack-music"
+  ],
+  "summaries": [
+    {
+      "id": "low-power-6",
+      "config": {
+        "id": "low-power-6",
+        "cap": 6,
+        "risk": 6,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "lookahead": true,
+        "restAware": true,
+        "contract": true,
+        "zeroExtra": true
+      },
+      "runs": 60,
+      "totalEnergy": 3465,
+      "checkpointRows": [
+        {
+          "game": 0,
+          "floor": 90,
+          "coins": 191,
+          "energy": 44,
+          "stress": 12,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 0,
+          "floor": 100,
+          "coins": 73,
+          "energy": 34,
+          "stress": 18,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 0,
+          "floor": 110,
+          "coins": 109,
+          "energy": 47,
+          "stress": 20,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 1,
+          "floor": 90,
+          "coins": 261,
+          "energy": 40,
+          "stress": 21,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 2,
+          "floor": 90,
+          "coins": 211,
+          "energy": 48,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 2,
+          "floor": 100,
+          "coins": 95,
+          "energy": 44,
+          "stress": 10,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 2,
+          "floor": 110,
+          "coins": 205,
+          "energy": 31,
+          "stress": 9,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 2,
+          "floor": 120,
+          "coins": 233,
+          "energy": 36,
+          "stress": 13,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 3,
+          "floor": 90,
+          "coins": 153,
+          "energy": 51,
+          "stress": 11,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 3,
+          "floor": 100,
+          "coins": 206,
+          "energy": 40,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 4,
+          "floor": 90,
+          "coins": 181,
+          "energy": 46,
+          "stress": 13,
+          "people": 5,
+          "upgrades": 6
+        },
+        {
+          "game": 4,
+          "floor": 100,
+          "coins": 137,
+          "energy": 31,
+          "stress": 8,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 4,
+          "floor": 110,
+          "coins": 184,
+          "energy": 36,
+          "stress": 21,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 4,
+          "floor": 120,
+          "coins": 262,
+          "energy": 47,
+          "stress": 21,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 5,
+          "floor": 90,
+          "coins": 201,
+          "energy": 38,
+          "stress": 11,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 5,
+          "floor": 100,
+          "coins": 107,
+          "energy": 36,
+          "stress": 13,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 5,
+          "floor": 110,
+          "coins": 104,
+          "energy": 46,
+          "stress": 10,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 5,
+          "floor": 120,
+          "coins": 66,
+          "energy": 44,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 5,
+          "floor": 130,
+          "coins": 78,
+          "energy": 47,
+          "stress": 20,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 6,
+          "floor": 90,
+          "coins": 230,
+          "energy": 41,
+          "stress": 15,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 6,
+          "floor": 100,
+          "coins": 122,
+          "energy": 45,
+          "stress": 10,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 6,
+          "floor": 110,
+          "coins": 143,
+          "energy": 38,
+          "stress": 5,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 6,
+          "floor": 120,
+          "coins": 211,
+          "energy": 35,
+          "stress": 5,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 6,
+          "floor": 130,
+          "coins": 324,
+          "energy": 15,
+          "stress": 15,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 7,
+          "floor": 90,
+          "coins": 165,
+          "energy": 43,
+          "stress": 8,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 7,
+          "floor": 100,
+          "coins": 259,
+          "energy": 33,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 7,
+          "floor": 110,
+          "coins": 121,
+          "energy": 38,
+          "stress": 21,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 8,
+          "floor": 90,
+          "coins": 172,
+          "energy": 49,
+          "stress": 12,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 9,
+          "floor": 90,
+          "coins": 221,
+          "energy": 41,
+          "stress": 12,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 9,
+          "floor": 100,
+          "coins": 64,
+          "energy": 47,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 9,
+          "floor": 110,
+          "coins": 195,
+          "energy": 27,
+          "stress": 24,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 10,
+          "floor": 90,
+          "coins": 167,
+          "energy": 50,
+          "stress": 11,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 10,
+          "floor": 100,
+          "coins": 213,
+          "energy": 42,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 11,
+          "floor": 90,
+          "coins": 181,
+          "energy": 51,
+          "stress": 9,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 11,
+          "floor": 100,
+          "coins": 147,
+          "energy": 35,
+          "stress": 11,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 12,
+          "floor": 90,
+          "coins": 172,
+          "energy": 52,
+          "stress": 13,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 12,
+          "floor": 100,
+          "coins": 75,
+          "energy": 39,
+          "stress": 15,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 12,
+          "floor": 110,
+          "coins": 100,
+          "energy": 42,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 13,
+          "floor": 90,
+          "coins": 168,
+          "energy": 50,
+          "stress": 16,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 13,
+          "floor": 100,
+          "coins": 97,
+          "energy": 34,
+          "stress": 10,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 13,
+          "floor": 110,
+          "coins": 121,
+          "energy": 47,
+          "stress": 18,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 14,
+          "floor": 90,
+          "coins": 190,
+          "energy": 43,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 15,
+          "floor": 90,
+          "coins": 176,
+          "energy": 47,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 15,
+          "floor": 100,
+          "coins": 182,
+          "energy": 44,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 16,
+          "floor": 90,
+          "coins": 198,
+          "energy": 49,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 16,
+          "floor": 100,
+          "coins": 114,
+          "energy": 37,
+          "stress": 11,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 17,
+          "floor": 90,
+          "coins": 180,
+          "energy": 40,
+          "stress": 17,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 17,
+          "floor": 100,
+          "coins": 32,
+          "energy": 49,
+          "stress": 18,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 18,
+          "floor": 90,
+          "coins": 172,
+          "energy": 50,
+          "stress": 4,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 18,
+          "floor": 100,
+          "coins": 73,
+          "energy": 33,
+          "stress": 13,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 18,
+          "floor": 110,
+          "coins": 213,
+          "energy": 34,
+          "stress": 10,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 19,
+          "floor": 90,
+          "coins": 172,
+          "energy": 48,
+          "stress": 15,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 19,
+          "floor": 100,
+          "coins": 153,
+          "energy": 50,
+          "stress": 20,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 20,
+          "floor": 90,
+          "coins": 169,
+          "energy": 52,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 20,
+          "floor": 100,
+          "coins": 64,
+          "energy": 40,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 21,
+          "floor": 90,
+          "coins": 183,
+          "energy": 52,
+          "stress": 14,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 22,
+          "floor": 90,
+          "coins": 222,
+          "energy": 46,
+          "stress": 11,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 22,
+          "floor": 100,
+          "coins": 134,
+          "energy": 31,
+          "stress": 9,
+          "people": 5,
+          "upgrades": 7
+        },
+        {
+          "game": 22,
+          "floor": 110,
+          "coins": 203,
+          "energy": 37,
+          "stress": 13,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 22,
+          "floor": 120,
+          "coins": 251,
+          "energy": 43,
+          "stress": 11,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 22,
+          "floor": 130,
+          "coins": 358,
+          "energy": 31,
+          "stress": 16,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 23,
+          "floor": 90,
+          "coins": 214,
+          "energy": 43,
+          "stress": 18,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 23,
+          "floor": 100,
+          "coins": 73,
+          "energy": 49,
+          "stress": 20,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 24,
+          "floor": 90,
+          "coins": 199,
+          "energy": 46,
+          "stress": 13,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 24,
+          "floor": 100,
+          "coins": 99,
+          "energy": 35,
+          "stress": 12,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 25,
+          "floor": 90,
+          "coins": 214,
+          "energy": 45,
+          "stress": 11,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 26,
+          "floor": 90,
+          "coins": 228,
+          "energy": 45,
+          "stress": 13,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 26,
+          "floor": 100,
+          "coins": 69,
+          "energy": 40,
+          "stress": 10,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 26,
+          "floor": 110,
+          "coins": 203,
+          "energy": 30,
+          "stress": 18,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 26,
+          "floor": 120,
+          "coins": 207,
+          "energy": 49,
+          "stress": 24,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 27,
+          "floor": 90,
+          "coins": 213,
+          "energy": 47,
+          "stress": 13,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 27,
+          "floor": 100,
+          "coins": 87,
+          "energy": 46,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 28,
+          "floor": 90,
+          "coins": 164,
+          "energy": 51,
+          "stress": 15,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 28,
+          "floor": 100,
+          "coins": 178,
+          "energy": 49,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 29,
+          "floor": 90,
+          "coins": 166,
+          "energy": 51,
+          "stress": 15,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 29,
+          "floor": 100,
+          "coins": 194,
+          "energy": 47,
+          "stress": 23,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 30,
+          "floor": 90,
+          "coins": 157,
+          "energy": 48,
+          "stress": 12,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 30,
+          "floor": 100,
+          "coins": 160,
+          "energy": 45,
+          "stress": 14,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 30,
+          "floor": 110,
+          "coins": 172,
+          "energy": 44,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 31,
+          "floor": 90,
+          "coins": 186,
+          "energy": 52,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 31,
+          "floor": 100,
+          "coins": 69,
+          "energy": 45,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 32,
+          "floor": 90,
+          "coins": 171,
+          "energy": 47,
+          "stress": 12,
+          "people": 5,
+          "upgrades": 6
+        },
+        {
+          "game": 32,
+          "floor": 100,
+          "coins": 186,
+          "energy": 34,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 33,
+          "floor": 90,
+          "coins": 204,
+          "energy": 45,
+          "stress": 8,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 33,
+          "floor": 100,
+          "coins": 119,
+          "energy": 37,
+          "stress": 18,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 33,
+          "floor": 110,
+          "coins": 126,
+          "energy": 44,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 34,
+          "floor": 90,
+          "coins": 177,
+          "energy": 45,
+          "stress": 8,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 34,
+          "floor": 100,
+          "coins": 140,
+          "energy": 29,
+          "stress": 5,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 34,
+          "floor": 110,
+          "coins": 159,
+          "energy": 39,
+          "stress": 13,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 34,
+          "floor": 120,
+          "coins": 183,
+          "energy": 45,
+          "stress": 15,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 35,
+          "floor": 90,
+          "coins": 161,
+          "energy": 50,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 37,
+          "floor": 90,
+          "coins": 226,
+          "energy": 41,
+          "stress": 18,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 38,
+          "floor": 90,
+          "coins": 216,
+          "energy": 48,
+          "stress": 13,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 39,
+          "floor": 90,
+          "coins": 159,
+          "energy": 51,
+          "stress": 20,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 41,
+          "floor": 90,
+          "coins": 184,
+          "energy": 44,
+          "stress": 19,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 42,
+          "floor": 90,
+          "coins": 190,
+          "energy": 49,
+          "stress": 12,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 43,
+          "floor": 90,
+          "coins": 182,
+          "energy": 52,
+          "stress": 16,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 43,
+          "floor": 100,
+          "coins": 43,
+          "energy": 50,
+          "stress": 12,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 43,
+          "floor": 110,
+          "coins": 67,
+          "energy": 41,
+          "stress": 13,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 43,
+          "floor": 120,
+          "coins": 79,
+          "energy": 40,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 43,
+          "floor": 130,
+          "coins": 106,
+          "energy": 41,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 44,
+          "floor": 90,
+          "coins": 219,
+          "energy": 50,
+          "stress": 9,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 44,
+          "floor": 100,
+          "coins": 185,
+          "energy": 34,
+          "stress": 10,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 44,
+          "floor": 110,
+          "coins": 225,
+          "energy": 41,
+          "stress": 25,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 45,
+          "floor": 90,
+          "coins": 168,
+          "energy": 47,
+          "stress": 15,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 46,
+          "floor": 90,
+          "coins": 150,
+          "energy": 44,
+          "stress": 7,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 47,
+          "floor": 90,
+          "coins": 180,
+          "energy": 46,
+          "stress": 5,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 47,
+          "floor": 100,
+          "coins": 138,
+          "energy": 28,
+          "stress": 10,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 47,
+          "floor": 110,
+          "coins": 208,
+          "energy": 31,
+          "stress": 0,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 47,
+          "floor": 120,
+          "coins": 297,
+          "energy": 21,
+          "stress": 18,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 47,
+          "floor": 130,
+          "coins": 265,
+          "energy": 45,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 48,
+          "floor": 90,
+          "coins": 197,
+          "energy": 48,
+          "stress": 3,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 48,
+          "floor": 100,
+          "coins": 232,
+          "energy": 38,
+          "stress": 13,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 48,
+          "floor": 110,
+          "coins": 134,
+          "energy": 35,
+          "stress": 13,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 48,
+          "floor": 120,
+          "coins": 124,
+          "energy": 45,
+          "stress": 18,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 49,
+          "floor": 90,
+          "coins": 189,
+          "energy": 51,
+          "stress": 5,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 49,
+          "floor": 100,
+          "coins": 176,
+          "energy": 30,
+          "stress": 8,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 49,
+          "floor": 110,
+          "coins": 347,
+          "energy": 18,
+          "stress": 15,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 49,
+          "floor": 120,
+          "coins": 166,
+          "energy": 51,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 8
+        },
+        {
+          "game": 50,
+          "floor": 90,
+          "coins": 225,
+          "energy": 41,
+          "stress": 22,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 51,
+          "floor": 90,
+          "coins": 176,
+          "energy": 52,
+          "stress": 8,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 51,
+          "floor": 100,
+          "coins": 67,
+          "energy": 40,
+          "stress": 14,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 51,
+          "floor": 110,
+          "coins": 97,
+          "energy": 43,
+          "stress": 22,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 52,
+          "floor": 90,
+          "coins": 201,
+          "energy": 50,
+          "stress": 18,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 52,
+          "floor": 100,
+          "coins": 87,
+          "energy": 41,
+          "stress": 16,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 52,
+          "floor": 110,
+          "coins": 95,
+          "energy": 47,
+          "stress": 24,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 53,
+          "floor": 90,
+          "coins": 160,
+          "energy": 49,
+          "stress": 15,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 54,
+          "floor": 90,
+          "coins": 145,
+          "energy": 48,
+          "stress": 11,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 54,
+          "floor": 100,
+          "coins": 181,
+          "energy": 41,
+          "stress": 16,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 55,
+          "floor": 90,
+          "coins": 172,
+          "energy": 48,
+          "stress": 10,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 55,
+          "floor": 100,
+          "coins": 99,
+          "energy": 32,
+          "stress": 8,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 55,
+          "floor": 110,
+          "coins": 213,
+          "energy": 28,
+          "stress": 11,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 55,
+          "floor": 120,
+          "coins": 263,
+          "energy": 38,
+          "stress": 18,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 56,
+          "floor": 90,
+          "coins": 206,
+          "energy": 49,
+          "stress": 16,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 56,
+          "floor": 100,
+          "coins": 105,
+          "energy": 41,
+          "stress": 18,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 57,
+          "floor": 90,
+          "coins": 165,
+          "energy": 52,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 58,
+          "floor": 90,
+          "coins": 257,
+          "energy": 35,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 6
+        }
+      ],
+      "exposed": {
+        "commuter": 594,
+        "tourist": 348,
+        "courier": 305,
+        "mechanic": 229,
+        "lover": 355,
+        "musician": 240,
+        "thief": 263,
+        "cop": 272,
+        "lawyer": 200,
+        "drunk": 240,
+        "nurse": 253,
+        "child": 223,
+        "ghost": 199,
+        "exorcist": 200,
+        "coach": 183,
+        "celebrity": 166,
+        "inspector": 175,
+        "bomb": 162,
+        "mystery": 205,
+        "shifter": 187,
+        "mimic": 176
+      },
+      "delivered": {
+        "commuter": 141,
+        "tourist": 1,
+        "courier": 156,
+        "mechanic": 24,
+        "lover": 43,
+        "musician": 26,
+        "thief": 17,
+        "cop": 43,
+        "lawyer": 21,
+        "drunk": 33,
+        "nurse": 74,
+        "child": 47,
+        "ghost": 13,
+        "exorcist": 13,
+        "coach": 0,
+        "celebrity": 22,
+        "inspector": 14,
+        "bomb": 48,
+        "mystery": 12,
+        "shifter": 1,
+        "mimic": 28
+      },
+      "riderSteps": {
+        "commuter": 442,
+        "tourist": 3,
+        "courier": 255,
+        "mechanic": 151,
+        "lover": 276,
+        "musician": 235,
+        "thief": 102,
+        "cop": 223,
+        "lawyer": 107,
+        "drunk": 104,
+        "nurse": 396,
+        "child": 140,
+        "ghost": 117,
+        "exorcist": 78,
+        "coach": 0,
+        "celebrity": 167,
+        "inspector": 108,
+        "bomb": 167,
+        "mystery": 43,
+        "shifter": 38,
+        "mimic": 144
+      },
+      "extraEnergy": 1740,
+      "agitatedSteps": 635,
+      "recoveries": 18,
+      "gamesWithCalm": 60,
+      "gamesWithContract": 40,
+      "duplicateCalmerSteps": 52,
+      "maxMusicians": 3,
+      "maxNurses": 2,
+      "purchases": {
+        "battery": 40,
+        "calm": 7
+      },
+      "spending": {
+        "battery": 6300,
+        "calm": 1280
+      },
+      "chargeSpend": 2701,
+      "shopVisits": 137,
+      "firstShopPassed": 0,
+      "deliveryCount": 777,
+      "patienceLosses": 0,
+      "pressureSources": {
+        "宽松轿厢": -1248,
+        "班次压力": 3488,
+        "醉汉闹事": 24,
+        "乘客到站舒缓": -777,
+        "音乐家安抚": -177,
+        "轿厢拥挤": 221,
+        "百变人自身躁动": 13,
+        "默契契约 · 协作送达": -375,
+        "护士安抚": -215,
+        "儿童无人照顾": 13,
+        "小偷未受控": 11,
+        "复制人自身躁动": 1,
+        "神秘人自身躁动": 11,
+        "检查员发现额外耗电": 2
+      },
+      "mean": 109.75,
+      "median": 108,
+      "p10": 97,
+      "p90": 129,
+      "max": 139,
+      "reach100Pct": 66.67,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 60,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 199.17,
+      "meanOccupancy": 1.91,
+      "steps": 1725,
+      "changes": 75,
+      "dismissals": 240,
+      "boarded": {
+        "commuter": 174,
+        "tourist": 1,
+        "courier": 164,
+        "mechanic": 53,
+        "lover": 83,
+        "musician": 69,
+        "thief": 41,
+        "cop": 63,
+        "lawyer": 34,
+        "drunk": 43,
+        "nurse": 108,
+        "child": 53,
+        "ghost": 35,
+        "exorcist": 29,
+        "coach": 0,
+        "celebrity": 41,
+        "inspector": 27,
+        "bomb": 60,
+        "mystery": 15,
+        "shifter": 21,
+        "mimic": 40
+      },
+      "floors": [
+        119,
+        99,
+        129,
+        102,
+        122,
+        134,
+        139,
+        119,
+        99,
+        110,
+        107,
+        107,
+        119,
+        117,
+        99,
+        109,
+        108,
+        109,
+        118,
+        107,
+        107,
+        99,
+        134,
+        108,
+        109,
+        99,
+        123,
+        108,
+        102,
+        106,
+        115,
+        107,
+        108,
+        117,
+        128,
+        97,
+        89,
+        98,
+        99,
+        97,
+        89,
+        94,
+        99,
+        131,
+        117,
+        98,
+        99,
+        131,
+        128,
+        129,
+        99,
+        112,
+        118,
+        98,
+        109,
+        126,
+        107,
+        97,
+        93,
+        89
+      ],
+      "seedThirdMeans": [
+        109.65,
+        111.6,
+        108
+      ],
+      "emptyStepPct": 33.68,
+      "lateEmptyStepPct": 33.68,
+      "meanLastBoardingFloor": 107.83,
+      "firstGameTrace": [
+        {
+          "floor": 100,
+          "coins": 45,
+          "earned": 1049,
+          "stress": 18,
+          "occupants": 2
+        }
+      ]
+    },
+    {
+      "id": "planning-pairs-6",
+      "config": {
+        "id": "planning-pairs-6",
+        "cap": 6,
+        "risk": 6,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "lookahead": true,
+        "restAware": true,
+        "pairSearch": true,
+        "contract": true
+      },
+      "runs": 60,
+      "totalEnergy": 4552,
+      "checkpointRows": [
+        {
+          "game": 1,
+          "floor": 90,
+          "coins": 257,
+          "energy": 38,
+          "stress": 20,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 2,
+          "floor": 90,
+          "coins": 292,
+          "energy": 20,
+          "stress": 21,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 2,
+          "floor": 100,
+          "coins": 102,
+          "energy": 51,
+          "stress": 21,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 4,
+          "floor": 90,
+          "coins": 197,
+          "energy": 40,
+          "stress": 8,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 4,
+          "floor": 100,
+          "coins": 141,
+          "energy": 31,
+          "stress": 10,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 4,
+          "floor": 110,
+          "coins": 198,
+          "energy": 31,
+          "stress": 23,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 4,
+          "floor": 120,
+          "coins": 240,
+          "energy": 37,
+          "stress": 21,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 5,
+          "floor": 90,
+          "coins": 201,
+          "energy": 36,
+          "stress": 12,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 6,
+          "floor": 90,
+          "coins": 239,
+          "energy": 37,
+          "stress": 17,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 7,
+          "floor": 90,
+          "coins": 206,
+          "energy": 35,
+          "stress": 4,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 7,
+          "floor": 100,
+          "coins": 348,
+          "energy": 27,
+          "stress": 11,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 7,
+          "floor": 110,
+          "coins": 216,
+          "energy": 40,
+          "stress": 9,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 7,
+          "floor": 120,
+          "coins": 200,
+          "energy": 14,
+          "stress": 21,
+          "people": 2,
+          "upgrades": 8
+        },
+        {
+          "game": 8,
+          "floor": 90,
+          "coins": 172,
+          "energy": 47,
+          "stress": 12,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 9,
+          "floor": 90,
+          "coins": 187,
+          "energy": 44,
+          "stress": 11,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 9,
+          "floor": 100,
+          "coins": 114,
+          "energy": 28,
+          "stress": 13,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 9,
+          "floor": 110,
+          "coins": 260,
+          "energy": 17,
+          "stress": 18,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 9,
+          "floor": 120,
+          "coins": 264,
+          "energy": 40,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 10,
+          "floor": 90,
+          "coins": 247,
+          "energy": 33,
+          "stress": 15,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 10,
+          "floor": 100,
+          "coins": 140,
+          "energy": 33,
+          "stress": 15,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 11,
+          "floor": 90,
+          "coins": 185,
+          "energy": 38,
+          "stress": 13,
+          "people": 5,
+          "upgrades": 6
+        },
+        {
+          "game": 11,
+          "floor": 100,
+          "coins": 241,
+          "energy": 35,
+          "stress": 20,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 12,
+          "floor": 90,
+          "coins": 170,
+          "energy": 45,
+          "stress": 14,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 12,
+          "floor": 100,
+          "coins": 253,
+          "energy": 41,
+          "stress": 15,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 13,
+          "floor": 90,
+          "coins": 214,
+          "energy": 36,
+          "stress": 13,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 13,
+          "floor": 100,
+          "coins": 116,
+          "energy": 30,
+          "stress": 9,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 14,
+          "floor": 90,
+          "coins": 190,
+          "energy": 43,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 15,
+          "floor": 90,
+          "coins": 176,
+          "energy": 47,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 15,
+          "floor": 100,
+          "coins": 183,
+          "energy": 44,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 16,
+          "floor": 90,
+          "coins": 198,
+          "energy": 49,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 17,
+          "floor": 90,
+          "coins": 217,
+          "energy": 43,
+          "stress": 22,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 18,
+          "floor": 90,
+          "coins": 308,
+          "energy": 18,
+          "stress": 19,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 19,
+          "floor": 90,
+          "coins": 192,
+          "energy": 41,
+          "stress": 10,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 19,
+          "floor": 100,
+          "coins": 107,
+          "energy": 37,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 20,
+          "floor": 90,
+          "coins": 174,
+          "energy": 48,
+          "stress": 8,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 20,
+          "floor": 100,
+          "coins": 65,
+          "energy": 40,
+          "stress": 21,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 21,
+          "floor": 90,
+          "coins": 249,
+          "energy": 36,
+          "stress": 22,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 22,
+          "floor": 90,
+          "coins": 222,
+          "energy": 46,
+          "stress": 11,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 22,
+          "floor": 100,
+          "coins": 174,
+          "energy": 32,
+          "stress": 4,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 22,
+          "floor": 110,
+          "coins": 351,
+          "energy": 14,
+          "stress": 23,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 22,
+          "floor": 120,
+          "coins": 98,
+          "energy": 42,
+          "stress": 26,
+          "people": 4,
+          "upgrades": 8
+        },
+        {
+          "game": 23,
+          "floor": 90,
+          "coins": 211,
+          "energy": 39,
+          "stress": 18,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 23,
+          "floor": 100,
+          "coins": 149,
+          "energy": 31,
+          "stress": 13,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 24,
+          "floor": 90,
+          "coins": 186,
+          "energy": 41,
+          "stress": 12,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 24,
+          "floor": 100,
+          "coins": 262,
+          "energy": 28,
+          "stress": 21,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 24,
+          "floor": 110,
+          "coins": 122,
+          "energy": 32,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 24,
+          "floor": 120,
+          "coins": 212,
+          "energy": 23,
+          "stress": 21,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 25,
+          "floor": 90,
+          "coins": 257,
+          "energy": 40,
+          "stress": 7,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 25,
+          "floor": 100,
+          "coins": 321,
+          "energy": 7,
+          "stress": 18,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 25,
+          "floor": 110,
+          "coins": 199,
+          "energy": 34,
+          "stress": 7,
+          "people": 1,
+          "upgrades": 8
+        },
+        {
+          "game": 25,
+          "floor": 120,
+          "coins": 262,
+          "energy": 39,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 8
+        },
+        {
+          "game": 26,
+          "floor": 90,
+          "coins": 274,
+          "energy": 30,
+          "stress": 20,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 26,
+          "floor": 100,
+          "coins": 126,
+          "energy": 37,
+          "stress": 21,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 27,
+          "floor": 90,
+          "coins": 250,
+          "energy": 40,
+          "stress": 9,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 27,
+          "floor": 100,
+          "coins": 200,
+          "energy": 25,
+          "stress": 12,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 27,
+          "floor": 110,
+          "coins": 210,
+          "energy": 35,
+          "stress": 18,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 28,
+          "floor": 90,
+          "coins": 239,
+          "energy": 43,
+          "stress": 11,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 28,
+          "floor": 100,
+          "coins": 241,
+          "energy": 20,
+          "stress": 21,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 29,
+          "floor": 90,
+          "coins": 245,
+          "energy": 40,
+          "stress": 20,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 29,
+          "floor": 100,
+          "coins": 66,
+          "energy": 47,
+          "stress": 24,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 30,
+          "floor": 90,
+          "coins": 262,
+          "energy": 32,
+          "stress": 12,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 30,
+          "floor": 100,
+          "coins": 130,
+          "energy": 33,
+          "stress": 20,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 31,
+          "floor": 90,
+          "coins": 254,
+          "energy": 43,
+          "stress": 13,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 31,
+          "floor": 100,
+          "coins": 87,
+          "energy": 42,
+          "stress": 15,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 32,
+          "floor": 90,
+          "coins": 226,
+          "energy": 43,
+          "stress": 13,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 32,
+          "floor": 100,
+          "coins": 180,
+          "energy": 27,
+          "stress": 18,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 33,
+          "floor": 90,
+          "coins": 204,
+          "energy": 45,
+          "stress": 8,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 33,
+          "floor": 100,
+          "coins": 119,
+          "energy": 37,
+          "stress": 18,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 33,
+          "floor": 110,
+          "coins": 126,
+          "energy": 44,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 34,
+          "floor": 90,
+          "coins": 250,
+          "energy": 39,
+          "stress": 15,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 34,
+          "floor": 100,
+          "coins": 136,
+          "energy": 34,
+          "stress": 20,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 35,
+          "floor": 90,
+          "coins": 120,
+          "energy": 41,
+          "stress": 18,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 36,
+          "floor": 90,
+          "coins": 223,
+          "energy": 38,
+          "stress": 14,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 36,
+          "floor": 100,
+          "coins": 171,
+          "energy": 27,
+          "stress": 21,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 37,
+          "floor": 90,
+          "coins": 249,
+          "energy": 31,
+          "stress": 19,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 37,
+          "floor": 100,
+          "coins": 200,
+          "energy": 27,
+          "stress": 20,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 38,
+          "floor": 90,
+          "coins": 215,
+          "energy": 43,
+          "stress": 18,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 39,
+          "floor": 90,
+          "coins": 253,
+          "energy": 28,
+          "stress": 15,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 39,
+          "floor": 100,
+          "coins": 96,
+          "energy": 46,
+          "stress": 23,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 40,
+          "floor": 90,
+          "coins": 164,
+          "energy": 42,
+          "stress": 9,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 40,
+          "floor": 100,
+          "coins": 214,
+          "energy": 36,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 41,
+          "floor": 90,
+          "coins": 201,
+          "energy": 37,
+          "stress": 13,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 41,
+          "floor": 100,
+          "coins": 123,
+          "energy": 27,
+          "stress": 16,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 41,
+          "floor": 110,
+          "coins": 280,
+          "energy": 16,
+          "stress": 16,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 41,
+          "floor": 120,
+          "coins": 302,
+          "energy": 6,
+          "stress": 15,
+          "people": 1,
+          "upgrades": 8
+        },
+        {
+          "game": 42,
+          "floor": 90,
+          "coins": 200,
+          "energy": 43,
+          "stress": 13,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 43,
+          "floor": 90,
+          "coins": 277,
+          "energy": 21,
+          "stress": 17,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 43,
+          "floor": 100,
+          "coins": 106,
+          "energy": 46,
+          "stress": 19,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 44,
+          "floor": 90,
+          "coins": 294,
+          "energy": 32,
+          "stress": 10,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 44,
+          "floor": 100,
+          "coins": 228,
+          "energy": 29,
+          "stress": 11,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 44,
+          "floor": 110,
+          "coins": 63,
+          "energy": 33,
+          "stress": 28,
+          "people": 4,
+          "upgrades": 8
+        },
+        {
+          "game": 45,
+          "floor": 90,
+          "coins": 180,
+          "energy": 41,
+          "stress": 16,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 46,
+          "floor": 90,
+          "coins": 268,
+          "energy": 31,
+          "stress": 21,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 47,
+          "floor": 90,
+          "coins": 276,
+          "energy": 25,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 48,
+          "floor": 90,
+          "coins": 200,
+          "energy": 44,
+          "stress": 4,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 48,
+          "floor": 100,
+          "coins": 302,
+          "energy": 28,
+          "stress": 13,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 48,
+          "floor": 110,
+          "coins": 155,
+          "energy": 34,
+          "stress": 14,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 48,
+          "floor": 120,
+          "coins": 134,
+          "energy": 41,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 49,
+          "floor": 90,
+          "coins": 189,
+          "energy": 51,
+          "stress": 5,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 49,
+          "floor": 100,
+          "coins": 176,
+          "energy": 30,
+          "stress": 8,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 49,
+          "floor": 110,
+          "coins": 339,
+          "energy": 14,
+          "stress": 16,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 49,
+          "floor": 120,
+          "coins": 214,
+          "energy": 36,
+          "stress": 18,
+          "people": 0,
+          "upgrades": 8
+        },
+        {
+          "game": 50,
+          "floor": 90,
+          "coins": 225,
+          "energy": 41,
+          "stress": 22,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 50,
+          "floor": 100,
+          "coins": 79,
+          "energy": 44,
+          "stress": 20,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 51,
+          "floor": 90,
+          "coins": 240,
+          "energy": 30,
+          "stress": 16,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 51,
+          "floor": 100,
+          "coins": 79,
+          "energy": 42,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 52,
+          "floor": 90,
+          "coins": 217,
+          "energy": 45,
+          "stress": 10,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 52,
+          "floor": 100,
+          "coins": 144,
+          "energy": 24,
+          "stress": 10,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 52,
+          "floor": 110,
+          "coins": 215,
+          "energy": 23,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 52,
+          "floor": 120,
+          "coins": 202,
+          "energy": 45,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 52,
+          "floor": 130,
+          "coins": 266,
+          "energy": 28,
+          "stress": 21,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 53,
+          "floor": 90,
+          "coins": 230,
+          "energy": 42,
+          "stress": 7,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 53,
+          "floor": 100,
+          "coins": 169,
+          "energy": 33,
+          "stress": 14,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 54,
+          "floor": 90,
+          "coins": 176,
+          "energy": 35,
+          "stress": 13,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 54,
+          "floor": 100,
+          "coins": 254,
+          "energy": 33,
+          "stress": 20,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 55,
+          "floor": 90,
+          "coins": 235,
+          "energy": 30,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 56,
+          "floor": 90,
+          "coins": 207,
+          "energy": 46,
+          "stress": 16,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 56,
+          "floor": 100,
+          "coins": 130,
+          "energy": 39,
+          "stress": 20,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 56,
+          "floor": 110,
+          "coins": 185,
+          "energy": 46,
+          "stress": 21,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 57,
+          "floor": 90,
+          "coins": 159,
+          "energy": 51,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 58,
+          "floor": 90,
+          "coins": 263,
+          "energy": 38,
+          "stress": 20,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 59,
+          "floor": 90,
+          "coins": 184,
+          "energy": 41,
+          "stress": 11,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 59,
+          "floor": 100,
+          "coins": 115,
+          "energy": 26,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 7
+        }
+      ],
+      "exposed": {
+        "commuter": 561,
+        "tourist": 336,
+        "courier": 306,
+        "mechanic": 222,
+        "lover": 338,
+        "musician": 223,
+        "thief": 226,
+        "cop": 267,
+        "lawyer": 190,
+        "drunk": 228,
+        "nurse": 233,
+        "child": 204,
+        "ghost": 189,
+        "exorcist": 176,
+        "coach": 170,
+        "celebrity": 157,
+        "inspector": 164,
+        "bomb": 147,
+        "mystery": 194,
+        "shifter": 169,
+        "mimic": 175
+      },
+      "delivered": {
+        "commuter": 147,
+        "tourist": 57,
+        "courier": 175,
+        "mechanic": 22,
+        "lover": 36,
+        "musician": 41,
+        "thief": 20,
+        "cop": 33,
+        "lawyer": 20,
+        "drunk": 39,
+        "nurse": 75,
+        "child": 32,
+        "ghost": 10,
+        "exorcist": 18,
+        "coach": 26,
+        "celebrity": 22,
+        "inspector": 10,
+        "bomb": 45,
+        "mystery": 31,
+        "shifter": 14,
+        "mimic": 31
+      },
+      "riderSteps": {
+        "commuter": 431,
+        "tourist": 260,
+        "courier": 303,
+        "mechanic": 129,
+        "lover": 189,
+        "musician": 370,
+        "thief": 102,
+        "cop": 171,
+        "lawyer": 123,
+        "drunk": 117,
+        "nurse": 426,
+        "child": 89,
+        "ghost": 91,
+        "exorcist": 79,
+        "coach": 250,
+        "celebrity": 195,
+        "inspector": 73,
+        "bomb": 161,
+        "mystery": 104,
+        "shifter": 103,
+        "mimic": 136
+      },
+      "extraEnergy": 2927,
+      "agitatedSteps": 724,
+      "recoveries": 20,
+      "gamesWithCalm": 60,
+      "gamesWithContract": 50,
+      "duplicateCalmerSteps": 74,
+      "maxMusicians": 3,
+      "maxNurses": 2,
+      "purchases": {
+        "battery": 50,
+        "calm": 13
+      },
+      "spending": {
+        "battery": 7932,
+        "calm": 2420
+      },
+      "chargeSpend": 3286,
+      "shopVisits": 123,
+      "firstShopPassed": 0,
+      "deliveryCount": 904,
+      "patienceLosses": 0,
+      "pressureSources": {
+        "宽松轿厢": -928,
+        "班次压力": 3548,
+        "醉汉闹事": 24,
+        "乘客到站舒缓": -904,
+        "轿厢拥挤": 283,
+        "音乐家安抚": -348,
+        "护士安抚": -235,
+        "默契契约 · 协作送达": -441,
+        "小偷未受控": 13,
+        "神秘人自身躁动": 30,
+        "儿童无人照顾": 6,
+        "百变人自身躁动": 35,
+        "名人被围": 2,
+        "复制人自身躁动": 2,
+        "检查员发现额外耗电": 3
+      },
+      "mean": 108.08,
+      "median": 108,
+      "p10": 98,
+      "p90": 128,
+      "max": 137,
+      "reach100Pct": 66.67,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 60,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 274.45,
+      "meanOccupancy": 2.4,
+      "steps": 1625,
+      "changes": 153,
+      "dismissals": 286,
+      "boarded": {
+        "commuter": 174,
+        "tourist": 78,
+        "courier": 189,
+        "mechanic": 47,
+        "lover": 62,
+        "musician": 106,
+        "thief": 40,
+        "cop": 50,
+        "lawyer": 40,
+        "drunk": 48,
+        "nurse": 114,
+        "child": 39,
+        "ghost": 31,
+        "exorcist": 26,
+        "coach": 67,
+        "celebrity": 50,
+        "inspector": 18,
+        "bomb": 56,
+        "mystery": 37,
+        "shifter": 35,
+        "mimic": 42
+      },
+      "floors": [
+        89,
+        99,
+        107,
+        89,
+        122,
+        99,
+        98,
+        128,
+        99,
+        127,
+        108,
+        108,
+        109,
+        108,
+        99,
+        109,
+        99,
+        99,
+        98,
+        109,
+        105,
+        96,
+        129,
+        109,
+        128,
+        128,
+        109,
+        118,
+        108,
+        100,
+        109,
+        107,
+        109,
+        117,
+        103,
+        99,
+        109,
+        109,
+        98,
+        101,
+        109,
+        129,
+        99,
+        109,
+        110,
+        99,
+        97,
+        98,
+        128,
+        128,
+        108,
+        108,
+        137,
+        109,
+        109,
+        99,
+        113,
+        97,
+        98,
+        107
+      ],
+      "seedThirdMeans": [
+        106.85,
+        111.7,
+        105.7
+      ],
+      "emptyStepPct": 28.18,
+      "lateEmptyStepPct": 28.18,
+      "meanLastBoardingFloor": 106.58,
+      "firstGameTrace": []
+    },
+    {
+      "id": "support-stack-music",
+      "config": {
+        "id": "support-stack-music",
+        "cap": 6,
+        "risk": 6,
+        "favorite": [
+          "musician"
+        ],
+        "bias": 12,
+        "shop": "balanced",
+        "moves": 1,
+        "lookahead": true,
+        "restAware": true,
+        "contract": true
+      },
+      "runs": 60,
+      "totalEnergy": 3962,
+      "checkpointRows": [
+        {
+          "game": 1,
+          "floor": 90,
+          "coins": 245,
+          "energy": 38,
+          "stress": 21,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 1,
+          "floor": 100,
+          "coins": 117,
+          "energy": 33,
+          "stress": 18,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 1,
+          "floor": 110,
+          "coins": 200,
+          "energy": 32,
+          "stress": 11,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 1,
+          "floor": 120,
+          "coins": 310,
+          "energy": 34,
+          "stress": 4,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 1,
+          "floor": 130,
+          "coins": 458,
+          "energy": 6,
+          "stress": 19,
+          "people": 5,
+          "upgrades": 7
+        },
+        {
+          "game": 2,
+          "floor": 90,
+          "coins": 302,
+          "energy": 18,
+          "stress": 21,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 4,
+          "floor": 90,
+          "coins": 226,
+          "energy": 35,
+          "stress": 12,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 4,
+          "floor": 100,
+          "coins": 140,
+          "energy": 28,
+          "stress": 7,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 4,
+          "floor": 110,
+          "coins": 221,
+          "energy": 33,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 4,
+          "floor": 120,
+          "coins": 372,
+          "energy": 32,
+          "stress": 9,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 4,
+          "floor": 130,
+          "coins": 457,
+          "energy": 39,
+          "stress": 15,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 5,
+          "floor": 90,
+          "coins": 201,
+          "energy": 36,
+          "stress": 12,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 6,
+          "floor": 90,
+          "coins": 252,
+          "energy": 32,
+          "stress": 15,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 6,
+          "floor": 100,
+          "coins": 135,
+          "energy": 45,
+          "stress": 10,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 6,
+          "floor": 110,
+          "coins": 311,
+          "energy": 15,
+          "stress": 16,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 6,
+          "floor": 120,
+          "coins": 232,
+          "energy": 27,
+          "stress": 13,
+          "people": 0,
+          "upgrades": 8
+        },
+        {
+          "game": 6,
+          "floor": 130,
+          "coins": 333,
+          "energy": 33,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 8
+        },
+        {
+          "game": 6,
+          "floor": 140,
+          "coins": 398,
+          "energy": 44,
+          "stress": 20,
+          "people": 2,
+          "upgrades": 8
+        },
+        {
+          "game": 7,
+          "floor": 90,
+          "coins": 215,
+          "energy": 34,
+          "stress": 5,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 7,
+          "floor": 100,
+          "coins": 336,
+          "energy": 28,
+          "stress": 13,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 7,
+          "floor": 110,
+          "coins": 205,
+          "energy": 40,
+          "stress": 11,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 7,
+          "floor": 120,
+          "coins": 147,
+          "energy": 18,
+          "stress": 24,
+          "people": 2,
+          "upgrades": 8
+        },
+        {
+          "game": 8,
+          "floor": 90,
+          "coins": 180,
+          "energy": 41,
+          "stress": 9,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 8,
+          "floor": 100,
+          "coins": 204,
+          "energy": 19,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 9,
+          "floor": 90,
+          "coins": 221,
+          "energy": 41,
+          "stress": 12,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 9,
+          "floor": 100,
+          "coins": 64,
+          "energy": 47,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 9,
+          "floor": 110,
+          "coins": 170,
+          "energy": 30,
+          "stress": 14,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 9,
+          "floor": 120,
+          "coins": 168,
+          "energy": 45,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 10,
+          "floor": 90,
+          "coins": 160,
+          "energy": 47,
+          "stress": 16,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 10,
+          "floor": 100,
+          "coins": 277,
+          "energy": 33,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 11,
+          "floor": 90,
+          "coins": 181,
+          "energy": 49,
+          "stress": 9,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 11,
+          "floor": 100,
+          "coins": 177,
+          "energy": 30,
+          "stress": 14,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 13,
+          "floor": 90,
+          "coins": 154,
+          "energy": 48,
+          "stress": 16,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 13,
+          "floor": 100,
+          "coins": 231,
+          "energy": 35,
+          "stress": 15,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 14,
+          "floor": 90,
+          "coins": 208,
+          "energy": 38,
+          "stress": 23,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 15,
+          "floor": 90,
+          "coins": 218,
+          "energy": 41,
+          "stress": 21,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 15,
+          "floor": 100,
+          "coins": 51,
+          "energy": 45,
+          "stress": 24,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 16,
+          "floor": 90,
+          "coins": 198,
+          "energy": 49,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 17,
+          "floor": 90,
+          "coins": 204,
+          "energy": 37,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 17,
+          "floor": 100,
+          "coins": 63,
+          "energy": 41,
+          "stress": 20,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 18,
+          "floor": 90,
+          "coins": 270,
+          "energy": 32,
+          "stress": 19,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 19,
+          "floor": 90,
+          "coins": 216,
+          "energy": 45,
+          "stress": 18,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 20,
+          "floor": 90,
+          "coins": 169,
+          "energy": 52,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 20,
+          "floor": 100,
+          "coins": 42,
+          "energy": 37,
+          "stress": 20,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 21,
+          "floor": 90,
+          "coins": 179,
+          "energy": 49,
+          "stress": 12,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 22,
+          "floor": 90,
+          "coins": 222,
+          "energy": 46,
+          "stress": 11,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 22,
+          "floor": 100,
+          "coins": 190,
+          "energy": 23,
+          "stress": 1,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 22,
+          "floor": 110,
+          "coins": 424,
+          "energy": 9,
+          "stress": 10,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 22,
+          "floor": 120,
+          "coins": 266,
+          "energy": 28,
+          "stress": 23,
+          "people": 4,
+          "upgrades": 8
+        },
+        {
+          "game": 23,
+          "floor": 90,
+          "coins": 211,
+          "energy": 39,
+          "stress": 18,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 23,
+          "floor": 100,
+          "coins": 161,
+          "energy": 23,
+          "stress": 21,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 24,
+          "floor": 90,
+          "coins": 186,
+          "energy": 41,
+          "stress": 12,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 24,
+          "floor": 100,
+          "coins": 256,
+          "energy": 30,
+          "stress": 22,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 25,
+          "floor": 90,
+          "coins": 241,
+          "energy": 39,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 25,
+          "floor": 100,
+          "coins": 262,
+          "energy": 10,
+          "stress": 18,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 25,
+          "floor": 110,
+          "coins": 206,
+          "energy": 31,
+          "stress": 6,
+          "people": 1,
+          "upgrades": 8
+        },
+        {
+          "game": 25,
+          "floor": 120,
+          "coins": 258,
+          "energy": 40,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 8
+        },
+        {
+          "game": 25,
+          "floor": 130,
+          "coins": 296,
+          "energy": 42,
+          "stress": 25,
+          "people": 2,
+          "upgrades": 8
+        },
+        {
+          "game": 26,
+          "floor": 90,
+          "coins": 245,
+          "energy": 42,
+          "stress": 21,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 27,
+          "floor": 90,
+          "coins": 213,
+          "energy": 47,
+          "stress": 13,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 27,
+          "floor": 100,
+          "coins": 87,
+          "energy": 46,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 28,
+          "floor": 90,
+          "coins": 195,
+          "energy": 46,
+          "stress": 9,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 28,
+          "floor": 100,
+          "coins": 154,
+          "energy": 29,
+          "stress": 15,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 28,
+          "floor": 110,
+          "coins": 192,
+          "energy": 41,
+          "stress": 19,
+          "people": 0,
+          "upgrades": 7
+        },
+        {
+          "game": 29,
+          "floor": 90,
+          "coins": 166,
+          "energy": 51,
+          "stress": 15,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 29,
+          "floor": 100,
+          "coins": 194,
+          "energy": 47,
+          "stress": 23,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 30,
+          "floor": 90,
+          "coins": 226,
+          "energy": 36,
+          "stress": 12,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 31,
+          "floor": 90,
+          "coins": 216,
+          "energy": 48,
+          "stress": 12,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 31,
+          "floor": 100,
+          "coins": 96,
+          "energy": 42,
+          "stress": 18,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 32,
+          "floor": 90,
+          "coins": 171,
+          "energy": 47,
+          "stress": 12,
+          "people": 5,
+          "upgrades": 6
+        },
+        {
+          "game": 33,
+          "floor": 90,
+          "coins": 204,
+          "energy": 45,
+          "stress": 8,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 33,
+          "floor": 100,
+          "coins": 151,
+          "energy": 33,
+          "stress": 19,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 34,
+          "floor": 90,
+          "coins": 250,
+          "energy": 39,
+          "stress": 15,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 35,
+          "floor": 90,
+          "coins": 161,
+          "energy": 50,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 36,
+          "floor": 90,
+          "coins": 184,
+          "energy": 47,
+          "stress": 5,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 36,
+          "floor": 100,
+          "coins": 317,
+          "energy": 27,
+          "stress": 18,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 37,
+          "floor": 90,
+          "coins": 213,
+          "energy": 39,
+          "stress": 18,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 38,
+          "floor": 90,
+          "coins": 253,
+          "energy": 37,
+          "stress": 17,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 39,
+          "floor": 90,
+          "coins": 173,
+          "energy": 44,
+          "stress": 19,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 40,
+          "floor": 90,
+          "coins": 164,
+          "energy": 42,
+          "stress": 9,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 40,
+          "floor": 100,
+          "coins": 214,
+          "energy": 36,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 41,
+          "floor": 90,
+          "coins": 192,
+          "energy": 42,
+          "stress": 18,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 42,
+          "floor": 90,
+          "coins": 216,
+          "energy": 40,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 43,
+          "floor": 90,
+          "coins": 251,
+          "energy": 33,
+          "stress": 17,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 43,
+          "floor": 100,
+          "coins": 101,
+          "energy": 52,
+          "stress": 21,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 43,
+          "floor": 110,
+          "coins": 138,
+          "energy": 47,
+          "stress": 21,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 43,
+          "floor": 120,
+          "coins": 183,
+          "energy": 40,
+          "stress": 21,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 44,
+          "floor": 90,
+          "coins": 239,
+          "energy": 40,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 44,
+          "floor": 100,
+          "coins": 181,
+          "energy": 29,
+          "stress": 7,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 44,
+          "floor": 110,
+          "coins": 216,
+          "energy": 41,
+          "stress": 22,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 45,
+          "floor": 90,
+          "coins": 168,
+          "energy": 47,
+          "stress": 15,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 46,
+          "floor": 90,
+          "coins": 150,
+          "energy": 44,
+          "stress": 7,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 47,
+          "floor": 90,
+          "coins": 246,
+          "energy": 27,
+          "stress": 20,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 47,
+          "floor": 100,
+          "coins": 85,
+          "energy": 44,
+          "stress": 20,
+          "people": 4,
+          "upgrades": 7
+        },
+        {
+          "game": 47,
+          "floor": 110,
+          "coins": 192,
+          "energy": 13,
+          "stress": 22,
+          "people": 3,
+          "upgrades": 7
+        },
+        {
+          "game": 48,
+          "floor": 90,
+          "coins": 265,
+          "energy": 21,
+          "stress": 21,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 49,
+          "floor": 90,
+          "coins": 256,
+          "energy": 36,
+          "stress": 19,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 50,
+          "floor": 90,
+          "coins": 225,
+          "energy": 41,
+          "stress": 22,
+          "people": 0,
+          "upgrades": 6
+        },
+        {
+          "game": 51,
+          "floor": 90,
+          "coins": 325,
+          "energy": 22,
+          "stress": 20,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 52,
+          "floor": 90,
+          "coins": 217,
+          "energy": 45,
+          "stress": 10,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 52,
+          "floor": 100,
+          "coins": 136,
+          "energy": 23,
+          "stress": 10,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 52,
+          "floor": 110,
+          "coins": 206,
+          "energy": 23,
+          "stress": 17,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 52,
+          "floor": 120,
+          "coins": 193,
+          "energy": 45,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 52,
+          "floor": 130,
+          "coins": 236,
+          "energy": 41,
+          "stress": 20,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 53,
+          "floor": 90,
+          "coins": 230,
+          "energy": 42,
+          "stress": 7,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 53,
+          "floor": 100,
+          "coins": 139,
+          "energy": 31,
+          "stress": 16,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 54,
+          "floor": 90,
+          "coins": 247,
+          "energy": 37,
+          "stress": 16,
+          "people": 1,
+          "upgrades": 6
+        },
+        {
+          "game": 55,
+          "floor": 90,
+          "coins": 172,
+          "energy": 45,
+          "stress": 10,
+          "people": 4,
+          "upgrades": 6
+        },
+        {
+          "game": 55,
+          "floor": 100,
+          "coins": 313,
+          "energy": 25,
+          "stress": 21,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 55,
+          "floor": 110,
+          "coins": 161,
+          "energy": 34,
+          "stress": 22,
+          "people": 1,
+          "upgrades": 7
+        },
+        {
+          "game": 56,
+          "floor": 90,
+          "coins": 240,
+          "energy": 31,
+          "stress": 15,
+          "people": 3,
+          "upgrades": 6
+        },
+        {
+          "game": 56,
+          "floor": 100,
+          "coins": 147,
+          "energy": 41,
+          "stress": 19,
+          "people": 2,
+          "upgrades": 7
+        },
+        {
+          "game": 57,
+          "floor": 90,
+          "coins": 159,
+          "energy": 51,
+          "stress": 6,
+          "people": 2,
+          "upgrades": 6
+        },
+        {
+          "game": 58,
+          "floor": 90,
+          "coins": 288,
+          "energy": 29,
+          "stress": 23,
+          "people": 2,
+          "upgrades": 6
+        }
+      ],
+      "exposed": {
+        "commuter": 544,
+        "tourist": 307,
+        "courier": 273,
+        "mechanic": 218,
+        "lover": 308,
+        "musician": 221,
+        "thief": 223,
+        "cop": 258,
+        "lawyer": 165,
+        "drunk": 215,
+        "nurse": 221,
+        "child": 194,
+        "ghost": 181,
+        "exorcist": 165,
+        "coach": 161,
+        "celebrity": 152,
+        "inspector": 148,
+        "bomb": 141,
+        "mystery": 189,
+        "shifter": 162,
+        "mimic": 165
+      },
+      "delivered": {
+        "commuter": 128,
+        "tourist": 43,
+        "courier": 151,
+        "mechanic": 21,
+        "lover": 25,
+        "musician": 59,
+        "thief": 13,
+        "cop": 28,
+        "lawyer": 14,
+        "drunk": 33,
+        "nurse": 71,
+        "child": 35,
+        "ghost": 10,
+        "exorcist": 9,
+        "coach": 24,
+        "celebrity": 16,
+        "inspector": 9,
+        "bomb": 45,
+        "mystery": 28,
+        "shifter": 11,
+        "mimic": 13
+      },
+      "riderSteps": {
+        "commuter": 391,
+        "tourist": 213,
+        "courier": 256,
+        "mechanic": 110,
+        "lover": 122,
+        "musician": 483,
+        "thief": 83,
+        "cop": 165,
+        "lawyer": 71,
+        "drunk": 94,
+        "nurse": 380,
+        "child": 94,
+        "ghost": 71,
+        "exorcist": 58,
+        "coach": 187,
+        "celebrity": 138,
+        "inspector": 64,
+        "bomb": 154,
+        "mystery": 97,
+        "shifter": 63,
+        "mimic": 73
+      },
+      "extraEnergy": 2425,
+      "agitatedSteps": 670,
+      "recoveries": 13,
+      "gamesWithCalm": 60,
+      "gamesWithContract": 47,
+      "duplicateCalmerSteps": 102,
+      "maxMusicians": 4,
+      "maxNurses": 2,
+      "purchases": {
+        "battery": 47,
+        "calm": 9
+      },
+      "spending": {
+        "battery": 7512,
+        "calm": 1656
+      },
+      "chargeSpend": 2893,
+      "shopVisits": 114,
+      "firstShopPassed": 0,
+      "deliveryCount": 786,
+      "patienceLosses": 0,
+      "pressureSources": {
+        "宽松轿厢": -1010,
+        "班次压力": 3397,
+        "醉汉闹事": 22,
+        "乘客到站舒缓": -786,
+        "轿厢拥挤": 260,
+        "音乐家安抚": -363,
+        "护士安抚": -210,
+        "默契契约 · 协作送达": -333,
+        "儿童无人照顾": 6,
+        "小偷未受控": 12,
+        "检查员发现额外耗电": 1,
+        "神秘人自身躁动": 24,
+        "百变人自身躁动": 25,
+        "名人被围": 2
+      },
+      "mean": 106.62,
+      "median": 104,
+      "p10": 97,
+      "p90": 129,
+      "max": 147,
+      "reach100Pct": 50,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 60,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 233.65,
+      "meanOccupancy": 2.19,
+      "steps": 1537,
+      "changes": 111,
+      "dismissals": 188,
+      "boarded": {
+        "commuter": 149,
+        "tourist": 69,
+        "courier": 157,
+        "mechanic": 37,
+        "lover": 38,
+        "musician": 119,
+        "thief": 29,
+        "cop": 51,
+        "lawyer": 18,
+        "drunk": 39,
+        "nurse": 99,
+        "child": 40,
+        "ghost": 22,
+        "exorcist": 21,
+        "coach": 45,
+        "celebrity": 36,
+        "inspector": 20,
+        "bomb": 52,
+        "mystery": 39,
+        "shifter": 20,
+        "mimic": 23
+      },
+      "floors": [
+        89,
+        138,
+        99,
+        89,
+        136,
+        99,
+        147,
+        127,
+        109,
+        128,
+        107,
+        108,
+        89,
+        108,
+        98,
+        107,
+        99,
+        108,
+        98,
+        98,
+        104,
+        99,
+        129,
+        106,
+        108,
+        131,
+        97,
+        108,
+        119,
+        106,
+        98,
+        108,
+        98,
+        109,
+        97,
+        97,
+        109,
+        99,
+        97,
+        97,
+        108,
+        99,
+        97,
+        127,
+        117,
+        98,
+        99,
+        118,
+        99,
+        97,
+        95,
+        97,
+        137,
+        108,
+        98,
+        117,
+        107,
+        97,
+        96,
+        89
+      ],
+      "seedThirdMeans": [
+        103.05,
+        113.85,
+        102.95
+      ],
+      "emptyStepPct": 30.32,
+      "lateEmptyStepPct": 30.32,
+      "meanLastBoardingFloor": 104.83,
+      "firstGameTrace": []
+    }
+  ],
+  "comparisons": [
+    {
+      "leader": "low-power-6",
+      "other": "planning-pairs-6",
+      "meanDifference": 1.67,
+      "bootstrap95": [
+        -2.02,
+        5.13
+      ],
+      "winPct": 41.67,
+      "tiePct": 18.33
+    },
+    {
+      "leader": "low-power-6",
+      "other": "support-stack-music",
+      "meanDifference": 3.13,
+      "bootstrap95": [
+        -0.82,
+        6.5
+      ],
+      "winPct": 51.67,
+      "tiePct": 20
+    }
+  ],
+  "limits": "Finite heuristic policy pool, not a proof of global nondominance. Training/validation/stress seeds are disjoint. Shop and phase RNG are floor-seeded; lover calls remain state-dependent. Scenario fixtures are conditional stress tests, not weighted normal-run probabilities. Intervals against the post-hoc best policy are descriptive and uncorrected for multiple comparisons. Bomb/impatience collision is fixed. Policies conservatively reject predicted early-fuse failure."
+}

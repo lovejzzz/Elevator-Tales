@@ -11,29 +11,29 @@ import { passengerBrief, passengerFace } from '../lib/passenger-presentation';
 const rngFor=(seed:number)=>()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
 const rider=(kind:Rider['kind'],id=kind as string,extra:Partial<Rider>={}):Rider=>({kind,id,destination:25,patience:0,boardedAt:1,fareBonus:0,...extra});
 const state=(extra:Partial<RunState>={}):RunState=>({...initialRun(),...extra});
-assert.equal(initialRun().energy,20);assert.equal(initialRun().energyCap,24);
-assert.equal(resolveFloor(state(),()=>.9).energy,19);
+assert.equal(initialRun().energy,60);assert.equal(initialRun().energyCap,72);
+assert.equal(resolveFloor(state(),()=>.9).energy,59);
 const tourist=rider('tourist'),child=rider('child');
-assert.equal(resolveFloor(state({cabin:[tourist,null,null,null,null,null]}),()=>.9).energy,18);
+assert.equal(resolveFloor(state({cabin:[tourist,null,null,null,null,null]}),()=>.9).energy,57);
 assert.equal(resolveFloor(state({cabin:[child,null,null,null,null,null]}),()=>.9).lastPressure.sources.find(x=>x.label==='儿童无人照顾')?.amount,1);
 assert.equal(resolveFloor(state({stress:10,cabin:[child,null,null,null,null,null]}),()=>.9).lastPressure.sources.find(x=>x.label==='儿童无人照顾')?.amount,2);
 assert.equal(resolveFloor(state({cabin:[child,rider('nurse'),null,null,null,null]}),()=>.9).lastPressure.sources.some(x=>x.label==='儿童无人照顾'),false);
 assert.equal(resolveFloor(state({cabin:[rider('commuter','patient',{patience:-100}),null,null,null,null,null]}),()=>.9).cabin[0]?.id,'patient','retired timer cannot eject');
 assert.equal(planPlacement(state({weightCap:0}),rider('coach'),0).ok,true,'retired weight cap cannot block placement');
 const six:RunState=state({weightCap:0,cabin:Array.from({length:6},(_,i)=>rider('coach','heavy'+i))});
-assert.equal(passengerEnergy(six),6);assert.equal(resolveFloor(six,()=>.9).energy,13);
+assert.equal(passengerEnergy(six),12);assert.equal(resolveFloor(six,()=>.9).energy,47);
 assert.equal(resolveFloor(six,()=>.9).lastPressure.sources.some(x=>/载重|超载/.test(x.label)),false);
-const stabilized=previewUpgrade(six,'reinforced');assert.equal(stabilizedEnergy(stabilized),1);assert.equal(resolveFloor(stabilized,()=>.9).energy,14);
-assert.equal(energySavings(state({cabin:[rider('ghost'),rider('exorcist'),null,null,null,null]})),0,'never free travel');
+const stabilized=previewUpgrade(six,'reinforced');assert.equal(stabilizedEnergy(stabilized),1);assert.equal(resolveFloor(stabilized,()=>.9).energy,48);
+assert.equal(energySavings(state({cabin:[rider('ghost'),rider('exorcist'),null,null,null,null]})),1,'offset exorcist, never motor');
 assert.equal(energySavings(state({cabin:[rider('ghost'),rider('exorcist'),tourist,null,null,null]})),1);
 assert.equal(resolveFloor(state({floor:9,energy:1}),()=>.9).status,'upgrade');
 assert.equal(resolveFloor(state({floor:8,energy:1}),()=>.9).status,'lost');
 assert.equal(resolveFloor(state({floor:9,energy:1,cabin:[tourist,null,null,null,null,null]}),()=>.9).status,'lost');
 for(const destination of [2,3]){const after=resolveFloor(state({cabin:[rider('bomb','fuse',{fuse:1,destination}),null,null,null,null,null]}),()=>.9);assert.equal(after.status,destination===2?'playing':'lost');}
 const shop=state({floor:10,status:'upgrade',coins:100,earned:100,energy:2,shop:[{key:'reinforced',price:45,purchased:false}]});
-assert.equal(chargingPlan(shop).baseline,10);assert.equal(chargingPlan(shop).target,22);
-assert.equal(chargeBattery(shop,20).coins,40);assert.equal(chargeBattery(shop,20).energy,22);
-for(const n of [0,-1,1.5,NaN,Infinity,23])assert.equal(chargeBattery(shop,n),shop);
+assert.equal(chargingPlan(shop).baseline,10);assert.equal(chargingPlan(shop).target,62);
+assert.equal(chargeBattery(shop,20).coins,80);assert.equal(chargeBattery(shop,20).energy,22);
+for(const n of [0,-1,1.5,NaN,Infinity,71])assert.equal(chargeBattery(shop,n),shop);
 assert.equal(installUpgrade(shop,'reinforced').coins,55);
 const owned={...shop,upgrades:{...shop.upgrades,reinforced:1}};assert.equal(installUpgrade(owned,'reinforced'),owned);
 assert.ok(!upgradeChoices({...shop.upgrades,reinforced:1,solar:1,express:1},()=>.2).includes('reinforced'));
@@ -51,7 +51,7 @@ for(const kind of PASSENGER_ORDER)for(const other of PASSENGER_ORDER)for(let a=0
  let expected=even&&adjacent&&!bond.likes.includes(other)&&bond.avoids.includes(other)?m:0;
  if(kind==='thief'&&even&&!(adjacent&&['cop','lawyer'].includes(other)))expected+=m;
  if(kind==='child'&&even&&!(adjacent&&['lover','musician','nurse'].includes(other)))expected+=m;
- if(kind==='inspector'&&even&&passengerEnergy(run)>0)expected+=m;
+ // With an inspector and only one other rider, total cost cannot exceed 4.
  if(kind==='nurse'&&even)expected--;
  const random=kind==='drunk'&&!(adjacent&&['musician','nurse'].includes(other))?2*m:0;
  assert.equal(riderAgitation(run,a).low,expected);assert.equal(riderAgitation(run,a).high,expected+random);
@@ -62,7 +62,7 @@ for(const kind of PASSENGER_ORDER)for(const other of PASSENGER_ORDER)for(let a=0
 // intoxicated swaps, lost runs, upgrades and input immutability.
 const rng=rngFor(98710231);let transitions=0,mysteries=0,shifters=0,mimics=0;
 for(let i=0;i<16000;i++){
- const floor=1+Math.floor(rng()*250),run=state({floor,energy:1+Math.floor(rng()*24),stress:Math.floor(rng()*25),stressCap:15+i%4*3,coins:100,earned:100,restStops:i%4,weightCap:i%2?0:100});
+ const floor=1+Math.floor(rng()*250),run=state({floor,energy:1+Math.floor(rng()*72),stress:Math.floor(rng()*25),stressCap:15+i%4*3,coins:100,earned:100,restStops:i%4,weightCap:i%2?0:100});
  run.upgrades={...run.upgrades,battery:i%3,solar:i%2,reinforced:i%2,concierge:i%4};
  run.cabin=Array.from({length:6},(_,slot)=>{
   if(rng()<.25)return null;
@@ -95,4 +95,4 @@ for(let i=0;i<500;i++){
 }
 assert.deepEqual(Array.from({length:10},(_,i)=>shiftAgitation(i+11,4)),[0,0,0,1,1,1,5,5,5,0]);
 const ui=readFileSync(new URL('../components/elevator-game.tsx',import.meta.url),'utf8');assert.ok(ui.includes('本班失败'));assert.ok(ui.includes('failure-cause'));assert.ok(!ui.includes('data-metric="weight"'));assert.ok(!ui.includes('耐心 {'));
-console.log(JSON.stringify({version:'v6.7',pairCases:pairs,randomTransitions:transitions,mysteries,shifters,mimics,noRetiredMechanics:true,forecastErrors:0}));
+console.log(JSON.stringify({version:'v6.8',pairCases:pairs,randomTransitions:transitions,mysteries,shifters,mimics,noRetiredMechanics:true,forecastErrors:0}));

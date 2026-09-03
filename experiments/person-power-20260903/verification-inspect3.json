@@ -1,0 +1,29 @@
+{
+  "variant": "inspect3",
+  "params": {
+    "initial": 60,
+    "cap": 72,
+    "price": 1,
+    "target": 62,
+    "inspection": 3
+  },
+  "hashes": {
+    "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+    "game-data.ts": "9ee6c624ded99dcc8dfd63b7cf35ed9e494e381df2524b729113df261675194a",
+    "game-engine.ts": "497c21fa9f55e535241696e16c457c99fb032a9421beb71802e22a704eecde65",
+    "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+    "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+    "metric-feedback.ts": "1d293005af9bc2d4ebebd2caa01f68f2cb61a59a020d4457822436d2191f0958",
+    "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+    "passenger-presentation.ts": "8f1120306dad881110e39030175959651d4e034d30c4db88056fc661e04f8bae",
+    "rider-profile.ts": "836a01e14ea2aa129b5a53e5637ef028f765f043d35ea82b4f6b9e7955ceb1a3",
+    "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+  },
+  "directed": 12096,
+  "random": 6000,
+  "total": 18096,
+  "chargeCases": 3,
+  "shopBoundaryCases": 2,
+  "forecastFailures": 0,
+  "seed": 86772091
+}

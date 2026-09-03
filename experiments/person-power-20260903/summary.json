@@ -1,0 +1,3278 @@
+{
+  "candidate": {
+    "initial": 60,
+    "cap": 72,
+    "price": 1,
+    "target": 62,
+    "inspection": 3
+  },
+  "phaseTotals": {
+    "ablation": {
+      "reports": 6,
+      "games": 3360,
+      "transitions": 316730
+    },
+    "contexts": {
+      "reports": 3,
+      "games": 540,
+      "transitions": 20228
+    },
+    "final": {
+      "reports": 1,
+      "games": 2500,
+      "transitions": 251829
+    },
+    "holdout": {
+      "reports": 7,
+      "games": 3800,
+      "transitions": 387914
+    },
+    "refine": {
+      "reports": 10,
+      "games": 3200,
+      "transitions": 342695
+    },
+    "screen": {
+      "reports": 11,
+      "games": 3300,
+      "transitions": 210939
+    }
+  },
+  "totalGames": 16700,
+  "transitions": 1530335,
+  "forecastFailures": 0,
+  "censored": 0,
+  "verification": {
+    "variant": "inspect3",
+    "params": {
+      "initial": 60,
+      "cap": 72,
+      "price": 1,
+      "target": 62,
+      "inspection": 3
+    },
+    "hashes": {
+      "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+      "game-data.ts": "9ee6c624ded99dcc8dfd63b7cf35ed9e494e381df2524b729113df261675194a",
+      "game-engine.ts": "497c21fa9f55e535241696e16c457c99fb032a9421beb71802e22a704eecde65",
+      "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+      "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+      "metric-feedback.ts": "1d293005af9bc2d4ebebd2caa01f68f2cb61a59a020d4457822436d2191f0958",
+      "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+      "passenger-presentation.ts": "8f1120306dad881110e39030175959651d4e034d30c4db88056fc661e04f8bae",
+      "rider-profile.ts": "836a01e14ea2aa129b5a53e5637ef028f765f043d35ea82b4f6b9e7955ceb1a3",
+      "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+    },
+    "directed": 12096,
+    "random": 6000,
+    "total": 18096,
+    "chargeCases": 3,
+    "shopBoundaryCases": 2,
+    "forecastFailures": 0,
+    "seed": 86772091
+  },
+  "productionUnchanged": true,
+  "productionHashes": {
+    "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+    "game-data.ts": "d4f09a26942370021faaf6a86da9de94e1f991178682220a64e9055b73a0a4dc",
+    "game-engine.ts": "de790d455b00782b2fcc85796eefa41b125d8dd8b8d90a44b8d85ac38101840c",
+    "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+    "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+    "metric-feedback.ts": "1d293005af9bc2d4ebebd2caa01f68f2cb61a59a020d4457822436d2191f0958",
+    "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+    "passenger-presentation.ts": "8f1120306dad881110e39030175959651d4e034d30c4db88056fc661e04f8bae",
+    "rider-profile.ts": "1212b112c978cac99a17b80991e711c16f79f4dbaec585250b47c357e652ed03",
+    "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+  },
+  "policies": [
+    {
+      "id": "greedy-6",
+      "n": 250,
+      "mean": 12,
+      "median": 10,
+      "p10": 10,
+      "p90": 19,
+      "mean95Approx": [
+        11.49,
+        12.52
+      ],
+      "meanIncome": 176.75,
+      "chargingPerGame": 14.76,
+      "chargingIncomePct": 8.35,
+      "meanOccupancy": 5.43,
+      "energyPerStop": 7.1,
+      "deaths": {
+        "power": 223,
+        "agitation": 27,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 57,
+      "upgradeSpendPerGame": 12.85,
+      "dismissalsPerGame": 0.21,
+      "gamesWithContract": 0,
+      "shopArrivalsAtMost5EnergyPct": 88.71,
+      "earlyShopAtMost5EnergyPct": 88.71,
+      "firstShopEnergy": {
+        "n": 57,
+        "mean": 2.11,
+        "median": 2,
+        "p10": 0,
+        "p90": 5,
+        "mean95Approx": [
+          1.64,
+          2.58
+        ]
+      }
+    },
+    {
+      "id": "low-power-6",
+      "n": 250,
+      "mean": 112.15,
+      "median": 114,
+      "p10": 79,
+      "p90": 139,
+      "mean95Approx": [
+        109.34,
+        114.96
+      ],
+      "meanIncome": 1095.73,
+      "chargingPerGame": 328,
+      "chargingIncomePct": 29.93,
+      "meanOccupancy": 2.85,
+      "energyPerStop": 3.06,
+      "deaths": {
+        "power": 0,
+        "agitation": 250,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 250,
+      "upgradeSpendPerGame": 452.48,
+      "dismissalsPerGame": 11.39,
+      "gamesWithContract": 230,
+      "shopArrivalsAtMost5EnergyPct": 0.88,
+      "earlyShopAtMost5EnergyPct": 2.4,
+      "firstShopEnergy": {
+        "n": 250,
+        "mean": 16.78,
+        "median": 17,
+        "p10": 11,
+        "p90": 22,
+        "mean95Approx": [
+          16.22,
+          17.35
+        ]
+      }
+    },
+    {
+      "id": "planning-pairs-6",
+      "n": 250,
+      "mean": 116.32,
+      "median": 118,
+      "p10": 98,
+      "p90": 138,
+      "mean95Approx": [
+        113.49,
+        119.16
+      ],
+      "meanIncome": 2117.32,
+      "chargingPerGame": 500.19,
+      "chargingIncomePct": 23.62,
+      "meanOccupancy": 3.75,
+      "energyPerStop": 4.5,
+      "deaths": {
+        "power": 3,
+        "agitation": 247,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 250,
+      "upgradeSpendPerGame": 868.8,
+      "dismissalsPerGame": 12,
+      "gamesWithContract": 246,
+      "shopArrivalsAtMost5EnergyPct": 26.13,
+      "earlyShopAtMost5EnergyPct": 49.73,
+      "firstShopEnergy": {
+        "n": 250,
+        "mean": 5.98,
+        "median": 6,
+        "p10": 0,
+        "p90": 12,
+        "mean95Approx": [
+          5.41,
+          6.56
+        ]
+      }
+    },
+    {
+      "id": "support-stack-music",
+      "n": 250,
+      "mean": 113.5,
+      "median": 118,
+      "p10": 79,
+      "p90": 138,
+      "mean95Approx": [
+        110.11,
+        116.88
+      ],
+      "meanIncome": 1893.25,
+      "chargingPerGame": 487.47,
+      "chargingIncomePct": 25.75,
+      "meanOccupancy": 3.69,
+      "energyPerStop": 4.49,
+      "deaths": {
+        "power": 5,
+        "agitation": 244,
+        "fuse": 1,
+        "censored": 0
+      },
+      "firstShopPassed": 250,
+      "upgradeSpendPerGame": 757.36,
+      "dismissalsPerGame": 9.34,
+      "gamesWithContract": 244,
+      "shopArrivalsAtMost5EnergyPct": 30.18,
+      "earlyShopAtMost5EnergyPct": 56.68,
+      "firstShopEnergy": {
+        "n": 250,
+        "mean": 4.6,
+        "median": 4,
+        "p10": 0,
+        "p90": 11,
+        "mean95Approx": [
+          4.03,
+          5.16
+        ]
+      }
+    },
+    {
+      "id": "support-stack-nurse",
+      "n": 250,
+      "mean": 117.65,
+      "median": 121,
+      "p10": 98,
+      "p90": 139,
+      "mean95Approx": [
+        114.58,
+        120.71
+      ],
+      "meanIncome": 1965.85,
+      "chargingPerGame": 487.65,
+      "chargingIncomePct": 24.81,
+      "meanOccupancy": 3.55,
+      "energyPerStop": 4.32,
+      "deaths": {
+        "power": 4,
+        "agitation": 246,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 250,
+      "upgradeSpendPerGame": 821.1,
+      "dismissalsPerGame": 10.34,
+      "gamesWithContract": 246,
+      "shopArrivalsAtMost5EnergyPct": 22.36,
+      "earlyShopAtMost5EnergyPct": 41.76,
+      "firstShopEnergy": {
+        "n": 250,
+        "mean": 8.19,
+        "median": 8,
+        "p10": 0,
+        "p90": 17,
+        "mean95Approx": [
+          7.46,
+          8.92
+        ]
+      }
+    },
+    {
+      "id": "sparse-planner",
+      "n": 250,
+      "mean": 90.13,
+      "median": 97,
+      "p10": 68,
+      "p90": 108,
+      "mean95Approx": [
+        88.14,
+        92.12
+      ],
+      "meanIncome": 450.52,
+      "chargingPerGame": 210.24,
+      "chargingIncomePct": 46.67,
+      "meanOccupancy": 1.45,
+      "energyPerStop": 2.54,
+      "deaths": {
+        "power": 0,
+        "agitation": 250,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 250,
+      "upgradeSpendPerGame": 97.71,
+      "dismissalsPerGame": 4.69,
+      "gamesWithContract": 60,
+      "shopArrivalsAtMost5EnergyPct": 0,
+      "earlyShopAtMost5EnergyPct": 0,
+      "firstShopEnergy": {
+        "n": 250,
+        "mean": 31.99,
+        "median": 33,
+        "p10": 28,
+        "p90": 36,
+        "mean95Approx": [
+          31.58,
+          32.4
+        ]
+      }
+    },
+    {
+      "id": "occult-specialist",
+      "n": 250,
+      "mean": 111.3,
+      "median": 117,
+      "p10": 87,
+      "p90": 137,
+      "mean95Approx": [
+        108.28,
+        114.31
+      ],
+      "meanIncome": 1965.54,
+      "chargingPerGame": 464.34,
+      "chargingIncomePct": 23.62,
+      "meanOccupancy": 3.87,
+      "energyPerStop": 4.38,
+      "deaths": {
+        "power": 3,
+        "agitation": 245,
+        "fuse": 2,
+        "censored": 0
+      },
+      "firstShopPassed": 250,
+      "upgradeSpendPerGame": 856.77,
+      "dismissalsPerGame": 11.66,
+      "gamesWithContract": 246,
+      "shopArrivalsAtMost5EnergyPct": 22.84,
+      "earlyShopAtMost5EnergyPct": 49.87,
+      "firstShopEnergy": {
+        "n": 250,
+        "mean": 5.98,
+        "median": 6,
+        "p10": 0,
+        "p90": 12,
+        "mean95Approx": [
+          5.41,
+          6.56
+        ]
+      }
+    },
+    {
+      "id": "mechanic-specialist",
+      "n": 250,
+      "mean": 116.12,
+      "median": 119,
+      "p10": 89,
+      "p90": 139,
+      "mean95Approx": [
+        113.17,
+        119.07
+      ],
+      "meanIncome": 2013.29,
+      "chargingPerGame": 495.43,
+      "chargingIncomePct": 24.61,
+      "meanOccupancy": 3.78,
+      "energyPerStop": 4.47,
+      "deaths": {
+        "power": 2,
+        "agitation": 248,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 250,
+      "upgradeSpendPerGame": 837.74,
+      "dismissalsPerGame": 11.71,
+      "gamesWithContract": 249,
+      "shopArrivalsAtMost5EnergyPct": 25.28,
+      "earlyShopAtMost5EnergyPct": 48.53,
+      "firstShopEnergy": {
+        "n": 250,
+        "mean": 6.14,
+        "median": 6,
+        "p10": 0,
+        "p90": 12,
+        "mean95Approx": [
+          5.58,
+          6.7
+        ]
+      }
+    },
+    {
+      "id": "no-savings",
+      "n": 250,
+      "mean": 109.51,
+      "median": 112,
+      "p10": 69,
+      "p90": 139,
+      "mean95Approx": [
+        106.11,
+        112.91
+      ],
+      "meanIncome": 1929.55,
+      "chargingPerGame": 527.09,
+      "chargingIncomePct": 27.32,
+      "meanOccupancy": 3.5,
+      "energyPerStop": 5.11,
+      "deaths": {
+        "power": 10,
+        "agitation": 240,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 250,
+      "upgradeSpendPerGame": 625.26,
+      "dismissalsPerGame": 11.97,
+      "gamesWithContract": 245,
+      "shopArrivalsAtMost5EnergyPct": 49.06,
+      "earlyShopAtMost5EnergyPct": 66.04,
+      "firstShopEnergy": {
+        "n": 250,
+        "mean": 5.35,
+        "median": 5,
+        "p10": 0,
+        "p90": 12,
+        "mean95Approx": [
+          4.77,
+          5.92
+        ]
+      }
+    },
+    {
+      "id": "planner-full-charge",
+      "n": 250,
+      "mean": 118.64,
+      "median": 119,
+      "p10": 99,
+      "p90": 139,
+      "mean95Approx": [
+        116.23,
+        121.06
+      ],
+      "meanIncome": 2201.08,
+      "chargingPerGame": 530.61,
+      "chargingIncomePct": 24.11,
+      "meanOccupancy": 3.79,
+      "energyPerStop": 4.58,
+      "deaths": {
+        "power": 0,
+        "agitation": 249,
+        "fuse": 1,
+        "censored": 0
+      },
+      "firstShopPassed": 250,
+      "upgradeSpendPerGame": 893.74,
+      "dismissalsPerGame": 11.79,
+      "gamesWithContract": 248,
+      "shopArrivalsAtMost5EnergyPct": 11.27,
+      "earlyShopAtMost5EnergyPct": 31.55,
+      "firstShopEnergy": {
+        "n": 250,
+        "mean": 5.98,
+        "median": 6,
+        "p10": 0,
+        "p90": 12,
+        "mean95Approx": [
+          5.41,
+          6.56
+        ]
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "commuter",
+      "name": "通勤者",
+      "exposed": 10140,
+      "boarded": 3758,
+      "acceptPct": 37.06,
+      "delivered": 3536,
+      "completionPct": 94.09
+    },
+    {
+      "id": "tourist",
+      "name": "游客",
+      "exposed": 6172,
+      "boarded": 2300,
+      "acceptPct": 37.27,
+      "delivered": 2084,
+      "completionPct": 90.61
+    },
+    {
+      "id": "courier",
+      "name": "快递员",
+      "exposed": 5700,
+      "boarded": 3906,
+      "acceptPct": 68.53,
+      "delivered": 3835,
+      "completionPct": 98.18
+    },
+    {
+      "id": "mechanic",
+      "name": "维修工",
+      "exposed": 4508,
+      "boarded": 1194,
+      "acceptPct": 26.49,
+      "delivered": 1019,
+      "completionPct": 85.34
+    },
+    {
+      "id": "lover",
+      "name": "恋人",
+      "exposed": 7189,
+      "boarded": 2054,
+      "acceptPct": 28.57,
+      "delivered": 1751,
+      "completionPct": 85.25
+    },
+    {
+      "id": "musician",
+      "name": "音乐家",
+      "exposed": 4348,
+      "boarded": 2153,
+      "acceptPct": 49.52,
+      "delivered": 1682,
+      "completionPct": 78.12
+    },
+    {
+      "id": "thief",
+      "name": "小偷",
+      "exposed": 5066,
+      "boarded": 1592,
+      "acceptPct": 31.43,
+      "delivered": 1282,
+      "completionPct": 80.53
+    },
+    {
+      "id": "cop",
+      "name": "警察",
+      "exposed": 5078,
+      "boarded": 1293,
+      "acceptPct": 25.46,
+      "delivered": 1144,
+      "completionPct": 88.48
+    },
+    {
+      "id": "lawyer",
+      "name": "律师",
+      "exposed": 3379,
+      "boarded": 858,
+      "acceptPct": 25.39,
+      "delivered": 744,
+      "completionPct": 86.71
+    },
+    {
+      "id": "drunk",
+      "name": "醉汉",
+      "exposed": 3860,
+      "boarded": 1309,
+      "acceptPct": 33.91,
+      "delivered": 1181,
+      "completionPct": 90.22
+    },
+    {
+      "id": "nurse",
+      "name": "护士",
+      "exposed": 3801,
+      "boarded": 1755,
+      "acceptPct": 46.17,
+      "delivered": 1509,
+      "completionPct": 85.98
+    },
+    {
+      "id": "child",
+      "name": "儿童",
+      "exposed": 3799,
+      "boarded": 1221,
+      "acceptPct": 32.14,
+      "delivered": 1124,
+      "completionPct": 92.06
+    },
+    {
+      "id": "ghost",
+      "name": "幽灵",
+      "exposed": 2750,
+      "boarded": 500,
+      "acceptPct": 18.18,
+      "delivered": 318,
+      "completionPct": 63.6
+    },
+    {
+      "id": "exorcist",
+      "name": "驱魔师",
+      "exposed": 2846,
+      "boarded": 623,
+      "acceptPct": 21.89,
+      "delivered": 539,
+      "completionPct": 86.52
+    },
+    {
+      "id": "coach",
+      "name": "教练",
+      "exposed": 3294,
+      "boarded": 1845,
+      "acceptPct": 56.01,
+      "delivered": 1548,
+      "completionPct": 83.9
+    },
+    {
+      "id": "celebrity",
+      "name": "名人",
+      "exposed": 1914,
+      "boarded": 763,
+      "acceptPct": 39.86,
+      "delivered": 608,
+      "completionPct": 79.69
+    },
+    {
+      "id": "inspector",
+      "name": "检查员",
+      "exposed": 2356,
+      "boarded": 406,
+      "acceptPct": 17.23,
+      "delivered": 296,
+      "completionPct": 72.91
+    },
+    {
+      "id": "bomb",
+      "name": "炸弹客",
+      "exposed": 1530,
+      "boarded": 744,
+      "acceptPct": 48.63,
+      "delivered": 709,
+      "completionPct": 95.3
+    },
+    {
+      "id": "mystery",
+      "name": "神秘人",
+      "exposed": 3344,
+      "boarded": 1146,
+      "acceptPct": 34.27,
+      "delivered": 1073,
+      "completionPct": 93.63
+    },
+    {
+      "id": "shifter",
+      "name": "百变人",
+      "exposed": 2495,
+      "boarded": 721,
+      "acceptPct": 28.9,
+      "delivered": 562,
+      "completionPct": 77.95
+    },
+    {
+      "id": "mimic",
+      "name": "复制人",
+      "exposed": 2924,
+      "boarded": 875,
+      "acceptPct": 29.92,
+      "delivered": 762,
+      "completionPct": 87.09
+    }
+  ],
+  "comparisons": [
+    {
+      "leader": "planner-full-charge",
+      "other": "greedy-6",
+      "meanDifference": 106.64,
+      "bootstrap95": [
+        103.98,
+        109.06
+      ],
+      "winPct": 100,
+      "tiePct": 0
+    },
+    {
+      "leader": "planner-full-charge",
+      "other": "low-power-6",
+      "meanDifference": 6.5,
+      "bootstrap95": [
+        3.02,
+        10.05
+      ],
+      "winPct": 57.6,
+      "tiePct": 4.8
+    },
+    {
+      "leader": "planner-full-charge",
+      "other": "planning-pairs-6",
+      "meanDifference": 2.32,
+      "bootstrap95": [
+        -0.73,
+        5.56
+      ],
+      "winPct": 43.2,
+      "tiePct": 24
+    },
+    {
+      "leader": "planner-full-charge",
+      "other": "support-stack-music",
+      "meanDifference": 5.15,
+      "bootstrap95": [
+        1.75,
+        8.7
+      ],
+      "winPct": 50.4,
+      "tiePct": 7.2
+    },
+    {
+      "leader": "planner-full-charge",
+      "other": "support-stack-nurse",
+      "meanDifference": 1,
+      "bootstrap95": [
+        -2.6,
+        4.69
+      ],
+      "winPct": 42.4,
+      "tiePct": 6.8
+    },
+    {
+      "leader": "planner-full-charge",
+      "other": "sparse-planner",
+      "meanDifference": 28.52,
+      "bootstrap95": [
+        25.32,
+        31.53
+      ],
+      "winPct": 88.8,
+      "tiePct": 1.2
+    },
+    {
+      "leader": "planner-full-charge",
+      "other": "occult-specialist",
+      "meanDifference": 7.35,
+      "bootstrap95": [
+        4,
+        10.72
+      ],
+      "winPct": 59.2,
+      "tiePct": 8.4
+    },
+    {
+      "leader": "planner-full-charge",
+      "other": "mechanic-specialist",
+      "meanDifference": 2.53,
+      "bootstrap95": [
+        -1.11,
+        5.48
+      ],
+      "winPct": 48.8,
+      "tiePct": 10.8
+    },
+    {
+      "leader": "planner-full-charge",
+      "other": "no-savings",
+      "meanDifference": 9.13,
+      "bootstrap95": [
+        5.53,
+        13.38
+      ],
+      "winPct": 57.6,
+      "tiePct": 4.8
+    }
+  ],
+  "reports": [
+    {
+      "phase": "ablation",
+      "id": "base2",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3,
+        "base": 2
+      },
+      "runs": 560,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 98.51,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 92.83,
+          "deaths": {
+            "power": 15,
+            "agitation": 65,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 92.14,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "occult-specialist",
+          "mean": 86.84,
+          "deaths": {
+            "power": 14,
+            "agitation": 66,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "mechanic-specialist",
+          "mean": 86.64,
+          "deaths": {
+            "power": 23,
+            "agitation": 57,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-savings",
+          "mean": 81.64,
+          "deaths": {
+            "power": 38,
+            "agitation": 42,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-passengers",
+          "mean": 28,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "ablation",
+      "id": "emptyFree",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3,
+        "base": 0
+      },
+      "runs": 560,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 118.13,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 120.4,
+          "deaths": {
+            "power": 0,
+            "agitation": 79,
+            "fuse": 1,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 98.45,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "occult-specialist",
+          "mean": 110.58,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "mechanic-specialist",
+          "mean": 114.99,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-savings",
+          "mean": 114.28,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-passengers",
+          "mean": 28,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "ablation",
+      "id": "ghost1",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3,
+        "ghostCost": 1
+      },
+      "runs": 560,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 113.69,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 116.38,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 94.61,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "occult-specialist",
+          "mean": 109.13,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "mechanic-specialist",
+          "mean": 115.08,
+          "deaths": {
+            "power": 2,
+            "agitation": 78,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-savings",
+          "mean": 112.96,
+          "deaths": {
+            "power": 3,
+            "agitation": 77,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-passengers",
+          "mean": 28,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "ablation",
+      "id": "inspect3",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3
+      },
+      "runs": 560,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 109.95,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 117.71,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 94.48,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "occult-specialist",
+          "mean": 111.46,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "mechanic-specialist",
+          "mean": 112.96,
+          "deaths": {
+            "power": 2,
+            "agitation": 78,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-savings",
+          "mean": 106.75,
+          "deaths": {
+            "power": 4,
+            "agitation": 76,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-passengers",
+          "mean": 28,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "ablation",
+      "id": "saving2",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3,
+        "saveCap": 2
+      },
+      "runs": 560,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 109.43,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 116.39,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 94.48,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "occult-specialist",
+          "mean": 110.83,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "mechanic-specialist",
+          "mean": 112.29,
+          "deaths": {
+            "power": 2,
+            "agitation": 78,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-savings",
+          "mean": 106.75,
+          "deaths": {
+            "power": 4,
+            "agitation": 76,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-passengers",
+          "mean": 28,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "ablation",
+      "id": "saving3",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3,
+        "saveCap": 3
+      },
+      "runs": 560,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 109.44,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 116.28,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 94.48,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "occult-specialist",
+          "mean": 111.1,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "mechanic-specialist",
+          "mean": 114.39,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-savings",
+          "mean": 106.75,
+          "deaths": {
+            "power": 4,
+            "agitation": 76,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-passengers",
+          "mean": 28,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "contexts",
+      "id": "inspect3",
+      "context": "agitated",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3
+      },
+      "runs": 180,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 80.82,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 89.23,
+          "deaths": {
+            "power": 1,
+            "agitation": 58,
+            "fuse": 1,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 85.72,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "contexts",
+      "id": "inspect3",
+      "context": "cash-poor",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3
+      },
+      "runs": 180,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 84.45,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 79.85,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 81.62,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "contexts",
+      "id": "inspect3",
+      "context": "late-build",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3
+      },
+      "runs": 180,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 109.75,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 108.08,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 106.62,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "final",
+      "id": "inspect3",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3
+      },
+      "runs": 2500,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 12,
+          "deaths": {
+            "power": 223,
+            "agitation": 27,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 112.15,
+          "deaths": {
+            "power": 0,
+            "agitation": 250,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 116.32,
+          "deaths": {
+            "power": 3,
+            "agitation": 247,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 113.5,
+          "deaths": {
+            "power": 5,
+            "agitation": 244,
+            "fuse": 1,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-nurse",
+          "mean": 117.65,
+          "deaths": {
+            "power": 4,
+            "agitation": 246,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 90.13,
+          "deaths": {
+            "power": 0,
+            "agitation": 250,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "occult-specialist",
+          "mean": 111.3,
+          "deaths": {
+            "power": 3,
+            "agitation": 245,
+            "fuse": 2,
+            "censored": 0
+          }
+        },
+        {
+          "id": "mechanic-specialist",
+          "mean": 116.12,
+          "deaths": {
+            "power": 2,
+            "agitation": 248,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "no-savings",
+          "mean": 109.51,
+          "deaths": {
+            "power": 10,
+            "agitation": 240,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planner-full-charge",
+          "mean": 118.64,
+          "deaths": {
+            "power": 0,
+            "agitation": 249,
+            "fuse": 1,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "holdout",
+      "id": "fixed60cap60",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 60,
+        "price": 1,
+        "target": 62,
+        "inspection": 3
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 116.21,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 117.3,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 113.99,
+          "deaths": {
+            "power": 3,
+            "agitation": 77,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planner-full-charge",
+          "mean": 117.3,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "holdout",
+      "id": "fixed60cap66",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 66,
+        "price": 1,
+        "target": 62,
+        "inspection": 3
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 115.03,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 120.06,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 112.15,
+          "deaths": {
+            "power": 4,
+            "agitation": 76,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planner-full-charge",
+          "mean": 118.51,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "holdout",
+      "id": "fixed60cap72",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 115.03,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 120.06,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 112.15,
+          "deaths": {
+            "power": 4,
+            "agitation": 76,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planner-full-charge",
+          "mean": 121.08,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "holdout",
+      "id": "fixed60cap84",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 84,
+        "price": 1,
+        "target": 62,
+        "inspection": 3
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 115.03,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 120.06,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 112.15,
+          "deaths": {
+            "power": 4,
+            "agitation": 76,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planner-full-charge",
+          "mean": 116.75,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "holdout",
+      "id": "inspect3",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3
+      },
+      "runs": 840,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 11.72,
+          "deaths": {
+            "power": 108,
+            "agitation": 12,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 113.61,
+          "deaths": {
+            "power": 0,
+            "agitation": 120,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 121.33,
+          "deaths": {
+            "power": 0,
+            "agitation": 120,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 111.9,
+          "deaths": {
+            "power": 4,
+            "agitation": 115,
+            "fuse": 1,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-nurse",
+          "mean": 115.53,
+          "deaths": {
+            "power": 0,
+            "agitation": 120,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 88.36,
+          "deaths": {
+            "power": 0,
+            "agitation": 120,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planner-full-charge",
+          "mean": 119.86,
+          "deaths": {
+            "power": 0,
+            "agitation": 120,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "holdout",
+      "id": "r55t54",
+      "context": "normal",
+      "params": {
+        "initial": 55,
+        "cap": 66,
+        "price": 1,
+        "target": 54,
+        "inspection": 3
+      },
+      "runs": 840,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 9.71,
+          "deaths": {
+            "power": 118,
+            "agitation": 2,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 115.59,
+          "deaths": {
+            "power": 0,
+            "agitation": 120,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 114.36,
+          "deaths": {
+            "power": 3,
+            "agitation": 117,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 106.38,
+          "deaths": {
+            "power": 10,
+            "agitation": 109,
+            "fuse": 1,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-nurse",
+          "mean": 112.64,
+          "deaths": {
+            "power": 5,
+            "agitation": 115,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 88.83,
+          "deaths": {
+            "power": 0,
+            "agitation": 120,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planner-full-charge",
+          "mean": 115.59,
+          "deaths": {
+            "power": 1,
+            "agitation": 119,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "holdout",
+      "id": "r60t54",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 54,
+        "inspection": 3
+      },
+      "runs": 840,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 11.48,
+          "deaths": {
+            "power": 114,
+            "agitation": 6,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 114.6,
+          "deaths": {
+            "power": 0,
+            "agitation": 120,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 115.34,
+          "deaths": {
+            "power": 2,
+            "agitation": 118,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 112.7,
+          "deaths": {
+            "power": 5,
+            "agitation": 114,
+            "fuse": 1,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-nurse",
+          "mean": 113.09,
+          "deaths": {
+            "power": 4,
+            "agitation": 116,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 89.75,
+          "deaths": {
+            "power": 0,
+            "agitation": 120,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planner-full-charge",
+          "mean": 120.02,
+          "deaths": {
+            "power": 0,
+            "agitation": 120,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "refine",
+      "id": "inspect0",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 0
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 112.16,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 116.84,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 118.74,
+          "deaths": {
+            "power": 3,
+            "agitation": 77,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 93.29,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "refine",
+      "id": "inspect2",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 2
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 113.19,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 117.95,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 118.08,
+          "deaths": {
+            "power": 3,
+            "agitation": 77,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 94.54,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "refine",
+      "id": "inspect3",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 3
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 113.01,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 118.14,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 112.99,
+          "deaths": {
+            "power": 3,
+            "agitation": 77,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 94.98,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "refine",
+      "id": "inspect4",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62,
+        "inspection": 4
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 111.95,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 118.93,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 115.85,
+          "deaths": {
+            "power": 3,
+            "agitation": 77,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 94.98,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "refine",
+      "id": "r50t48",
+      "context": "normal",
+      "params": {
+        "initial": 50,
+        "cap": 60,
+        "price": 1,
+        "target": 48,
+        "inspection": 3
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 113.84,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 110.01,
+          "deaths": {
+            "power": 6,
+            "agitation": 74,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 95.39,
+          "deaths": {
+            "power": 17,
+            "agitation": 63,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 94.38,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "refine",
+      "id": "r50t54",
+      "context": "normal",
+      "params": {
+        "initial": 50,
+        "cap": 60,
+        "price": 1,
+        "target": 54,
+        "inspection": 3
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 110.56,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 113.28,
+          "deaths": {
+            "power": 5,
+            "agitation": 75,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 103.21,
+          "deaths": {
+            "power": 8,
+            "agitation": 72,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 94.49,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "refine",
+      "id": "r55t54",
+      "context": "normal",
+      "params": {
+        "initial": 55,
+        "cap": 66,
+        "price": 1,
+        "target": 54,
+        "inspection": 3
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 113.16,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 114.8,
+          "deaths": {
+            "power": 4,
+            "agitation": 76,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 105.23,
+          "deaths": {
+            "power": 6,
+            "agitation": 74,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 95.3,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "refine",
+      "id": "r55t62",
+      "context": "normal",
+      "params": {
+        "initial": 55,
+        "cap": 66,
+        "price": 1,
+        "target": 62,
+        "inspection": 3
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 111.53,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 117.04,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 112.2,
+          "deaths": {
+            "power": 5,
+            "agitation": 75,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 93.91,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "refine",
+      "id": "r60t48",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 48,
+        "inspection": 3
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 115.24,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 113.71,
+          "deaths": {
+            "power": 6,
+            "agitation": 74,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 105.54,
+          "deaths": {
+            "power": 13,
+            "agitation": 67,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 95.33,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "refine",
+      "id": "r60t54",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 54,
+        "inspection": 3
+      },
+      "runs": 320,
+      "policies": [
+        {
+          "id": "low-power-6",
+          "mean": 113.64,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 113.75,
+          "deaths": {
+            "power": 3,
+            "agitation": 77,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 109.69,
+          "deaths": {
+            "power": 5,
+            "agitation": 75,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 92.9,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "screen",
+      "id": "new20",
+      "context": "normal",
+      "params": {
+        "initial": 20,
+        "cap": 24,
+        "price": 3,
+        "target": 22
+      },
+      "runs": 300,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 9.02,
+          "deaths": {
+            "power": 60,
+            "agitation": 0,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 13.72,
+          "deaths": {
+            "power": 60,
+            "agitation": 0,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 12.07,
+          "deaths": {
+            "power": 60,
+            "agitation": 0,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 9.03,
+          "deaths": {
+            "power": 60,
+            "agitation": 0,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 16,
+          "deaths": {
+            "power": 60,
+            "agitation": 0,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "screen",
+      "id": "old",
+      "context": "normal",
+      "params": {
+        "initial": 20,
+        "cap": 24,
+        "price": 3,
+        "target": 22,
+        "legacy": true
+      },
+      "runs": 300,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 21.3,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 122.35,
+          "deaths": {
+            "power": 0,
+            "agitation": 59,
+            "fuse": 1,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 119.32,
+          "deaths": {
+            "power": 1,
+            "agitation": 59,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 120.43,
+          "deaths": {
+            "power": 1,
+            "agitation": 59,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 89.97,
+          "deaths": {
+            "power": 1,
+            "agitation": 59,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "screen",
+      "id": "p30c1",
+      "context": "normal",
+      "params": {
+        "initial": 30,
+        "cap": 36,
+        "price": 1,
+        "target": 32
+      },
+      "runs": 300,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 6.32,
+          "deaths": {
+            "power": 60,
+            "agitation": 0,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 51.2,
+          "deaths": {
+            "power": 36,
+            "agitation": 24,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 19.88,
+          "deaths": {
+            "power": 58,
+            "agitation": 2,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 11.4,
+          "deaths": {
+            "power": 60,
+            "agitation": 0,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 89.05,
+          "deaths": {
+            "power": 1,
+            "agitation": 59,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "screen",
+      "id": "p40c1",
+      "context": "normal",
+      "params": {
+        "initial": 40,
+        "cap": 48,
+        "price": 1,
+        "target": 42
+      },
+      "runs": 300,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 7.85,
+          "deaths": {
+            "power": 60,
+            "agitation": 0,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 106.62,
+          "deaths": {
+            "power": 2,
+            "agitation": 58,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 79.42,
+          "deaths": {
+            "power": 24,
+            "agitation": 36,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 57.07,
+          "deaths": {
+            "power": 37,
+            "agitation": 23,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 90.45,
+          "deaths": {
+            "power": 1,
+            "agitation": 59,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "screen",
+      "id": "p40c2",
+      "context": "normal",
+      "params": {
+        "initial": 40,
+        "cap": 48,
+        "price": 2,
+        "target": 42
+      },
+      "runs": 300,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 10.22,
+          "deaths": {
+            "power": 60,
+            "agitation": 0,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 75.02,
+          "deaths": {
+            "power": 4,
+            "agitation": 56,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 59.43,
+          "deaths": {
+            "power": 30,
+            "agitation": 30,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 29.02,
+          "deaths": {
+            "power": 52,
+            "agitation": 8,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 76.35,
+          "deaths": {
+            "power": 6,
+            "agitation": 54,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "screen",
+      "id": "p50c1",
+      "context": "normal",
+      "params": {
+        "initial": 50,
+        "cap": 60,
+        "price": 1,
+        "target": 52
+      },
+      "runs": 300,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 9.18,
+          "deaths": {
+            "power": 60,
+            "agitation": 0,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 115.35,
+          "deaths": {
+            "power": 1,
+            "agitation": 59,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 112.73,
+          "deaths": {
+            "power": 3,
+            "agitation": 57,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 103.68,
+          "deaths": {
+            "power": 10,
+            "agitation": 50,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 91.28,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "screen",
+      "id": "p50c2",
+      "context": "normal",
+      "params": {
+        "initial": 50,
+        "cap": 60,
+        "price": 2,
+        "target": 52
+      },
+      "runs": 300,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 15.72,
+          "deaths": {
+            "power": 54,
+            "agitation": 6,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 75.95,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 87.28,
+          "deaths": {
+            "power": 7,
+            "agitation": 53,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 53.95,
+          "deaths": {
+            "power": 28,
+            "agitation": 32,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 76.5,
+          "deaths": {
+            "power": 1,
+            "agitation": 59,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "screen",
+      "id": "p60c1",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 1,
+        "target": 62
+      },
+      "runs": 300,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 13,
+          "deaths": {
+            "power": 51,
+            "agitation": 9,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 118.33,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 123,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 120.82,
+          "deaths": {
+            "power": 1,
+            "agitation": 59,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 91.28,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "screen",
+      "id": "p60c2",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 2,
+        "target": 62
+      },
+      "runs": 300,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 19.33,
+          "deaths": {
+            "power": 25,
+            "agitation": 35,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 76.18,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 94.97,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 72.37,
+          "deaths": {
+            "power": 14,
+            "agitation": 46,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 77.03,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "screen",
+      "id": "p60c3",
+      "context": "normal",
+      "params": {
+        "initial": 60,
+        "cap": 72,
+        "price": 3,
+        "target": 62
+      },
+      "runs": 300,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 22.73,
+          "deaths": {
+            "power": 23,
+            "agitation": 37,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 66.77,
+          "deaths": {
+            "power": 18,
+            "agitation": 41,
+            "fuse": 1,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 52.45,
+          "deaths": {
+            "power": 32,
+            "agitation": 28,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 38.37,
+          "deaths": {
+            "power": 53,
+            "agitation": 7,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 66.62,
+          "deaths": {
+            "power": 24,
+            "agitation": 36,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "phase": "screen",
+      "id": "p70c1",
+      "context": "normal",
+      "params": {
+        "initial": 70,
+        "cap": 84,
+        "price": 1,
+        "target": 72
+      },
+      "runs": 300,
+      "policies": [
+        {
+          "id": "greedy-6",
+          "mean": 18.62,
+          "deaths": {
+            "power": 17,
+            "agitation": 43,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "low-power-6",
+          "mean": 119,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "planning-pairs-6",
+          "mean": 121.6,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "support-stack-music",
+          "mean": 122.78,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "sparse-planner",
+          "mean": 91.28,
+          "deaths": {
+            "power": 0,
+            "agitation": 60,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -6,7 +6,7 @@ export type Bond = { likes: PassengerKind[]; avoids: PassengerKind[] };
 export type VariableTraits = { weight: number; energy?: number; agitation?: number; fare: number; bond: Bond; revision: number };
 export type CopyField = 'energy' | 'fare' | 'agitation' | 'weight' | 'bond';
 export type CopiedTrait = { sourceId: string; sourceKind: PassengerKind; field: CopyField };
-export const COPY_LABELS: Record<CopyField,string> = {energy:'额外耗电',fare:'车费',agitation:'躁动与联动偏好',weight:'旧属性（已停用）',bond:'联动偏好'};
+export const COPY_LABELS: Record<CopyField,string> = {energy:'每站耗电',fare:'车费',agitation:'躁动与联动偏好',weight:'旧属性（已停用）',bond:'联动偏好'};
 export const BONDS: Record<PassengerKind,Bond> = {
  commuter:{likes:['courier'],avoids:['drunk']},
  tourist:{likes:['celebrity'],avoids:['thief']},
@@ -38,7 +38,7 @@ export function randomTraits(kind:'mystery'|'shifter', available:PassengerKind[]
  const liked=pool[randomInt(0,pool.length-1,rng)]??'commuter';
  const rest=pool.filter(k=>k!==liked);
  const avoided=rest[randomInt(0,rest.length-1,rng)]??'drunk';
- return {weight:0,energy:randomInt(0,1,rng),agitation:randomInt(0,1,rng),fare:randomInt(kind==='shifter'?28:8,kind==='shifter'?48:40,rng),bond:{likes:[liked],avoids:[avoided]},revision};
+ return {weight:0,energy:randomInt(1,2,rng),agitation:randomInt(0,1,rng),fare:randomInt(kind==='shifter'?28:8,kind==='shifter'?48:40,rng),bond:{likes:[liked],avoids:[avoided]},revision};
 }
 function ownProfile(rider:Rider){
  const spec=PASSENGERS[rider.kind];

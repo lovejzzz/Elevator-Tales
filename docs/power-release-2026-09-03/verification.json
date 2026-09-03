@@ -1,0 +1,8 @@
+{
+  "version": "v6.8",
+  "stateComparisons": 12000,
+  "replayedGames": 400,
+  "forecastFailures": 0,
+  "exactReferenceOutcomeMatch": true,
+  "referenceRunnerHash": "ce028cd8e7dd05b185e07837a6713df353e34cda7c395ac4ff97634c94018de5"
+}

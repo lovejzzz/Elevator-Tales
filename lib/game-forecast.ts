@@ -1,5 +1,5 @@
 import { bondStatus } from './rider-profile';
-import { cooperationRelief, energySavings, passengerEnergy, stabilizedEnergy, riderAgitation, eventPressureMultiplier, crowdAgitation, hasNeighbour, neighbours, shiftAgitation, travelEnergyCost, type RunState } from './game-engine';
+import { cooperationRelief, energyBreakdown, riderAgitation, eventPressureMultiplier, crowdAgitation, hasNeighbour, neighbours, shiftAgitation, type RunState } from './game-engine';
 
 export type StressForecast = {
   range: string;
@@ -79,6 +79,6 @@ export function stressForecast(state: RunState, _legacyWeight?: number): StressF
 }
 
 export function energyForecast(state: RunState, _legacyWeight?: number): EnergyForecast {
- const drain=travelEnergyCost(state.floor+1),extra=passengerEnergy(state),stabilized=stabilizedEnergy(state),saved=energySavings(state),delta=-drain-extra+stabilized+saved;
- return {range:signedDelta(delta),summary:`下一层电量 ${signedDelta(delta)} · 基础 −${drain}${extra ? ` · 人物额外 −${extra}` : ''}${stabilized ? ' · 稳压抵消1' : ''}${saved ? ' · 节能少耗1' : ''}`,danger:state.energy+delta<=0,lowDelta:delta,highDelta:delta};
+ const {motor,people,saved,total}=energyBreakdown(state),delta=-total;
+ return {range:signedDelta(delta),summary:`下一站耗 ${total} 电＝运转 ${motor}＋人物 ${people}−节能 ${saved}`,danger:state.energy+delta<=0,lowDelta:delta,highDelta:delta};
 }

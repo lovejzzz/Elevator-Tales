@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {initialRun,resolveFloor,makeOffers,riderAgitation,inspectionExtraEnergy,type Rider} from '../lib/game-engine';
+import {initialRun,resolveFloor,makeOffers,riderAgitation,inspectionExtraEnergy,shiftOutlook,type Rider} from '../lib/game-engine';
 import {PASSENGERS} from '../lib/game-data';
 import {PASSENGER_RULES,passengerFace} from '../lib/passenger-presentation';
 const rider=(kind:Rider['kind'],id:string):Rider=>({kind,id,boardedAt:1,destination:80,patience:0,fareBonus:0});
@@ -12,17 +12,23 @@ for(let floor=1;floor<=12;floor++)for(const stress of [0,10])for(const stabilize
  if(mode==='solar')run.upgrades.solar=1;
  for(let i=0;i<load;i++)run.cabin[5-i]=rider('tourist','t'+i);
  const next=floor+1,rawSaved=mode==='ghost'||mode==='mechanic'&&next%3===0||mode==='solar'&&next%4===0?1:0;
- const remainder=Math.max(0,load-stabilized-rawSaved);
+ const people=1+(mode==='mechanic'||mode==='ghost'?1:0)+load*2;
+ const remainder=Math.max(0,people-stabilized-rawSaved);
  assert.equal(inspectionExtraEnergy(run),remainder);
- assert.equal(riderAgitation(run,0).low,next%2===0&&remainder>0?(stress>=10?2:1):0);
+ assert.equal(riderAgitation(run,0).low,next%2===0&&remainder>3?(stress>=10?2:1):0);
  const result=resolveFloor(run,()=>.9);
- assert.equal(result.lastEarnings.sources.find(s=>s.label==='检查员合规奖励')?.amount??0,next%2===0&&remainder===0?1:0);
+ assert.equal(result.lastEarnings.sources.find(s=>s.label==='检查员合规奖励')?.amount??0,next%2===0&&remainder<=3?1:0);
  assert.equal(result.lastEnergy.delta,-1-remainder);cases++;
 }
 assert.equal(PASSENGERS.child.fare,7);assert.deepEqual(PASSENGERS.child.trip,[2,5]);
 let seed=1996723,children=0;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
 for(let n=0;n<2000;n++)for(const r of makeOffers(15,initialRun().upgrades,false,random))if(r.kind==='child'){assert.ok(r.destination-15>=2&&r.destination-15<=5);children++;}
 assert.ok(children>100);
-const face=passengerFace(rider('inspector','i'),initialRun());assert.match(face.special,/稳压、节能后/);
-assert.ok(PASSENGER_RULES.inspector.some(s=>s.includes('基础行驶耗电不计入')));
-console.log(JSON.stringify({version:'v6.7',inspectionInteractions:cases,generatedChildren:children,childRange:[2,5],fare:7}));
+const face=passengerFace(rider('inspector','i'),initialRun());assert.match(face.special,/含本人/);
+assert.ok(PASSENGER_RULES.inspector.some(s=>s.includes('不超过4')));
+assert.equal(shiftOutlook(1),'');assert.equal(shiftOutlook(8),'');
+assert.equal(shiftOutlook(9),'下一站到补给站');
+assert.equal(shiftOutlook(16,2,0),'下一站疲劳：躁动 +5');
+assert.equal(shiftOutlook(16,0,1),'','resting cabins must not display a fatigue warning');
+assert.equal(shiftOutlook(56,2,0),'下一站疲劳：躁动 +6');
+console.log(JSON.stringify({version:'v6.8',inspectionInteractions:cases,generatedChildren:children,childRange:[2,5],fare:7}));
