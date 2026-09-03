@@ -1018,3 +1018,146 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .card-cooperation { padding-block:3px; }
  .game-shell .candidate-notes { flex:none; padding:6px 2px 0; }
 }
+
+/* v7.1 desktop instrument rail: readable at a glance, with icon, name, value, and forecast hierarchy. */
+.rail-metric-name { white-space:nowrap; }
+
+@media (max-width:700px) {
+ .rail-metric-name {
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+ }
+}
+
+@media (min-width:1101px) and (min-height:501px) {
+ .game-shell .status-rail {
+  display:grid;
+  grid-template-rows:auto auto auto auto;
+  align-content:start;
+  gap:9px;
+ }
+ .game-shell .status-rail .meter-card,
+ .game-shell .status-rail .score-card {
+  position:relative;
+  flex:none;
+  min-height:0;
+  margin:0;
+  padding:14px;
+  justify-content:flex-start;
+  gap:8px;
+  overflow:visible;
+ }
+ .game-shell .status-rail .energy { min-height:142px; }
+ .game-shell .status-rail .pressure { min-height:246px; }
+ .game-shell .status-rail .wallet-card { min-height:126px; }
+ .game-shell .status-rail .meter-card>div:first-child {
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+ }
+ .game-shell .status-rail .meter-card>div:first-child>svg,
+ .game-shell .status-rail .wallet-card>svg {
+  width:38px;
+  height:38px;
+  padding:8px;
+  border:1px solid #c99d5252;
+  background:linear-gradient(145deg,#c99d521c,#09110f);
+  color:#e3b964;
+  filter:drop-shadow(0 0 7px #b77c2f33);
+ }
+ .game-shell .status-rail .pressure>div:first-child>svg {
+  border-color:#d989655c;
+  background:linear-gradient(145deg,#a9573c25,#100c0a);
+  color:#e69a72;
+ }
+ .game-shell .status-rail .energy>div:first-child>svg {
+  border-color:#75b8a15c;
+  background:linear-gradient(145deg,#438b792d,#08110f);
+  color:#92cfb9;
+ }
+ .game-shell .status-rail .rail-metric-name {
+  color:#d8d0bf;
+  font:600 13px/1.2 var(--font-sans);
+  letter-spacing:.08em;
+ }
+ .game-shell .status-rail .meter-label { gap:3px; }
+ .game-shell .status-rail .meter-help { width:24px; height:24px; }
+ .game-shell .status-rail .meter-help svg { width:16px; height:16px; }
+ .game-shell .status-rail .meter-card>div:first-child>b,
+ .game-shell .status-rail .wallet-card>strong {
+  color:#f1d79e;
+  font:500 30px/1 var(--font-mono);
+  text-align:right;
+ }
+ .game-shell .status-rail .meter-card b .animated-number,
+ .game-shell .status-rail .wallet-card strong .animated-number { color:inherit; }
+ .game-shell .status-rail .meter-track {
+  height:6px;
+  margin:1px 0 0;
+  border:1px solid #b8c2b30b;
+  background:#1d2924;
+ }
+ .game-shell .status-rail .rail-forecast {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:7px;
+  margin:0;
+  color:#99a69c;
+  font:500 10px/1.35 var(--font-sans);
+  letter-spacing:0;
+  text-align:left;
+ }
+ .game-shell .status-rail .rail-forecast span:last-child { color:#7f8d84; }
+ .game-shell .status-rail .rail-forecast b { color:#d8c49b; font:600 11px/1.35 var(--font-mono); }
+ .game-shell .status-rail .agitation-state {
+  display:grid;
+  gap:2px;
+  margin:1px 0 0;
+  padding:9px 0 0;
+  border-top:1px solid #bd9b5c2b;
+ }
+ .game-shell .status-rail .agitation-state b,
+ .game-shell .status-rail .agitation-state span { font-size:11px; line-height:1.35; text-align:left; }
+ .game-shell .status-rail .rest-stops {
+  min-height:38px;
+  margin:1px 0 0;
+  padding:7px 9px;
+  border:1px solid #8fb49b38;
+  background:#1730242b;
+ }
+ .game-shell .status-rail .rest-stops span { color:#b9d5c0; font-size:11px; }
+ .game-shell .status-rail .rest-stops b { color:#d5ead8; font-size:13px; }
+ .game-shell .status-rail .wallet-card {
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr) auto;
+  grid-template-rows:38px auto;
+  align-items:center;
+  column-gap:8px;
+  row-gap:12px;
+ }
+ .game-shell .status-rail .wallet-card>svg { grid-column:1; grid-row:1; }
+ .game-shell .status-rail .wallet-card>.rail-metric-name { grid-column:2; grid-row:1; }
+ .game-shell .status-rail .wallet-card>strong { grid-column:3; grid-row:1; line-height:1; }
+ .game-shell .status-rail .wallet-summary {
+  grid-column:1/-1;
+  grid-row:2;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+  color:#99a69c;
+  font:500 10px/1.35 var(--font-sans);
+  letter-spacing:0;
+  text-align:left;
+ }
+ .game-shell .status-rail .wallet-summary span:last-child { color:#d0b77f; }
+}
