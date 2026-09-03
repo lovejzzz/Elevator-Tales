@@ -51,6 +51,7 @@ Total: 84 layouts / 252 candidate-card instances. Screenshots alongside this rep
 - Inventory opens at scrollTop 0 even at 320×568; title visible.
 - Agitation failure reports “躁动失控”, separately from battery failure.
 - 667×375 portrait prompt changes back to playable 390×844 with floor/state preserved.
+- Post-publication smoke testing caught the floating receipt button being covered by the cabin background. The status rail now has an explicit stacking layer. Actual receipt clicks were retested at 844×390, 320×568 and 390×844, not just checked for visible bounds.
 
 ## Scope and limitations
 

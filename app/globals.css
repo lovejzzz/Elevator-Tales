@@ -743,7 +743,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .unified-passenger-summary>.card-action { margin-top:auto; padding-top:3px; color:#a8b5a6; font-size:12px; }
 .boarded .card-action,.pending .card-action { color:#f1d08e; }
 .candidate-notes { display:flex; flex-wrap:wrap; gap:2px 16px; padding:5px 2px 0; color:#bfcbba; font:400 12px/1.35 var(--font-sans); }
-.game-shell .status-rail { grid-column:1; grid-row:2/4; min-height:0; display:flex; flex-direction:column; gap:7px; overflow:visible; }
+.game-shell .status-rail { grid-column:1; grid-row:2/4; min-height:0; display:flex; flex-direction:column; gap:7px; overflow:visible; position:relative; z-index:12; }
 .game-shell .status-rail .floor-plaque,.game-shell .status-rail .event-log { display:none; }
 .game-shell .status-rail .meter-card,.game-shell .status-rail .score-card { min-height:0; flex:1; margin:0; padding:10px; }
 .game-shell .status-rail .pressure { flex:1.3; }
