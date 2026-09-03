@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { COOPERATION_RELIEF, cooperationRelief, cooperationBonus, initialRun, resolveFloor, dismissRider, previewUpgrade, upgradePrice, type Rider, type RunState } from '../lib/game-engine';
+import { shiftAgitation, COOPERATION_RELIEF, cooperationRelief, cooperationBonus, initialRun, resolveFloor, dismissRider, previewUpgrade, upgradePrice, type Rider, type RunState } from '../lib/game-engine';
 import { resolveFloor as baselineResolve } from '../experiments/v62/lib/game-engine';
 import { stressForecast, energyForecast } from '../lib/game-forecast';
 import { PASSENGER_ORDER, type PassengerKind } from '../lib/game-data';
@@ -74,10 +74,12 @@ for(let n=0;n<30000;n++){
  for(let sample=0;sample<3;sample++){
   const seed=963311+7*n+sample,after=check(before,rngFor(seed));randomChecks++;
   if(!contract){
-   // With no contract installed, settlement is unchanged. The shop's contract
-   // price is intentionally 15 higher in v6.3, even before the first purchase.
-   const normalized={...after,shop:after.shop.map(c=>c.key==='battery'?{...c,price:c.price-15}:c)};
-   assert.deepEqual(normalized,baselineResolve(before,rngFor(seed)));baselineChecks++;
+   // Later releases may change fatigue but must retain passenger settlement.
+   const old=baselineResolve(before,rngFor(seed));
+   for(const key of ['energy','coins','earned','cabin','restStops','upgrades'] as const)assert.deepEqual(after[key],old[key]);
+   const oldFatigue=old.lastPressure.sources.find(s=>s.label==='长班疲劳')?.amount??0;
+   const expected=before.stress+old.lastPressure.sources.reduce((sum,s)=>sum+s.amount,0)-oldFatigue+shiftAgitation(floor+1,before.cabin.filter(Boolean).length,before.restStops);
+   assert.equal(after.stress,Math.max(0,expected));baselineChecks++;
   }
  }
 }

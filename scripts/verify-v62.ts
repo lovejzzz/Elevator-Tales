@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { crowdAgitation, initialRun, resolveFloor, type Rider, type RunState } from '../lib/game-engine';
+import { crowdAgitation, shiftAgitation, initialRun, resolveFloor, type Rider, type RunState } from '../lib/game-engine';
 import { resolveFloor as resolveBaseline } from '../experiments/v61/lib/game-engine';
 import { stressForecast, energyForecast } from '../lib/game-forecast';
 import { metricChanges } from '../lib/metric-feedback';
@@ -36,11 +36,12 @@ for (const floor of floors) for (const event of ['travel','arrive','impatient'])
     assert.equal(source('音乐家安抚'), occupied >= 4 ? -cabin.filter(r=>r?.kind==='musician').length || 0 : 0);
     assert.equal(source('护士安抚'), (floor+1)%2===0 ? -cabin.filter(r=>r?.kind==='nurse').length || 0 : 0);
     assert.equal(source('轿厢拥挤'), occupied===6?2:occupied===5?1:0);
-    if (occupied===4) {
-      fourPersonCases++;
-      // Raw -1 crowd change can be clamped by the zero-stress floor.
-      assert.ok(old.stress-next.stress===0 || old.stress-next.stress===1);
-    } else assert.equal(next.stress, old.stress);
+    if (occupied===4) fourPersonCases++;
+    // Preserve the crowding differential while allowing the intentional v6.4
+    // fatigue schedule. Raw sources are used before the zero-stress clamp.
+    const oldFatigue=old.lastPressure.sources.find(s=>s.label==='长班疲劳')?.amount??0;
+    const expected=state.stress+old.lastPressure.sources.reduce((sum,s)=>sum+s.amount,0)-(occupied===4?1:0)-oldFatigue+shiftAgitation(floor+1,occupied,state.restStops);
+    assert.equal(next.stress,Math.max(0,expected));
     for (const change of metricChanges(state,next,'专项结算')) {
       assert.equal(change.sources.reduce((sum,s)=>sum+s.amount,0),change.delta);
     }
@@ -51,6 +52,6 @@ for (const floor of floors) for (const event of ['travel','arrive','impatient'])
 // This successful combination is intentional; duplicates are not silently nerfed.
 const musicians = Array.from({length:4}, (_,i):Rider => ({kind:'musician',id:`m${i}`,destination:105,patience:20,boardedAt:99,fareBonus:0}));
 const four = {...initialRun(),floor:99,stress:8,cabin:[...musicians,null,null]};
-assert.equal(resolveFloor(four).lastPressure.delta,-1, 'four musicians offset fatigue 3 with soothing 4');
-assert.equal(resolveFloor({...four,floor:999,cabin:four.cabin.map(r=>r?{...r,destination:1005}:null)}).lastPressure.delta,29, 'fixed soothing cannot cancel arbitrarily growing fatigue');
+assert.equal(resolveFloor(four).lastPressure.delta,-2, 'four musicians offset base pressure 2 with soothing 4 at floor 100');
+assert.equal(resolveFloor({...four,floor:999,cabin:four.cabin.map(r=>r?{...r,destination:1005}:null)}).lastPressure.delta,20, 'fixed soothing cannot cancel arbitrarily growing fatigue');
 console.log(JSON.stringify({version:'v6.2-regression',cases,fourPersonCases,duplicateSoothingStacks:true,forecastFailures:0,receiptFailures:0}));

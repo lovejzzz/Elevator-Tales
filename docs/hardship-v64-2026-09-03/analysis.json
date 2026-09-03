@@ -1,0 +1,6200 @@
+{
+  "normal": {
+    "games": 33600,
+    "transitions": 2889889,
+    "forecastFailures": 0,
+    "deaths": {
+      "power": 899,
+      "agitation": 32691,
+      "fuse": 10,
+      "censored": 0
+    }
+  },
+  "scenarios": {
+    "games": 2880,
+    "transitions": 114152,
+    "forecastFailures": 0,
+    "deaths": {
+      "power": 36,
+      "agitation": 2842,
+      "fuse": 2,
+      "censored": 0
+    }
+  },
+  "comparison": [
+    {
+      "id": "balanced-3",
+      "runs": 250,
+      "before": {
+        "mean": 97.57,
+        "p10": 87,
+        "p90": 107,
+        "firstDangerMean": 70.12,
+        "everDangerPct": 99.6,
+        "recoveriesPerGame": 0.86,
+        "gamesRecoveredPct": 61.6,
+        "tightShopPct": 28.47,
+        "cannotFullyChargePct": 0.22,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 99.6,
+        "reach50Pct": 99.6,
+        "decisionRescues": 190,
+        "decisionRescuesPer100Floors": 0.79,
+        "highStressPct": 19.45,
+        "deaths": {
+          "power": 1,
+          "agitation": 249,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 34.23,
+        "p10": 19,
+        "p90": 57,
+        "firstDangerMean": 21.09,
+        "everDangerPct": 94,
+        "recoveriesPerGame": 0.86,
+        "gamesRecoveredPct": 56,
+        "tightShopPct": 85.49,
+        "cannotFullyChargePct": 15.43,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 78.8,
+        "reach50Pct": 12.8,
+        "decisionRescues": 103,
+        "decisionRescuesPer100Floors": 1.24,
+        "highStressPct": 19.25,
+        "deaths": {
+          "power": 37,
+          "agitation": 213,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -63.34,
+        "bootstrap95": [
+          -65.33,
+          -61.2
+        ]
+      }
+    },
+    {
+      "id": "cautious-6",
+      "runs": 250,
+      "before": {
+        "mean": 123.48,
+        "p10": 111,
+        "p90": 135,
+        "firstDangerMean": 97.6,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.97,
+        "gamesRecoveredPct": 62,
+        "tightShopPct": 0.3,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 105,
+        "decisionRescuesPer100Floors": 0.34,
+        "highStressPct": 11.22,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 67.28,
+        "p10": 29,
+        "p90": 97,
+        "firstDangerMean": 25.85,
+        "everDangerPct": 99.6,
+        "recoveriesPerGame": 2.03,
+        "gamesRecoveredPct": 89.2,
+        "tightShopPct": 22.7,
+        "cannotFullyChargePct": 0.14,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 96,
+        "reach50Pct": 78,
+        "decisionRescues": 112,
+        "decisionRescuesPer100Floors": 0.68,
+        "highStressPct": 16.4,
+        "deaths": {
+          "power": 0,
+          "agitation": 249,
+          "fuse": 1,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -56.2,
+        "bootstrap95": [
+          -59.52,
+          -53.15
+        ]
+      }
+    },
+    {
+      "id": "greedy-6",
+      "runs": 250,
+      "before": {
+        "mean": 72.03,
+        "p10": 47,
+        "p90": 97,
+        "firstDangerMean": 37.92,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.98,
+        "gamesRecoveredPct": 62,
+        "tightShopPct": 0.24,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 88,
+        "decisionRescues": 417,
+        "decisionRescuesPer100Floors": 2.35,
+        "highStressPct": 30.6,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 22.23,
+        "p10": 18,
+        "p90": 29,
+        "firstDangerMean": 16.8,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.3,
+        "gamesRecoveredPct": 22,
+        "tightShopPct": 11.27,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 30.8,
+        "reach50Pct": 1.6,
+        "decisionRescues": 92,
+        "decisionRescuesPer100Floors": 1.73,
+        "highStressPct": 20.59,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -49.8,
+        "bootstrap95": [
+          -52.1,
+          -47.51
+        ]
+      }
+    },
+    {
+      "id": "no-upgrades",
+      "runs": 250,
+      "before": {
+        "mean": 98.98,
+        "p10": 92,
+        "p90": 107,
+        "firstDangerMean": 83.68,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.53,
+        "gamesRecoveredPct": 45.2,
+        "tightShopPct": 0.38,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 139,
+        "decisionRescuesPer100Floors": 0.57,
+        "highStressPct": 10.83,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 48.17,
+        "p10": 29,
+        "p90": 68,
+        "firstDangerMean": 24.24,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 1.76,
+        "gamesRecoveredPct": 88.8,
+        "tightShopPct": 7.16,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 95.6,
+        "reach50Pct": 40.8,
+        "decisionRescues": 140,
+        "decisionRescuesPer100Floors": 1.19,
+        "highStressPct": 15.63,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -50.81,
+        "bootstrap95": [
+          -52.9,
+          -48.74
+        ]
+      }
+    },
+    {
+      "id": "cautious-calm",
+      "runs": 250,
+      "before": {
+        "mean": 123.78,
+        "p10": 111,
+        "p90": 136,
+        "firstDangerMean": 105.06,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.38,
+        "gamesRecoveredPct": 28.8,
+        "tightShopPct": 2.8,
+        "cannotFullyChargePct": 0.07,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 127,
+        "decisionRescuesPer100Floors": 0.41,
+        "highStressPct": 11.83,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 69.35,
+        "p10": 39,
+        "p90": 97,
+        "firstDangerMean": 30.63,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 1.92,
+        "gamesRecoveredPct": 89.2,
+        "tightShopPct": 15.32,
+        "cannotFullyChargePct": 0.13,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 98.4,
+        "reach50Pct": 80.8,
+        "decisionRescues": 124,
+        "decisionRescuesPer100Floors": 0.73,
+        "highStressPct": 14.85,
+        "deaths": {
+          "power": 1,
+          "agitation": 249,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -54.43,
+        "bootstrap95": [
+          -57.1,
+          -51.74
+        ]
+      }
+    },
+    {
+      "id": "without-battery",
+      "runs": 250,
+      "before": {
+        "mean": 120.06,
+        "p10": 107,
+        "p90": 129,
+        "firstDangerMean": 94.24,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.92,
+        "gamesRecoveredPct": 60,
+        "tightShopPct": 0.31,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 96,
+        "decisionRescuesPer100Floors": 0.32,
+        "highStressPct": 12.32,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 65.75,
+        "p10": 29,
+        "p90": 97,
+        "firstDangerMean": 25.96,
+        "everDangerPct": 99.6,
+        "recoveriesPerGame": 2.02,
+        "gamesRecoveredPct": 88.8,
+        "tightShopPct": 23.17,
+        "cannotFullyChargePct": 0.14,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 96,
+        "reach50Pct": 76,
+        "decisionRescues": 108,
+        "decisionRescuesPer100Floors": 0.67,
+        "highStressPct": 16.67,
+        "deaths": {
+          "power": 0,
+          "agitation": 249,
+          "fuse": 1,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -54.31,
+        "bootstrap95": [
+          -57.38,
+          -51.38
+        ]
+      }
+    },
+    {
+      "id": "musician-stack-4-12",
+      "runs": 250,
+      "before": {
+        "mean": 119.4,
+        "p10": 107,
+        "p90": 131,
+        "firstDangerMean": 100.53,
+        "everDangerPct": 99.6,
+        "recoveriesPerGame": 0.38,
+        "gamesRecoveredPct": 29.6,
+        "tightShopPct": 9.88,
+        "cannotFullyChargePct": 0.07,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 141,
+        "decisionRescuesPer100Floors": 0.48,
+        "highStressPct": 12.08,
+        "deaths": {
+          "power": 0,
+          "agitation": 249,
+          "fuse": 1,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 62.07,
+        "p10": 29,
+        "p90": 89,
+        "firstDangerMean": 28.45,
+        "everDangerPct": 98.4,
+        "recoveriesPerGame": 1.8,
+        "gamesRecoveredPct": 83.6,
+        "tightShopPct": 36.49,
+        "cannotFullyChargePct": 1.86,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 96,
+        "reach50Pct": 74,
+        "decisionRescues": 105,
+        "decisionRescuesPer100Floors": 0.69,
+        "highStressPct": 15.01,
+        "deaths": {
+          "power": 10,
+          "agitation": 240,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -57.32,
+        "bootstrap95": [
+          -59.94,
+          -54.6
+        ]
+      }
+    },
+    {
+      "id": "nurse-stack-4-12",
+      "runs": 250,
+      "before": {
+        "mean": 119,
+        "p10": 107,
+        "p90": 130,
+        "firstDangerMean": 98.39,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.44,
+        "gamesRecoveredPct": 38,
+        "tightShopPct": 8.93,
+        "cannotFullyChargePct": 0.07,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 153,
+        "decisionRescuesPer100Floors": 0.52,
+        "highStressPct": 12.87,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 59.38,
+        "p10": 29,
+        "p90": 87,
+        "firstDangerMean": 26.08,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 1.87,
+        "gamesRecoveredPct": 89.6,
+        "tightShopPct": 36.29,
+        "cannotFullyChargePct": 0.71,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 98,
+        "reach50Pct": 67.2,
+        "decisionRescues": 116,
+        "decisionRescuesPer100Floors": 0.79,
+        "highStressPct": 16.16,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -59.62,
+        "bootstrap95": [
+          -62.21,
+          -56.96
+        ]
+      }
+    },
+    {
+      "id": "contract-mixed-4",
+      "runs": 250,
+      "before": {
+        "mean": 128.45,
+        "p10": 113,
+        "p90": 141,
+        "firstDangerMean": 106.87,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.86,
+        "gamesRecoveredPct": 57.2,
+        "tightShopPct": 4.64,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 128,
+        "decisionRescuesPer100Floors": 0.4,
+        "highStressPct": 8.68,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 67.77,
+        "p10": 39,
+        "p90": 97,
+        "firstDangerMean": 26.96,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 2.1,
+        "gamesRecoveredPct": 93.2,
+        "tightShopPct": 52.31,
+        "cannotFullyChargePct": 1.21,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 99.2,
+        "reach50Pct": 80.8,
+        "decisionRescues": 143,
+        "decisionRescuesPer100Floors": 0.86,
+        "highStressPct": 14.22,
+        "deaths": {
+          "power": 1,
+          "agitation": 249,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -60.68,
+        "bootstrap95": [
+          -63.82,
+          -57.62
+        ]
+      }
+    },
+    {
+      "id": "contract-no-calm-4",
+      "runs": 250,
+      "before": {
+        "mean": 109.8,
+        "p10": 98,
+        "p90": 123,
+        "firstDangerMean": 95.5,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.69,
+        "gamesRecoveredPct": 51.6,
+        "tightShopPct": 4.83,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 133,
+        "decisionRescuesPer100Floors": 0.49,
+        "highStressPct": 8.36,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 56.83,
+        "p10": 29,
+        "p90": 78,
+        "firstDangerMean": 26.07,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 1.82,
+        "gamesRecoveredPct": 88.8,
+        "tightShopPct": 47.82,
+        "cannotFullyChargePct": 1.31,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 98.4,
+        "reach50Pct": 63.6,
+        "decisionRescues": 107,
+        "decisionRescuesPer100Floors": 0.77,
+        "highStressPct": 13.98,
+        "deaths": {
+          "power": 1,
+          "agitation": 248,
+          "fuse": 1,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -52.97,
+        "bootstrap95": [
+          -55.66,
+          -50.43
+        ]
+      }
+    },
+    {
+      "id": "contract-mixed-6",
+      "runs": 250,
+      "before": {
+        "mean": 130.93,
+        "p10": 117,
+        "p90": 141,
+        "firstDangerMean": 105.57,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 1.02,
+        "gamesRecoveredPct": 61.2,
+        "tightShopPct": 0.32,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 140,
+        "decisionRescuesPer100Floors": 0.43,
+        "highStressPct": 9.21,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 81.23,
+        "p10": 29,
+        "p90": 112,
+        "firstDangerMean": 29.42,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 2.13,
+        "gamesRecoveredPct": 89.2,
+        "tightShopPct": 14.21,
+        "cannotFullyChargePct": 0.05,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 95.6,
+        "reach50Pct": 85.2,
+        "decisionRescues": 134,
+        "decisionRescuesPer100Floors": 0.67,
+        "highStressPct": 13.58,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -49.7,
+        "bootstrap95": [
+          -53.51,
+          -46.06
+        ]
+      }
+    },
+    {
+      "id": "contract-police-mixed",
+      "runs": 250,
+      "before": {
+        "mean": 126.92,
+        "p10": 109,
+        "p90": 138,
+        "firstDangerMean": 105.32,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.9,
+        "gamesRecoveredPct": 55.6,
+        "tightShopPct": 4.34,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 139,
+        "decisionRescuesPer100Floors": 0.44,
+        "highStressPct": 8.96,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 60.96,
+        "p10": 29,
+        "p90": 94,
+        "firstDangerMean": 24.3,
+        "everDangerPct": 99.6,
+        "recoveriesPerGame": 2.05,
+        "gamesRecoveredPct": 91.6,
+        "tightShopPct": 47.08,
+        "cannotFullyChargePct": 0.83,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 96.8,
+        "reach50Pct": 68.4,
+        "decisionRescues": 88,
+        "decisionRescuesPer100Floors": 0.59,
+        "highStressPct": 14.89,
+        "deaths": {
+          "power": 2,
+          "agitation": 248,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -65.96,
+        "bootstrap95": [
+          -69.18,
+          -63.02
+        ]
+      }
+    },
+    {
+      "id": "contract-lovers-mixed",
+      "runs": 250,
+      "before": {
+        "mean": 127.49,
+        "p10": 107,
+        "p90": 142,
+        "firstDangerMean": 107.18,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.8,
+        "gamesRecoveredPct": 54,
+        "tightShopPct": 3.43,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 111,
+        "decisionRescuesPer100Floors": 0.35,
+        "highStressPct": 8.83,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 65.62,
+        "p10": 29,
+        "p90": 98,
+        "firstDangerMean": 25.07,
+        "everDangerPct": 99.6,
+        "recoveriesPerGame": 2.16,
+        "gamesRecoveredPct": 92,
+        "tightShopPct": 40.32,
+        "cannotFullyChargePct": 0.7,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 98.4,
+        "reach50Pct": 72.8,
+        "decisionRescues": 107,
+        "decisionRescuesPer100Floors": 0.66,
+        "highStressPct": 15.07,
+        "deaths": {
+          "power": 1,
+          "agitation": 249,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -61.87,
+        "bootstrap95": [
+          -65.22,
+          -58.63
+        ]
+      }
+    },
+    {
+      "id": "contract-calming-mixed",
+      "runs": 250,
+      "before": {
+        "mean": 127.59,
+        "p10": 108,
+        "p90": 141,
+        "firstDangerMean": 104.89,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.92,
+        "gamesRecoveredPct": 56.8,
+        "tightShopPct": 4.31,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 134,
+        "decisionRescuesPer100Floors": 0.42,
+        "highStressPct": 8.99,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 68.68,
+        "p10": 29,
+        "p90": 99,
+        "firstDangerMean": 27.6,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 2.07,
+        "gamesRecoveredPct": 90.4,
+        "tightShopPct": 45.74,
+        "cannotFullyChargePct": 0.4,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 98,
+        "reach50Pct": 78.8,
+        "decisionRescues": 129,
+        "decisionRescuesPer100Floors": 0.76,
+        "highStressPct": 14.15,
+        "deaths": {
+          "power": 1,
+          "agitation": 249,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -58.91,
+        "bootstrap95": [
+          -62.24,
+          -55.63
+        ]
+      }
+    },
+    {
+      "id": "contract-lookahead",
+      "runs": 250,
+      "before": {
+        "mean": 132.92,
+        "p10": 117,
+        "p90": 146,
+        "firstDangerMean": 110.11,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.84,
+        "gamesRecoveredPct": 56,
+        "tightShopPct": 3.31,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 81,
+        "decisionRescuesPer100Floors": 0.25,
+        "highStressPct": 9.37,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 85.32,
+        "p10": 58,
+        "p90": 118,
+        "firstDangerMean": 35.66,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 1.89,
+        "gamesRecoveredPct": 91.2,
+        "tightShopPct": 59.23,
+        "cannotFullyChargePct": 0.87,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 99.2,
+        "reach50Pct": 93.6,
+        "decisionRescues": 62,
+        "decisionRescuesPer100Floors": 0.29,
+        "highStressPct": 12.68,
+        "deaths": {
+          "power": 3,
+          "agitation": 247,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -47.61,
+        "bootstrap95": [
+          -50.99,
+          -44.26
+        ]
+      }
+    },
+    {
+      "id": "contract-lookahead-no-calm",
+      "runs": 250,
+      "before": {
+        "mean": 113.65,
+        "p10": 101,
+        "p90": 125,
+        "firstDangerMean": 95.5,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 0.9,
+        "gamesRecoveredPct": 61.2,
+        "tightShopPct": 3.54,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 72,
+        "decisionRescuesPer100Floors": 0.26,
+        "highStressPct": 9.74,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 78.54,
+        "p10": 49,
+        "p90": 109,
+        "firstDangerMean": 35.04,
+        "everDangerPct": 99.6,
+        "recoveriesPerGame": 1.93,
+        "gamesRecoveredPct": 88.8,
+        "tightShopPct": 52.62,
+        "cannotFullyChargePct": 1.07,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 98.8,
+        "reach50Pct": 89.6,
+        "decisionRescues": 71,
+        "decisionRescuesPer100Floors": 0.37,
+        "highStressPct": 13.08,
+        "deaths": {
+          "power": 5,
+          "agitation": 245,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -35.1,
+        "bootstrap95": [
+          -38.27,
+          -31.65
+        ]
+      }
+    },
+    {
+      "id": "contract-lookahead-6",
+      "runs": 250,
+      "before": {
+        "mean": 132.3,
+        "p10": 123,
+        "p90": 143,
+        "firstDangerMean": 103.62,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 1.08,
+        "gamesRecoveredPct": 65.2,
+        "tightShopPct": 0.13,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 71,
+        "decisionRescuesPer100Floors": 0.22,
+        "highStressPct": 10.84,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 100.92,
+        "p10": 59,
+        "p90": 136,
+        "firstDangerMean": 32.68,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 2.69,
+        "gamesRecoveredPct": 94.4,
+        "tightShopPct": 10.71,
+        "cannotFullyChargePct": 0.04,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 98.4,
+        "reach50Pct": 93.6,
+        "decisionRescues": 65,
+        "decisionRescuesPer100Floors": 0.26,
+        "highStressPct": 14.74,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -31.38,
+        "bootstrap95": [
+          -34.9,
+          -27.82
+        ]
+      }
+    },
+    {
+      "id": "wave-pair-4",
+      "runs": 250,
+      "before": {
+        "mean": 132.86,
+        "p10": 123,
+        "p90": 143,
+        "firstDangerMean": 106.19,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 1.06,
+        "gamesRecoveredPct": 65.6,
+        "tightShopPct": 2.97,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 77,
+        "decisionRescuesPer100Floors": 0.23,
+        "highStressPct": 10.56,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 86.48,
+        "p10": 58,
+        "p90": 118,
+        "firstDangerMean": 29.18,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 2.37,
+        "gamesRecoveredPct": 95.6,
+        "tightShopPct": 52.15,
+        "cannotFullyChargePct": 0.71,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 99.6,
+        "reach50Pct": 91.2,
+        "decisionRescues": 63,
+        "decisionRescuesPer100Floors": 0.29,
+        "highStressPct": 13.96,
+        "deaths": {
+          "power": 3,
+          "agitation": 247,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -46.38,
+        "bootstrap95": [
+          -49.79,
+          -42.98
+        ]
+      }
+    },
+    {
+      "id": "wave-pair-6",
+      "runs": 250,
+      "before": {
+        "mean": 132.02,
+        "p10": 122,
+        "p90": 143,
+        "firstDangerMean": 100.77,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 1.24,
+        "gamesRecoveredPct": 63.6,
+        "tightShopPct": 0.09,
+        "cannotFullyChargePct": 0,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 68,
+        "decisionRescuesPer100Floors": 0.21,
+        "highStressPct": 11.75,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 106.57,
+        "p10": 68,
+        "p90": 131,
+        "firstDangerMean": 28.54,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 3.26,
+        "gamesRecoveredPct": 97.6,
+        "tightShopPct": 5.49,
+        "cannotFullyChargePct": 0.04,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 99.6,
+        "reach50Pct": 95.6,
+        "decisionRescues": 87,
+        "decisionRescuesPer100Floors": 0.33,
+        "highStressPct": 17.83,
+        "deaths": {
+          "power": 0,
+          "agitation": 250,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -25.46,
+        "bootstrap95": [
+          -28.95,
+          -22.16
+        ]
+      }
+    },
+    {
+      "id": "rest-relay-calm",
+      "runs": 250,
+      "before": {
+        "mean": 116.76,
+        "p10": 108,
+        "p90": 124,
+        "firstDangerMean": 107.4,
+        "everDangerPct": 97.2,
+        "recoveriesPerGame": 0.07,
+        "gamesRecoveredPct": 6.4,
+        "tightShopPct": 21.03,
+        "cannotFullyChargePct": 1.1,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 100,
+        "reach50Pct": 100,
+        "decisionRescues": 92,
+        "decisionRescuesPer100Floors": 0.32,
+        "highStressPct": 8.41,
+        "deaths": {
+          "power": 10,
+          "agitation": 240,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "after": {
+        "mean": 56.62,
+        "p10": 29,
+        "p90": 79,
+        "firstDangerMean": 25.64,
+        "everDangerPct": 100,
+        "recoveriesPerGame": 1.81,
+        "gamesRecoveredPct": 92.8,
+        "tightShopPct": 35.79,
+        "cannotFullyChargePct": 1.49,
+        "firstShopPassedPct": 100,
+        "reach20Pct": 98.8,
+        "reach50Pct": 64.4,
+        "decisionRescues": 93,
+        "decisionRescuesPer100Floors": 0.67,
+        "highStressPct": 16.15,
+        "deaths": {
+          "power": 7,
+          "agitation": 243,
+          "fuse": 0,
+          "censored": 0
+        }
+      },
+      "floorDifference": {
+        "mean": -60.14,
+        "bootstrap95": [
+          -62.67,
+          -57.69
+        ]
+      }
+    }
+  ],
+  "exploit": [
+    {
+      "id": "baseline",
+      "games": 600,
+      "policies": [
+        {
+          "id": "contract-lookahead-6",
+          "mean": 132.36,
+          "p10": 124,
+          "p90": 142,
+          "firstDangerMean": 103.93,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.11,
+          "gamesRecoveredPct": 66.67,
+          "tightShopPct": 0.16,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 100,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 49,
+          "decisionRescuesPer100Floors": 0.25,
+          "highStressPct": 10.7,
+          "deaths": {
+            "power": 0,
+            "agitation": 150,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "wave-pair-6",
+          "mean": 132.19,
+          "p10": 122,
+          "p90": 144,
+          "firstDangerMean": 100.79,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.3,
+          "gamesRecoveredPct": 63.33,
+          "tightShopPct": 0.1,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 100,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 40,
+          "decisionRescuesPer100Floors": 0.2,
+          "highStressPct": 11.75,
+          "deaths": {
+            "power": 0,
+            "agitation": 150,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "wave-rest-calm",
+          "mean": 112.26,
+          "p10": 103,
+          "p90": 122,
+          "firstDangerMean": 99.71,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.17,
+          "gamesRecoveredPct": 16.67,
+          "tightShopPct": 54.56,
+          "cannotFullyChargePct": 0.12,
+          "firstShopPassedPct": 100,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 39,
+          "decisionRescuesPer100Floors": 0.23,
+          "highStressPct": 9.93,
+          "deaths": {
+            "power": 1,
+            "agitation": 149,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "wave-rest-mixed",
+          "mean": 115.54,
+          "p10": 101,
+          "p90": 131,
+          "firstDangerMean": 100.54,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.69,
+          "gamesRecoveredPct": 51.33,
+          "tightShopPct": 57.67,
+          "cannotFullyChargePct": 0.36,
+          "firstShopPassedPct": 100,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 47,
+          "decisionRescuesPer100Floors": 0.27,
+          "highStressPct": 8.45,
+          "deaths": {
+            "power": 0,
+            "agitation": 150,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "release",
+      "games": 600,
+      "policies": [
+        {
+          "id": "contract-lookahead-6",
+          "mean": 101.46,
+          "p10": 65,
+          "p90": 131,
+          "firstDangerMean": 32.23,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 2.71,
+          "gamesRecoveredPct": 95.33,
+          "tightShopPct": 10.43,
+          "cannotFullyChargePct": 0.07,
+          "firstShopPassedPct": 100,
+          "reach20Pct": 98.67,
+          "reach50Pct": 94.67,
+          "decisionRescues": 37,
+          "decisionRescuesPer100Floors": 0.25,
+          "highStressPct": 14.56,
+          "deaths": {
+            "power": 0,
+            "agitation": 150,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "wave-pair-6",
+          "mean": 107.71,
+          "p10": 68,
+          "p90": 131,
+          "firstDangerMean": 28.51,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 3.23,
+          "gamesRecoveredPct": 96.67,
+          "tightShopPct": 5.86,
+          "cannotFullyChargePct": 0.07,
+          "firstShopPassedPct": 100,
+          "reach20Pct": 99.33,
+          "reach50Pct": 95.33,
+          "decisionRescues": 51,
+          "decisionRescuesPer100Floors": 0.32,
+          "highStressPct": 18.24,
+          "deaths": {
+            "power": 0,
+            "agitation": 150,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "wave-rest-calm",
+          "mean": 98.97,
+          "p10": 69,
+          "p90": 118,
+          "firstDangerMean": 91.87,
+          "everDangerPct": 90.67,
+          "recoveriesPerGame": 0.27,
+          "gamesRecoveredPct": 26,
+          "tightShopPct": 85.54,
+          "cannotFullyChargePct": 4.36,
+          "firstShopPassedPct": 100,
+          "reach20Pct": 100,
+          "reach50Pct": 98,
+          "decisionRescues": 25,
+          "decisionRescuesPer100Floors": 0.17,
+          "highStressPct": 6.46,
+          "deaths": {
+            "power": 17,
+            "agitation": 132,
+            "fuse": 1,
+            "censored": 0
+          }
+        },
+        {
+          "id": "wave-rest-mixed",
+          "mean": 99.17,
+          "p10": 69,
+          "p90": 118,
+          "firstDangerMean": 90.91,
+          "everDangerPct": 93.33,
+          "recoveriesPerGame": 0.43,
+          "gamesRecoveredPct": 36.67,
+          "tightShopPct": 87.16,
+          "cannotFullyChargePct": 4.43,
+          "firstShopPassedPct": 100,
+          "reach20Pct": 100,
+          "reach50Pct": 96.67,
+          "decisionRescues": 16,
+          "decisionRescuesPer100Floors": 0.11,
+          "highStressPct": 6.59,
+          "deaths": {
+            "power": 15,
+            "agitation": 135,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    }
+  ],
+  "conditional": [
+    {
+      "id": "baseline",
+      "context": "agitated",
+      "games": 480,
+      "policies": [
+        {
+          "id": "balanced-3",
+          "mean": 89.44,
+          "p10": 75,
+          "p90": 104,
+          "firstDangerMean": 42,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.48,
+          "gamesRecoveredPct": 96.25,
+          "tightShopPct": 44.69,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 77,
+          "decisionRescuesPer100Floors": 1.99,
+          "highStressPct": 45.19,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "cautious-calm",
+          "mean": 111.21,
+          "p10": 101,
+          "p90": 124,
+          "firstDangerMean": 42,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.53,
+          "gamesRecoveredPct": 100,
+          "tightShopPct": 18.59,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 40,
+          "decisionRescuesPer100Floors": 0.71,
+          "highStressPct": 20.31,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-no-calm-4",
+          "mean": 104.61,
+          "p10": 93,
+          "p90": 115,
+          "firstDangerMean": 42,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.56,
+          "gamesRecoveredPct": 100,
+          "tightShopPct": 18.46,
+          "cannotFullyChargePct": 0.21,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 49,
+          "decisionRescuesPer100Floors": 0.96,
+          "highStressPct": 19.36,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-lookahead",
+          "mean": 121.14,
+          "p10": 105,
+          "p90": 135,
+          "firstDangerMean": 42,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.79,
+          "gamesRecoveredPct": 100,
+          "tightShopPct": 21.28,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 21,
+          "decisionRescuesPer100Floors": 0.33,
+          "highStressPct": 17.14,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-lookahead-6",
+          "mean": 122.65,
+          "p10": 104,
+          "p90": 138,
+          "firstDangerMean": 42,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 2.29,
+          "gamesRecoveredPct": 100,
+          "tightShopPct": 8.83,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 35,
+          "decisionRescuesPer100Floors": 0.54,
+          "highStressPct": 18.63,
+          "deaths": {
+            "power": 0,
+            "agitation": 79,
+            "fuse": 1,
+            "censored": 0
+          }
+        },
+        {
+          "id": "wave-pair-6",
+          "mean": 128.63,
+          "p10": 113,
+          "p90": 138,
+          "firstDangerMean": 42,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 2.65,
+          "gamesRecoveredPct": 100,
+          "tightShopPct": 4.47,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 29,
+          "decisionRescuesPer100Floors": 0.41,
+          "highStressPct": 20.44,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "baseline",
+      "context": "cash-poor",
+      "games": 480,
+      "policies": [
+        {
+          "id": "balanced-3",
+          "mean": 92.23,
+          "p10": 78,
+          "p90": 103,
+          "firstDangerMean": 64.65,
+          "everDangerPct": 98.75,
+          "recoveriesPerGame": 1.06,
+          "gamesRecoveredPct": 68.75,
+          "tightShopPct": 65,
+          "cannotFullyChargePct": 0.26,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 93,
+          "decisionRescuesPer100Floors": 2.27,
+          "highStressPct": 36.8,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "cautious-calm",
+          "mean": 109.98,
+          "p10": 97,
+          "p90": 125,
+          "firstDangerMean": 90.95,
+          "everDangerPct": 93.75,
+          "recoveriesPerGame": 0.6,
+          "gamesRecoveredPct": 42.5,
+          "tightShopPct": 28.41,
+          "cannotFullyChargePct": 1.92,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 45,
+          "decisionRescuesPer100Floors": 0.82,
+          "highStressPct": 18.09,
+          "deaths": {
+            "power": 5,
+            "agitation": 75,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-no-calm-4",
+          "mean": 98.91,
+          "p10": 84,
+          "p90": 113,
+          "firstDangerMean": 90.13,
+          "everDangerPct": 90,
+          "recoveriesPerGame": 0.54,
+          "gamesRecoveredPct": 40,
+          "tightShopPct": 36.26,
+          "cannotFullyChargePct": 3,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 45,
+          "decisionRescuesPer100Floors": 0.97,
+          "highStressPct": 14.2,
+          "deaths": {
+            "power": 8,
+            "agitation": 72,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-lookahead",
+          "mean": 116.75,
+          "p10": 102,
+          "p90": 131,
+          "firstDangerMean": 97.42,
+          "everDangerPct": 98.75,
+          "recoveriesPerGame": 0.85,
+          "gamesRecoveredPct": 55,
+          "tightShopPct": 32.64,
+          "cannotFullyChargePct": 0.52,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 21,
+          "decisionRescuesPer100Floors": 0.35,
+          "highStressPct": 14.31,
+          "deaths": {
+            "power": 1,
+            "agitation": 79,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-lookahead-6",
+          "mean": 122.8,
+          "p10": 104,
+          "p90": 137,
+          "firstDangerMean": 92.79,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.54,
+          "gamesRecoveredPct": 78.75,
+          "tightShopPct": 17.38,
+          "cannotFullyChargePct": 0.16,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 27,
+          "decisionRescuesPer100Floors": 0.41,
+          "highStressPct": 16.66,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "wave-pair-6",
+          "mean": 122.56,
+          "p10": 102,
+          "p90": 139,
+          "firstDangerMean": 87.4,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.53,
+          "gamesRecoveredPct": 80,
+          "tightShopPct": 13.6,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 27,
+          "decisionRescuesPer100Floors": 0.41,
+          "highStressPct": 17.1,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "baseline",
+      "context": "late-build",
+      "games": 480,
+      "policies": [
+        {
+          "id": "balanced-3",
+          "mean": 102.03,
+          "p10": 96,
+          "p90": 110,
+          "firstDangerMean": 88.68,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.14,
+          "gamesRecoveredPct": 13.75,
+          "tightShopPct": 39.86,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 33,
+          "decisionRescuesPer100Floors": 1.96,
+          "highStressPct": 57.85,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "cautious-calm",
+          "mean": 112.31,
+          "p10": 102,
+          "p90": 123,
+          "firstDangerMean": 98.63,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.1,
+          "gamesRecoveredPct": 10,
+          "tightShopPct": 45.09,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 23,
+          "decisionRescuesPer100Floors": 0.92,
+          "highStressPct": 39.04,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-no-calm-4",
+          "mean": 110.99,
+          "p10": 102,
+          "p90": 121,
+          "firstDangerMean": 98.49,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.06,
+          "gamesRecoveredPct": 5,
+          "tightShopPct": 55.66,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 29,
+          "decisionRescuesPer100Floors": 1.21,
+          "highStressPct": 39.43,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-lookahead",
+          "mean": 115.24,
+          "p10": 103,
+          "p90": 129,
+          "firstDangerMean": 97.69,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.29,
+          "gamesRecoveredPct": 22.5,
+          "tightShopPct": 56.75,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 17,
+          "decisionRescuesPer100Floors": 0.62,
+          "highStressPct": 43.78,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-lookahead-6",
+          "mean": 113.63,
+          "p10": 102,
+          "p90": 124,
+          "firstDangerMean": 95.43,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.33,
+          "gamesRecoveredPct": 27.5,
+          "tightShopPct": 45.3,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 22,
+          "decisionRescuesPer100Floors": 0.84,
+          "highStressPct": 45.82,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "wave-pair-6",
+          "mean": 114.88,
+          "p10": 101,
+          "p90": 131,
+          "firstDangerMean": 93.06,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.41,
+          "gamesRecoveredPct": 31.25,
+          "tightShopPct": 34.01,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 29,
+          "decisionRescuesPer100Floors": 1.07,
+          "highStressPct": 50.63,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "release",
+      "context": "agitated",
+      "games": 480,
+      "policies": [
+        {
+          "id": "balanced-3",
+          "mean": 56.04,
+          "p10": 48,
+          "p90": 68,
+          "firstDangerMean": 42,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.81,
+          "gamesRecoveredPct": 57.5,
+          "tightShopPct": 77.61,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 47.5,
+          "decisionRescues": 31,
+          "decisionRescuesPer100Floors": 2.58,
+          "highStressPct": 50.29,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "cautious-calm",
+          "mean": 58.94,
+          "p10": 48,
+          "p90": 78,
+          "firstDangerMean": 42,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.18,
+          "gamesRecoveredPct": 78.75,
+          "tightShopPct": 71.59,
+          "cannotFullyChargePct": 1.14,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 63.75,
+          "decisionRescues": 22,
+          "decisionRescuesPer100Floors": 1.53,
+          "highStressPct": 37.84,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-no-calm-4",
+          "mean": 57.39,
+          "p10": 48,
+          "p90": 68,
+          "firstDangerMean": 42,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.06,
+          "gamesRecoveredPct": 77.5,
+          "tightShopPct": 72.37,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 65,
+          "decisionRescues": 24,
+          "decisionRescuesPer100Floors": 1.83,
+          "highStressPct": 41.95,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-lookahead",
+          "mean": 72.5,
+          "p10": 49,
+          "p90": 105,
+          "firstDangerMean": 42,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.64,
+          "gamesRecoveredPct": 91.25,
+          "tightShopPct": 82.5,
+          "cannotFullyChargePct": 1,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 86.25,
+          "decisionRescues": 17,
+          "decisionRescuesPer100Floors": 0.67,
+          "highStressPct": 28.97,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-lookahead-6",
+          "mean": 72.63,
+          "p10": 49,
+          "p90": 101,
+          "firstDangerMean": 42,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.76,
+          "gamesRecoveredPct": 91.25,
+          "tightShopPct": 75.86,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 85,
+          "decisionRescues": 19,
+          "decisionRescuesPer100Floors": 0.75,
+          "highStressPct": 34.19,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "wave-pair-6",
+          "mean": 73.44,
+          "p10": 48,
+          "p90": 107,
+          "firstDangerMean": 42,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 1.75,
+          "gamesRecoveredPct": 86.25,
+          "tightShopPct": 63.33,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 82.5,
+          "decisionRescues": 26,
+          "decisionRescuesPer100Floors": 1,
+          "highStressPct": 35.88,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "release",
+      "context": "cash-poor",
+      "games": 480,
+      "policies": [
+        {
+          "id": "balanced-3",
+          "mean": 54.51,
+          "p10": 49,
+          "p90": 59,
+          "firstDangerMean": 49.11,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.13,
+          "gamesRecoveredPct": 11.25,
+          "tightShopPct": 100,
+          "cannotFullyChargePct": 16.67,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 55,
+          "decisionRescues": 14,
+          "decisionRescuesPer100Floors": 1.3,
+          "highStressPct": 36.26,
+          "deaths": {
+            "power": 2,
+            "agitation": 78,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "cautious-calm",
+          "mean": 59.5,
+          "p10": 49,
+          "p90": 69,
+          "firstDangerMean": 50.48,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.48,
+          "gamesRecoveredPct": 41.25,
+          "tightShopPct": 95.88,
+          "cannotFullyChargePct": 11.34,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 82.5,
+          "decisionRescues": 22,
+          "decisionRescuesPer100Floors": 1.49,
+          "highStressPct": 30.54,
+          "deaths": {
+            "power": 3,
+            "agitation": 77,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-no-calm-4",
+          "mean": 59.85,
+          "p10": 53,
+          "p90": 74,
+          "firstDangerMean": 50.19,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.51,
+          "gamesRecoveredPct": 45,
+          "tightShopPct": 96.97,
+          "cannotFullyChargePct": 13.13,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 91.25,
+          "decisionRescues": 19,
+          "decisionRescuesPer100Floors": 1.26,
+          "highStressPct": 32.1,
+          "deaths": {
+            "power": 3,
+            "agitation": 77,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-lookahead",
+          "mean": 72.93,
+          "p10": 57,
+          "p90": 98,
+          "firstDangerMean": 53.28,
+          "everDangerPct": 95,
+          "recoveriesPerGame": 1.02,
+          "gamesRecoveredPct": 68.75,
+          "tightShopPct": 93.1,
+          "cannotFullyChargePct": 11.82,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 98.75,
+          "decisionRescues": 21,
+          "decisionRescuesPer100Floors": 0.82,
+          "highStressPct": 26.04,
+          "deaths": {
+            "power": 9,
+            "agitation": 71,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-lookahead-6",
+          "mean": 69.18,
+          "p10": 52,
+          "p90": 96,
+          "firstDangerMean": 53.19,
+          "everDangerPct": 98.75,
+          "recoveriesPerGame": 0.73,
+          "gamesRecoveredPct": 50,
+          "tightShopPct": 88.51,
+          "cannotFullyChargePct": 3.45,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 92.5,
+          "decisionRescues": 13,
+          "decisionRescuesPer100Floors": 0.58,
+          "highStressPct": 26.13,
+          "deaths": {
+            "power": 3,
+            "agitation": 77,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "wave-pair-6",
+          "mean": 69.85,
+          "p10": 49,
+          "p90": 97,
+          "firstDangerMean": 51.89,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.79,
+          "gamesRecoveredPct": 47.5,
+          "tightShopPct": 85.56,
+          "cannotFullyChargePct": 2.78,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 87.5,
+          "decisionRescues": 13,
+          "decisionRescuesPer100Floors": 0.56,
+          "highStressPct": 33.71,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "release",
+      "context": "late-build",
+      "games": 480,
+      "policies": [
+        {
+          "id": "balanced-3",
+          "mean": 93.88,
+          "p10": 88,
+          "p90": 100,
+          "firstDangerMean": 87.2,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.05,
+          "gamesRecoveredPct": 5,
+          "tightShopPct": 55.77,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 46,
+          "decisionRescuesPer100Floors": 4.47,
+          "highStressPct": 52.62,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "cautious-calm",
+          "mean": 97.65,
+          "p10": 89,
+          "p90": 108,
+          "firstDangerMean": 89.3,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.1,
+          "gamesRecoveredPct": 10,
+          "tightShopPct": 62.35,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 23,
+          "decisionRescuesPer100Floors": 1.73,
+          "highStressPct": 47.37,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-no-calm-4",
+          "mean": 97.2,
+          "p10": 89,
+          "p90": 105,
+          "firstDangerMean": 89.78,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.04,
+          "gamesRecoveredPct": 3.75,
+          "tightShopPct": 60,
+          "cannotFullyChargePct": 1.25,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 23,
+          "decisionRescuesPer100Floors": 1.77,
+          "highStressPct": 47.69,
+          "deaths": {
+            "power": 0,
+            "agitation": 79,
+            "fuse": 1,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-lookahead",
+          "mean": 104.31,
+          "p10": 95,
+          "p90": 119,
+          "firstDangerMean": 92.74,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.15,
+          "gamesRecoveredPct": 13.75,
+          "tightShopPct": 59.42,
+          "cannotFullyChargePct": 0.72,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 9,
+          "decisionRescuesPer100Floors": 0.48,
+          "highStressPct": 42.79,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "contract-lookahead-6",
+          "mean": 102.16,
+          "p10": 95,
+          "p90": 113,
+          "firstDangerMean": 90.29,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.15,
+          "gamesRecoveredPct": 15,
+          "tightShopPct": 57.02,
+          "cannotFullyChargePct": 1.65,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 9,
+          "decisionRescuesPer100Floors": 0.53,
+          "highStressPct": 49.2,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        },
+        {
+          "id": "wave-pair-6",
+          "mean": 101,
+          "p10": 89,
+          "p90": 112,
+          "firstDangerMean": 88.84,
+          "everDangerPct": 100,
+          "recoveriesPerGame": 0.15,
+          "gamesRecoveredPct": 15,
+          "tightShopPct": 50,
+          "cannotFullyChargePct": 0,
+          "firstShopPassedPct": 0,
+          "reach20Pct": 100,
+          "reach50Pct": 100,
+          "decisionRescues": 10,
+          "decisionRescuesPer100Floors": 0.63,
+          "highStressPct": 51.31,
+          "deaths": {
+            "power": 0,
+            "agitation": 80,
+            "fuse": 0,
+            "censored": 0
+          }
+        }
+      ]
+    }
+  ],
+  "probeSummary": {
+    "cases": 239,
+    "zeroOrOneActionEscapes": 7,
+    "twoActionEscapes": 57,
+    "truncated": 0
+  },
+  "probes": [
+    {
+      "policy": "balanced-3",
+      "floor": 48,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "balanced-3",
+      "floor": 19,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "balanced-3",
+      "floor": 28,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "balanced-3",
+      "floor": 28,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "balanced-3",
+      "floor": 27,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "balanced-3",
+      "floor": 18,
+      "tested": 176,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "balanced-3",
+      "floor": 27,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "balanced-3",
+      "floor": 18,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "balanced-3",
+      "floor": 19,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "balanced-3",
+      "floor": 26,
+      "tested": 23,
+      "oneAction": true,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "balanced-3",
+      "floor": 38,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "balanced-3",
+      "floor": 18,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-6",
+      "floor": 77,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-6",
+      "floor": 67,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-6",
+      "floor": 76,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-6",
+      "floor": 106,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-6",
+      "floor": 96,
+      "tested": 22,
+      "oneAction": true,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-6",
+      "floor": 38,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-6",
+      "floor": 78,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-6",
+      "floor": 66,
+      "tested": 195,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-6",
+      "floor": 96,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-6",
+      "floor": 116,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-6",
+      "floor": 68,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-6",
+      "floor": 68,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "greedy-6",
+      "floor": 18,
+      "tested": 184,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "greedy-6",
+      "floor": 17,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "greedy-6",
+      "floor": 18,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "greedy-6",
+      "floor": 26,
+      "tested": 184,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "greedy-6",
+      "floor": 18,
+      "tested": 184,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "greedy-6",
+      "floor": 17,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "greedy-6",
+      "floor": 18,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "greedy-6",
+      "floor": 17,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "greedy-6",
+      "floor": 38,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "greedy-6",
+      "floor": 17,
+      "tested": 118,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "greedy-6",
+      "floor": 26,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "greedy-6",
+      "floor": 27,
+      "tested": 137,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "no-upgrades",
+      "floor": 37,
+      "tested": 152,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "no-upgrades",
+      "floor": 57,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "no-upgrades",
+      "floor": 67,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "no-upgrades",
+      "floor": 48,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "no-upgrades",
+      "floor": 57,
+      "tested": 206,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "no-upgrades",
+      "floor": 27,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "no-upgrades",
+      "floor": 57,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "no-upgrades",
+      "floor": 56,
+      "tested": 106,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "no-upgrades",
+      "floor": 57,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "no-upgrades",
+      "floor": 67,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "no-upgrades",
+      "floor": 86,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "no-upgrades",
+      "floor": 38,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-calm",
+      "floor": 97,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-calm",
+      "floor": 67,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-calm",
+      "floor": 66,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-calm",
+      "floor": 78,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-calm",
+      "floor": 96,
+      "tested": 151,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-calm",
+      "floor": 76,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-calm",
+      "floor": 98,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-calm",
+      "floor": 58,
+      "tested": 193,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-calm",
+      "floor": 78,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-calm",
+      "floor": 57,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-calm",
+      "floor": 68,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "cautious-calm",
+      "floor": 47,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "without-battery",
+      "floor": 77,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "without-battery",
+      "floor": 67,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "without-battery",
+      "floor": 76,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "without-battery",
+      "floor": 106,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "without-battery",
+      "floor": 96,
+      "tested": 22,
+      "oneAction": true,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "without-battery",
+      "floor": 38,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "without-battery",
+      "floor": 78,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "without-battery",
+      "floor": 66,
+      "tested": 195,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "without-battery",
+      "floor": 96,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "without-battery",
+      "floor": 116,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "without-battery",
+      "floor": 68,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "without-battery",
+      "floor": 68,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "musician-stack-4-12",
+      "floor": 97,
+      "tested": 101,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "musician-stack-4-12",
+      "floor": 48,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "musician-stack-4-12",
+      "floor": 76,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "musician-stack-4-12",
+      "floor": 96,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "musician-stack-4-12",
+      "floor": 67,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "musician-stack-4-12",
+      "floor": 48,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "musician-stack-4-12",
+      "floor": 18,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "musician-stack-4-12",
+      "floor": 58,
+      "tested": 143,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "musician-stack-4-12",
+      "floor": 103,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "musician-stack-4-12",
+      "floor": 38,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "musician-stack-4-12",
+      "floor": 28,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "musician-stack-4-12",
+      "floor": 19,
+      "tested": 203,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "nurse-stack-4-12",
+      "floor": 87,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "nurse-stack-4-12",
+      "floor": 58,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "nurse-stack-4-12",
+      "floor": 68,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "nurse-stack-4-12",
+      "floor": 58,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "nurse-stack-4-12",
+      "floor": 67,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "nurse-stack-4-12",
+      "floor": 38,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "nurse-stack-4-12",
+      "floor": 28,
+      "tested": 214,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "nurse-stack-4-12",
+      "floor": 68,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "nurse-stack-4-12",
+      "floor": 68,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "nurse-stack-4-12",
+      "floor": 48,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "nurse-stack-4-12",
+      "floor": 28,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "nurse-stack-4-12",
+      "floor": 57,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-4",
+      "floor": 67,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-4",
+      "floor": 57,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-4",
+      "floor": 68,
+      "tested": 214,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-4",
+      "floor": 88,
+      "tested": 26,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-4",
+      "floor": 96,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-4",
+      "floor": 78,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-4",
+      "floor": 58,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-4",
+      "floor": 57,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-4",
+      "floor": 58,
+      "tested": 22,
+      "oneAction": true,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-4",
+      "floor": 58,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-4",
+      "floor": 88,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-4",
+      "floor": 48,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-no-calm-4",
+      "floor": 38,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-no-calm-4",
+      "floor": 67,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-no-calm-4",
+      "floor": 68,
+      "tested": 214,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-no-calm-4",
+      "floor": 95,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-no-calm-4",
+      "floor": 38,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-no-calm-4",
+      "floor": 78,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-no-calm-4",
+      "floor": 47,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-no-calm-4",
+      "floor": 56,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-no-calm-4",
+      "floor": 48,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-no-calm-4",
+      "floor": 58,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-no-calm-4",
+      "floor": 57,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-no-calm-4",
+      "floor": 38,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-6",
+      "floor": 77,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-6",
+      "floor": 78,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-6",
+      "floor": 76,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-6",
+      "floor": 105,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-6",
+      "floor": 68,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-6",
+      "floor": 116,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-6",
+      "floor": 94,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-6",
+      "floor": 58,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-6",
+      "floor": 58,
+      "tested": 184,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-6",
+      "floor": 118,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-6",
+      "floor": 117,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-mixed-6",
+      "floor": 98,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-police-mixed",
+      "floor": 38,
+      "tested": 155,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-police-mixed",
+      "floor": 77,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-police-mixed",
+      "floor": 78,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-police-mixed",
+      "floor": 94,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-police-mixed",
+      "floor": 93,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-police-mixed",
+      "floor": 76,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-police-mixed",
+      "floor": 58,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-police-mixed",
+      "floor": 58,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-police-mixed",
+      "floor": 48,
+      "tested": 172,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-police-mixed",
+      "floor": 28,
+      "tested": 218,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-police-mixed",
+      "floor": 57,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-police-mixed",
+      "floor": 58,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lovers-mixed",
+      "floor": 58,
+      "tested": 2,
+      "oneAction": true,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lovers-mixed",
+      "floor": 67,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lovers-mixed",
+      "floor": 48,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lovers-mixed",
+      "floor": 67,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lovers-mixed",
+      "floor": 58,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lovers-mixed",
+      "floor": 117,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lovers-mixed",
+      "floor": 37,
+      "tested": 207,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lovers-mixed",
+      "floor": 56,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lovers-mixed",
+      "floor": 57,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lovers-mixed",
+      "floor": 123,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lovers-mixed",
+      "floor": 58,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lovers-mixed",
+      "floor": 78,
+      "tested": 16,
+      "oneAction": true,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-calming-mixed",
+      "floor": 78,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-calming-mixed",
+      "floor": 58,
+      "tested": 196,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-calming-mixed",
+      "floor": 27,
+      "tested": 198,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-calming-mixed",
+      "floor": 92,
+      "tested": 175,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-calming-mixed",
+      "floor": 67,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-calming-mixed",
+      "floor": 67,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-calming-mixed",
+      "floor": 67,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-calming-mixed",
+      "floor": 57,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-calming-mixed",
+      "floor": 48,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-calming-mixed",
+      "floor": 108,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-calming-mixed",
+      "floor": 96,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-calming-mixed",
+      "floor": 57,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead",
+      "floor": 58,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead",
+      "floor": 57,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead",
+      "floor": 68,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead",
+      "floor": 64,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead",
+      "floor": 68,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead",
+      "floor": 108,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead",
+      "floor": 106,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead",
+      "floor": 68,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead",
+      "floor": 68,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead",
+      "floor": 97,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead",
+      "floor": 95,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead",
+      "floor": 108,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-no-calm",
+      "floor": 58,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-no-calm",
+      "floor": 57,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-no-calm",
+      "floor": 106,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-no-calm",
+      "floor": 27,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-no-calm",
+      "floor": 116,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-no-calm",
+      "floor": 88,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-no-calm",
+      "floor": 68,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-no-calm",
+      "floor": 97,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-no-calm",
+      "floor": 88,
+      "tested": 189,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-no-calm",
+      "floor": 77,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-no-calm",
+      "floor": 108,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-6",
+      "floor": 67,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-6",
+      "floor": 97,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-6",
+      "floor": 88,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-6",
+      "floor": 113,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-6",
+      "floor": 68,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-6",
+      "floor": 127,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-6",
+      "floor": 58,
+      "tested": 198,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-6",
+      "floor": 130,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-6",
+      "floor": 108,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-6",
+      "floor": 107,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-6",
+      "floor": 111,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "contract-lookahead-6",
+      "floor": 136,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-4",
+      "floor": 97,
+      "tested": 81,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-4",
+      "floor": 96,
+      "tested": 16,
+      "oneAction": true,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-4",
+      "floor": 97,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-4",
+      "floor": 105,
+      "tested": 185,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-4",
+      "floor": 88,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-4",
+      "floor": 67,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-4",
+      "floor": 116,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-4",
+      "floor": 57,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-4",
+      "floor": 67,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-4",
+      "floor": 107,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-4",
+      "floor": 100,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-4",
+      "floor": 108,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-6",
+      "floor": 108,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-6",
+      "floor": 128,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-6",
+      "floor": 120,
+      "tested": 205,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-6",
+      "floor": 98,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-6",
+      "floor": 118,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-6",
+      "floor": 116,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-6",
+      "floor": 133,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-6",
+      "floor": 137,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-6",
+      "floor": 128,
+      "tested": 109,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-6",
+      "floor": 126,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-6",
+      "floor": 111,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "wave-pair-6",
+      "floor": 128,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "rest-relay-calm",
+      "floor": 87,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "rest-relay-calm",
+      "floor": 57,
+      "tested": 209,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "rest-relay-calm",
+      "floor": 68,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "rest-relay-calm",
+      "floor": 38,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "rest-relay-calm",
+      "floor": 67,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "rest-relay-calm",
+      "floor": 57,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "rest-relay-calm",
+      "floor": 48,
+      "tested": 220,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "rest-relay-calm",
+      "floor": 77,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "rest-relay-calm",
+      "floor": 76,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "rest-relay-calm",
+      "floor": 37,
+      "tested": 182,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    },
+    {
+      "policy": "rest-relay-calm",
+      "floor": 67,
+      "tested": 211,
+      "oneAction": false,
+      "twoActions": false,
+      "truncated": false
+    },
+    {
+      "policy": "rest-relay-calm",
+      "floor": 58,
+      "tested": 208,
+      "oneAction": false,
+      "twoActions": true,
+      "truncated": false
+    }
+  ],
+  "exposure": [
+    {
+      "id": "balanced-3",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 10.399999999999991
+        },
+        "11": {
+          "steps": 2436,
+          "danger": 391,
+          "rescues": 20,
+          "stressRatio": 565.7333333333344
+        },
+        "21": {
+          "steps": 1701,
+          "danger": 510,
+          "rescues": 35,
+          "stressRatio": 823.6999999999982
+        },
+        "31": {
+          "steps": 971,
+          "danger": 260,
+          "rescues": 23,
+          "stressRatio": 463.9952380952375
+        },
+        "41": {
+          "steps": 577,
+          "danger": 209,
+          "rescues": 16,
+          "stressRatio": 318.2190476190478
+        },
+        "51": {
+          "steps": 269,
+          "danger": 160,
+          "rescues": 8,
+          "stressRatio": 183.00793650793636
+        },
+        "61": {
+          "steps": 72,
+          "danger": 48,
+          "rescues": 1,
+          "stressRatio": 51.23492063492066
+        },
+        "71": {
+          "steps": 32,
+          "danger": 21,
+          "rescues": 0,
+          "stressRatio": 23.76190476190476
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 2442,
+          "danger": 268,
+          "stressRatio": 527.8174603174604
+        },
+        "build": {
+          "steps": 2677,
+          "danger": 149,
+          "stressRatio": 519.0888888888858
+        },
+        "peak": {
+          "steps": 2529,
+          "danger": 951,
+          "stressRatio": 1148.307936507935
+        },
+        "shop": {
+          "steps": 660,
+          "danger": 231,
+          "stressRatio": 244.838095238095
+        }
+      }
+    },
+    {
+      "id": "cautious-6",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 11.399999999999983
+        },
+        "11": {
+          "steps": 2490,
+          "danger": 262,
+          "rescues": 8,
+          "stressRatio": 517.2888888888868
+        },
+        "21": {
+          "steps": 2382,
+          "danger": 266,
+          "rescues": 8,
+          "stressRatio": 664.4761904761858
+        },
+        "31": {
+          "steps": 2213,
+          "danger": 208,
+          "rescues": 8,
+          "stressRatio": 592.2789682539656
+        },
+        "41": {
+          "steps": 2069,
+          "danger": 222,
+          "rescues": 8,
+          "stressRatio": 602.7007936507918
+        },
+        "51": {
+          "steps": 1881,
+          "danger": 425,
+          "rescues": 26,
+          "stressRatio": 777.2464285714266
+        },
+        "61": {
+          "steps": 1386,
+          "danger": 477,
+          "rescues": 19,
+          "stressRatio": 718.8018518518513
+        },
+        "71": {
+          "steps": 902,
+          "danger": 345,
+          "rescues": 20,
+          "stressRatio": 500.5939153439148
+        },
+        "81": {
+          "steps": 585,
+          "danger": 240,
+          "rescues": 5,
+          "stressRatio": 338.3073833573833
+        },
+        "91": {
+          "steps": 310,
+          "danger": 200,
+          "rescues": 8,
+          "stressRatio": 212.55994468494458
+        },
+        "101": {
+          "steps": 85,
+          "danger": 57,
+          "rescues": 2,
+          "stressRatio": 61.42962962962961
+        },
+        "111": {
+          "steps": 17,
+          "danger": 16,
+          "rescues": 0,
+          "stressRatio": 14.414141414141415
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 4927,
+          "danger": 442,
+          "stressRatio": 1090.649206349206
+        },
+        "build": {
+          "steps": 5163,
+          "danger": 361,
+          "stressRatio": 1016.4198893698858
+        },
+        "peak": {
+          "steps": 5004,
+          "danger": 1505,
+          "stressRatio": 2265.4870370370386
+        },
+        "shop": {
+          "steps": 1476,
+          "danger": 410,
+          "stressRatio": 638.942003367002
+        }
+      }
+    },
+    {
+      "id": "greedy-6",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 21,
+          "rescues": 1,
+          "stressRatio": 325.3333333333301
+        },
+        "11": {
+          "steps": 2202,
+          "danger": 661,
+          "rescues": 57,
+          "stressRatio": 951.7222222222206
+        },
+        "21": {
+          "steps": 620,
+          "danger": 308,
+          "rescues": 29,
+          "stressRatio": 397.8349206349213
+        },
+        "31": {
+          "steps": 160,
+          "danger": 63,
+          "rescues": 1,
+          "stressRatio": 94.43650793650795
+        },
+        "41": {
+          "steps": 55,
+          "danger": 26,
+          "rescues": 4,
+          "stressRatio": 33.78571428571428
+        },
+        "51": {
+          "steps": 21,
+          "danger": 14,
+          "rescues": 0,
+          "stressRatio": 17.113756613756614
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 1562,
+          "danger": 109,
+          "stressRatio": 306.820502645502
+        },
+        "build": {
+          "steps": 1791,
+          "danger": 212,
+          "stressRatio": 522.7798941798908
+        },
+        "peak": {
+          "steps": 1600,
+          "danger": 678,
+          "stressRatio": 855.3867724867732
+        },
+        "shop": {
+          "steps": 355,
+          "danger": 94,
+          "stressRatio": 135.23928571428573
+        }
+      }
+    },
+    {
+      "id": "no-upgrades",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 11.399999999999983
+        },
+        "11": {
+          "steps": 2489,
+          "danger": 264,
+          "rescues": 5,
+          "stressRatio": 517.4666666666647
+        },
+        "21": {
+          "steps": 2339,
+          "danger": 379,
+          "rescues": 26,
+          "stressRatio": 832.4000000000025
+        },
+        "31": {
+          "steps": 1900,
+          "danger": 364,
+          "rescues": 32,
+          "stressRatio": 727.8000000000014
+        },
+        "41": {
+          "steps": 1413,
+          "danger": 310,
+          "rescues": 26,
+          "stressRatio": 591.3999999999991
+        },
+        "51": {
+          "steps": 901,
+          "danger": 323,
+          "rescues": 29,
+          "stressRatio": 501.2000000000006
+        },
+        "61": {
+          "steps": 302,
+          "danger": 118,
+          "rescues": 16,
+          "stressRatio": 182.19999999999973
+        },
+        "71": {
+          "steps": 143,
+          "danger": 63,
+          "rescues": 5,
+          "stressRatio": 84.86666666666663
+        },
+        "81": {
+          "steps": 43,
+          "danger": 15,
+          "rescues": 1,
+          "stressRatio": 23.533333333333342
+        },
+        "91": {
+          "steps": 13,
+          "danger": 7,
+          "rescues": 0,
+          "stressRatio": 9.399999999999999
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 3476,
+          "danger": 237,
+          "stressRatio": 812.06666666667
+        },
+        "build": {
+          "steps": 3725,
+          "danger": 105,
+          "stressRatio": 638.4666666666673
+        },
+        "peak": {
+          "steps": 3600,
+          "danger": 1230,
+          "stressRatio": 1643.4666666666594
+        },
+        "shop": {
+          "steps": 992,
+          "danger": 271,
+          "stressRatio": 387.6666666666675
+        }
+      }
+    },
+    {
+      "id": "cautious-calm",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 11.399999999999983
+        },
+        "11": {
+          "steps": 2496,
+          "danger": 208,
+          "rescues": 4,
+          "stressRatio": 484.5111111111093
+        },
+        "21": {
+          "steps": 2441,
+          "danger": 236,
+          "rescues": 6,
+          "stressRatio": 671.0238095238051
+        },
+        "31": {
+          "steps": 2265,
+          "danger": 211,
+          "rescues": 8,
+          "stressRatio": 601.4785714285701
+        },
+        "41": {
+          "steps": 2126,
+          "danger": 198,
+          "rescues": 7,
+          "stressRatio": 603.1937830687816
+        },
+        "51": {
+          "steps": 1965,
+          "danger": 399,
+          "rescues": 28,
+          "stressRatio": 790.1031746031734
+        },
+        "61": {
+          "steps": 1539,
+          "danger": 462,
+          "rescues": 33,
+          "stressRatio": 766.4818903318908
+        },
+        "71": {
+          "steps": 985,
+          "danger": 345,
+          "rescues": 16,
+          "stressRatio": 549.8194083694078
+        },
+        "81": {
+          "steps": 655,
+          "danger": 242,
+          "rescues": 10,
+          "stressRatio": 385.2759740259738
+        },
+        "91": {
+          "steps": 300,
+          "danger": 181,
+          "rescues": 9,
+          "stressRatio": 212.61924001923973
+        },
+        "101": {
+          "steps": 57,
+          "danger": 48,
+          "rescues": 3,
+          "stressRatio": 46.97037037037038
+        },
+        "111": {
+          "steps": 9,
+          "danger": 7,
+          "rescues": 0,
+          "stressRatio": 6.633333333333333
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 5077,
+          "danger": 377,
+          "stressRatio": 1145.0087301587262
+        },
+        "build": {
+          "steps": 5316,
+          "danger": 315,
+          "stressRatio": 1052.97965367965
+        },
+        "peak": {
+          "steps": 5168,
+          "danger": 1477,
+          "stressRatio": 2287.0190115440105
+        },
+        "shop": {
+          "steps": 1527,
+          "danger": 368,
+          "stressRatio": 644.5032708032693
+        }
+      }
+    },
+    {
+      "id": "without-battery",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 11.399999999999983
+        },
+        "11": {
+          "steps": 2490,
+          "danger": 260,
+          "rescues": 8,
+          "stressRatio": 515.6666666666646
+        },
+        "21": {
+          "steps": 2380,
+          "danger": 270,
+          "rescues": 8,
+          "stressRatio": 668.9095238095191
+        },
+        "31": {
+          "steps": 2192,
+          "danger": 214,
+          "rescues": 7,
+          "stressRatio": 599.1805555555526
+        },
+        "41": {
+          "steps": 2036,
+          "danger": 242,
+          "rescues": 8,
+          "stressRatio": 615.3416666666647
+        },
+        "51": {
+          "steps": 1832,
+          "danger": 418,
+          "rescues": 25,
+          "stressRatio": 773.2924603174578
+        },
+        "61": {
+          "steps": 1346,
+          "danger": 490,
+          "rescues": 18,
+          "stressRatio": 725.5591269841264
+        },
+        "71": {
+          "steps": 856,
+          "danger": 358,
+          "rescues": 20,
+          "stressRatio": 504.5293650793644
+        },
+        "81": {
+          "steps": 506,
+          "danger": 230,
+          "rescues": 5,
+          "stressRatio": 310.84609187109163
+        },
+        "91": {
+          "steps": 243,
+          "danger": 174,
+          "rescues": 7,
+          "stressRatio": 175.14908609908588
+        },
+        "101": {
+          "steps": 49,
+          "danger": 35,
+          "rescues": 2,
+          "stressRatio": 36.17037037037037
+        },
+        "111": {
+          "steps": 7,
+          "danger": 7,
+          "rescues": 0,
+          "stressRatio": 6
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 4811,
+          "danger": 437,
+          "stressRatio": 1078.602284752284
+        },
+        "build": {
+          "steps": 5049,
+          "danger": 358,
+          "stressRatio": 1012.2792328042303
+        },
+        "peak": {
+          "steps": 4890,
+          "danger": 1497,
+          "stressRatio": 2226.582575757576
+        },
+        "shop": {
+          "steps": 1437,
+          "danger": 406,
+          "stressRatio": 624.5808201058187
+        }
+      }
+    },
+    {
+      "id": "musician-stack-4-12",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 3.133333333333336
+        },
+        "11": {
+          "steps": 2489,
+          "danger": 194,
+          "rescues": 6,
+          "stressRatio": 427.9555555555544
+        },
+        "21": {
+          "steps": 2331,
+          "danger": 228,
+          "rescues": 6,
+          "stressRatio": 598.3222222222199
+        },
+        "31": {
+          "steps": 2131,
+          "danger": 220,
+          "rescues": 11,
+          "stressRatio": 577.2884920634896
+        },
+        "41": {
+          "steps": 1974,
+          "danger": 244,
+          "rescues": 13,
+          "stressRatio": 594.7424603174603
+        },
+        "51": {
+          "steps": 1761,
+          "danger": 410,
+          "rescues": 22,
+          "stressRatio": 779.0373015873001
+        },
+        "61": {
+          "steps": 1150,
+          "danger": 438,
+          "rescues": 24,
+          "stressRatio": 627.9252645502643
+        },
+        "71": {
+          "steps": 666,
+          "danger": 289,
+          "rescues": 12,
+          "stressRatio": 389.95899470899457
+        },
+        "81": {
+          "steps": 348,
+          "danger": 160,
+          "rescues": 5,
+          "stressRatio": 221.48306878306877
+        },
+        "91": {
+          "steps": 140,
+          "danger": 88,
+          "rescues": 5,
+          "stressRatio": 96.59179894179896
+        },
+        "101": {
+          "steps": 28,
+          "danger": 20,
+          "rescues": 1,
+          "stressRatio": 21.40648148148148
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 4525,
+          "danger": 364,
+          "stressRatio": 947.1671957671914
+        },
+        "build": {
+          "steps": 4771,
+          "danger": 248,
+          "stressRatio": 822.0883597883575
+        },
+        "peak": {
+          "steps": 4625,
+          "danger": 1327,
+          "stressRatio": 2010.151851851851
+        },
+        "shop": {
+          "steps": 1347,
+          "danger": 352,
+          "stressRatio": 558.4375661375672
+        }
+      }
+    },
+    {
+      "id": "nurse-stack-4-12",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 6.2
+        },
+        "11": {
+          "steps": 2495,
+          "danger": 247,
+          "rescues": 4,
+          "stressRatio": 463.8222222222215
+        },
+        "21": {
+          "steps": 2409,
+          "danger": 297,
+          "rescues": 14,
+          "stressRatio": 688.288888888886
+        },
+        "31": {
+          "steps": 2068,
+          "danger": 243,
+          "rescues": 17,
+          "stressRatio": 630.0571428571407
+        },
+        "41": {
+          "steps": 1850,
+          "danger": 244,
+          "rescues": 12,
+          "stressRatio": 603.4051587301594
+        },
+        "51": {
+          "steps": 1596,
+          "danger": 431,
+          "rescues": 24,
+          "stressRatio": 739.4502645502638
+        },
+        "61": {
+          "steps": 1044,
+          "danger": 407,
+          "rescues": 22,
+          "stressRatio": 599.871031746031
+        },
+        "71": {
+          "steps": 535,
+          "danger": 250,
+          "rescues": 12,
+          "stressRatio": 329.6871693121691
+        },
+        "81": {
+          "steps": 255,
+          "danger": 164,
+          "rescues": 7,
+          "stressRatio": 172.12896825396822
+        },
+        "91": {
+          "steps": 79,
+          "danger": 62,
+          "rescues": 3,
+          "stressRatio": 61.813492063492056
+        },
+        "101": {
+          "steps": 14,
+          "danger": 13,
+          "rescues": 1,
+          "stressRatio": 11.916666666666668
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 4323,
+          "danger": 358,
+          "stressRatio": 957.8880952380922
+        },
+        "build": {
+          "steps": 4563,
+          "danger": 247,
+          "stressRatio": 829.5464285714268
+        },
+        "peak": {
+          "steps": 4433,
+          "danger": 1391,
+          "stressRatio": 1980.847751322746
+        },
+        "shop": {
+          "steps": 1276,
+          "danger": 362,
+          "stressRatio": 538.3587301587307
+        }
+      }
+    },
+    {
+      "id": "contract-mixed-4",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 5.333333333333332
+        },
+        "11": {
+          "steps": 2498,
+          "danger": 245,
+          "rescues": 7,
+          "stressRatio": 451.5777777777771
+        },
+        "21": {
+          "steps": 2456,
+          "danger": 255,
+          "rescues": 8,
+          "stressRatio": 642.8031746031722
+        },
+        "31": {
+          "steps": 2280,
+          "danger": 235,
+          "rescues": 10,
+          "stressRatio": 603.6174603174575
+        },
+        "41": {
+          "steps": 2132,
+          "danger": 206,
+          "rescues": 10,
+          "stressRatio": 594.396031746031
+        },
+        "51": {
+          "steps": 1945,
+          "danger": 398,
+          "rescues": 32,
+          "stressRatio": 743.9055555555557
+        },
+        "61": {
+          "steps": 1425,
+          "danger": 476,
+          "rescues": 23,
+          "stressRatio": 686.9694444444438
+        },
+        "71": {
+          "steps": 800,
+          "danger": 209,
+          "rescues": 25,
+          "stressRatio": 365.5433862433864
+        },
+        "81": {
+          "steps": 518,
+          "danger": 159,
+          "rescues": 15,
+          "stressRatio": 255.79060846560844
+        },
+        "91": {
+          "steps": 286,
+          "danger": 139,
+          "rescues": 6,
+          "stressRatio": 180.50753968253983
+        },
+        "101": {
+          "steps": 56,
+          "danger": 23,
+          "rescues": 3,
+          "stressRatio": 32.36574074074074
+        },
+        "111": {
+          "steps": 34,
+          "danger": 15,
+          "rescues": 2,
+          "stressRatio": 22.762962962962963
+        },
+        "121": {
+          "steps": 10,
+          "danger": 10,
+          "rescues": 2,
+          "stressRatio": 7.7333333333333325
+        },
+        "131": {
+          "steps": 3,
+          "danger": 3,
+          "rescues": 0,
+          "stressRatio": 2.9000000000000004
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 4975,
+          "danger": 383,
+          "stressRatio": 1075.7548941798946
+        },
+        "build": {
+          "steps": 5196,
+          "danger": 255,
+          "stressRatio": 845.5703703703718
+        },
+        "peak": {
+          "steps": 5029,
+          "danger": 1363,
+          "stressRatio": 2093.302513227511
+        },
+        "shop": {
+          "steps": 1493,
+          "danger": 372,
+          "stressRatio": 581.5785714285709
+        }
+      }
+    },
+    {
+      "id": "contract-no-calm-4",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 5.333333333333332
+        },
+        "11": {
+          "steps": 2496,
+          "danger": 256,
+          "rescues": 8,
+          "stressRatio": 454.666666666666
+        },
+        "21": {
+          "steps": 2410,
+          "danger": 303,
+          "rescues": 11,
+          "stressRatio": 728.9333333333349
+        },
+        "31": {
+          "steps": 2132,
+          "danger": 269,
+          "rescues": 10,
+          "stressRatio": 629.5333333333331
+        },
+        "41": {
+          "steps": 1818,
+          "danger": 232,
+          "rescues": 15,
+          "stressRatio": 549.5999999999981
+        },
+        "51": {
+          "steps": 1466,
+          "danger": 380,
+          "rescues": 28,
+          "stressRatio": 626.5999999999997
+        },
+        "61": {
+          "steps": 799,
+          "danger": 299,
+          "rescues": 22,
+          "stressRatio": 413.7333333333338
+        },
+        "71": {
+          "steps": 350,
+          "danger": 125,
+          "rescues": 7,
+          "stressRatio": 178.59999999999988
+        },
+        "81": {
+          "steps": 169,
+          "danger": 53,
+          "rescues": 4,
+          "stressRatio": 80.8
+        },
+        "91": {
+          "steps": 64,
+          "danger": 30,
+          "rescues": 1,
+          "stressRatio": 36.599999999999994
+        },
+        "101": {
+          "steps": 4,
+          "danger": 4,
+          "rescues": 1,
+          "stressRatio": 3.533333333333333
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 4145,
+          "danger": 298,
+          "stressRatio": 894.933333333338
+        },
+        "build": {
+          "steps": 4385,
+          "danger": 173,
+          "stressRatio": 648.7333333333363
+        },
+        "peak": {
+          "steps": 4211,
+          "danger": 1179,
+          "stressRatio": 1728.3999999999996
+        },
+        "shop": {
+          "steps": 1217,
+          "danger": 301,
+          "stressRatio": 435.8666666666674
+        }
+      }
+    },
+    {
+      "id": "contract-mixed-6",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 11.399999999999983
+        },
+        "11": {
+          "steps": 2489,
+          "danger": 244,
+          "rescues": 7,
+          "stressRatio": 495.0999999999976
+        },
+        "21": {
+          "steps": 2374,
+          "danger": 222,
+          "rescues": 8,
+          "stressRatio": 599.5349206349179
+        },
+        "31": {
+          "steps": 2222,
+          "danger": 139,
+          "rescues": 3,
+          "stressRatio": 480.81230158729994
+        },
+        "41": {
+          "steps": 2157,
+          "danger": 110,
+          "rescues": 1,
+          "stressRatio": 440.14682539682366
+        },
+        "51": {
+          "steps": 2098,
+          "danger": 250,
+          "rescues": 21,
+          "stressRatio": 609.875661375658
+        },
+        "61": {
+          "steps": 1801,
+          "danger": 323,
+          "rescues": 27,
+          "stressRatio": 665.1428571428551
+        },
+        "71": {
+          "steps": 1520,
+          "danger": 269,
+          "rescues": 11,
+          "stressRatio": 593.9855820105809
+        },
+        "81": {
+          "steps": 1294,
+          "danger": 236,
+          "rescues": 14,
+          "stressRatio": 523.7993626743629
+        },
+        "91": {
+          "steps": 1025,
+          "danger": 356,
+          "rescues": 12,
+          "stressRatio": 545.6162337662341
+        },
+        "101": {
+          "steps": 592,
+          "danger": 372,
+          "rescues": 18,
+          "stressRatio": 419.1496632996634
+        },
+        "111": {
+          "steps": 194,
+          "danger": 160,
+          "rescues": 9,
+          "stressRatio": 156.51506734006725
+        },
+        "121": {
+          "steps": 35,
+          "danger": 35,
+          "rescues": 2,
+          "stressRatio": 29.055555555555557
+        },
+        "131": {
+          "steps": 7,
+          "danger": 7,
+          "rescues": 1,
+          "stressRatio": 6.4
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 5984,
+          "danger": 430,
+          "stressRatio": 1206.428210678207
+        },
+        "build": {
+          "steps": 6203,
+          "danger": 374,
+          "stressRatio": 1071.7331529581493
+        },
+        "peak": {
+          "steps": 6041,
+          "danger": 1518,
+          "stressRatio": 2556.9977152477204
+        },
+        "shop": {
+          "steps": 1830,
+          "danger": 401,
+          "stressRatio": 741.3749518999518
+        }
+      }
+    },
+    {
+      "id": "contract-police-mixed",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 8.4
+        },
+        "11": {
+          "steps": 2492,
+          "danger": 290,
+          "rescues": 4,
+          "stressRatio": 486.39999999999935
+        },
+        "21": {
+          "steps": 2380,
+          "danger": 306,
+          "rescues": 14,
+          "stressRatio": 707.4492063492066
+        },
+        "31": {
+          "steps": 2135,
+          "danger": 265,
+          "rescues": 8,
+          "stressRatio": 606.8658730158695
+        },
+        "41": {
+          "steps": 1869,
+          "danger": 224,
+          "rescues": 8,
+          "stressRatio": 560.247222222221
+        },
+        "51": {
+          "steps": 1595,
+          "danger": 359,
+          "rescues": 18,
+          "stressRatio": 654.4539682539684
+        },
+        "61": {
+          "steps": 983,
+          "danger": 305,
+          "rescues": 15,
+          "stressRatio": 483.7408730158726
+        },
+        "71": {
+          "steps": 598,
+          "danger": 199,
+          "rescues": 12,
+          "stressRatio": 293.03955026455014
+        },
+        "81": {
+          "steps": 395,
+          "danger": 123,
+          "rescues": 4,
+          "stressRatio": 203.64484126984124
+        },
+        "91": {
+          "steps": 213,
+          "danger": 100,
+          "rescues": 3,
+          "stressRatio": 130.15674603174605
+        },
+        "101": {
+          "steps": 63,
+          "danger": 46,
+          "rescues": 2,
+          "stressRatio": 46.08730158730158
+        },
+        "111": {
+          "steps": 17,
+          "danger": 15,
+          "rescues": 0,
+          "stressRatio": 13.654761904761905
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 4451,
+          "danger": 334,
+          "stressRatio": 955.40595238095
+        },
+        "build": {
+          "steps": 4684,
+          "danger": 233,
+          "stressRatio": 750.1123015873003
+        },
+        "peak": {
+          "steps": 4535,
+          "danger": 1300,
+          "stressRatio": 1950.0683862433852
+        },
+        "shop": {
+          "steps": 1320,
+          "danger": 365,
+          "stressRatio": 538.553703703704
+        }
+      }
+    },
+    {
+      "id": "contract-lovers-mixed",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 7.333333333333335
+        },
+        "11": {
+          "steps": 2496,
+          "danger": 283,
+          "rescues": 2,
+          "stressRatio": 494.2777777777772
+        },
+        "21": {
+          "steps": 2414,
+          "danger": 286,
+          "rescues": 9,
+          "stressRatio": 689.6063492063491
+        },
+        "31": {
+          "steps": 2155,
+          "danger": 256,
+          "rescues": 11,
+          "stressRatio": 604.3365079365058
+        },
+        "41": {
+          "steps": 1932,
+          "danger": 210,
+          "rescues": 8,
+          "stressRatio": 538.4242063492054
+        },
+        "51": {
+          "steps": 1740,
+          "danger": 346,
+          "rescues": 20,
+          "stressRatio": 666.3916666666664
+        },
+        "61": {
+          "steps": 1226,
+          "danger": 343,
+          "rescues": 18,
+          "stressRatio": 570.1705026455021
+        },
+        "71": {
+          "steps": 838,
+          "danger": 263,
+          "rescues": 15,
+          "stressRatio": 392.31309523809495
+        },
+        "81": {
+          "steps": 580,
+          "danger": 166,
+          "rescues": 10,
+          "stressRatio": 280.9109788359788
+        },
+        "91": {
+          "steps": 354,
+          "danger": 159,
+          "rescues": 5,
+          "stressRatio": 207.77671957671964
+        },
+        "101": {
+          "steps": 133,
+          "danger": 93,
+          "rescues": 8,
+          "stressRatio": 95.7830687830688
+        },
+        "111": {
+          "steps": 33,
+          "danger": 26,
+          "rescues": 1,
+          "stressRatio": 25.912037037037038
+        },
+        "121": {
+          "steps": 4,
+          "danger": 4,
+          "rescues": 0,
+          "stressRatio": 3.6666666666666665
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 4807,
+          "danger": 392,
+          "stressRatio": 1056.7656084656048
+        },
+        "build": {
+          "steps": 5037,
+          "danger": 269,
+          "stressRatio": 830.2175925925899
+        },
+        "peak": {
+          "steps": 4874,
+          "danger": 1388,
+          "stressRatio": 2094.963095238095
+        },
+        "shop": {
+          "steps": 1437,
+          "danger": 386,
+          "stressRatio": 594.9566137566142
+        }
+      }
+    },
+    {
+      "id": "contract-calming-mixed",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 4.200000000000003
+        },
+        "11": {
+          "steps": 2495,
+          "danger": 225,
+          "rescues": 4,
+          "stressRatio": 454.0888888888879
+        },
+        "21": {
+          "steps": 2419,
+          "danger": 214,
+          "rescues": 5,
+          "stressRatio": 607.1539682539658
+        },
+        "31": {
+          "steps": 2212,
+          "danger": 194,
+          "rescues": 2,
+          "stressRatio": 559.9579365079347
+        },
+        "41": {
+          "steps": 2059,
+          "danger": 172,
+          "rescues": 5,
+          "stressRatio": 527.4698412698405
+        },
+        "51": {
+          "steps": 1893,
+          "danger": 358,
+          "rescues": 28,
+          "stressRatio": 690.307936507933
+        },
+        "61": {
+          "steps": 1376,
+          "danger": 416,
+          "rescues": 26,
+          "stressRatio": 646.0085978835971
+        },
+        "71": {
+          "steps": 927,
+          "danger": 282,
+          "rescues": 20,
+          "stressRatio": 446.14193121693046
+        },
+        "81": {
+          "steps": 633,
+          "danger": 204,
+          "rescues": 15,
+          "stressRatio": 304.90277777777766
+        },
+        "91": {
+          "steps": 411,
+          "danger": 182,
+          "rescues": 11,
+          "stressRatio": 234.85833333333338
+        },
+        "101": {
+          "steps": 182,
+          "danger": 103,
+          "rescues": 7,
+          "stressRatio": 116.44510582010581
+        },
+        "111": {
+          "steps": 59,
+          "danger": 41,
+          "rescues": 6,
+          "stressRatio": 45.47420634920635
+        },
+        "121": {
+          "steps": 4,
+          "danger": 4,
+          "rescues": 0,
+          "stressRatio": 3.7037037037037037
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 5034,
+          "danger": 377,
+          "stressRatio": 1062.12156084656
+        },
+        "build": {
+          "steps": 5266,
+          "danger": 296,
+          "stressRatio": 834.8999999999963
+        },
+        "peak": {
+          "steps": 5107,
+          "danger": 1363,
+          "stressRatio": 2140.795634920637
+        },
+        "shop": {
+          "steps": 1513,
+          "danger": 359,
+          "stressRatio": 602.896031746031
+        }
+      }
+    },
+    {
+      "id": "contract-lookahead",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 7.2666666666666675
+        },
+        "11": {
+          "steps": 2498,
+          "danger": 143,
+          "rescues": 1,
+          "stressRatio": 314.44444444444304
+        },
+        "21": {
+          "steps": 2471,
+          "danger": 166,
+          "rescues": 4,
+          "stressRatio": 450.242857142855
+        },
+        "31": {
+          "steps": 2406,
+          "danger": 191,
+          "rescues": 1,
+          "stressRatio": 498.06349206348966
+        },
+        "41": {
+          "steps": 2385,
+          "danger": 165,
+          "rescues": 2,
+          "stressRatio": 525.4746031746008
+        },
+        "51": {
+          "steps": 2282,
+          "danger": 334,
+          "rescues": 10,
+          "stressRatio": 704.5670634920606
+        },
+        "61": {
+          "steps": 1916,
+          "danger": 396,
+          "rescues": 7,
+          "stressRatio": 711.6087301587279
+        },
+        "71": {
+          "steps": 1469,
+          "danger": 265,
+          "rescues": 6,
+          "stressRatio": 512.4277777777771
+        },
+        "81": {
+          "steps": 1196,
+          "danger": 207,
+          "rescues": 9,
+          "stressRatio": 411.2428571428562
+        },
+        "91": {
+          "steps": 980,
+          "danger": 257,
+          "rescues": 4,
+          "stressRatio": 448.5105820105816
+        },
+        "101": {
+          "steps": 668,
+          "danger": 279,
+          "rescues": 9,
+          "stressRatio": 380.5119047619047
+        },
+        "111": {
+          "steps": 341,
+          "danger": 159,
+          "rescues": 2,
+          "stressRatio": 202.07539682539675
+        },
+        "121": {
+          "steps": 164,
+          "danger": 76,
+          "rescues": 4,
+          "stressRatio": 99.85595238095243
+        },
+        "131": {
+          "steps": 46,
+          "danger": 28,
+          "rescues": 3,
+          "stressRatio": 32.88955026455027
+        },
+        "141": {
+          "steps": 7,
+          "danger": 7,
+          "rescues": 0,
+          "stressRatio": 6.380952380952381
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 6307,
+          "danger": 550,
+          "stressRatio": 1332.9619047619065
+        },
+        "build": {
+          "steps": 6510,
+          "danger": 454,
+          "stressRatio": 1171.928439153438
+        },
+        "peak": {
+          "steps": 6317,
+          "danger": 1299,
+          "stressRatio": 2182.630820105823
+        },
+        "shop": {
+          "steps": 1945,
+          "danger": 370,
+          "stressRatio": 618.0416666666657
+        }
+      }
+    },
+    {
+      "id": "contract-lookahead-no-calm",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 7.2666666666666675
+        },
+        "11": {
+          "steps": 2497,
+          "danger": 152,
+          "rescues": 0,
+          "stressRatio": 318.79999999999853
+        },
+        "21": {
+          "steps": 2457,
+          "danger": 188,
+          "rescues": 8,
+          "stressRatio": 505.19999999999635
+        },
+        "31": {
+          "steps": 2356,
+          "danger": 235,
+          "rescues": 2,
+          "stressRatio": 550.866666666663
+        },
+        "41": {
+          "steps": 2289,
+          "danger": 237,
+          "rescues": 2,
+          "stressRatio": 591.3333333333311
+        },
+        "51": {
+          "steps": 2148,
+          "danger": 425,
+          "rescues": 16,
+          "stressRatio": 801.0000000000024
+        },
+        "61": {
+          "steps": 1701,
+          "danger": 344,
+          "rescues": 8,
+          "stressRatio": 647.9999999999986
+        },
+        "71": {
+          "steps": 1360,
+          "danger": 308,
+          "rescues": 9,
+          "stressRatio": 532.3333333333331
+        },
+        "81": {
+          "steps": 1005,
+          "danger": 174,
+          "rescues": 11,
+          "stressRatio": 358.53333333333296
+        },
+        "91": {
+          "steps": 724,
+          "danger": 192,
+          "rescues": 7,
+          "stressRatio": 335.9333333333331
+        },
+        "101": {
+          "steps": 409,
+          "danger": 181,
+          "rescues": 6,
+          "stressRatio": 234.06666666666646
+        },
+        "111": {
+          "steps": 164,
+          "danger": 91,
+          "rescues": 2,
+          "stressRatio": 105.59999999999997
+        },
+        "121": {
+          "steps": 26,
+          "danger": 9,
+          "rescues": 0,
+          "stressRatio": 15.4
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 5799,
+          "danger": 589,
+          "stressRatio": 1348.1333333333473
+        },
+        "build": {
+          "steps": 6010,
+          "danger": 401,
+          "stressRatio": 1106.200000000015
+        },
+        "peak": {
+          "steps": 5802,
+          "danger": 1202,
+          "stressRatio": 1999.6666666666717
+        },
+        "shop": {
+          "steps": 1775,
+          "danger": 344,
+          "stressRatio": 550.3333333333335
+        }
+      }
+    },
+    {
+      "id": "contract-lookahead-6",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 34.26666666666663
+        },
+        "11": {
+          "steps": 2496,
+          "danger": 227,
+          "rescues": 1,
+          "stressRatio": 457.2111111111083
+        },
+        "21": {
+          "steps": 2450,
+          "danger": 180,
+          "rescues": 1,
+          "stressRatio": 535.8126984126953
+        },
+        "31": {
+          "steps": 2379,
+          "danger": 156,
+          "rescues": 0,
+          "stressRatio": 495.4472222222191
+        },
+        "41": {
+          "steps": 2366,
+          "danger": 114,
+          "rescues": 2,
+          "stressRatio": 482.1992063492038
+        },
+        "51": {
+          "steps": 2325,
+          "danger": 238,
+          "rescues": 3,
+          "stressRatio": 645.7895502645484
+        },
+        "61": {
+          "steps": 2202,
+          "danger": 300,
+          "rescues": 10,
+          "stressRatio": 722.7637566137537
+        },
+        "71": {
+          "steps": 2051,
+          "danger": 299,
+          "rescues": 7,
+          "stressRatio": 676.6197089947059
+        },
+        "81": {
+          "steps": 1910,
+          "danger": 256,
+          "rescues": 6,
+          "stressRatio": 644.1599807599797
+        },
+        "91": {
+          "steps": 1726,
+          "danger": 423,
+          "rescues": 8,
+          "stressRatio": 785.9000120250124
+        },
+        "101": {
+          "steps": 1305,
+          "danger": 550,
+          "rescues": 14,
+          "stressRatio": 771.1369167869179
+        },
+        "111": {
+          "steps": 780,
+          "danger": 421,
+          "rescues": 9,
+          "stressRatio": 511.61619769119824
+        },
+        "121": {
+          "steps": 481,
+          "danger": 281,
+          "rescues": 2,
+          "stressRatio": 329.4827441077436
+        },
+        "131": {
+          "steps": 221,
+          "danger": 201,
+          "rescues": 2,
+          "stressRatio": 180.02626262626242
+        },
+        "141": {
+          "steps": 30,
+          "danger": 27,
+          "rescues": 0,
+          "stressRatio": 23.813888888888886
+        },
+        "151": {
+          "steps": 8,
+          "danger": 8,
+          "rescues": 0,
+          "stressRatio": 6.666666666666667
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 7475,
+          "danger": 725,
+          "stressRatio": 1730.4052789802881
+        },
+        "build": {
+          "steps": 7683,
+          "danger": 620,
+          "stressRatio": 1651.2200336700369
+        },
+        "peak": {
+          "steps": 7488,
+          "danger": 1821,
+          "stressRatio": 3023.6731361231377
+        },
+        "shop": {
+          "steps": 2334,
+          "danger": 515,
+          "stressRatio": 897.6141414141425
+        }
+      }
+    },
+    {
+      "id": "wave-pair-4",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 8.266666666666666
+        },
+        "11": {
+          "steps": 2499,
+          "danger": 221,
+          "rescues": 1,
+          "stressRatio": 397.94444444444343
+        },
+        "21": {
+          "steps": 2480,
+          "danger": 206,
+          "rescues": 7,
+          "stressRatio": 557.7634920634896
+        },
+        "31": {
+          "steps": 2402,
+          "danger": 184,
+          "rescues": 1,
+          "stressRatio": 506.04444444444135
+        },
+        "41": {
+          "steps": 2341,
+          "danger": 200,
+          "rescues": 4,
+          "stressRatio": 551.9071428571411
+        },
+        "51": {
+          "steps": 2236,
+          "danger": 273,
+          "rescues": 9,
+          "stressRatio": 686.5845238095217
+        },
+        "61": {
+          "steps": 1950,
+          "danger": 352,
+          "rescues": 9,
+          "stressRatio": 703.7916666666655
+        },
+        "71": {
+          "steps": 1592,
+          "danger": 256,
+          "rescues": 4,
+          "stressRatio": 601.0083333333322
+        },
+        "81": {
+          "steps": 1382,
+          "danger": 300,
+          "rescues": 8,
+          "stressRatio": 546.9574074074065
+        },
+        "91": {
+          "steps": 1063,
+          "danger": 379,
+          "rescues": 4,
+          "stressRatio": 562.8863756613754
+        },
+        "101": {
+          "steps": 599,
+          "danger": 285,
+          "rescues": 9,
+          "stressRatio": 351.22658730158713
+        },
+        "111": {
+          "steps": 325,
+          "danger": 170,
+          "rescues": 3,
+          "stressRatio": 199.7621693121691
+        },
+        "121": {
+          "steps": 162,
+          "danger": 84,
+          "rescues": 3,
+          "stressRatio": 100.48399470899473
+        },
+        "131": {
+          "steps": 76,
+          "danger": 61,
+          "rescues": 1,
+          "stressRatio": 56.976190476190496
+        },
+        "141": {
+          "steps": 14,
+          "danger": 13,
+          "rescues": 0,
+          "stressRatio": 12.291666666666668
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 6398,
+          "danger": 607,
+          "stressRatio": 1472.5293650793685
+        },
+        "build": {
+          "steps": 6606,
+          "danger": 487,
+          "stressRatio": 1256.5604497354516
+        },
+        "peak": {
+          "steps": 6394,
+          "danger": 1449,
+          "stressRatio": 2401.649206349203
+        },
+        "shop": {
+          "steps": 1973,
+          "danger": 441,
+          "stressRatio": 713.1560846560849
+        }
+      }
+    },
+    {
+      "id": "wave-pair-6",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 38.200000000000095
+        },
+        "11": {
+          "steps": 2499,
+          "danger": 275,
+          "rescues": 4,
+          "stressRatio": 507.9444444444419
+        },
+        "21": {
+          "steps": 2478,
+          "danger": 224,
+          "rescues": 6,
+          "stressRatio": 607.674603174601
+        },
+        "31": {
+          "steps": 2417,
+          "danger": 175,
+          "rescues": 2,
+          "stressRatio": 554.827777777776
+        },
+        "41": {
+          "steps": 2390,
+          "danger": 157,
+          "rescues": 0,
+          "stressRatio": 525.5773809523783
+        },
+        "51": {
+          "steps": 2367,
+          "danger": 275,
+          "rescues": 9,
+          "stressRatio": 668.1436507936473
+        },
+        "61": {
+          "steps": 2266,
+          "danger": 321,
+          "rescues": 5,
+          "stressRatio": 750.96706349206
+        },
+        "71": {
+          "steps": 2181,
+          "danger": 338,
+          "rescues": 5,
+          "stressRatio": 770.5473544973528
+        },
+        "81": {
+          "steps": 2127,
+          "danger": 299,
+          "rescues": 4,
+          "stressRatio": 724.2605940355928
+        },
+        "91": {
+          "steps": 1971,
+          "danger": 518,
+          "rescues": 10,
+          "stressRatio": 966.8914141414153
+        },
+        "101": {
+          "steps": 1585,
+          "danger": 852,
+          "rescues": 11,
+          "stressRatio": 1029.5708513708535
+        },
+        "111": {
+          "steps": 1085,
+          "danger": 690,
+          "rescues": 16,
+          "stressRatio": 766.0920033670048
+        },
+        "121": {
+          "steps": 581,
+          "danger": 424,
+          "rescues": 9,
+          "stressRatio": 437.510942760943
+        },
+        "131": {
+          "steps": 170,
+          "danger": 132,
+          "rescues": 5,
+          "stressRatio": 131.81439393939385
+        },
+        "141": {
+          "steps": 25,
+          "danger": 25,
+          "rescues": 1,
+          "stressRatio": 21.595959595959595
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 7904,
+          "danger": 973,
+          "stressRatio": 2053.211459836458
+        },
+        "build": {
+          "steps": 8112,
+          "danger": 829,
+          "stressRatio": 1886.202260702254
+        },
+        "peak": {
+          "steps": 7901,
+          "danger": 2228,
+          "stressRatio": 3490.3120731120707
+        },
+        "shop": {
+          "steps": 2475,
+          "danger": 675,
+          "stressRatio": 1071.8926406926428
+        }
+      }
+    },
+    {
+      "id": "rest-relay-calm",
+      "bySegment": {
+        "1": {
+          "steps": 2250,
+          "danger": 0,
+          "rescues": 0,
+          "stressRatio": 6.466666666666665
+        },
+        "11": {
+          "steps": 2497,
+          "danger": 272,
+          "rescues": 8,
+          "stressRatio": 469.88888888888823
+        },
+        "21": {
+          "steps": 2421,
+          "danger": 331,
+          "rescues": 19,
+          "stressRatio": 731.3682539682515
+        },
+        "31": {
+          "steps": 2072,
+          "danger": 294,
+          "rescues": 13,
+          "stressRatio": 656.5230158730154
+        },
+        "41": {
+          "steps": 1786,
+          "danger": 294,
+          "rescues": 20,
+          "stressRatio": 642.2095238095225
+        },
+        "51": {
+          "steps": 1495,
+          "danger": 439,
+          "rescues": 19,
+          "stressRatio": 755.2806878306857
+        },
+        "61": {
+          "steps": 769,
+          "danger": 279,
+          "rescues": 7,
+          "stressRatio": 408.8203703703696
+        },
+        "71": {
+          "steps": 437,
+          "danger": 205,
+          "rescues": 6,
+          "stressRatio": 270.60886243386227
+        },
+        "81": {
+          "steps": 165,
+          "danger": 120,
+          "rescues": 1,
+          "stressRatio": 123.595238095238
+        },
+        "91": {
+          "steps": 12,
+          "danger": 12,
+          "rescues": 0,
+          "stressRatio": 10.226190476190476
+        }
+      },
+      "byStage": {
+        "prepare": {
+          "steps": 4118,
+          "danger": 347,
+          "stressRatio": 907.7339947089924
+        },
+        "build": {
+          "steps": 4364,
+          "danger": 234,
+          "stressRatio": 803.1669312169302
+        },
+        "peak": {
+          "steps": 4214,
+          "danger": 1310,
+          "stressRatio": 1861.2694444444444
+        },
+        "shop": {
+          "steps": 1208,
+          "danger": 355,
+          "stressRatio": 502.8173280423283
+        }
+      }
+    }
+  ]
+}

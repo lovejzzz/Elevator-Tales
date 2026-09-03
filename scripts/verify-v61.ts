@@ -44,7 +44,7 @@ for(const remaining of [2,1,0]){
 }
 const tired=resolveFloor(rest,()=>.9);
 assert.equal(tired.restStops,0);assert.equal(tired.stress,rest.stress+1);
-assert.ok(tired.lastPressure.sources.some(s=>s.label==='长班疲劳'&&s.amount===2));
+assert.ok(tired.lastPressure.sources.some(s=>s.label==='班次压力'&&s.amount===2));
 const due=resolveFloor({...rest,cabin:cabin(rider('commuter',{destination:rest.floor+1,patience:1}))},()=>.9);
 assert.equal(due.restStops,1);assert.equal(due.stress,rest.stress,'occupied trip still incurs fatigue before arrival relief');
 assert.equal(resolveFloor(due,()=>.9).restStops,0);

@@ -21,22 +21,13 @@ export const agitationThreshold = (cap: number) => Math.ceil(cap * 2 / 3);
 export const patienceCost = (state: RunState) => state.stress >= agitationThreshold(state.stressCap) ? 2 : 1;
 export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 5 ? 1 : occupied <= 2 ? -1 : 0;
 export const REST_STOP_CAP = 3;
-// Fixed, public schedule: no adaptation to the player's coins or build.
 export const shiftAgitation = (floor: number, occupied: number, restStops = 0) => {
   if (occupied === 0 && restStops > 0 || floor <= 10) return 0;
   const position = floor % 10;
   const base = Math.floor((floor - 11) / 40);
-  const wave = position >= 7 ? 5 : position >= 4 ? 1 : 0;
+  const wave = position >= 7 ? 4 : position >= 4 ? 1 : 0;
   return base + wave;
 };
-export function shiftOutlook(floor: number) {
-  const next = floor + 1, position = next % 10;
-  if (next <= 10) return '首段熟悉 · 17–19层首次高压';
-  if (position === 0) return `下一站补给 · 班次压力 +${shiftAgitation(next, 1)}`;
-  if (position >= 7) return `高压还剩${10-position}站 · 躁动 +${shiftAgitation(next, 1)}/站`;
-  const peak = Math.floor(next / 10) * 10 + 7;
-  return `${peak}–${peak+2}层高压 · 躁动 +${shiftAgitation(peak, 1)}/站`;
-}
 
 export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);
 export const hasNeighbour = (cabin: Array<Rider | null>, slot: number, kinds: PassengerKind[]) => neighbours(slot).some((i) => cabin[i] && kinds.includes(cabin[i]!.kind));
@@ -128,7 +119,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   if (resting) notes.push(`空驶休整 −1 次，剩余 ${state.restStops - 1} 次`);
   else if (!occupied && fatigue) notes.push('休整用尽：空驶仍承受长班疲劳；送达乘客可恢复休整');
   adjustPressure(crowd > 0 ? '轿厢拥挤' : '宽松轿厢', crowd);
-  adjustPressure('班次压力', fatigue);
+  adjustPressure('长班疲劳', fatigue);
   if (weight > state.weightCap) { adjustPressure('变动超载', 2); stressReasons.push('载重超限，躁动 +2'); }
   state.cabin.forEach((rider,slot)=>{if(rider && nextFloor%2===0 && bondStatus(rider,state.cabin,slot).conflict){adjustPressure('邻座冲突',1);stressReasons.push(`${PASSENGERS[rider.kind].name}与邻座冲突，躁动 +1`);}});
   if (crowd > 0) stressReasons.push(`轿厢拥挤，躁动 +${crowd}`);

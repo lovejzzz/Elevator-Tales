@@ -86,7 +86,7 @@ export function stressForecast(state: RunState, weight = totalWeight(state.cabin
     conflicts ? `邻座冲突 +${conflicts}` : '',
     overload ? '载重超限 +2' : '',
     crowd ? crowd > 0 ? `拥挤 +${crowd}` : '宽松 −1' : '',
-    fatigue ? `班次压力 +${fatigue}` : '',
+    fatigue ? `长班疲劳 +${fatigue}` : '',
     occupied === 0 ? state.restStops > 0 ? `休整 ${state.restStops}→${state.restStops - 1}，免疲劳` : '休整用尽，空驶不免疲劳' : '',
     arrivalReason,
     contractReason,
