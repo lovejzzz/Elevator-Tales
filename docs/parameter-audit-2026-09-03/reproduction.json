@@ -1,0 +1,1100 @@
+[
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "baseline",
+    "id": "baseline",
+    "params": {},
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-1",
+      "balanced-2",
+      "balanced-3",
+      "balanced-4",
+      "balanced-6",
+      "cautious-4",
+      "cautious-6",
+      "greedy-6",
+      "lovers-3",
+      "lovers-4",
+      "police-thief-4",
+      "rogue-thief-3",
+      "occult-3",
+      "calming-4",
+      "calming-6",
+      "high-fare-3",
+      "high-fare-4",
+      "shifter-2",
+      "shifter-3",
+      "shifter-4",
+      "mimic-3",
+      "mimic-4",
+      "coach-4",
+      "coach-6",
+      "courier-3",
+      "safe-only-3",
+      "adaptive",
+      "early-rush",
+      "calm-only-3",
+      "economy-3",
+      "high-fare-calm",
+      "adaptive-calm",
+      "lookahead-3",
+      "cashout-40",
+      "cashout-60",
+      "cashout-80",
+      "no-upgrades",
+      "cautious-calm",
+      "profit-only-6",
+      "cautious-working",
+      "rest-aware-3",
+      "rest-aware-6",
+      "rest-aware-9",
+      "rest-lookahead",
+      "rest-relay",
+      "rest-relay-calm"
+    ],
+    "engineHash": "7acd33be2a4e599b1668d295900330926154305a471c5bb75bd27157ec6591bf",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "baseline",
+    "params": {},
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "7acd33be2a4e599b1668d295900330926154305a471c5bb75bd27157ec6591bf",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "bombFuse2",
+    "params": {
+      "bombMin": 2
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "9317e238ea77ac14fb5a8fdf1c8dcdd3542c754ebe99945bd9137a1bd3fba228",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "bombFuse4",
+    "params": {
+      "bombMin": 4
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "eb2ae84d9ca88a1419fcd14da739cbcf9f5f50e1a36b3023506921e237365dab",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "calm25",
+    "params": {
+      "calmPrice": 25
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "32fbcaf5f1288aa22b58e84780146fc4644d8ac79d7eb5e55a9a730101adbf24",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "calm45",
+    "params": {
+      "calmPrice": 45
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "20676fddf7a9d13c63fc0e6759bbbdd3204b3ea75900d3f86c1c4c02af9c28fa",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "calmCap2",
+    "params": {
+      "calmCap": 2
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "0f23f452a7bbde38fa5d3b51e7fe437d49fa1d494e8264e4a5228fe89614c9f9",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "calmCap4",
+    "params": {
+      "calmCap": 4
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "895774dd2cf716426a116f7d0a13498e2895285faf0beeeca29a6a646f087a9f",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "calmRelief4",
+    "params": {
+      "calmRelief": 4
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "a039c6342ffb30d17ce5486c8c6f89fd4703ee18f49457ec3e3dfae3bdd38247",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "calmRelief8",
+    "params": {
+      "calmRelief": 8
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "58fa6210850d28700c143ad55a0fde37d0b4cbade8b0572a9f6b3528536664af",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "capacity20",
+    "params": {
+      "capacity": 20
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "4eba370b9c02f5e2aede4e702a0d275d42dd2427cdf6795c2e7cb25a6e04d4d1",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "capacity28",
+    "params": {
+      "capacity": 28
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "970cd0d79d6e56c85ee864a1a3df349633f6ce615045887bfa3ed7c69194b257",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "charge1",
+    "params": {
+      "chargePrice": 1
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "9a079f628217b4a4279a298a8f0419715d2ef80680efc87b397d8e02b92ecb48",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "charge3",
+    "params": {
+      "chargePrice": 3
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "e1149b5472db6959e979f5235535f967e6b4d1719b2f5e0c3deba6454657eb24",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "cooperation1",
+    "params": {
+      "cooperation": 1
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "8eb7df52df7213f4c0976f7fda2522c4f67186b8b951cbf74610c3cfc7fd5370",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "cooperation5",
+    "params": {
+      "cooperation": 5
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "aae3f64c4dc1bf0c237180759e12c035a677e4a18a5371740684d190ffebe6bd",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "crowdFrom5",
+    "params": {
+      "crowdedAt": 5
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "96effdc89f2f7309a4c424dc00a9812db3cabbfa90907928b2e41b68086d5581",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "dismiss150",
+    "params": {
+      "dismissalScale": 1.5
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "6474ce8c7f7b18a69a15d1c721bff7da87c5c9eac962441b5ce73b7079b9ff75",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "dismissHalf",
+    "params": {
+      "dismissalScale": 0.5
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "c11069de9786cf6ee5e5a81df31d6722baff3ad20e678c89795a9b133d0b28da",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "energy18",
+    "params": {
+      "energy": 18
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "ac28c9dfec6da93a8a80e4384431692c1d7a68b5df8d40a7e322f06a66824b79",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "energy22",
+    "params": {
+      "energy": 22
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "dc43a2cb21c79dc6557ee960adeb6b034fd51811d0520e17e30623a16b5c805c",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "energy24",
+    "params": {
+      "energy": 24
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "eab02326b0e086395c5818464f14ebf8017070ad33b7c0ad6bf290d795061e84",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "fares115",
+    "params": {
+      "fareScale": 1.15
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "7acd33be2a4e599b1668d295900330926154305a471c5bb75bd27157ec6591bf",
+    "profileHash": "5ed3d741c0e310ddf9138cc49b4a65177b652f1bcf857a9f1901c50375a077bf",
+    "runnerHash": "b6eb9177118bef08bc309b361cb6bc420ac23cd1d5648f0cdcd57b1452f4b93e"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "fares85",
+    "params": {
+      "fareScale": 0.85
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "7acd33be2a4e599b1668d295900330926154305a471c5bb75bd27157ec6591bf",
+    "profileHash": "3805dcf251632bfca1572e556be9e555a590455a5ab892fd5fb1f8ac048264e3",
+    "runnerHash": "3709596584ae7dcfb6a96966c01f1856311c874b43ed67c3434de6549d5a5a7c"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "fatigue25",
+    "params": {
+      "fatigueEvery": 25
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "b663928264ff97a9fb4ef4be71ee8dfe96b53a14e6d44993d5ad2557c7ad83c8",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "fatigue35",
+    "params": {
+      "fatigueEvery": 35
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "ecae8b8b8f380123f50d1d5a9ee9d97877561d3b3d504c8a4a443b3a738f219f",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "inflation16",
+    "params": {
+      "shopInflation": 16
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "8c55fb881fea4c1615103635ca872b4dde0623c28b36da0c0e0e7cf27cfc48fd",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "inflation8",
+    "params": {
+      "shopInflation": 8
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "f527e474d66361eb0afc7cc985d4c613191b3d149e95c32570569ff9e9724b95",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "loverCall0",
+    "params": {
+      "loverCall": 0
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "26c22ae9f186812ca544ecc7129bf363168ea6c29ea9d33197dd57bfb51297d8",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "loverCall50",
+    "params": {
+      "loverCall": 0.5
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "a82423e70d79cd353c15f568dfd856642e4ea39c33ea1fe4df5b9231dfcd268c",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "noSparseRelief",
+    "params": {
+      "sparseRelief": 0
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "de14a7eca756bbadd7f9413857be4f4ebad4dbef2e81d8af9b9abf55a006f6fb",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "patienceMinus1",
+    "params": {
+      "patience": -1
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "324164534dacd22bc966c141b5383d2a281a9b563ae7349ad2b61635883b195d",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "patiencePlus1",
+    "params": {
+      "patience": 1
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "ce3112566daa02828521f359268e103a525361837c1febdff265366e9e18fc91",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "rest1",
+    "params": {
+      "restCap": 1
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "160a1e7f9ac2f266e1bfbc2dd9159c46922127f81a406d4407c41720b17bda81",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "rest5",
+    "params": {
+      "restCap": 5
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "d2f0b6f051efdfe6c2b9be3b74e455bac1eeaf8684ddfb97f46f177c82352a7f",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "stress12",
+    "params": {
+      "stressCap": 12
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "1c8ae98b7f5807dea291a33e5844f11c815ac6212e86f093fd8ae89428a1444e",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "stress18",
+    "params": {
+      "stressCap": 18
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "1410fc6fdbc77c45eb9b9d3e6d1f8ba379a084cc33e8b163ffd7269e34f07ff2",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "threshold50",
+    "params": {
+      "threshold": "1 / 2"
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "2506e236631811acb5b16875e34c217889db21e2ee6af81520ef3219de1b43ee",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "threshold80",
+    "params": {
+      "threshold": "4 / 5"
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "3bdd96e2ec36f486b0d69833a212a4753cb46ceed6cb79ff7dcf88cce7f7f697",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "weight12",
+    "params": {
+      "weightCap": 12
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "7b6c83744011947e707e510188d93a1c71432f9c83f331f2ca8b5a4a6e4f2376",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "screen",
+    "id": "weight8",
+    "params": {
+      "weightCap": 8
+    },
+    "seedBase": 903193409,
+    "runs": 60,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "high-fare-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "d86e38e48cba186e048b67bca14fa473e90f741dcdf50a253ca4aa35b6af1b2c",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "holdout",
+    "id": "baseline",
+    "params": {},
+    "seedBase": 903690011,
+    "runs": 300,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "no-upgrades",
+      "cautious-calm",
+      "cautious-full-charge",
+      "relay-full-charge",
+      "without-calm",
+      "without-battery",
+      "without-concierge",
+      "without-solar",
+      "without-reinforced",
+      "without-express",
+      "pair-cautious",
+      "pair-balanced",
+      "pair-police",
+      "pair-occult",
+      "rest-lookahead",
+      "rest-relay-calm"
+    ],
+    "engineHash": "7acd33be2a4e599b1668d295900330926154305a471c5bb75bd27157ec6591bf",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "07206b663cfd38fda802f32b3ec0f34fc9b85523ad305fc01f0e99f46ff753ad"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "holdout",
+    "id": "calmRelief4",
+    "params": {
+      "calmRelief": 4
+    },
+    "seedBase": 903690011,
+    "runs": 250,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "cautious-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "a039c6342ffb30d17ce5486c8c6f89fd4703ee18f49457ec3e3dfae3bdd38247",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "07206b663cfd38fda802f32b3ec0f34fc9b85523ad305fc01f0e99f46ff753ad"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "holdout",
+    "id": "capacity28",
+    "params": {
+      "capacity": 28
+    },
+    "seedBase": 903690011,
+    "runs": 300,
+    "policies": [
+      "cautious-6",
+      "cautious-full-charge",
+      "relay-full-charge",
+      "rest-relay-calm"
+    ],
+    "engineHash": "970cd0d79d6e56c85ee864a1a3df349633f6ce615045887bfa3ed7c69194b257",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "07206b663cfd38fda802f32b3ec0f34fc9b85523ad305fc01f0e99f46ff753ad"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "holdout",
+    "id": "charge3",
+    "params": {
+      "chargePrice": 3
+    },
+    "seedBase": 903690011,
+    "runs": 250,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "cautious-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "e1149b5472db6959e979f5235535f967e6b4d1719b2f5e0c3deba6454657eb24",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "07206b663cfd38fda802f32b3ec0f34fc9b85523ad305fc01f0e99f46ff753ad"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "holdout",
+    "id": "cooperation5",
+    "params": {
+      "cooperation": 5
+    },
+    "seedBase": 903690011,
+    "runs": 250,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "cautious-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "aae3f64c4dc1bf0c237180759e12c035a677e4a18a5371740684d190ffebe6bd",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "07206b663cfd38fda802f32b3ec0f34fc9b85523ad305fc01f0e99f46ff753ad"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "holdout",
+    "id": "crowdAndCoop",
+    "params": {
+      "crowdedAt": 5,
+      "cooperation": 5
+    },
+    "seedBase": 903690011,
+    "runs": 250,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "cautious-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "b249597334be05910999290d84ddbca63ec4f9ac78b599696dcc635b0718ee16",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "07206b663cfd38fda802f32b3ec0f34fc9b85523ad305fc01f0e99f46ff753ad"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "holdout",
+    "id": "crowdFrom5",
+    "params": {
+      "crowdedAt": 5
+    },
+    "seedBase": 903690011,
+    "runs": 250,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "cautious-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "96effdc89f2f7309a4c424dc00a9812db3cabbfa90907928b2e41b68086d5581",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "07206b663cfd38fda802f32b3ec0f34fc9b85523ad305fc01f0e99f46ff753ad"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "holdout",
+    "id": "fatigue35",
+    "params": {
+      "fatigueEvery": 35
+    },
+    "seedBase": 903690011,
+    "runs": 250,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "cautious-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "ecae8b8b8f380123f50d1d5a9ee9d97877561d3b3d504c8a4a443b3a738f219f",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "07206b663cfd38fda802f32b3ec0f34fc9b85523ad305fc01f0e99f46ff753ad"
+  },
+  {
+    "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+    "phase": "holdout",
+    "id": "reliefAndCoop",
+    "params": {
+      "calmRelief": 4,
+      "cooperation": 5
+    },
+    "seedBase": 903690011,
+    "runs": 250,
+    "policies": [
+      "balanced-3",
+      "cautious-6",
+      "police-thief-4",
+      "calming-6",
+      "cautious-calm",
+      "rest-relay-calm"
+    ],
+    "engineHash": "a0ee241d61ecfdef04be334f6db27e674b00b358aff5d7f8e89b0f3d9104a614",
+    "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+    "runnerHash": "07206b663cfd38fda802f32b3ec0f34fc9b85523ad305fc01f0e99f46ff753ad"
+  }
+]

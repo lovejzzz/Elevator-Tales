@@ -19,7 +19,7 @@ export const nextShopFloor = (floor: number) => (Math.floor(floor / 10) + 1) * 1
 export const difficultyTier = (floor: number) => Math.floor(Math.max(0, floor - 1) / 30);
 export const agitationThreshold = (cap: number) => Math.ceil(cap * 2 / 3);
 export const patienceCost = (state: RunState) => state.stress >= agitationThreshold(state.stressCap) ? 2 : 1;
-export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 5 ? 1 : occupied <= 2 ? -1 : 0;
+export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 4 ? 1 : occupied <= 2 ? -1 : 0;
 export const REST_STOP_CAP = 3;
 export const shiftAgitation = (floor: number, occupied: number, restStops = 0) => occupied > 0 || restStops <= 0 ? difficultyTier(floor) : 0;
 
@@ -220,7 +220,7 @@ export function leaveShop(current: RunState): RunState {
   return { ...current, shop: [], status: failed ? 'lost' : 'playing', message: current.energy <= 0 ? '金币或维修不足，电量未能恢复。' : current.stress >= current.stressCap ? '维修后躁动仍然失控，班次结束。' : '维修层已离开，继续挑战更高楼层。' };
 }
 
-export const CHARGE_PRICE = 2;
+export const CHARGE_PRICE = 3;
 export function chargingPlan(state: RunState) {
   const target = Math.min(state.energyCap, (nextShopFloor(state.floor) - state.floor) * 2 + 2);
   const units = Math.max(0, target - state.energy);

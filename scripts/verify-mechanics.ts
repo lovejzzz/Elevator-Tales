@@ -76,7 +76,7 @@ assert.equal(sourceMap(impatient.lastPressure.sources)['耐心归零'], 2);
 assert.equal(impatient.coins, 0);
 assert.equal(impatient.lastEnergy.sources.some((s) => s.label.includes('到站')), false);
 const musical = resolveFloor({ ...initialRun(), stress: 4, cabin: [rider('musician', 'music'), ...packed.slice(0, 3), null, null] }, () => .9);
-assert.equal(musical.lastPressure.delta, 0, 'musician offsets four-person crowding');
+assert.equal(musical.lastPressure.delta, -1, 'four people are not crowded; musician still soothes');
 const controlled = resolveFloor({ ...initialRun(), cabin: [rider('thief', 'thief'), rider('cop', 'cop'), null, null, null, null] }, () => .9);
 assert.equal(sourceMap(controlled.lastEarnings.sources)['受控小偷'], 1);
 assert.equal(controlled.lastPressure.sources.some((s) => s.label === '小偷未受控'), false);

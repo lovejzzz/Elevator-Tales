@@ -19,7 +19,7 @@ export const nextShopFloor = (floor: number) => (Math.floor(floor / 10) + 1) * 1
 export const difficultyTier = (floor: number) => Math.floor(Math.max(0, floor - 1) / 30);
 export const agitationThreshold = (cap: number) => Math.ceil(cap * 2 / 3);
 export const patienceCost = (state: RunState) => state.stress >= agitationThreshold(state.stressCap) ? 2 : 1;
-export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 5 ? 1 : occupied <= 2 ? -1 : 0;
+export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 4 ? 1 : occupied <= 2 ? -1 : 0;
 export const REST_STOP_CAP = 3;
 export const shiftAgitation = (floor: number, occupied: number, restStops = 0) => occupied > 0 || restStops <= 0 ? difficultyTier(floor) : 0;
 
@@ -205,7 +205,7 @@ export function previewUpgrade(current: RunState, key: UpgradeKey): RunState {
   return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap };
 }
 
-const BASE_PRICES: Record<UpgradeKey, number> = { battery: 45, solar: 55, calm: 35, concierge: 50, reinforced: 45, express: 65 };
+const BASE_PRICES: Record<UpgradeKey, number> = { battery: 45, solar: 55, calm: 45, concierge: 50, reinforced: 45, express: 65 };
 export const upgradePrice = (key: UpgradeKey, floor: number, installed: number) => BASE_PRICES[key] + Math.max(0, Math.floor(floor / 10) - 1) * 12 + installed * 15;
 export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
   const card = current.shop.find((item) => item.key === key);

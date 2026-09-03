@@ -19,7 +19,7 @@ export const nextShopFloor = (floor: number) => (Math.floor(floor / 10) + 1) * 1
 export const difficultyTier = (floor: number) => Math.floor(Math.max(0, floor - 1) / 30);
 export const agitationThreshold = (cap: number) => Math.ceil(cap * 2 / 3);
 export const patienceCost = (state: RunState) => state.stress >= agitationThreshold(state.stressCap) ? 2 : 1;
-export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 5 ? 1 : occupied <= 2 ? -1 : 0;
+export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 4 ? 1 : occupied <= 2 ? -1 : 0;
 export const REST_STOP_CAP = 3;
 export const shiftAgitation = (floor: number, occupied: number, restStops = 0) => occupied > 0 || restStops <= 0 ? difficultyTier(floor) : 0;
 

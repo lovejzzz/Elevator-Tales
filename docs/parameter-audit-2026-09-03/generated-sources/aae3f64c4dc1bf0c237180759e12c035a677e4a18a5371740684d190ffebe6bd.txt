@@ -19,7 +19,7 @@ export const nextShopFloor = (floor: number) => (Math.floor(floor / 10) + 1) * 1
 export const difficultyTier = (floor: number) => Math.floor(Math.max(0, floor - 1) / 30);
 export const agitationThreshold = (cap: number) => Math.ceil(cap * 2 / 3);
 export const patienceCost = (state: RunState) => state.stress >= agitationThreshold(state.stressCap) ? 2 : 1;
-export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 5 ? 1 : occupied <= 2 ? -1 : 0;
+export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 4 ? 1 : occupied <= 2 ? -1 : 0;
 export const REST_STOP_CAP = 3;
 export const shiftAgitation = (floor: number, occupied: number, restStops = 0) => occupied > 0 || restStops <= 0 ? difficultyTier(floor) : 0;
 
@@ -27,7 +27,7 @@ export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === s
 export const hasNeighbour = (cabin: Array<Rider | null>, slot: number, kinds: PassengerKind[]) => neighbours(slot).some((i) => cabin[i] && kinds.includes(cabin[i]!.kind));
 export const neighbourCount = (cabin: Array<Rider | null>, slot: number) => neighbours(slot).filter((i) => cabin[i]).length;
 export const totalWeight = profileWeight;
-export const cooperationBonus = (state: RunState) => 3 + state.upgrades.battery * 2;
+export const cooperationBonus = (state: RunState) => 5 + state.upgrades.battery * 2;
 export const isFreeReseat = (cabin: Array<Rider | null>, source: number, target: number, floor: number) => Boolean(cabin[source] && cabin[source]!.boardedAt === floor && (!cabin[target] || cabin[target]!.boardedAt === floor));
 export const unlockedAt = (floor: number) => UNLOCK_TIERS.flatMap((tier) => tier.floor <= floor ? tier.kinds : []);
 const READY_PARTNERS: Partial<Record<PassengerKind, PassengerKind[]>> = { lover: ['lover'], thief: ['cop', 'lawyer'], cop: ['thief', 'bomb'], lawyer: ['thief'], drunk: ['musician', 'nurse'], musician: ['drunk', 'child'], nurse: ['drunk', 'child'], child: ['lover', 'musician', 'nurse'], ghost: ['exorcist'], exorcist: ['ghost'], bomb: ['cop'] };

@@ -1,0 +1,9 @@
+{
+  "version": "v6.2",
+  "cases": 122880,
+  "fourPersonCases": 36450,
+  "sourceIdenticalToCandidate": true,
+  "duplicateSoothingStacks": true,
+  "forecastFailures": 0,
+  "receiptFailures": 0
+}

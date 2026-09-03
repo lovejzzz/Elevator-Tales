@@ -1,0 +1,3655 @@
+{
+  "fullGames": 34860,
+  "onboardingGames": 8000,
+  "fullTransitions": 3618193,
+  "onboardingTransitions": 198097,
+  "forecastFailures": 0,
+  "censoredFullRuns": 0,
+  "current": [
+    {
+      "id": "cautious-calm",
+      "config": {
+        "id": "cautious-calm",
+        "cap": 6,
+        "risk": 9,
+        "favorite": [],
+        "bias": 2,
+        "shop": "calm",
+        "moves": 1
+      },
+      "runs": 300,
+      "purchases": {
+        "calm": 1585
+      },
+      "spending": {
+        "calm": 203945
+      },
+      "chargeSpend": 129560,
+      "shopVisits": 3386,
+      "firstShopPassed": 300,
+      "deliveryCount": 28318,
+      "patienceLosses": 16,
+      "pressureSources": {
+        "宽松轿厢": -12045,
+        "小偷未受控": 1184,
+        "轿厢拥挤": 25826,
+        "乘客到站舒缓": -28318,
+        "音乐家安抚": -15046,
+        "护士安抚": -4610,
+        "长班疲劳": 42046,
+        "邻座冲突": 368,
+        "醉汉闹事": 136,
+        "检查员超载": 122,
+        "名人被围": 51,
+        "变动超载": 14,
+        "耐心归零": 32
+      },
+      "mean": 117.5,
+      "median": 119,
+      "p10": 104,
+      "p90": 128,
+      "max": 139,
+      "reach100Pct": 94.67,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1517.48,
+      "meanOccupancy": 3.69,
+      "steps": 34950,
+      "changes": 7165,
+      "dismissals": 3512,
+      "boarded": {
+        "commuter": 3476,
+        "tourist": 2457,
+        "courier": 3427,
+        "mechanic": 1143,
+        "lover": 2469,
+        "musician": 2744,
+        "thief": 1519,
+        "cop": 1354,
+        "lawyer": 1019,
+        "drunk": 966,
+        "nurse": 2008,
+        "child": 583,
+        "ghost": 399,
+        "exorcist": 638,
+        "coach": 1836,
+        "celebrity": 776,
+        "inspector": 502,
+        "bomb": 772,
+        "mystery": 1889,
+        "shifter": 1532,
+        "mimic": 914
+      },
+      "seedThirdMeans": [
+        116.56,
+        117.82,
+        118.12
+      ],
+      "emptyStepPct": 11.51,
+      "lateEmptyStepPct": 26.2,
+      "meanLastBoardingFloor": 115.53,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 247,
+          "earned": 374,
+          "stress": 2,
+          "occupants": 6
+        },
+        {
+          "floor": 50,
+          "coins": 564,
+          "earned": 927,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 75,
+          "coins": 771,
+          "earned": 1511,
+          "stress": 9,
+          "occupants": 5
+        },
+        {
+          "floor": 100,
+          "coins": 673,
+          "earned": 1960,
+          "stress": 9,
+          "occupants": 2
+        },
+        {
+          "floor": 125,
+          "coins": 199,
+          "earned": 2111,
+          "stress": 30,
+          "occupants": 0
+        }
+      ]
+    },
+    {
+      "id": "rest-lookahead",
+      "config": {
+        "id": "rest-lookahead",
+        "cap": 4,
+        "risk": 6,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "restAware": true,
+        "lookahead": true
+      },
+      "runs": 300,
+      "purchases": {
+        "solar": 297,
+        "reinforced": 286,
+        "concierge": 348,
+        "calm": 1137,
+        "express": 227,
+        "battery": 100
+      },
+      "spending": {
+        "solar": 22359,
+        "reinforced": 18258,
+        "concierge": 27063,
+        "calm": 145644,
+        "express": 22075,
+        "battery": 6252
+      },
+      "chargeSpend": 118394,
+      "shopVisits": 3356,
+      "firstShopPassed": 300,
+      "deliveryCount": 25402,
+      "patienceLosses": 2,
+      "pressureSources": {
+        "宽松轿厢": -11589,
+        "小偷未受控": 1430,
+        "轿厢拥挤": 17338,
+        "乘客到站舒缓": -25402,
+        "音乐家安抚": -7748,
+        "护士安抚": -3834,
+        "长班疲劳": 38796,
+        "醉汉闹事": 636,
+        "邻座冲突": 231,
+        "检查员超载": 15,
+        "耐心归零": 4,
+        "变动超载": 6
+      },
+      "mean": 115.99,
+      "median": 117,
+      "p10": 106,
+      "p90": 125,
+      "max": 131,
+      "reach100Pct": 97.33,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1494.84,
+      "meanOccupancy": 2.89,
+      "steps": 34497,
+      "changes": 3760,
+      "dismissals": 1812,
+      "boarded": {
+        "commuter": 3411,
+        "tourist": 1920,
+        "courier": 3676,
+        "mechanic": 980,
+        "lover": 1520,
+        "musician": 1670,
+        "thief": 1320,
+        "cop": 1143,
+        "lawyer": 762,
+        "drunk": 1072,
+        "nurse": 1828,
+        "child": 375,
+        "ghost": 190,
+        "exorcist": 438,
+        "coach": 1700,
+        "celebrity": 838,
+        "inspector": 307,
+        "bomb": 793,
+        "mystery": 1713,
+        "shifter": 1389,
+        "mimic": 796
+      },
+      "seedThirdMeans": [
+        116.9,
+        114.84,
+        116.23
+      ],
+      "emptyStepPct": 13.43,
+      "lateEmptyStepPct": 31.43,
+      "meanLastBoardingFloor": 114.02,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 80,
+          "earned": 266,
+          "stress": 0,
+          "occupants": 4
+        },
+        {
+          "floor": 50,
+          "coins": 16,
+          "earned": 679,
+          "stress": 1,
+          "occupants": 4
+        },
+        {
+          "floor": 75,
+          "coins": 130,
+          "earned": 1124,
+          "stress": 6,
+          "occupants": 1
+        },
+        {
+          "floor": 100,
+          "coins": 280,
+          "earned": 1550,
+          "stress": 16,
+          "occupants": 2
+        }
+      ]
+    },
+    {
+      "id": "without-battery",
+      "config": {
+        "id": "without-battery",
+        "cap": 6,
+        "risk": 9,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "banUpgrade": "battery"
+      },
+      "runs": 300,
+      "purchases": {
+        "solar": 300,
+        "reinforced": 299,
+        "express": 278,
+        "concierge": 520,
+        "calm": 1178
+      },
+      "spending": {
+        "solar": 20760,
+        "reinforced": 17895,
+        "express": 24118,
+        "concierge": 40934,
+        "calm": 152485
+      },
+      "chargeSpend": 116046,
+      "shopVisits": 3337,
+      "firstShopPassed": 300,
+      "deliveryCount": 31768,
+      "patienceLosses": 2,
+      "pressureSources": {
+        "宽松轿厢": -10491,
+        "小偷未受控": 1158,
+        "轿厢拥挤": 28960,
+        "乘客到站舒缓": -31768,
+        "音乐家安抚": -15019,
+        "护士安抚": -4518,
+        "长班疲劳": 40456,
+        "邻座冲突": 404,
+        "醉汉闹事": 252,
+        "名人被围": 101,
+        "检查员超载": 173,
+        "变动超载": 8,
+        "耐心归零": 4
+      },
+      "mean": 115.91,
+      "median": 117,
+      "p10": 107,
+      "p90": 125,
+      "max": 132,
+      "reach100Pct": 96.33,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 2011.82,
+      "meanOccupancy": 3.89,
+      "steps": 34473,
+      "changes": 8359,
+      "dismissals": 3034,
+      "boarded": {
+        "commuter": 3797,
+        "tourist": 2672,
+        "courier": 3698,
+        "mechanic": 1214,
+        "lover": 2383,
+        "musician": 2963,
+        "thief": 1514,
+        "cop": 1514,
+        "lawyer": 1034,
+        "drunk": 1065,
+        "nurse": 2105,
+        "child": 662,
+        "ghost": 384,
+        "exorcist": 660,
+        "coach": 2198,
+        "celebrity": 853,
+        "inspector": 448,
+        "bomb": 896,
+        "mystery": 2277,
+        "shifter": 1935,
+        "mimic": 1119
+      },
+      "seedThirdMeans": [
+        114.39,
+        117.3,
+        116.04
+      ],
+      "emptyStepPct": 11.41,
+      "lateEmptyStepPct": 27.23,
+      "meanLastBoardingFloor": 113.83,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 126,
+          "earned": 389,
+          "stress": 0,
+          "occupants": 6
+        },
+        {
+          "floor": 50,
+          "coins": 476,
+          "earned": 1018,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 75,
+          "coins": 952,
+          "earned": 1787,
+          "stress": 7,
+          "occupants": 5
+        },
+        {
+          "floor": 100,
+          "coins": 1207,
+          "earned": 2509,
+          "stress": 15,
+          "occupants": 0
+        }
+      ]
+    },
+    {
+      "id": "without-concierge",
+      "config": {
+        "id": "without-concierge",
+        "cap": 6,
+        "risk": 9,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "banUpgrade": "concierge"
+      },
+      "runs": 300,
+      "purchases": {
+        "solar": 300,
+        "reinforced": 299,
+        "express": 281,
+        "battery": 253,
+        "calm": 1147
+      },
+      "spending": {
+        "solar": 20712,
+        "reinforced": 17823,
+        "express": 23557,
+        "battery": 14988,
+        "calm": 148007
+      },
+      "chargeSpend": 116414,
+      "shopVisits": 3352,
+      "firstShopPassed": 300,
+      "deliveryCount": 30893,
+      "patienceLosses": 6,
+      "pressureSources": {
+        "宽松轿厢": -10987,
+        "小偷未受控": 1180,
+        "轿厢拥挤": 27961,
+        "乘客到站舒缓": -30893,
+        "音乐家安抚": -14657,
+        "护士安抚": -4603,
+        "长班疲劳": 40392,
+        "邻座冲突": 423,
+        "名人被围": 71,
+        "检查员超载": 163,
+        "醉汉闹事": 166,
+        "耐心归零": 12,
+        "变动超载": 4
+      },
+      "mean": 115.89,
+      "median": 117,
+      "p10": 106,
+      "p90": 125,
+      "max": 130,
+      "reach100Pct": 96.67,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1760.29,
+      "meanOccupancy": 3.83,
+      "steps": 34468,
+      "changes": 7927,
+      "dismissals": 3344,
+      "boarded": {
+        "commuter": 3598,
+        "tourist": 2680,
+        "courier": 3519,
+        "mechanic": 1194,
+        "lover": 2376,
+        "musician": 2887,
+        "thief": 1579,
+        "cop": 1485,
+        "lawyer": 1049,
+        "drunk": 1077,
+        "nurse": 2151,
+        "child": 690,
+        "ghost": 428,
+        "exorcist": 675,
+        "coach": 2135,
+        "celebrity": 843,
+        "inspector": 456,
+        "bomb": 915,
+        "mystery": 2085,
+        "shifter": 1884,
+        "mimic": 1112
+      },
+      "seedThirdMeans": [
+        115.3,
+        116.67,
+        115.71
+      ],
+      "emptyStepPct": 11.53,
+      "lateEmptyStepPct": 27.12,
+      "meanLastBoardingFloor": 114,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 126,
+          "earned": 389,
+          "stress": 0,
+          "occupants": 6
+        },
+        {
+          "floor": 50,
+          "coins": 532,
+          "earned": 968,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 75,
+          "coins": 856,
+          "earned": 1487,
+          "stress": 10,
+          "occupants": 5
+        },
+        {
+          "floor": 100,
+          "coins": 964,
+          "earned": 2040,
+          "stress": 11,
+          "occupants": 0
+        }
+      ]
+    },
+    {
+      "id": "without-reinforced",
+      "config": {
+        "id": "without-reinforced",
+        "cap": 6,
+        "risk": 9,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "banUpgrade": "reinforced"
+      },
+      "runs": 300,
+      "purchases": {
+        "solar": 300,
+        "express": 287,
+        "battery": 248,
+        "concierge": 556,
+        "calm": 1191
+      },
+      "spending": {
+        "solar": 20760,
+        "express": 24295,
+        "battery": 14865,
+        "concierge": 42986,
+        "calm": 153951
+      },
+      "chargeSpend": 115812,
+      "shopVisits": 3342,
+      "firstShopPassed": 300,
+      "deliveryCount": 31800,
+      "patienceLosses": 0,
+      "pressureSources": {
+        "宽松轿厢": -10255,
+        "小偷未受控": 1136,
+        "轿厢拥挤": 28345,
+        "乘客到站舒缓": -31800,
+        "音乐家安抚": -14884,
+        "护士安抚": -4162,
+        "长班疲劳": 40285,
+        "检查员超载": 148,
+        "邻座冲突": 374,
+        "名人被围": 92,
+        "醉汉闹事": 252,
+        "变动超载": 20
+      },
+      "mean": 115.76,
+      "median": 117,
+      "p10": 106,
+      "p90": 124,
+      "max": 129,
+      "reach100Pct": 96.33,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 2011.14,
+      "meanOccupancy": 3.88,
+      "steps": 34429,
+      "changes": 7843,
+      "dismissals": 3193,
+      "boarded": {
+        "commuter": 3876,
+        "tourist": 2752,
+        "courier": 3793,
+        "mechanic": 1250,
+        "lover": 2611,
+        "musician": 2959,
+        "thief": 1606,
+        "cop": 1479,
+        "lawyer": 1073,
+        "drunk": 1072,
+        "nurse": 1971,
+        "child": 797,
+        "ghost": 467,
+        "exorcist": 726,
+        "coach": 1959,
+        "celebrity": 863,
+        "inspector": 490,
+        "bomb": 930,
+        "mystery": 2097,
+        "shifter": 1700,
+        "mimic": 1125
+      },
+      "seedThirdMeans": [
+        114.71,
+        116.15,
+        116.43
+      ],
+      "emptyStepPct": 11.39,
+      "lateEmptyStepPct": 27.5,
+      "meanLastBoardingFloor": 113.78,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 132,
+          "earned": 395,
+          "stress": 0,
+          "occupants": 6
+        },
+        {
+          "floor": 50,
+          "coins": 357,
+          "earned": 970,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 75,
+          "coins": 543,
+          "earned": 1378,
+          "stress": 8,
+          "occupants": 6
+        },
+        {
+          "floor": 100,
+          "coins": 614,
+          "earned": 1922,
+          "stress": 13,
+          "occupants": 2
+        }
+      ]
+    },
+    {
+      "id": "rest-relay-calm",
+      "config": {
+        "id": "rest-relay-calm",
+        "cap": 2,
+        "risk": 6,
+        "favorite": [],
+        "bias": 2,
+        "shop": "calm",
+        "moves": 1,
+        "restAware": true,
+        "relay": true,
+        "quick": true
+      },
+      "runs": 300,
+      "purchases": {
+        "calm": 1251
+      },
+      "spending": {
+        "calm": 136422
+      },
+      "chargeSpend": 128138,
+      "shopVisits": 3328,
+      "firstShopPassed": 300,
+      "deliveryCount": 19649,
+      "patienceLosses": 42,
+      "pressureSources": {
+        "宽松轿厢": -17817,
+        "小偷未受控": 1404,
+        "轿厢拥挤": 13754,
+        "乘客到站舒缓": -19649,
+        "音乐家安抚": -6556,
+        "护士安抚": -2643,
+        "长班疲劳": 38608,
+        "醉汉闹事": 432,
+        "邻座冲突": 229,
+        "检查员超载": 20,
+        "变动超载": 4,
+        "耐心归零": 84,
+        "名人被围": 1
+      },
+      "mean": 115.42,
+      "median": 116,
+      "p10": 107,
+      "p90": 123,
+      "max": 129,
+      "reach100Pct": 97.33,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 9,
+        "agitation": 291,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1020.27,
+      "meanOccupancy": 2.52,
+      "steps": 34327,
+      "changes": 2509,
+      "dismissals": 1209,
+      "boarded": {
+        "commuter": 2558,
+        "tourist": 1745,
+        "courier": 2277,
+        "mechanic": 883,
+        "lover": 1291,
+        "musician": 1343,
+        "thief": 1178,
+        "cop": 1036,
+        "lawyer": 608,
+        "drunk": 716,
+        "nurse": 1123,
+        "child": 232,
+        "ghost": 209,
+        "exorcist": 367,
+        "coach": 1374,
+        "celebrity": 570,
+        "inspector": 395,
+        "bomb": 391,
+        "mystery": 1363,
+        "shifter": 1029,
+        "mimic": 693
+      },
+      "seedThirdMeans": [
+        115.21,
+        115.13,
+        115.93
+      ],
+      "emptyStepPct": 13.83,
+      "lateEmptyStepPct": 27.25,
+      "meanLastBoardingFloor": 113.04,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 139,
+          "earned": 266,
+          "stress": 0,
+          "occupants": 4
+        },
+        {
+          "floor": 50,
+          "coins": 228,
+          "earned": 575,
+          "stress": 9,
+          "occupants": 3
+        },
+        {
+          "floor": 75,
+          "coins": 100,
+          "earned": 810,
+          "stress": 1,
+          "occupants": 2
+        },
+        {
+          "floor": 100,
+          "coins": 60,
+          "earned": 890,
+          "stress": 7,
+          "occupants": 2
+        }
+      ]
+    },
+    {
+      "id": "relay-full-charge",
+      "config": {
+        "id": "relay-full-charge",
+        "cap": 2,
+        "risk": 6,
+        "favorite": [],
+        "bias": 2,
+        "shop": "calm",
+        "moves": 1,
+        "restAware": true,
+        "relay": true,
+        "quick": true,
+        "chargeFull": true
+      },
+      "runs": 300,
+      "purchases": {
+        "calm": 1232
+      },
+      "spending": {
+        "calm": 134536
+      },
+      "chargeSpend": 129318,
+      "shopVisits": 3329,
+      "firstShopPassed": 300,
+      "deliveryCount": 19633,
+      "patienceLosses": 36,
+      "pressureSources": {
+        "宽松轿厢": -17810,
+        "小偷未受控": 1398,
+        "轿厢拥挤": 13754,
+        "乘客到站舒缓": -19633,
+        "音乐家安抚": -6551,
+        "护士安抚": -2654,
+        "长班疲劳": 38592,
+        "醉汉闹事": 438,
+        "邻座冲突": 230,
+        "检查员超载": 19,
+        "变动超载": 4,
+        "耐心归零": 72,
+        "名人被围": 1
+      },
+      "mean": 115.38,
+      "median": 116,
+      "p10": 107,
+      "p90": 123,
+      "max": 129,
+      "reach100Pct": 97.67,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 4,
+        "agitation": 296,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1018.65,
+      "meanOccupancy": 2.53,
+      "steps": 34314,
+      "changes": 2500,
+      "dismissals": 1236,
+      "boarded": {
+        "commuter": 2560,
+        "tourist": 1743,
+        "courier": 2279,
+        "mechanic": 888,
+        "lover": 1292,
+        "musician": 1341,
+        "thief": 1176,
+        "cop": 1040,
+        "lawyer": 606,
+        "drunk": 716,
+        "nurse": 1128,
+        "child": 229,
+        "ghost": 213,
+        "exorcist": 372,
+        "coach": 1369,
+        "celebrity": 573,
+        "inspector": 397,
+        "bomb": 392,
+        "mystery": 1364,
+        "shifter": 1026,
+        "mimic": 690
+      },
+      "seedThirdMeans": [
+        114.91,
+        115.22,
+        116.01
+      ],
+      "emptyStepPct": 13.82,
+      "lateEmptyStepPct": 27.22,
+      "meanLastBoardingFloor": 113.04,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 135,
+          "earned": 266,
+          "stress": 0,
+          "occupants": 4
+        },
+        {
+          "floor": 50,
+          "coins": 224,
+          "earned": 575,
+          "stress": 9,
+          "occupants": 3
+        },
+        {
+          "floor": 75,
+          "coins": 96,
+          "earned": 810,
+          "stress": 1,
+          "occupants": 2
+        },
+        {
+          "floor": 100,
+          "coins": 56,
+          "earned": 890,
+          "stress": 7,
+          "occupants": 2
+        }
+      ]
+    },
+    {
+      "id": "cautious-full-charge",
+      "config": {
+        "id": "cautious-full-charge",
+        "cap": 6,
+        "risk": 9,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "chargeFull": true
+      },
+      "runs": 300,
+      "purchases": {
+        "solar": 300,
+        "reinforced": 298,
+        "express": 276,
+        "concierge": 501,
+        "battery": 212,
+        "calm": 1185
+      },
+      "spending": {
+        "solar": 20952,
+        "reinforced": 17874,
+        "express": 24168,
+        "concierge": 39312,
+        "battery": 13056,
+        "calm": 153192
+      },
+      "chargeSpend": 116074,
+      "shopVisits": 3308,
+      "firstShopPassed": 300,
+      "deliveryCount": 31689,
+      "patienceLosses": 2,
+      "pressureSources": {
+        "宽松轿厢": -10074,
+        "小偷未受控": 1169,
+        "轿厢拥挤": 29325,
+        "乘客到站舒缓": -31689,
+        "音乐家安抚": -14978,
+        "护士安抚": -4320,
+        "长班疲劳": 39503,
+        "名人被围": 106,
+        "邻座冲突": 408,
+        "醉汉闹事": 246,
+        "检查员超载": 167,
+        "变动超载": 10,
+        "耐心归零": 4
+      },
+      "mean": 114.56,
+      "median": 114,
+      "p10": 106,
+      "p90": 123,
+      "max": 131,
+      "reach100Pct": 96.67,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 2024.14,
+      "meanOccupancy": 3.94,
+      "steps": 34067,
+      "changes": 8459,
+      "dismissals": 3081,
+      "boarded": {
+        "commuter": 3752,
+        "tourist": 2706,
+        "courier": 3740,
+        "mechanic": 1255,
+        "lover": 2391,
+        "musician": 2946,
+        "thief": 1585,
+        "cop": 1498,
+        "lawyer": 1023,
+        "drunk": 1110,
+        "nurse": 2015,
+        "child": 740,
+        "ghost": 395,
+        "exorcist": 653,
+        "coach": 2168,
+        "celebrity": 849,
+        "inspector": 458,
+        "bomb": 893,
+        "mystery": 2188,
+        "shifter": 1880,
+        "mimic": 1120
+      },
+      "seedThirdMeans": [
+        113.87,
+        114.95,
+        114.85
+      ],
+      "emptyStepPct": 11.15,
+      "lateEmptyStepPct": 27.25,
+      "meanLastBoardingFloor": 112.49,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 122,
+          "earned": 389,
+          "stress": 0,
+          "occupants": 6
+        },
+        {
+          "floor": 50,
+          "coins": 413,
+          "earned": 1028,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 75,
+          "coins": 818,
+          "earned": 1726,
+          "stress": 8,
+          "occupants": 5
+        },
+        {
+          "floor": 100,
+          "coins": 1060,
+          "earned": 2435,
+          "stress": 16,
+          "occupants": 0
+        }
+      ]
+    },
+    {
+      "id": "cautious-6",
+      "config": {
+        "id": "cautious-6",
+        "cap": 6,
+        "risk": 9,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1
+      },
+      "runs": 300,
+      "purchases": {
+        "solar": 300,
+        "reinforced": 298,
+        "express": 276,
+        "concierge": 509,
+        "battery": 212,
+        "calm": 1188
+      },
+      "spending": {
+        "solar": 20772,
+        "reinforced": 17778,
+        "express": 24000,
+        "concierge": 39865,
+        "battery": 12897,
+        "calm": 153276
+      },
+      "chargeSpend": 114794,
+      "shopVisits": 3305,
+      "firstShopPassed": 300,
+      "deliveryCount": 31679,
+      "patienceLosses": 2,
+      "pressureSources": {
+        "宽松轿厢": -10093,
+        "小偷未受控": 1163,
+        "轿厢拥挤": 29311,
+        "乘客到站舒缓": -31679,
+        "音乐家安抚": -14910,
+        "护士安抚": -4348,
+        "长班疲劳": 39461,
+        "名人被围": 115,
+        "邻座冲突": 406,
+        "醉汉闹事": 252,
+        "检查员超载": 165,
+        "变动超载": 10,
+        "耐心归零": 4
+      },
+      "mean": 114.54,
+      "median": 115,
+      "p10": 106,
+      "p90": 123,
+      "max": 131,
+      "reach100Pct": 96,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 2026.73,
+      "meanOccupancy": 3.93,
+      "steps": 34062,
+      "changes": 8415,
+      "dismissals": 3059,
+      "boarded": {
+        "commuter": 3761,
+        "tourist": 2678,
+        "courier": 3726,
+        "mechanic": 1245,
+        "lover": 2420,
+        "musician": 2938,
+        "thief": 1586,
+        "cop": 1496,
+        "lawyer": 1038,
+        "drunk": 1125,
+        "nurse": 2033,
+        "child": 733,
+        "ghost": 392,
+        "exorcist": 635,
+        "coach": 2140,
+        "celebrity": 845,
+        "inspector": 443,
+        "bomb": 901,
+        "mystery": 2202,
+        "shifter": 1889,
+        "mimic": 1098
+      },
+      "seedThirdMeans": [
+        113.89,
+        115.4,
+        114.33
+      ],
+      "emptyStepPct": 11.23,
+      "lateEmptyStepPct": 27.39,
+      "meanLastBoardingFloor": 112.44,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 126,
+          "earned": 389,
+          "stress": 0,
+          "occupants": 6
+        },
+        {
+          "floor": 50,
+          "coins": 417,
+          "earned": 1028,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 75,
+          "coins": 822,
+          "earned": 1726,
+          "stress": 8,
+          "occupants": 5
+        },
+        {
+          "floor": 100,
+          "coins": 1064,
+          "earned": 2435,
+          "stress": 16,
+          "occupants": 0
+        }
+      ]
+    },
+    {
+      "id": "pair-cautious",
+      "config": {
+        "id": "pair-cautious",
+        "cap": 6,
+        "risk": 9,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "pairSearch": true
+      },
+      "runs": 300,
+      "purchases": {
+        "solar": 300,
+        "reinforced": 299,
+        "express": 279,
+        "concierge": 519,
+        "battery": 223,
+        "calm": 1235
+      },
+      "spending": {
+        "solar": 20676,
+        "reinforced": 17979,
+        "express": 24195,
+        "concierge": 40872,
+        "battery": 13539,
+        "calm": 157372
+      },
+      "chargeSpend": 111962,
+      "shopVisits": 3230,
+      "firstShopPassed": 300,
+      "deliveryCount": 32654,
+      "patienceLosses": 1,
+      "pressureSources": {
+        "宽松轿厢": -8928,
+        "小偷未受控": 1161,
+        "轿厢拥挤": 31620,
+        "乘客到站舒缓": -32654,
+        "音乐家安抚": -15746,
+        "护士安抚": -4463,
+        "长班疲劳": 38561,
+        "名人被围": 145,
+        "邻座冲突": 370,
+        "检查员超载": 211,
+        "醉汉闹事": 248,
+        "变动超载": 8,
+        "耐心归零": 2
+      },
+      "mean": 112.16,
+      "median": 112,
+      "p10": 104,
+      "p90": 122,
+      "max": 129,
+      "reach100Pct": 94.33,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 2082.79,
+      "meanOccupancy": 4.14,
+      "steps": 33348,
+      "changes": 8409,
+      "dismissals": 3294,
+      "boarded": {
+        "commuter": 3948,
+        "tourist": 2777,
+        "courier": 3836,
+        "mechanic": 1310,
+        "lover": 2530,
+        "musician": 3074,
+        "thief": 1675,
+        "cop": 1533,
+        "lawyer": 1082,
+        "drunk": 1218,
+        "nurse": 2115,
+        "child": 795,
+        "ghost": 423,
+        "exorcist": 648,
+        "coach": 2168,
+        "celebrity": 817,
+        "inspector": 494,
+        "bomb": 897,
+        "mystery": 2191,
+        "shifter": 1865,
+        "mimic": 1178
+      },
+      "seedThirdMeans": [
+        110.55,
+        112.81,
+        113.12
+      ],
+      "emptyStepPct": 9.84,
+      "lateEmptyStepPct": 26.31,
+      "meanLastBoardingFloor": 110.13,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 114,
+          "earned": 377,
+          "stress": 0,
+          "occupants": 6
+        },
+        {
+          "floor": 50,
+          "coins": 304,
+          "earned": 996,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 75,
+          "coins": 706,
+          "earned": 1723,
+          "stress": 7,
+          "occupants": 5
+        },
+        {
+          "floor": 100,
+          "coins": 986,
+          "earned": 2297,
+          "stress": 23,
+          "occupants": 2
+        }
+      ]
+    },
+    {
+      "id": "without-solar",
+      "config": {
+        "id": "without-solar",
+        "cap": 6,
+        "risk": 9,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "banUpgrade": "solar"
+      },
+      "runs": 300,
+      "purchases": {
+        "concierge": 524,
+        "express": 278,
+        "battery": 226,
+        "reinforced": 291,
+        "calm": 1014
+      },
+      "spending": {
+        "concierge": 40000,
+        "express": 23566,
+        "battery": 13491,
+        "reinforced": 16359,
+        "calm": 127473
+      },
+      "chargeSpend": 123088,
+      "shopVisits": 3220,
+      "firstShopPassed": 300,
+      "deliveryCount": 30903,
+      "patienceLosses": 2,
+      "pressureSources": {
+        "宽松轿厢": -10065,
+        "小偷未受控": 1139,
+        "轿厢拥挤": 28645,
+        "乘客到站舒缓": -30903,
+        "音乐家安抚": -14575,
+        "护士安抚": -4196,
+        "邻座冲突": 378,
+        "长班疲劳": 37463,
+        "检查员超载": 181,
+        "名人被围": 95,
+        "醉汉闹事": 250,
+        "变动超载": 4,
+        "耐心归零": 4
+      },
+      "mean": 112.02,
+      "median": 113,
+      "p10": 98,
+      "p90": 124,
+      "max": 130,
+      "reach100Pct": 85,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1977.86,
+      "meanOccupancy": 3.92,
+      "steps": 33307,
+      "changes": 8107,
+      "dismissals": 3145,
+      "boarded": {
+        "commuter": 3675,
+        "tourist": 2648,
+        "courier": 3629,
+        "mechanic": 1303,
+        "lover": 2306,
+        "musician": 2880,
+        "thief": 1560,
+        "cop": 1498,
+        "lawyer": 992,
+        "drunk": 1113,
+        "nurse": 1995,
+        "child": 747,
+        "ghost": 399,
+        "exorcist": 634,
+        "coach": 2125,
+        "celebrity": 786,
+        "inspector": 486,
+        "bomb": 844,
+        "mystery": 2166,
+        "shifter": 1778,
+        "mimic": 1090
+      },
+      "seedThirdMeans": [
+        111.16,
+        112.33,
+        112.58
+      ],
+      "emptyStepPct": 11.4,
+      "lateEmptyStepPct": 27.9,
+      "meanLastBoardingFloor": 110.05,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 157,
+          "earned": 421,
+          "stress": 0,
+          "occupants": 6
+        },
+        {
+          "floor": 50,
+          "coins": 359,
+          "earned": 1163,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 75,
+          "coins": 748,
+          "earned": 1794,
+          "stress": 14,
+          "occupants": 5
+        },
+        {
+          "floor": 100,
+          "coins": 703,
+          "earned": 1943,
+          "stress": 26,
+          "occupants": 0
+        }
+      ]
+    },
+    {
+      "id": "without-express",
+      "config": {
+        "id": "without-express",
+        "cap": 6,
+        "risk": 9,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "banUpgrade": "express"
+      },
+      "runs": 300,
+      "purchases": {
+        "solar": 297,
+        "reinforced": 300,
+        "battery": 252,
+        "concierge": 469,
+        "calm": 1037
+      },
+      "spending": {
+        "solar": 20571,
+        "reinforced": 18228,
+        "battery": 15072,
+        "concierge": 36389,
+        "calm": 129811
+      },
+      "chargeSpend": 110878,
+      "shopVisits": 3190,
+      "firstShopPassed": 300,
+      "deliveryCount": 28824,
+      "patienceLosses": 2,
+      "pressureSources": {
+        "宽松轿厢": -10141,
+        "小偷未受控": 1109,
+        "轿厢拥挤": 28104,
+        "乘客到站舒缓": -28824,
+        "音乐家安抚": -14929,
+        "护士安抚": -4479,
+        "长班疲劳": 37046,
+        "邻座冲突": 371,
+        "醉汉闹事": 196,
+        "检查员超载": 162,
+        "名人被围": 94,
+        "变动超载": 4,
+        "耐心归零": 4
+      },
+      "mean": 110.94,
+      "median": 111,
+      "p10": 98,
+      "p90": 122,
+      "max": 132,
+      "reach100Pct": 87.33,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1794.67,
+      "meanOccupancy": 3.91,
+      "steps": 32982,
+      "changes": 7796,
+      "dismissals": 3111,
+      "boarded": {
+        "commuter": 3628,
+        "tourist": 2430,
+        "courier": 3591,
+        "mechanic": 1203,
+        "lover": 2343,
+        "musician": 2712,
+        "thief": 1486,
+        "cop": 1401,
+        "lawyer": 934,
+        "drunk": 1025,
+        "nurse": 1941,
+        "child": 661,
+        "ghost": 335,
+        "exorcist": 546,
+        "coach": 1922,
+        "celebrity": 699,
+        "inspector": 406,
+        "bomb": 696,
+        "mystery": 1961,
+        "shifter": 1649,
+        "mimic": 975
+      },
+      "seedThirdMeans": [
+        111.61,
+        110.92,
+        110.29
+      ],
+      "emptyStepPct": 10.98,
+      "lateEmptyStepPct": 26.58,
+      "meanLastBoardingFloor": 108.7,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 135,
+          "earned": 378,
+          "stress": 2,
+          "occupants": 6
+        },
+        {
+          "floor": 50,
+          "coins": 368,
+          "earned": 985,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 75,
+          "coins": 806,
+          "earned": 1746,
+          "stress": 7,
+          "occupants": 6
+        },
+        {
+          "floor": 100,
+          "coins": 1056,
+          "earned": 2453,
+          "stress": 18,
+          "occupants": 2
+        }
+      ]
+    },
+    {
+      "id": "calming-6",
+      "config": {
+        "id": "calming-6",
+        "cap": 6,
+        "risk": 5,
+        "favorite": [
+          "musician",
+          "nurse"
+        ],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1
+      },
+      "runs": 300,
+      "purchases": {
+        "solar": 300,
+        "concierge": 506,
+        "reinforced": 299,
+        "battery": 220,
+        "express": 284,
+        "calm": 1346
+      },
+      "spending": {
+        "solar": 20460,
+        "concierge": 40180,
+        "reinforced": 17655,
+        "battery": 13353,
+        "express": 24700,
+        "calm": 163723
+      },
+      "chargeSpend": 102310,
+      "shopVisits": 2954,
+      "firstShopPassed": 300,
+      "deliveryCount": 32877,
+      "patienceLosses": 1,
+      "pressureSources": {
+        "宽松轿厢": -6187,
+        "小偷未受控": 1656,
+        "轿厢拥挤": 35112,
+        "乘客到站舒缓": -32877,
+        "音乐家安抚": -15731,
+        "护士安抚": -4938,
+        "长班疲劳": 32829,
+        "检查员超载": 369,
+        "名人被围": 296,
+        "邻座冲突": 451,
+        "醉汉闹事": 506,
+        "变动超载": 24,
+        "耐心归零": 2
+      },
+      "mean": 103.08,
+      "median": 104,
+      "p10": 95,
+      "p90": 113,
+      "max": 123,
+      "reach100Pct": 74.67,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 2054.88,
+      "meanOccupancy": 4.5,
+      "steps": 30623,
+      "changes": 9330,
+      "dismissals": 2372,
+      "boarded": {
+        "commuter": 3965,
+        "tourist": 2881,
+        "courier": 3580,
+        "mechanic": 1254,
+        "lover": 2305,
+        "musician": 3110,
+        "thief": 1750,
+        "cop": 1471,
+        "lawyer": 1133,
+        "drunk": 1350,
+        "nurse": 2297,
+        "child": 847,
+        "ghost": 395,
+        "exorcist": 637,
+        "coach": 2074,
+        "celebrity": 719,
+        "inspector": 524,
+        "bomb": 773,
+        "mystery": 2106,
+        "shifter": 1724,
+        "mimic": 1116
+      },
+      "seedThirdMeans": [
+        101.76,
+        102.79,
+        104.68
+      ],
+      "emptyStepPct": 8.28,
+      "lateEmptyStepPct": 24.97,
+      "meanLastBoardingFloor": 101.24,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 138,
+          "earned": 431,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 50,
+          "coins": 416,
+          "earned": 1166,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 75,
+          "coins": 798,
+          "earned": 1903,
+          "stress": 18,
+          "occupants": 5
+        }
+      ]
+    },
+    {
+      "id": "balanced-3",
+      "config": {
+        "id": "balanced-3",
+        "cap": 3,
+        "risk": 3,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1
+      },
+      "runs": 300,
+      "purchases": {
+        "express": 75,
+        "reinforced": 235,
+        "concierge": 221,
+        "calm": 753,
+        "solar": 264,
+        "battery": 37
+      },
+      "spending": {
+        "express": 7599,
+        "reinforced": 16275,
+        "concierge": 17701,
+        "calm": 84948,
+        "solar": 21192,
+        "battery": 2289
+      },
+      "chargeSpend": 98792,
+      "shopVisits": 2759,
+      "firstShopPassed": 300,
+      "deliveryCount": 17939,
+      "patienceLosses": 24,
+      "pressureSources": {
+        "宽松轿厢": -5934,
+        "小偷未受控": 1566,
+        "乘客到站舒缓": -17939,
+        "护士安抚": -2235,
+        "长班疲劳": 28503,
+        "耐心归零": 48,
+        "醉汉闹事": 844,
+        "邻座冲突": 268,
+        "名人被围": 1,
+        "检查员超载": 1
+      },
+      "mean": 96.64,
+      "median": 98,
+      "p10": 87,
+      "p90": 108,
+      "max": 120,
+      "reach100Pct": 42,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 3,
+        "agitation": 297,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1021.12,
+      "meanOccupancy": 2.64,
+      "steps": 28691,
+      "changes": 1598,
+      "dismissals": 1028,
+      "boarded": {
+        "commuter": 2259,
+        "tourist": 1681,
+        "courier": 2211,
+        "mechanic": 766,
+        "lover": 922,
+        "musician": 501,
+        "thief": 1155,
+        "cop": 925,
+        "lawyer": 641,
+        "drunk": 756,
+        "nurse": 1022,
+        "child": 214,
+        "ghost": 168,
+        "exorcist": 344,
+        "coach": 1321,
+        "celebrity": 592,
+        "inspector": 417,
+        "bomb": 498,
+        "mystery": 1413,
+        "shifter": 1158,
+        "mimic": 690
+      },
+      "seedThirdMeans": [
+        97.63,
+        97.85,
+        94.43
+      ],
+      "emptyStepPct": 7.76,
+      "lateEmptyStepPct": 26.68,
+      "meanLastBoardingFloor": 94.83,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 42,
+          "earned": 199,
+          "stress": 0,
+          "occupants": 3
+        },
+        {
+          "floor": 50,
+          "coins": 58,
+          "earned": 545,
+          "stress": 4,
+          "occupants": 3
+        },
+        {
+          "floor": 75,
+          "coins": 215,
+          "earned": 884,
+          "stress": 18,
+          "occupants": 2
+        }
+      ]
+    },
+    {
+      "id": "pair-balanced",
+      "config": {
+        "id": "pair-balanced",
+        "cap": 3,
+        "risk": 3,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "pairSearch": true
+      },
+      "runs": 300,
+      "purchases": {
+        "express": 71,
+        "reinforced": 233,
+        "concierge": 230,
+        "calm": 747,
+        "solar": 268,
+        "battery": 36
+      },
+      "spending": {
+        "express": 7159,
+        "reinforced": 16209,
+        "concierge": 18505,
+        "calm": 84162,
+        "solar": 21676,
+        "battery": 2256
+      },
+      "chargeSpend": 97506,
+      "shopVisits": 2727,
+      "firstShopPassed": 300,
+      "deliveryCount": 17873,
+      "patienceLosses": 25,
+      "pressureSources": {
+        "宽松轿厢": -5718,
+        "小偷未受控": 1537,
+        "乘客到站舒缓": -17873,
+        "护士安抚": -2324,
+        "长班疲劳": 28347,
+        "耐心归零": 50,
+        "醉汉闹事": 788,
+        "邻座冲突": 251,
+        "检查员超载": 3,
+        "名人被围": 1
+      },
+      "mean": 95.57,
+      "median": 98,
+      "p10": 83,
+      "p90": 106,
+      "max": 118,
+      "reach100Pct": 37.67,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 3,
+        "agitation": 297,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1019.49,
+      "meanOccupancy": 2.66,
+      "steps": 28371,
+      "changes": 1477,
+      "dismissals": 1079,
+      "boarded": {
+        "commuter": 2240,
+        "tourist": 1652,
+        "courier": 2221,
+        "mechanic": 775,
+        "lover": 884,
+        "musician": 494,
+        "thief": 1145,
+        "cop": 892,
+        "lawyer": 639,
+        "drunk": 754,
+        "nurse": 1058,
+        "child": 215,
+        "ghost": 185,
+        "exorcist": 361,
+        "coach": 1353,
+        "celebrity": 591,
+        "inspector": 391,
+        "bomb": 492,
+        "mystery": 1420,
+        "shifter": 1193,
+        "mimic": 675
+      },
+      "seedThirdMeans": [
+        95.87,
+        96.93,
+        93.91
+      ],
+      "emptyStepPct": 6.7,
+      "lateEmptyStepPct": 25.02,
+      "meanLastBoardingFloor": 93.67,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 42,
+          "earned": 199,
+          "stress": 0,
+          "occupants": 3
+        },
+        {
+          "floor": 50,
+          "coins": 34,
+          "earned": 533,
+          "stress": 2,
+          "occupants": 3
+        },
+        {
+          "floor": 75,
+          "coins": 124,
+          "earned": 814,
+          "stress": 14,
+          "occupants": 3
+        }
+      ]
+    },
+    {
+      "id": "without-calm",
+      "config": {
+        "id": "without-calm",
+        "cap": 6,
+        "risk": 9,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "banUpgrade": "calm"
+      },
+      "runs": 300,
+      "purchases": {
+        "solar": 300,
+        "reinforced": 299,
+        "express": 275,
+        "concierge": 521,
+        "battery": 219
+      },
+      "spending": {
+        "solar": 20700,
+        "reinforced": 17799,
+        "express": 23743,
+        "concierge": 40945,
+        "battery": 13320
+      },
+      "chargeSpend": 93886,
+      "shopVisits": 2690,
+      "firstShopPassed": 300,
+      "deliveryCount": 25834,
+      "patienceLosses": 2,
+      "pressureSources": {
+        "宽松轿厢": -8626,
+        "小偷未受控": 1059,
+        "轿厢拥挤": 24316,
+        "乘客到站舒缓": -25834,
+        "音乐家安抚": -12495,
+        "护士安抚": -3582,
+        "长班疲劳": 24775,
+        "名人被围": 59,
+        "邻座冲突": 340,
+        "醉汉闹事": 192,
+        "检查员超载": 106,
+        "变动超载": 10,
+        "耐心归零": 4
+      },
+      "mean": 94.29,
+      "median": 95,
+      "p10": 89,
+      "p90": 101,
+      "max": 109,
+      "reach100Pct": 15.33,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1589.17,
+      "meanOccupancy": 3.93,
+      "steps": 27988,
+      "changes": 6708,
+      "dismissals": 2605,
+      "boarded": {
+        "commuter": 3210,
+        "tourist": 2300,
+        "courier": 3181,
+        "mechanic": 1098,
+        "lover": 2086,
+        "musician": 2424,
+        "thief": 1382,
+        "cop": 1250,
+        "lawyer": 828,
+        "drunk": 903,
+        "nurse": 1686,
+        "child": 630,
+        "ghost": 313,
+        "exorcist": 516,
+        "coach": 1717,
+        "celebrity": 591,
+        "inspector": 347,
+        "bomb": 598,
+        "mystery": 1730,
+        "shifter": 1418,
+        "mimic": 875
+      },
+      "seedThirdMeans": [
+        93.56,
+        93.83,
+        95.49
+      ],
+      "emptyStepPct": 10.77,
+      "lateEmptyStepPct": 31.02,
+      "meanLastBoardingFloor": 92.16,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 126,
+          "earned": 389,
+          "stress": 0,
+          "occupants": 6
+        },
+        {
+          "floor": 50,
+          "coins": 417,
+          "earned": 1028,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 75,
+          "coins": 932,
+          "earned": 1629,
+          "stress": 12,
+          "occupants": 5
+        }
+      ]
+    },
+    {
+      "id": "no-upgrades",
+      "config": {
+        "id": "no-upgrades",
+        "cap": 6,
+        "risk": 9,
+        "favorite": [],
+        "bias": 2,
+        "shop": "none",
+        "moves": 1
+      },
+      "runs": 300,
+      "purchases": {},
+      "spending": {},
+      "chargeSpend": 102970,
+      "shopVisits": 2697,
+      "firstShopPassed": 300,
+      "deliveryCount": 23551,
+      "patienceLosses": 3,
+      "pressureSources": {
+        "宽松轿厢": -8952,
+        "小偷未受控": 1072,
+        "轿厢拥挤": 22361,
+        "乘客到站舒缓": -23551,
+        "音乐家安抚": -12936,
+        "护士安抚": -3635,
+        "长班疲劳": 25146,
+        "邻座冲突": 330,
+        "醉汉闹事": 120,
+        "检查员超载": 106,
+        "名人被围": 37,
+        "变动超载": 12,
+        "耐心归零": 6
+      },
+      "mean": 94.19,
+      "median": 95,
+      "p10": 88,
+      "p90": 101,
+      "max": 109,
+      "reach100Pct": 15,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1231.96,
+      "meanOccupancy": 3.84,
+      "steps": 27958,
+      "changes": 5903,
+      "dismissals": 2771,
+      "boarded": {
+        "commuter": 3018,
+        "tourist": 2130,
+        "courier": 2874,
+        "mechanic": 1021,
+        "lover": 2168,
+        "musician": 2322,
+        "thief": 1324,
+        "cop": 1186,
+        "lawyer": 852,
+        "drunk": 792,
+        "nurse": 1590,
+        "child": 464,
+        "ghost": 325,
+        "exorcist": 487,
+        "coach": 1469,
+        "celebrity": 512,
+        "inspector": 382,
+        "bomb": 527,
+        "mystery": 1545,
+        "shifter": 1174,
+        "mimic": 753
+      },
+      "seedThirdMeans": [
+        93.76,
+        94.53,
+        94.29
+      ],
+      "emptyStepPct": 9.98,
+      "lateEmptyStepPct": 28.28,
+      "meanLastBoardingFloor": 92.12,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 294,
+          "earned": 374,
+          "stress": 2,
+          "occupants": 6
+        },
+        {
+          "floor": 50,
+          "coins": 697,
+          "earned": 927,
+          "stress": 0,
+          "occupants": 5
+        },
+        {
+          "floor": 75,
+          "coins": 793,
+          "earned": 1197,
+          "stress": 10,
+          "occupants": 2
+        }
+      ]
+    },
+    {
+      "id": "pair-occult",
+      "config": {
+        "id": "pair-occult",
+        "cap": 3,
+        "risk": 3,
+        "favorite": [
+          "ghost",
+          "exorcist"
+        ],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "pairSearch": true
+      },
+      "runs": 300,
+      "purchases": {
+        "express": 70,
+        "reinforced": 235,
+        "concierge": 209,
+        "calm": 691,
+        "solar": 257,
+        "battery": 38
+      },
+      "spending": {
+        "express": 7106,
+        "reinforced": 16347,
+        "concierge": 16708,
+        "calm": 74960,
+        "solar": 20639,
+        "battery": 2394
+      },
+      "chargeSpend": 95458,
+      "shopVisits": 2666,
+      "firstShopPassed": 300,
+      "deliveryCount": 17219,
+      "patienceLosses": 26,
+      "pressureSources": {
+        "宽松轿厢": -5556,
+        "小偷未受控": 1516,
+        "乘客到站舒缓": -17219,
+        "护士安抚": -2109,
+        "长班疲劳": 27032,
+        "耐心归零": 52,
+        "醉汉闹事": 752,
+        "邻座冲突": 244,
+        "检查员超载": 6
+      },
+      "mean": 93.66,
+      "median": 96,
+      "p10": 82,
+      "p90": 104,
+      "max": 119,
+      "reach100Pct": 24.67,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 3,
+        "agitation": 297,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 965.66,
+      "meanOccupancy": 2.67,
+      "steps": 27798,
+      "changes": 1476,
+      "dismissals": 1161,
+      "boarded": {
+        "commuter": 2140,
+        "tourist": 1568,
+        "courier": 2137,
+        "mechanic": 714,
+        "lover": 786,
+        "musician": 440,
+        "thief": 1097,
+        "cop": 811,
+        "lawyer": 579,
+        "drunk": 705,
+        "nurse": 962,
+        "child": 199,
+        "ghost": 517,
+        "exorcist": 685,
+        "coach": 1272,
+        "celebrity": 542,
+        "inspector": 351,
+        "bomb": 458,
+        "mystery": 1337,
+        "shifter": 1161,
+        "mimic": 618
+      },
+      "seedThirdMeans": [
+        94.64,
+        94.55,
+        91.79
+      ],
+      "emptyStepPct": 6.53,
+      "lateEmptyStepPct": 24.55,
+      "meanLastBoardingFloor": 91.77,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 42,
+          "earned": 199,
+          "stress": 0,
+          "occupants": 3
+        },
+        {
+          "floor": 50,
+          "coins": 36,
+          "earned": 535,
+          "stress": 3,
+          "occupants": 3
+        },
+        {
+          "floor": 75,
+          "coins": 201,
+          "earned": 890,
+          "stress": 17,
+          "occupants": 0
+        }
+      ]
+    },
+    {
+      "id": "police-thief-4",
+      "config": {
+        "id": "police-thief-4",
+        "cap": 4,
+        "risk": 3,
+        "favorite": [
+          "thief",
+          "cop",
+          "lawyer"
+        ],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1
+      },
+      "runs": 300,
+      "purchases": {
+        "express": 183,
+        "calm": 1110,
+        "reinforced": 278,
+        "concierge": 312,
+        "solar": 292,
+        "battery": 79
+      },
+      "spending": {
+        "express": 17811,
+        "calm": 123087,
+        "reinforced": 17790,
+        "concierge": 24057,
+        "solar": 22300,
+        "battery": 5019
+      },
+      "chargeSpend": 91924,
+      "shopVisits": 2583,
+      "firstShopPassed": 300,
+      "deliveryCount": 21646,
+      "patienceLosses": 10,
+      "pressureSources": {
+        "宽松轿厢": -4830,
+        "小偷未受控": 1870,
+        "轿厢拥挤": 19540,
+        "乘客到站舒缓": -21646,
+        "音乐家安抚": -7042,
+        "护士安抚": -2703,
+        "长班疲劳": 25191,
+        "醉汉闹事": 622,
+        "耐心归零": 20,
+        "检查员超载": 44,
+        "邻座冲突": 195,
+        "名人被围": 5
+      },
+      "mean": 90.99,
+      "median": 94,
+      "p10": 69,
+      "p90": 104,
+      "max": 115,
+      "reach100Pct": 26.33,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1267.82,
+      "meanOccupancy": 3.41,
+      "steps": 26998,
+      "changes": 3331,
+      "dismissals": 1158,
+      "boarded": {
+        "commuter": 2274,
+        "tourist": 1736,
+        "courier": 2428,
+        "mechanic": 756,
+        "lover": 1039,
+        "musician": 1431,
+        "thief": 1822,
+        "cop": 1711,
+        "lawyer": 1052,
+        "drunk": 851,
+        "nurse": 1219,
+        "child": 305,
+        "ghost": 160,
+        "exorcist": 384,
+        "coach": 1484,
+        "celebrity": 567,
+        "inspector": 336,
+        "bomb": 547,
+        "mystery": 1544,
+        "shifter": 1281,
+        "mimic": 707
+      },
+      "seedThirdMeans": [
+        91.37,
+        90.69,
+        90.92
+      ],
+      "emptyStepPct": 6.75,
+      "lateEmptyStepPct": 25.43,
+      "meanLastBoardingFloor": 89.23,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 86,
+          "earned": 290,
+          "stress": 0,
+          "occupants": 4
+        },
+        {
+          "floor": 50,
+          "coins": 6,
+          "earned": 674,
+          "stress": 11,
+          "occupants": 4
+        },
+        {
+          "floor": 75,
+          "coins": 153,
+          "earned": 1036,
+          "stress": 14,
+          "occupants": 2
+        }
+      ]
+    },
+    {
+      "id": "pair-police",
+      "config": {
+        "id": "pair-police",
+        "cap": 4,
+        "risk": 3,
+        "favorite": [
+          "thief",
+          "cop",
+          "lawyer"
+        ],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1,
+        "pairSearch": true
+      },
+      "runs": 300,
+      "purchases": {
+        "express": 187,
+        "calm": 1091,
+        "reinforced": 278,
+        "solar": 289,
+        "concierge": 310,
+        "battery": 82
+      },
+      "spending": {
+        "express": 18263,
+        "calm": 120298,
+        "reinforced": 17766,
+        "solar": 21811,
+        "concierge": 24032,
+        "battery": 5154
+      },
+      "chargeSpend": 89498,
+      "shopVisits": 2518,
+      "firstShopPassed": 300,
+      "deliveryCount": 21463,
+      "patienceLosses": 15,
+      "pressureSources": {
+        "宽松轿厢": -4112,
+        "小偷未受控": 1853,
+        "轿厢拥挤": 19738,
+        "乘客到站舒缓": -21463,
+        "音乐家安抚": -7651,
+        "护士安抚": -2672,
+        "长班疲劳": 24541,
+        "耐心归零": 30,
+        "醉汉闹事": 616,
+        "邻座冲突": 223,
+        "检查员超载": 51,
+        "名人被围": 4
+      },
+      "mean": 88.79,
+      "median": 93,
+      "p10": 69,
+      "p90": 103,
+      "max": 111,
+      "reach100Pct": 21.33,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 300,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 1256.55,
+      "meanOccupancy": 3.49,
+      "steps": 26336,
+      "changes": 3140,
+      "dismissals": 1128,
+      "boarded": {
+        "commuter": 2278,
+        "tourist": 1739,
+        "courier": 2336,
+        "mechanic": 746,
+        "lover": 1045,
+        "musician": 1527,
+        "thief": 1796,
+        "cop": 1665,
+        "lawyer": 1060,
+        "drunk": 907,
+        "nurse": 1210,
+        "child": 283,
+        "ghost": 168,
+        "exorcist": 355,
+        "coach": 1514,
+        "celebrity": 525,
+        "inspector": 336,
+        "bomb": 520,
+        "mystery": 1485,
+        "shifter": 1248,
+        "mimic": 738
+      },
+      "seedThirdMeans": [
+        87.61,
+        89.37,
+        89.38
+      ],
+      "emptyStepPct": 5.26,
+      "lateEmptyStepPct": 22.5,
+      "meanLastBoardingFloor": 87.21,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 86,
+          "earned": 290,
+          "stress": 0,
+          "occupants": 4
+        },
+        {
+          "floor": 50,
+          "coins": 63,
+          "earned": 625,
+          "stress": 1,
+          "occupants": 4
+        },
+        {
+          "floor": 75,
+          "coins": 121,
+          "earned": 1038,
+          "stress": 21,
+          "occupants": 4
+        },
+        {
+          "floor": 100,
+          "coins": 163,
+          "earned": 1387,
+          "stress": 29,
+          "occupants": 0
+        }
+      ]
+    }
+  ],
+  "policyComparisons": [
+    {
+      "id": "balanced-3",
+      "n": 300,
+      "delta": -17.9,
+      "bootstrap95": [
+        -19.54,
+        -16.31
+      ],
+      "winPct": 3.67,
+      "tiePct": 2
+    },
+    {
+      "id": "cautious-6",
+      "n": 300,
+      "delta": 0,
+      "bootstrap95": [
+        0,
+        0
+      ],
+      "winPct": 0,
+      "tiePct": 100
+    },
+    {
+      "id": "police-thief-4",
+      "n": 300,
+      "delta": -23.55,
+      "bootstrap95": [
+        -25.24,
+        -21.82
+      ],
+      "winPct": 2.33,
+      "tiePct": 0.67
+    },
+    {
+      "id": "calming-6",
+      "n": 300,
+      "delta": -11.46,
+      "bootstrap95": [
+        -12.82,
+        -10.12
+      ],
+      "winPct": 8.67,
+      "tiePct": 2
+    },
+    {
+      "id": "no-upgrades",
+      "n": 300,
+      "delta": -20.35,
+      "bootstrap95": [
+        -21.4,
+        -19.27
+      ],
+      "winPct": 1.33,
+      "tiePct": 1
+    },
+    {
+      "id": "cautious-calm",
+      "n": 300,
+      "delta": 2.96,
+      "bootstrap95": [
+        1.64,
+        4.22
+      ],
+      "winPct": 58,
+      "tiePct": 3.67
+    },
+    {
+      "id": "cautious-full-charge",
+      "n": 300,
+      "delta": 0.02,
+      "bootstrap95": [
+        -0.39,
+        0.51
+      ],
+      "winPct": 7.33,
+      "tiePct": 84.33
+    },
+    {
+      "id": "relay-full-charge",
+      "n": 300,
+      "delta": 0.84,
+      "bootstrap95": [
+        -0.29,
+        2.07
+      ],
+      "winPct": 51.33,
+      "tiePct": 4.67
+    },
+    {
+      "id": "without-calm",
+      "n": 300,
+      "delta": -20.25,
+      "bootstrap95": [
+        -21.32,
+        -19.14
+      ],
+      "winPct": 0.67,
+      "tiePct": 1.33
+    },
+    {
+      "id": "without-battery",
+      "n": 300,
+      "delta": 1.37,
+      "bootstrap95": [
+        0.53,
+        2.2
+      ],
+      "winPct": 39,
+      "tiePct": 39
+    },
+    {
+      "id": "without-concierge",
+      "n": 300,
+      "delta": 1.35,
+      "bootstrap95": [
+        0.37,
+        2.38
+      ],
+      "winPct": 52,
+      "tiePct": 9.33
+    },
+    {
+      "id": "without-solar",
+      "n": 300,
+      "delta": -2.52,
+      "bootstrap95": [
+        -3.85,
+        -1.28
+      ],
+      "winPct": 39,
+      "tiePct": 9.33
+    },
+    {
+      "id": "without-reinforced",
+      "n": 300,
+      "delta": 1.22,
+      "bootstrap95": [
+        0.21,
+        2.27
+      ],
+      "winPct": 49,
+      "tiePct": 12.67
+    },
+    {
+      "id": "without-express",
+      "n": 300,
+      "delta": -3.6,
+      "bootstrap95": [
+        -4.81,
+        -2.38
+      ],
+      "winPct": 31.33,
+      "tiePct": 12.67
+    },
+    {
+      "id": "pair-cautious",
+      "n": 300,
+      "delta": -2.38,
+      "bootstrap95": [
+        -3.4,
+        -1.27
+      ],
+      "winPct": 32.67,
+      "tiePct": 7.33
+    },
+    {
+      "id": "pair-balanced",
+      "n": 300,
+      "delta": -18.97,
+      "bootstrap95": [
+        -20.64,
+        -17.38
+      ],
+      "winPct": 3.33,
+      "tiePct": 0
+    },
+    {
+      "id": "pair-police",
+      "n": 300,
+      "delta": -25.75,
+      "bootstrap95": [
+        -27.37,
+        -24.07
+      ],
+      "winPct": 1.33,
+      "tiePct": 0.67
+    },
+    {
+      "id": "pair-occult",
+      "n": 300,
+      "delta": -20.88,
+      "bootstrap95": [
+        -22.44,
+        -19.38
+      ],
+      "winPct": 2.67,
+      "tiePct": 0
+    },
+    {
+      "id": "rest-lookahead",
+      "n": 300,
+      "delta": 1.45,
+      "bootstrap95": [
+        0.34,
+        2.63
+      ],
+      "winPct": 56.67,
+      "tiePct": 4.33
+    },
+    {
+      "id": "rest-relay-calm",
+      "n": 300,
+      "delta": 0.88,
+      "bootstrap95": [
+        -0.26,
+        2.08
+      ],
+      "winPct": 52,
+      "tiePct": 4.33
+    }
+  ],
+  "effects": [
+    {
+      "id": "calmRelief4",
+      "params": {
+        "calmRelief": 4
+      },
+      "effects": [
+        {
+          "policy": "balanced-3",
+          "mean": 94.96,
+          "n": 250,
+          "delta": -1.8,
+          "bootstrap95": [
+            -2.65,
+            -0.96
+          ],
+          "winPct": 26.4,
+          "tiePct": 25.6
+        },
+        {
+          "policy": "cautious-6",
+          "mean": 112.79,
+          "n": 250,
+          "delta": -1.87,
+          "bootstrap95": [
+            -2.73,
+            -0.99
+          ],
+          "winPct": 32.8,
+          "tiePct": 12.8
+        },
+        {
+          "policy": "police-thief-4",
+          "mean": 88.13,
+          "n": 250,
+          "delta": -2.8,
+          "bootstrap95": [
+            -4.4,
+            -1.2
+          ],
+          "winPct": 32.4,
+          "tiePct": 14.8
+        },
+        {
+          "policy": "calming-6",
+          "mean": 102.81,
+          "n": 250,
+          "delta": -0.4,
+          "bootstrap95": [
+            -1.64,
+            0.88
+          ],
+          "winPct": 37.2,
+          "tiePct": 15.2
+        },
+        {
+          "policy": "cautious-calm",
+          "mean": 114.21,
+          "n": 250,
+          "delta": -3.5,
+          "bootstrap95": [
+            -4.38,
+            -2.69
+          ],
+          "winPct": 17.6,
+          "tiePct": 14.8
+        },
+        {
+          "policy": "rest-relay-calm",
+          "mean": 113.57,
+          "n": 250,
+          "delta": -1.99,
+          "bootstrap95": [
+            -2.56,
+            -1.45
+          ],
+          "winPct": 7.2,
+          "tiePct": 40
+        }
+      ]
+    },
+    {
+      "id": "capacity28",
+      "params": {
+        "capacity": 28
+      },
+      "effects": [
+        {
+          "policy": "cautious-6",
+          "mean": 114.54,
+          "n": 300,
+          "delta": 0,
+          "bootstrap95": [
+            0,
+            0
+          ],
+          "winPct": 0,
+          "tiePct": 100
+        },
+        {
+          "policy": "cautious-full-charge",
+          "mean": 114.74,
+          "n": 300,
+          "delta": 0.18,
+          "bootstrap95": [
+            -0.43,
+            0.76
+          ],
+          "winPct": 18,
+          "tiePct": 66
+        },
+        {
+          "policy": "relay-full-charge",
+          "mean": 115.23,
+          "n": 300,
+          "delta": -0.15,
+          "bootstrap95": [
+            -0.38,
+            0.05
+          ],
+          "winPct": 4.33,
+          "tiePct": 88.67
+        },
+        {
+          "policy": "rest-relay-calm",
+          "mean": 115.42,
+          "n": 300,
+          "delta": 0,
+          "bootstrap95": [
+            0,
+            0
+          ],
+          "winPct": 0,
+          "tiePct": 100
+        }
+      ]
+    },
+    {
+      "id": "charge3",
+      "params": {
+        "chargePrice": 3
+      },
+      "effects": [
+        {
+          "policy": "balanced-3",
+          "mean": 79.55,
+          "n": 250,
+          "delta": -17.21,
+          "bootstrap95": [
+            -21.21,
+            -13.84
+          ],
+          "winPct": 22.4,
+          "tiePct": 9.6
+        },
+        {
+          "policy": "cautious-6",
+          "mean": 115.23,
+          "n": 250,
+          "delta": 0.57,
+          "bootstrap95": [
+            -0.45,
+            1.6
+          ],
+          "winPct": 40,
+          "tiePct": 27.2
+        },
+        {
+          "policy": "police-thief-4",
+          "mean": 85.16,
+          "n": 250,
+          "delta": -5.77,
+          "bootstrap95": [
+            -8.09,
+            -3.32
+          ],
+          "winPct": 31.2,
+          "tiePct": 7.6
+        },
+        {
+          "policy": "calming-6",
+          "mean": 103.34,
+          "n": 250,
+          "delta": 0.13,
+          "bootstrap95": [
+            -1.07,
+            1.37
+          ],
+          "winPct": 33.6,
+          "tiePct": 32.8
+        },
+        {
+          "policy": "cautious-calm",
+          "mean": 114.31,
+          "n": 250,
+          "delta": -3.39,
+          "bootstrap95": [
+            -3.99,
+            -2.83
+          ],
+          "winPct": 4,
+          "tiePct": 41.6
+        },
+        {
+          "policy": "rest-relay-calm",
+          "mean": 106.66,
+          "n": 250,
+          "delta": -8.9,
+          "bootstrap95": [
+            -10.63,
+            -7.38
+          ],
+          "winPct": 7.2,
+          "tiePct": 8.4
+        }
+      ]
+    },
+    {
+      "id": "cooperation5",
+      "params": {
+        "cooperation": 5
+      },
+      "effects": [
+        {
+          "policy": "balanced-3",
+          "mean": 96.82,
+          "n": 250,
+          "delta": 0.06,
+          "bootstrap95": [
+            -1.36,
+            1.46
+          ],
+          "winPct": 37.6,
+          "tiePct": 23.2
+        },
+        {
+          "policy": "cautious-6",
+          "mean": 113.97,
+          "n": 250,
+          "delta": -0.68,
+          "bootstrap95": [
+            -1.74,
+            0.41
+          ],
+          "winPct": 38.8,
+          "tiePct": 16.4
+        },
+        {
+          "policy": "police-thief-4",
+          "mean": 90.99,
+          "n": 250,
+          "delta": 0.06,
+          "bootstrap95": [
+            -1.69,
+            2
+          ],
+          "winPct": 43.6,
+          "tiePct": 12.4
+        },
+        {
+          "policy": "calming-6",
+          "mean": 102.21,
+          "n": 250,
+          "delta": -1,
+          "bootstrap95": [
+            -2.4,
+            0.36
+          ],
+          "winPct": 33.6,
+          "tiePct": 10
+        },
+        {
+          "policy": "cautious-calm",
+          "mean": 116.86,
+          "n": 250,
+          "delta": -0.84,
+          "bootstrap95": [
+            -2.07,
+            0.32
+          ],
+          "winPct": 37.2,
+          "tiePct": 16.8
+        },
+        {
+          "policy": "rest-relay-calm",
+          "mean": 116.22,
+          "n": 250,
+          "delta": 0.66,
+          "bootstrap95": [
+            -0.06,
+            1.38
+          ],
+          "winPct": 40.8,
+          "tiePct": 28.4
+        }
+      ]
+    },
+    {
+      "id": "crowdAndCoop",
+      "params": {
+        "crowdedAt": 5,
+        "cooperation": 5
+      },
+      "effects": [
+        {
+          "policy": "balanced-3",
+          "mean": 96.82,
+          "n": 250,
+          "delta": 0.06,
+          "bootstrap95": [
+            -1.36,
+            1.46
+          ],
+          "winPct": 37.6,
+          "tiePct": 23.2
+        },
+        {
+          "policy": "cautious-6",
+          "mean": 118.54,
+          "n": 250,
+          "delta": 3.88,
+          "bootstrap95": [
+            2.62,
+            5.22
+          ],
+          "winPct": 62.4,
+          "tiePct": 6.8
+        },
+        {
+          "policy": "police-thief-4",
+          "mean": 103.5,
+          "n": 250,
+          "delta": 12.57,
+          "bootstrap95": [
+            10.76,
+            14.52
+          ],
+          "winPct": 81.2,
+          "tiePct": 2.8
+        },
+        {
+          "policy": "calming-6",
+          "mean": 106.34,
+          "n": 250,
+          "delta": 3.13,
+          "bootstrap95": [
+            1.6,
+            4.62
+          ],
+          "winPct": 56.4,
+          "tiePct": 7.2
+        },
+        {
+          "policy": "cautious-calm",
+          "mean": 122.4,
+          "n": 250,
+          "delta": 4.7,
+          "bootstrap95": [
+            3.46,
+            6.03
+          ],
+          "winPct": 64.8,
+          "tiePct": 6.4
+        },
+        {
+          "policy": "rest-relay-calm",
+          "mean": 117.53,
+          "n": 250,
+          "delta": 1.97,
+          "bootstrap95": [
+            1.12,
+            2.76
+          ],
+          "winPct": 56,
+          "tiePct": 15.6
+        }
+      ]
+    },
+    {
+      "id": "crowdFrom5",
+      "params": {
+        "crowdedAt": 5
+      },
+      "effects": [
+        {
+          "policy": "balanced-3",
+          "mean": 96.76,
+          "n": 250,
+          "delta": 0,
+          "bootstrap95": [
+            0,
+            0
+          ],
+          "winPct": 0,
+          "tiePct": 100
+        },
+        {
+          "policy": "cautious-6",
+          "mean": 118.64,
+          "n": 250,
+          "delta": 3.98,
+          "bootstrap95": [
+            2.82,
+            5.14
+          ],
+          "winPct": 68.4,
+          "tiePct": 6
+        },
+        {
+          "policy": "police-thief-4",
+          "mean": 104.11,
+          "n": 250,
+          "delta": 13.18,
+          "bootstrap95": [
+            11.34,
+            15.1
+          ],
+          "winPct": 83.6,
+          "tiePct": 3.2
+        },
+        {
+          "policy": "calming-6",
+          "mean": 107.07,
+          "n": 250,
+          "delta": 3.86,
+          "bootstrap95": [
+            2.24,
+            5.49
+          ],
+          "winPct": 60,
+          "tiePct": 6.8
+        },
+        {
+          "policy": "cautious-calm",
+          "mean": 123.33,
+          "n": 250,
+          "delta": 5.63,
+          "bootstrap95": [
+            4.38,
+            6.96
+          ],
+          "winPct": 68.8,
+          "tiePct": 8.4
+        },
+        {
+          "policy": "rest-relay-calm",
+          "mean": 117.2,
+          "n": 250,
+          "delta": 1.64,
+          "bootstrap95": [
+            0.76,
+            2.49
+          ],
+          "winPct": 49.6,
+          "tiePct": 20.8
+        }
+      ]
+    },
+    {
+      "id": "fatigue35",
+      "params": {
+        "fatigueEvery": 35
+      },
+      "effects": [
+        {
+          "policy": "balanced-3",
+          "mean": 111.95,
+          "n": 250,
+          "delta": 15.19,
+          "bootstrap95": [
+            13.72,
+            16.73
+          ],
+          "winPct": 91.6,
+          "tiePct": 2.4
+        },
+        {
+          "policy": "cautious-6",
+          "mean": 125.89,
+          "n": 250,
+          "delta": 11.23,
+          "bootstrap95": [
+            10.12,
+            12.38
+          ],
+          "winPct": 90.8,
+          "tiePct": 1.6
+        },
+        {
+          "policy": "police-thief-4",
+          "mean": 102.95,
+          "n": 250,
+          "delta": 12.02,
+          "bootstrap95": [
+            10.08,
+            14.08
+          ],
+          "winPct": 81.6,
+          "tiePct": 2.4
+        },
+        {
+          "policy": "calming-6",
+          "mean": 115.49,
+          "n": 250,
+          "delta": 12.28,
+          "bootstrap95": [
+            10.78,
+            13.78
+          ],
+          "winPct": 92,
+          "tiePct": 2
+        },
+        {
+          "policy": "cautious-calm",
+          "mean": 132.6,
+          "n": 250,
+          "delta": 14.89,
+          "bootstrap95": [
+            13.68,
+            16.17
+          ],
+          "winPct": 93.2,
+          "tiePct": 2
+        },
+        {
+          "policy": "rest-relay-calm",
+          "mean": 129.24,
+          "n": 250,
+          "delta": 13.68,
+          "bootstrap95": [
+            12.65,
+            14.79
+          ],
+          "winPct": 95.2,
+          "tiePct": 2
+        }
+      ]
+    },
+    {
+      "id": "reliefAndCoop",
+      "params": {
+        "calmRelief": 4,
+        "cooperation": 5
+      },
+      "effects": [
+        {
+          "policy": "balanced-3",
+          "mean": 95.22,
+          "n": 250,
+          "delta": -1.54,
+          "bootstrap95": [
+            -3.02,
+            -0.07
+          ],
+          "winPct": 34.8,
+          "tiePct": 12
+        },
+        {
+          "policy": "cautious-6",
+          "mean": 111.82,
+          "n": 250,
+          "delta": -2.84,
+          "bootstrap95": [
+            -3.92,
+            -1.68
+          ],
+          "winPct": 28,
+          "tiePct": 8.4
+        },
+        {
+          "policy": "police-thief-4",
+          "mean": 87.88,
+          "n": 250,
+          "delta": -3.05,
+          "bootstrap95": [
+            -4.82,
+            -1.22
+          ],
+          "winPct": 38.4,
+          "tiePct": 6.4
+        },
+        {
+          "policy": "calming-6",
+          "mean": 101.11,
+          "n": 250,
+          "delta": -2.1,
+          "bootstrap95": [
+            -3.65,
+            -0.53
+          ],
+          "winPct": 36,
+          "tiePct": 7.2
+        },
+        {
+          "policy": "cautious-calm",
+          "mean": 113.28,
+          "n": 250,
+          "delta": -4.43,
+          "bootstrap95": [
+            -5.53,
+            -3.32
+          ],
+          "winPct": 23.2,
+          "tiePct": 7.2
+        },
+        {
+          "policy": "rest-relay-calm",
+          "mean": 114.43,
+          "n": 250,
+          "delta": -1.13,
+          "bootstrap95": [
+            -1.95,
+            -0.3
+          ],
+          "winPct": 32,
+          "tiePct": 18.8
+        }
+      ]
+    }
+  ],
+  "screening": [
+    {
+      "id": "baseline",
+      "params": {},
+      "averagePolicyDelta": 0,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "bombFuse2",
+      "params": {
+        "bombMin": 2
+      },
+      "averagePolicyDelta": 0.45,
+      "leader": "rest-relay-calm"
+    },
+    {
+      "id": "bombFuse4",
+      "params": {
+        "bombMin": 4
+      },
+      "averagePolicyDelta": 0.05,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "calm25",
+      "params": {
+        "calmPrice": 25
+      },
+      "averagePolicyDelta": 1.16,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "calm45",
+      "params": {
+        "calmPrice": 45
+      },
+      "averagePolicyDelta": -1.46,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "calmCap2",
+      "params": {
+        "calmCap": 2
+      },
+      "averagePolicyDelta": -3.63,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "calmCap4",
+      "params": {
+        "calmCap": 4
+      },
+      "averagePolicyDelta": 1.85,
+      "leader": "rest-relay-calm"
+    },
+    {
+      "id": "calmRelief4",
+      "params": {
+        "calmRelief": 4
+      },
+      "averagePolicyDelta": -1.89,
+      "leader": "rest-relay-calm"
+    },
+    {
+      "id": "calmRelief8",
+      "params": {
+        "calmRelief": 8
+      },
+      "averagePolicyDelta": 0.86,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "capacity20",
+      "params": {
+        "capacity": 20
+      },
+      "averagePolicyDelta": 0.16,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "capacity28",
+      "params": {
+        "capacity": 28
+      },
+      "averagePolicyDelta": 0,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "charge1",
+      "params": {
+        "chargePrice": 1
+      },
+      "averagePolicyDelta": 2.38,
+      "leader": "rest-relay-calm"
+    },
+    {
+      "id": "charge3",
+      "params": {
+        "chargePrice": 3
+      },
+      "averagePolicyDelta": -8.93,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "cooperation1",
+      "params": {
+        "cooperation": 1
+      },
+      "averagePolicyDelta": -0.67,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "cooperation5",
+      "params": {
+        "cooperation": 5
+      },
+      "averagePolicyDelta": -0.51,
+      "leader": "rest-relay-calm"
+    },
+    {
+      "id": "crowdFrom5",
+      "params": {
+        "crowdedAt": 5
+      },
+      "averagePolicyDelta": 4.13,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "dismiss150",
+      "params": {
+        "dismissalScale": 1.5
+      },
+      "averagePolicyDelta": -1.11,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "dismissHalf",
+      "params": {
+        "dismissalScale": 0.5
+      },
+      "averagePolicyDelta": 0.01,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "energy18",
+      "params": {
+        "energy": 18
+      },
+      "averagePolicyDelta": -1.39,
+      "leader": "rest-relay-calm"
+    },
+    {
+      "id": "energy22",
+      "params": {
+        "energy": 22
+      },
+      "averagePolicyDelta": 0.65,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "energy24",
+      "params": {
+        "energy": 24
+      },
+      "averagePolicyDelta": 0.53,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "fares115",
+      "params": {
+        "fareScale": 1.15
+      },
+      "averagePolicyDelta": -0.35,
+      "leader": "rest-relay-calm"
+    },
+    {
+      "id": "fares85",
+      "params": {
+        "fareScale": 0.85
+      },
+      "averagePolicyDelta": -2.43,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "fatigue25",
+      "params": {
+        "fatigueEvery": 25
+      },
+      "averagePolicyDelta": -15.92,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "fatigue35",
+      "params": {
+        "fatigueEvery": 35
+      },
+      "averagePolicyDelta": 12.32,
+      "leader": "rest-relay-calm"
+    },
+    {
+      "id": "inflation16",
+      "params": {
+        "shopInflation": 16
+      },
+      "averagePolicyDelta": -3.59,
+      "leader": "rest-relay-calm"
+    },
+    {
+      "id": "inflation8",
+      "params": {
+        "shopInflation": 8
+      },
+      "averagePolicyDelta": 2.06,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "loverCall0",
+      "params": {
+        "loverCall": 0
+      },
+      "averagePolicyDelta": -0.43,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "loverCall50",
+      "params": {
+        "loverCall": 0.5
+      },
+      "averagePolicyDelta": 0.09,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "noSparseRelief",
+      "params": {
+        "sparseRelief": 0
+      },
+      "averagePolicyDelta": -22.71,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "patienceMinus1",
+      "params": {
+        "patience": -1
+      },
+      "averagePolicyDelta": -0.33,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "patiencePlus1",
+      "params": {
+        "patience": 1
+      },
+      "averagePolicyDelta": -0.2,
+      "leader": "rest-relay-calm"
+    },
+    {
+      "id": "rest1",
+      "params": {
+        "restCap": 1
+      },
+      "averagePolicyDelta": -7.62,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "rest5",
+      "params": {
+        "restCap": 5
+      },
+      "averagePolicyDelta": 3.71,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "stress12",
+      "params": {
+        "stressCap": 12
+      },
+      "averagePolicyDelta": -3.71,
+      "leader": "rest-relay-calm"
+    },
+    {
+      "id": "stress18",
+      "params": {
+        "stressCap": 18
+      },
+      "averagePolicyDelta": 2.25,
+      "leader": "rest-relay-calm"
+    },
+    {
+      "id": "threshold50",
+      "params": {
+        "threshold": "1 / 2"
+      },
+      "averagePolicyDelta": -0.6,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "threshold80",
+      "params": {
+        "threshold": "4 / 5"
+      },
+      "averagePolicyDelta": -0.02,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "weight12",
+      "params": {
+        "weightCap": 12
+      },
+      "averagePolicyDelta": 0.06,
+      "leader": "cautious-6"
+    },
+    {
+      "id": "weight8",
+      "params": {
+        "weightCap": 8
+      },
+      "averagePolicyDelta": 0.36,
+      "leader": "rest-relay-calm"
+    }
+  ],
+  "limits": "Paired descriptive bootstrap intervals; multiple comparisons unadjusted. Screening seeds overlap baseline discovery; holdout uses fresh seeds. Heuristic estimates are not human outcomes or a proof of global nondominance."
+}

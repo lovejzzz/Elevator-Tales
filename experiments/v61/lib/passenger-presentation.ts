@@ -1,0 +1,79 @@
+import { PASSENGERS, type PassengerKind } from './game-data';
+import { bondLines, bondSummary, riderProfile } from './rider-profile';
+import type { Rider } from './game-engine';
+
+// Cooperation conditions stay on the card face, including on phones.
+export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
+  commuter: ['短途稳定，送达领取车费。'],
+  tourist: ['旅途较长，送达车费较高。'],
+  courier: ['短途周转，快速送达赚取金币。'],
+  mechanic: ['抵达 3、6、9… 层时，少耗 1 电。'],
+  lover: ['有恋人邻座：本人每层 +1 金币，到站车费翻倍。', '没有恋人邻座：每层有 25% 概率呼唤另一位恋人候客。'],
+  musician: ['车内至少 4 人：每层躁动 −1。', '安抚相邻的醉汉和儿童，阻止其负面效果。'],
+  thief: ['没有警察或律师邻座：每层 +3 金币，偶数层躁动 +1。', '有警察或律师邻座：改为每层 +1 金币，不再加压，到站车费 +5。'],
+  cop: ['控制相邻的小偷，消除其加压效果。', '与炸弹客相邻：偶数层暂停引信倒计时。'],
+  lawyer: ['控制相邻的小偷，消除其加压效果。不能暂停炸弹引信。'],
+  drunk: ['没有音乐家或护士邻座：每层 25% 概率闹事，躁动 +2，并随机与邻座换位。', '有音乐家或护士邻座：不再闹事，每层 +1 金币。'],
+  nurse: ['每逢偶数层，躁动 −1。', '安抚相邻的醉汉和儿童，阻止其负面效果。'],
+  child: ['没有恋人、音乐家或护士邻座：偶数层额外消耗 1 点耐心。', '与其中任一角色相邻，即可阻止额外消耗。'],
+  ghost: ['没有驱魔师邻座：抵达 3、6、9… 层时，随机让一名邻座的目的地延后 1 层。', '有驱魔师邻座：不再延误邻座，每层少耗 1 电，到站车费 +6。'],
+  exorcist: ['镇压相邻幽灵：阻止延误，每位受控幽灵每层少耗 1 电，到站车费 +6。'],
+  coach: ['邻座到站时，车费 ×1.5（向上取整）。', '本人到站时，每位仍在身旁的邻座使车费 +3。'],
+  celebrity: ['恰好 1 位邻座：每层 +3 金币。', '至少 2 位邻座：偶数层躁动 +1。没有邻座则无额外效果。'],
+  inspector: ['每逢偶数层检查：总载重不超过 8，少耗 1 电；超过 8，躁动 +1。'],
+  bomb: ['引信每层减少 1 格；到站前归零，本局立即结束。到站当层归零则安全。', '有警察邻座：偶数层暂停倒计时。'],
+  mystery: ['载重、路程、耐心及协作/冲突对象每次出现时随机。','车费已封存，到站才揭晓；请离不结算隐藏车费。'],
+  shifter: ['每到一层重新抽取载重（1–4）、车费（28–48）和联动偏好。','目的地不延长、耐心不刷新。开门后可查看新属性；超载会使下一站躁动 +2。'],
+  mimic: ['每位邻座复制一项：载重、车费或联动偏好，最多三项且不重复。','同一邻座组合不会重抽；邻座属性变化会同步。隐藏车费不会提前公开。','不复制技能、引信、路程；复制人互相连接时只取各自本体属性，避免递归。'],
+};
+
+export type PassengerRuleBlock = {
+ tone: 'neutral' | 'good' | 'risk'; heading: string; lines: string[]; note?: string;
+};
+
+export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bonus=3): PassengerRuleBlock[] {
+ const bond=bondSummary(rider,cabin,bonus),name=PASSENGERS[rider.kind].name;
+ const partners=bond.partners.replaceAll(' / ','或'),opponents=bond.opponents.replaceAll(' / ','或');
+ const short=PASSENGERS[rider.kind].short;
+ const ability:PassengerRuleBlock={tone:'neutral',heading:'人物能力',lines:[short.endsWith('。')?short:short+'。']};
+ const cooperation:PassengerRuleBlock={
+  tone:'good',heading:`协作：旁边有${partners}`,
+  lines:[`${name}到站时，额外赚 ${bonus} 金币。`],
+  note:'到站那一刻仍相邻，才有这笔奖励。',
+ };
+ if(rider.kind==='thief'){
+  ability.heading='没人看管：旁边没有警察或律师';
+  ability.lines=['每上 1 层，赚 3 金币。','每到偶数层，躁动 +1。'];
+  cooperation.lines=['途中：每层赚 1 金币，不再产生偷窃躁动。',`到站：受控奖励 +5 金币，协作奖励再 +${bonus} 金币。`];
+ }
+ if(rider.kind==='cop'){
+  ability.heading='警察能帮谁？';
+  ability.lines=['旁边的小偷：每层收益从 3 降为 1 金币，不再产生偷窃躁动。','旁边的炸弹客：每到偶数层，引信不减。'];
+ }
+ if(rider.kind==='lawyer'){
+  ability.heading='律师能帮谁？';
+  ability.lines=['旁边的小偷：每层收益从 3 降为 1 金币，不再产生偷窃躁动。'];
+  ability.note='律师不能延缓炸弹引信。';
+ }
+ return [ability,cooperation,{
+  tone:'risk',heading:`冲突：旁边有${opponents}`,
+  lines:['每到偶数层，额外躁动 +1。'],
+  note:`同时有${partners}相邻时，不触发这项冲突。`,
+ }];
+}
+
+export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|null>=[], bonus=3) {
+ const profile=riderProfile(rider,cabin);
+ const bond=bondSummary(rider,cabin,bonus);
+ const partnerNames=profile.bond.likes.map(kind=>(kind===rider.kind?'另一位':'')+PASSENGERS[kind].name);
+ const cooperation={
+  arrival:`${PASSENGERS[rider.kind].name}到站时`,
+  partners:partnerNames,
+  neighbor:`旁边仍有${partnerNames.join('或')}`,
+  reward:`额外 +${bonus} 金币`,
+ };
+ const skillRules=PASSENGER_RULES[rider.kind],bondRules=bondLines(rider,cabin,bonus);
+ const detailRules=[...(['thief','cop','lawyer'].includes(rider.kind)?[]:skillRules),bondRules[1],'协作免除的只是邻座冲突，其他角色技能仍按各自条件触发。',...bondRules.slice(3)];
+ return {coins:profile.hidden?null:profile.fare, tip:rider.fareBonus, energy:0,weight:profile.weight,hidden:profile.hidden,
+  distance:Math.max(0,rider.destination-floor),bond,cooperation,cardRules:passengerCardRules(rider,cabin,bonus),detailRules,skillRules,bondRules,rules:[...skillRules,...bondRules]};
+}

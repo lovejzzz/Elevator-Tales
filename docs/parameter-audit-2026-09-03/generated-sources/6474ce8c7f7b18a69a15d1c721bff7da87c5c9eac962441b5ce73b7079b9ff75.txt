@@ -19,7 +19,7 @@ export const nextShopFloor = (floor: number) => (Math.floor(floor / 10) + 1) * 1
 export const difficultyTier = (floor: number) => Math.floor(Math.max(0, floor - 1) / 30);
 export const agitationThreshold = (cap: number) => Math.ceil(cap * 2 / 3);
 export const patienceCost = (state: RunState) => state.stress >= agitationThreshold(state.stressCap) ? 2 : 1;
-export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 5 ? 1 : occupied <= 2 ? -1 : 0;
+export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 4 ? 1 : occupied <= 2 ? -1 : 0;
 export const REST_STOP_CAP = 3;
 export const shiftAgitation = (floor: number, occupied: number, restStops = 0) => occupied > 0 || restStops <= 0 ? difficultyTier(floor) : 0;
 
@@ -231,7 +231,7 @@ export function chargeBattery(state: RunState, units: number): RunState {
   const cost=units*CHARGE_PRICE;
   return {...state,energy:state.energy+units,coins:state.coins-cost,message:`充电 +${units}，支付 ${cost} 金币。`,lastEarnings:{total:0,sources:[]},lastEnergy:{delta:units,sources:[{label:'补给站充电',amount:units}]},log:[`${state.floor}F · 充电 −${cost} 金币`,...state.log].slice(0,4)};
 }
-export const dismissalCost=(state: RunState,rider:Rider)=>4+Math.max(0,rider.destination-state.floor)*2;
+export const dismissalCost=(state: RunState,rider:Rider)=>Math.ceil((4+Math.max(0,rider.destination-state.floor)*2)*1.5);
 export function dismissRider(state: RunState, id: string): RunState {
   const slot=state.cabin.findIndex(r=>r?.id===id),rider=state.cabin[slot];
   if(state.status!=='playing'||!rider||rider.boardedAt>=state.floor||rider.destination<=state.floor)return state;

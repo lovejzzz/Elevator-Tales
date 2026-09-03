@@ -1,0 +1,548 @@
+{
+  "fullGames": 23040,
+  "transitions": 2433113,
+  "forecastFailures": 0,
+  "censored": 0,
+  "effects": [
+    {
+      "id": "balanced-3",
+      "oldMean": 96.41,
+      "newMean": 96.41,
+      "n": 300,
+      "delta": 0,
+      "bootstrap95": [
+        0,
+        0
+      ],
+      "winPct": 0,
+      "tiePct": 100
+    },
+    {
+      "id": "cautious-6",
+      "oldMean": 114.73,
+      "newMean": 120.21,
+      "n": 300,
+      "delta": 5.48,
+      "bootstrap95": [
+        4.43,
+        6.48
+      ],
+      "winPct": 73.33,
+      "tiePct": 6.67
+    },
+    {
+      "id": "police-thief-4",
+      "oldMean": 91.73,
+      "newMean": 103.94,
+      "n": 300,
+      "delta": 12.21,
+      "bootstrap95": [
+        10.58,
+        13.84
+      ],
+      "winPct": 81,
+      "tiePct": 3.67
+    },
+    {
+      "id": "high-fare-4",
+      "oldMean": 91.43,
+      "newMean": 104.49,
+      "n": 300,
+      "delta": 13.06,
+      "bootstrap95": [
+        11.47,
+        14.79
+      ],
+      "winPct": 84,
+      "tiePct": 3
+    },
+    {
+      "id": "coach-4",
+      "oldMean": 91.27,
+      "newMean": 104.82,
+      "n": 300,
+      "delta": 13.55,
+      "bootstrap95": [
+        11.71,
+        15.38
+      ],
+      "winPct": 81,
+      "tiePct": 0.67
+    },
+    {
+      "id": "no-upgrades",
+      "oldMean": 94.28,
+      "newMean": 98.34,
+      "n": 300,
+      "delta": 4.05,
+      "bootstrap95": [
+        3.21,
+        4.83
+      ],
+      "winPct": 67,
+      "tiePct": 12.33
+    },
+    {
+      "id": "cautious-calm",
+      "oldMean": 116.96,
+      "newMean": 124.2,
+      "n": 300,
+      "delta": 7.24,
+      "bootstrap95": [
+        5.88,
+        8.56
+      ],
+      "winPct": 71.67,
+      "tiePct": 6.33
+    },
+    {
+      "id": "without-calm",
+      "oldMean": 94.86,
+      "newMean": 98.05,
+      "n": 300,
+      "delta": 3.19,
+      "bootstrap95": [
+        2.37,
+        4.02
+      ],
+      "winPct": 63.33,
+      "tiePct": 9
+    },
+    {
+      "id": "musician-stack-4-2",
+      "oldMean": 109.91,
+      "newMean": 118.55,
+      "n": 300,
+      "delta": 8.64,
+      "bootstrap95": [
+        7.54,
+        9.77
+      ],
+      "winPct": 80.33,
+      "tiePct": 4
+    },
+    {
+      "id": "musician-stack-4-6",
+      "oldMean": 109.25,
+      "newMean": 120.67,
+      "n": 300,
+      "delta": 11.43,
+      "bootstrap95": [
+        10.21,
+        12.66
+      ],
+      "winPct": 85.33,
+      "tiePct": 2
+    },
+    {
+      "id": "musician-stack-4-12",
+      "oldMean": 108.71,
+      "newMean": 120.74,
+      "n": 300,
+      "delta": 12.03,
+      "bootstrap95": [
+        10.94,
+        13.18
+      ],
+      "winPct": 89,
+      "tiePct": 3.33
+    },
+    {
+      "id": "nurse-stack-4-12",
+      "oldMean": 110.38,
+      "newMean": 119.27,
+      "n": 300,
+      "delta": 8.89,
+      "bootstrap95": [
+        7.69,
+        10
+      ],
+      "winPct": 79.67,
+      "tiePct": 5.33
+    },
+    {
+      "id": "musician-stack-6-2",
+      "oldMean": 111.99,
+      "newMean": 119.27,
+      "n": 300,
+      "delta": 7.28,
+      "bootstrap95": [
+        5.97,
+        8.57
+      ],
+      "winPct": 73.33,
+      "tiePct": 4.33
+    },
+    {
+      "id": "musician-stack-6-6",
+      "oldMean": 112.27,
+      "newMean": 119.28,
+      "n": 300,
+      "delta": 7.01,
+      "bootstrap95": [
+        5.66,
+        8.47
+      ],
+      "winPct": 72,
+      "tiePct": 5
+    },
+    {
+      "id": "musician-stack-6-12",
+      "oldMean": 111.81,
+      "newMean": 119.46,
+      "n": 300,
+      "delta": 7.65,
+      "bootstrap95": [
+        6.19,
+        9.11
+      ],
+      "winPct": 74.67,
+      "tiePct": 4.67
+    },
+    {
+      "id": "nurse-stack-6-12",
+      "oldMean": 114.38,
+      "newMean": 119.84,
+      "n": 300,
+      "delta": 5.46,
+      "bootstrap95": [
+        4.17,
+        6.77
+      ],
+      "winPct": 67,
+      "tiePct": 7.67
+    },
+    {
+      "id": "pair-calming",
+      "oldMean": 108.6,
+      "newMean": 117.74,
+      "n": 300,
+      "delta": 9.14,
+      "bootstrap95": [
+        7.87,
+        10.45
+      ],
+      "winPct": 78.67,
+      "tiePct": 3.67
+    },
+    {
+      "id": "pair-lovers",
+      "oldMean": 108.25,
+      "newMean": 115.13,
+      "n": 300,
+      "delta": 6.89,
+      "bootstrap95": [
+        5.56,
+        8.23
+      ],
+      "winPct": 72,
+      "tiePct": 3
+    },
+    {
+      "id": "rest-lookahead",
+      "oldMean": 114.96,
+      "newMean": 123.12,
+      "n": 300,
+      "delta": 8.16,
+      "bootstrap95": [
+        7.1,
+        9.21
+      ],
+      "winPct": 82.67,
+      "tiePct": 3.67
+    },
+    {
+      "id": "rest-relay-calm",
+      "oldMean": 115.65,
+      "newMean": 117.95,
+      "n": 300,
+      "delta": 2.3,
+      "bootstrap95": [
+        1.49,
+        3.12
+      ],
+      "winPct": 54,
+      "tiePct": 21
+    }
+  ],
+  "leader": "cautious-calm",
+  "competitors": [
+    {
+      "id": "balanced-3",
+      "n": 300,
+      "delta": -27.79,
+      "bootstrap95": [
+        -29.46,
+        -26.02
+      ],
+      "winPct": 1.67,
+      "tiePct": 0.67
+    },
+    {
+      "id": "cautious-6",
+      "n": 300,
+      "delta": -3.99,
+      "bootstrap95": [
+        -5.35,
+        -2.61
+      ],
+      "winPct": 29.33,
+      "tiePct": 4
+    },
+    {
+      "id": "police-thief-4",
+      "n": 300,
+      "delta": -20.26,
+      "bootstrap95": [
+        -21.81,
+        -18.68
+      ],
+      "winPct": 6,
+      "tiePct": 1
+    },
+    {
+      "id": "high-fare-4",
+      "n": 300,
+      "delta": -19.71,
+      "bootstrap95": [
+        -21.25,
+        -18.04
+      ],
+      "winPct": 6,
+      "tiePct": 2
+    },
+    {
+      "id": "coach-4",
+      "n": 300,
+      "delta": -19.38,
+      "bootstrap95": [
+        -21.06,
+        -17.67
+      ],
+      "winPct": 7,
+      "tiePct": 1.67
+    },
+    {
+      "id": "no-upgrades",
+      "n": 300,
+      "delta": -25.86,
+      "bootstrap95": [
+        -27.01,
+        -24.74
+      ],
+      "winPct": 0,
+      "tiePct": 0.67
+    },
+    {
+      "id": "without-calm",
+      "n": 300,
+      "delta": -26.15,
+      "bootstrap95": [
+        -27.3,
+        -24.94
+      ],
+      "winPct": 0.67,
+      "tiePct": 0.33
+    },
+    {
+      "id": "musician-stack-4-2",
+      "n": 300,
+      "delta": -5.65,
+      "bootstrap95": [
+        -6.71,
+        -4.48
+      ],
+      "winPct": 25,
+      "tiePct": 4.67
+    },
+    {
+      "id": "musician-stack-4-6",
+      "n": 300,
+      "delta": -3.53,
+      "bootstrap95": [
+        -4.72,
+        -2.27
+      ],
+      "winPct": 33,
+      "tiePct": 4.67
+    },
+    {
+      "id": "musician-stack-4-12",
+      "n": 300,
+      "delta": -3.46,
+      "bootstrap95": [
+        -4.71,
+        -2.21
+      ],
+      "winPct": 31.67,
+      "tiePct": 6.33
+    },
+    {
+      "id": "nurse-stack-4-12",
+      "n": 300,
+      "delta": -4.93,
+      "bootstrap95": [
+        -6.19,
+        -3.6
+      ],
+      "winPct": 25.33,
+      "tiePct": 7.67
+    },
+    {
+      "id": "musician-stack-6-2",
+      "n": 300,
+      "delta": -4.93,
+      "bootstrap95": [
+        -6.29,
+        -3.66
+      ],
+      "winPct": 28.67,
+      "tiePct": 6.67
+    },
+    {
+      "id": "musician-stack-6-6",
+      "n": 300,
+      "delta": -4.92,
+      "bootstrap95": [
+        -6.14,
+        -3.61
+      ],
+      "winPct": 29.67,
+      "tiePct": 6.33
+    },
+    {
+      "id": "musician-stack-6-12",
+      "n": 300,
+      "delta": -4.74,
+      "bootstrap95": [
+        -6.05,
+        -3.4
+      ],
+      "winPct": 29.67,
+      "tiePct": 5.33
+    },
+    {
+      "id": "nurse-stack-6-12",
+      "n": 300,
+      "delta": -4.36,
+      "bootstrap95": [
+        -5.61,
+        -3.1
+      ],
+      "winPct": 28.67,
+      "tiePct": 8.67
+    },
+    {
+      "id": "pair-calming",
+      "n": 300,
+      "delta": -6.46,
+      "bootstrap95": [
+        -7.79,
+        -5.04
+      ],
+      "winPct": 21,
+      "tiePct": 6.67
+    },
+    {
+      "id": "pair-lovers",
+      "n": 300,
+      "delta": -9.07,
+      "bootstrap95": [
+        -10.41,
+        -7.75
+      ],
+      "winPct": 15,
+      "tiePct": 3.33
+    },
+    {
+      "id": "rest-lookahead",
+      "n": 300,
+      "delta": -1.08,
+      "bootstrap95": [
+        -2.52,
+        0.39
+      ],
+      "winPct": 45,
+      "tiePct": 5
+    },
+    {
+      "id": "rest-relay-calm",
+      "n": 300,
+      "delta": -6.25,
+      "bootstrap95": [
+        -7.43,
+        -5.02
+      ],
+      "winPct": 20.67,
+      "tiePct": 2.67
+    }
+  ],
+  "duplication": [
+    {
+      "id": "musician-stack-4-2",
+      "mean": 118.55,
+      "maxMusicians": 3,
+      "maxNurses": 2,
+      "duplicateStepPct": 3.18
+    },
+    {
+      "id": "musician-stack-4-6",
+      "mean": 120.67,
+      "maxMusicians": 4,
+      "maxNurses": 3,
+      "duplicateStepPct": 6.64
+    },
+    {
+      "id": "musician-stack-4-12",
+      "mean": 120.74,
+      "maxMusicians": 4,
+      "maxNurses": 3,
+      "duplicateStepPct": 8.75
+    },
+    {
+      "id": "nurse-stack-4-12",
+      "mean": 119.27,
+      "maxMusicians": 3,
+      "maxNurses": 3,
+      "duplicateStepPct": 5.51
+    },
+    {
+      "id": "musician-stack-6-2",
+      "mean": 119.27,
+      "maxMusicians": 4,
+      "maxNurses": 3,
+      "duplicateStepPct": 11.48
+    },
+    {
+      "id": "musician-stack-6-6",
+      "mean": 119.28,
+      "maxMusicians": 5,
+      "maxNurses": 3,
+      "duplicateStepPct": 14.76
+    },
+    {
+      "id": "musician-stack-6-12",
+      "mean": 119.46,
+      "maxMusicians": 5,
+      "maxNurses": 3,
+      "duplicateStepPct": 16.38
+    },
+    {
+      "id": "nurse-stack-6-12",
+      "mean": 119.84,
+      "maxMusicians": 4,
+      "maxNurses": 4,
+      "duplicateStepPct": 14.34
+    }
+  ],
+  "fixtures": {
+    "version": "v6.2",
+    "cases": 122880,
+    "fourPersonCases": 36450,
+    "sourceIdenticalToCandidate": true,
+    "duplicateSoothingStacks": true,
+    "forecastFailures": 0,
+    "receiptFailures": 0
+  },
+  "relationshipChecks": 126310
+}

@@ -19,7 +19,7 @@ export const nextShopFloor = (floor: number) => (Math.floor(floor / 10) + 1) * 1
 export const difficultyTier = (floor: number) => Math.floor(Math.max(0, floor - 1) / 30);
 export const agitationThreshold = (cap: number) => Math.ceil(cap * 2 / 3);
 export const patienceCost = (state: RunState) => state.stress >= agitationThreshold(state.stressCap) ? 2 : 1;
-export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 5 ? 1 : occupied <= 2 ? -1 : 0;
+export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 4 ? 1 : occupied <= 2 ? -1 : 0;
 export const REST_STOP_CAP = 3;
 export const shiftAgitation = (floor: number, occupied: number, restStops = 0) => occupied > 0 || restStops <= 0 ? difficultyTier(floor) : 0;
 
@@ -86,7 +86,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
     const baseTrip = guidedShift ? firstShiftTrips[index] : rand(spec.trip[0], spec.trip[1], rng);
     const trip = expressTrip(baseTrip, upgrades.express);
     const traits = kind === 'mystery' || kind === 'shifter' ? randomTraits(kind, unlockedAt(floor), rng) : undefined;
-    const patience = trip + (kind === 'mystery' ? rand(2, 6, rng) : spec.patience) + upgrades.concierge * 3;
+    const patience = trip + (kind === 'mystery' ? rand(2, 6, rng) : spec.patience) + -1 + upgrades.concierge * 3;
     return { id: `f${floor}-${index}-${rng().toString(36).slice(2, 7)}`, kind, destination: floor + trip, patience, traits, copySeed: kind === 'mimic' ? rand(0, 2147483647, rng) : undefined, boardedAt: floor, fareBonus: upgrades.concierge * 2, fuse: kind === 'bomb' ? rand(3, 6, rng) : undefined, calledByLover: loverCalled && index === 0 };
   });
 }

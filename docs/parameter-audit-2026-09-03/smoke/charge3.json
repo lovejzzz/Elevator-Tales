@@ -1,0 +1,187 @@
+{
+  "revision": "bc4a95c687f5362a0da21a321874317b82701438",
+  "id": "charge3",
+  "params": {
+    "chargePrice": 3
+  },
+  "seedBase": 903193409,
+  "engineHash": "e1149b5472db6959e979f5235535f967e6b4d1719b2f5e0c3deba6454657eb24",
+  "profileHash": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+  "runnerHash": "66f5eeccdd6df8f1bad818c724ce79bd9e2f79dbfdebbb71778e0c4c3e4b66a4",
+  "phase": "smoke",
+  "elapsedSeconds": 0.185,
+  "workspace": "/var/folders/m5/9b5k0tt50x91406yr6zww2r40000gn/T/elevator-parameters-GnHa1M/charge3",
+  "source": "v6.1-service-rest",
+  "mode": "validate",
+  "context": "normal",
+  "initial": {
+    "floor": 1,
+    "restStops": 3,
+    "energy": 20,
+    "energyCap": 24,
+    "stress": 0,
+    "stressCap": 15,
+    "weightCap": 10,
+    "coins": 0,
+    "earned": 0,
+    "shop": [],
+    "cabin": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "swapped": false,
+    "upgrades": {
+      "battery": 0,
+      "solar": 0,
+      "calm": 0,
+      "concierge": 0,
+      "reinforced": 0,
+      "express": 0
+    },
+    "status": "playing",
+    "message": "门已开启。把候选人物直接拖进指定站位。",
+    "log": [
+      "01F · 无尽班次开始"
+    ],
+    "lastEarnings": {
+      "total": 0,
+      "sources": []
+    },
+    "lastPressure": {
+      "delta": 0,
+      "sources": []
+    },
+    "lastEnergy": {
+      "delta": 0,
+      "sources": []
+    }
+  },
+  "horizon": 600,
+  "totalGames": 2,
+  "transitions": 185,
+  "forecastFailures": 0,
+  "rank": [
+    "balanced-3"
+  ],
+  "summaries": [
+    {
+      "id": "balanced-3",
+      "config": {
+        "id": "balanced-3",
+        "cap": 3,
+        "risk": 3,
+        "favorite": [],
+        "bias": 2,
+        "shop": "balanced",
+        "moves": 1
+      },
+      "runs": 2,
+      "purchases": {
+        "solar": 2,
+        "calm": 3,
+        "reinforced": 1
+      },
+      "spending": {
+        "solar": 170,
+        "calm": 324,
+        "reinforced": 81
+      },
+      "chargeSpend": 984,
+      "shopVisits": 18,
+      "firstShopPassed": 2,
+      "deliveryCount": 107,
+      "patienceLosses": 1,
+      "pressureSources": {
+        "宽松轿厢": -40,
+        "小偷未受控": 8,
+        "乘客到站舒缓": -107,
+        "醉汉闹事": 8,
+        "长班疲劳": 166,
+        "护士安抚": -15,
+        "耐心归零": 2
+      },
+      "mean": 93.5,
+      "median": 94,
+      "p10": 93,
+      "p90": 94,
+      "max": 94,
+      "reach100Pct": 0,
+      "reach150Pct": 0,
+      "deaths": {
+        "power": 0,
+        "agitation": 2,
+        "fuse": 0,
+        "censored": 0
+      },
+      "meanIncome": 925,
+      "meanOccupancy": 2.59,
+      "steps": 185,
+      "changes": 11,
+      "dismissals": 7,
+      "boarded": {
+        "commuter": 18,
+        "tourist": 14,
+        "courier": 12,
+        "mechanic": 3,
+        "lover": 6,
+        "musician": 3,
+        "thief": 3,
+        "cop": 2,
+        "lawyer": 2,
+        "drunk": 6,
+        "nurse": 6,
+        "child": 0,
+        "ghost": 2,
+        "exorcist": 2,
+        "coach": 10,
+        "celebrity": 3,
+        "inspector": 1,
+        "bomb": 7,
+        "mystery": 4,
+        "shifter": 10,
+        "mimic": 5
+      },
+      "floors": [
+        93,
+        94
+      ],
+      "seedThirdMeans": [
+        93,
+        94,
+        null
+      ],
+      "emptyStepPct": 9.73,
+      "lateEmptyStepPct": 25.93,
+      "meanLastBoardingFloor": 89.5,
+      "firstGameTrace": [
+        {
+          "floor": 25,
+          "coins": 109,
+          "earned": 223,
+          "stress": 0,
+          "occupants": 3
+        },
+        {
+          "floor": 50,
+          "coins": 91,
+          "earned": 457,
+          "stress": 9,
+          "occupants": 3
+        },
+        {
+          "floor": 75,
+          "coins": 159,
+          "earned": 751,
+          "stress": 11,
+          "occupants": 3
+        }
+      ]
+    }
+  ],
+  "comparisons": [],
+  "limits": "Finite heuristic policy pool, not a proof of global nondominance. Training/validation/stress seeds are disjoint. Shop and phase RNG are floor-seeded; lover calls remain state-dependent. Scenario fixtures are conditional stress tests, not weighted normal-run probabilities. Intervals against the post-hoc best policy are descriptive and uncorrected for multiple comparisons. Bomb/impatience collision is fixed. Policies conservatively reject predicted early-fuse failure."
+}
