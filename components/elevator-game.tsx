@@ -9,7 +9,7 @@ import { chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRi
 import { energyForecast, stressForecast } from '@/lib/game-forecast';
 import { conflictingConnection, activeConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
-import { bondStatus, riderProfile } from '@/lib/rider-profile';
+import { bondStatus } from '@/lib/rider-profile';
 import { portraitAsset } from '@/lib/passenger-assets';
 import { passengerBrief } from '@/lib/passenger-presentation';
 import { metricChanges, type MetricChange, type MetricKey } from '@/lib/metric-feedback';
@@ -54,12 +54,12 @@ function Portrait({ kind, large = false }: { kind: PassengerKind; large?: boolea
   return <span className={`portrait-window ${large ? 'portrait-large' : ''}`} aria-hidden="true"><span className="portrait-sheet" style={{ backgroundImage: `url(${asset.src})`, backgroundSize: `${asset.columns * 100}% ${asset.rows * 100}%`, backgroundPosition: `${asset.columns > 1 ? x * 100 / (asset.columns - 1) : 50}% ${asset.rows > 1 ? y * 100 / (asset.rows - 1) : 50}%` }} /></span>;
 }
 
-function riderState(cabin: Array<Rider | null>, slot: number, weight: number): { label: string; tone: 'active' | 'warn' | 'neutral' } | null {
+function riderState(cabin: Array<Rider | null>, slot: number, weight: number, bonus: number): { label: string; tone: 'active' | 'warn' | 'neutral' } | null {
   const rider = cabin[slot];
   if (!rider) return null;
   const bond = bondStatus(rider,cabin,slot);
   if (bond.conflict) return {label:'邻座冲突',tone:'warn'};
-  if(rider.kind==='mystery')return {label:bond.supported?'协作 · 车费未揭晓':'车费待揭晓',tone:bond.supported?'active':'neutral'};
+  if(rider.kind==='mystery')return {label:bond.supported?`协作到站 +${bonus}`:'车费待揭晓',tone:bond.supported?'active':'neutral'};
   if(rider.kind==='shifter')return {label:`载重 ${bond.weight} · 第${rider.traits?.revision ?? 0}次变化`,tone:'warn'};
   if(rider.kind==='mimic')return {label:`复制 ${bond.copies.length} 项`,tone:bond.copies.length?'active':'neutral'};
   switch (rider.kind) {
@@ -76,7 +76,7 @@ function riderState(cabin: Array<Rider | null>, slot: number, weight: number): {
     case 'inspector': return weight <= 8 ? { label: '检查通过', tone: 'active' } : { label: '发现超载', tone: 'warn' };
     case 'musician': return cabin.filter(Boolean).length >= 4 ? { label: '正在演奏', tone: 'active' } : null;
     case 'nurse': return hasNeighbour(cabin, slot, ['drunk', 'child']) ? { label: '正在安抚', tone: 'active' } : null;
-    default: return bond.supported ? {label:'协作加成',tone:'active'} : null;
+    default: return bond.supported ? {label:`协作到站 +${bonus}`,tone:'active'} : null;
   }
 }
 
@@ -275,7 +275,7 @@ export default function ElevatorGame() {
           const preview = hoveredPlan?.ok && hoveredPlan.changed && activeConnection(hoveredPlan.next.cabin, first, second);
           return <line key={`${first}-${second}`} className={`${activeConnection(run.cabin, first, second) ? 'active' : ''} ${conflictingConnection(run.cabin,first,second)?'conflict-link':''} ${preview ? 'preview-link' : ''}`} x1={CONNECTION_POINTS[first][0]} y1={CONNECTION_POINTS[first][1]} x2={CONNECTION_POINTS[second][0]} y2={CONNECTION_POINTS[second][1]} />;
         })}</svg>{run.cabin.map((rider, index) => {
-          const state = riderState(run.cabin, index, weight); const plan = placementPlans[index]; const synergy = plan?.ok && plan.changed && plan.tone === 'combo';
+          const state = riderState(run.cabin, index, weight, cooperationBonus(run)); const plan = placementPlans[index]; const synergy = plan?.ok && plan.changed && plan.tone === 'combo';
           const target = dragOverSlot === index && Boolean(activeRider); const reaction = feedback?.slots.includes(index) ? feedback : null;
           return <button key={index} className={`standing-slot ${rider ? 'occupied' : ''} ${synergy ? 'synergy-target' : ''} ${plan ? plan.ok ? 'drop-valid' : 'drop-blocked' : ''} ${selectedSlot === index ? 'selected' : ''} ${target ? 'drag-target' : ''}`} onClick={() => clickSlot(index)} disabled={locked} draggable={Boolean(rider) && !locked && (!run.swapped || rider?.boardedAt === run.floor)} onDragStart={(event) => rider && startDrag(event, { type: 'slot', slot: index })} onDragEnd={endDrag} onMouseEnter={() => activeRider && window.matchMedia('(min-width: 701px) and (hover: hover)').matches && setDragOverSlot(index)} onMouseLeave={() => !dragged && setDragOverSlot(null)} onDragOver={(event) => { if (!locked && dragged) { event.preventDefault(); event.dataTransfer.dropEffect = plan?.ok ? 'move' : 'none'; setDragOverSlot(index); } }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOverSlot((current) => current === index ? null : current); }} onDrop={(event) => dropOnSlot(event, index)} aria-label={rider ? `${index + 1}号位，${PASSENGERS[rider.kind].name}${state ? `，${state.label}` : ''}` : `${index + 1}号空位${synergy ? '，可联动' : ''}`}>
             {rider ? <span className="rider-visual" key={rider.id}><Portrait kind={rider.kind} large /><span className="slot-destination">还剩 {Math.max(0, rider.destination - run.floor)} 站</span>{state && rider.kind !== 'bomb' && <span className={`slot-state ${state.tone}`}>{state.label}</span>}<span className="rider-name">{PASSENGERS[rider.kind].name}</span><span className={`patience patience-${Math.min(3, rider.patience)}`} title={`剩余耐心 ${rider.patience}`}>{'◆'.repeat(Math.max(0, Math.min(5, rider.patience)))}</span>{rider.fuse !== undefined && <span className="fuse">引信 {rider.fuse}</span>}</span> : <><span className="slot-number">{String(index + 1).padStart(2, '0')}</span>{target && plan?.ok && activeRider && <span className="placement-ghost"><Portrait kind={activeRider.kind} large /></span>}</>}
@@ -292,7 +292,7 @@ export default function ElevatorGame() {
         <p className="arrival-explainer">送达后领取基础奖励 · 途中收益与人物联动另算</p>
         <div className="passenger-list" key={run.floor} aria-label="本层候客乘客">
           {offers.map((offer) => {
-            const spec = PASSENGERS[offer.kind]; const profile=riderProfile(offer,run.cabin); const brief = passengerBrief(offer, run.floor, run.cabin, cooperationBonus(run));
+            const spec = PASSENGERS[offer.kind]; const brief = passengerBrief(offer, run.floor, run.cabin, cooperationBonus(run));
             const boarded = run.cabin.some((rider) => rider?.id === offer.id); const pending = pendingOfferId === offer.id;
             const full = !boarded && cabinFull; const tooHeavy = !boarded && !run.cabin.some((r,slot)=>!r && planPlacement(run,offer,slot).ok);
             const unavailable = full || tooHeavy; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id;
@@ -301,14 +301,14 @@ export default function ElevatorGame() {
               <span className="mobile-passenger-summary">
                 <Portrait kind={offer.kind} /><strong>{spec.name}</strong><span className="mobile-trip">还剩 {brief.distance} 站</span>
                 <span className="mobile-facts">载重 {brief.weight} · 耐心 {offer.patience}</span>
-                <span className="mobile-reward"><span>到站金币 +{brief.coins === null ? '？' : brief.coins + brief.tip}</span><span>{offer.kind === 'shifter' ? '每站变属性' : offer.kind === 'mimic' ? '随邻座复制' : brief.hidden ? '到站揭晓' : '乘客不赠电'}</span></span>
+                <span className="mobile-reward"><span>到站金币 +{brief.coins === null ? '？' : brief.coins + brief.tip}</span><span title={brief.bondRules[0]}>协作送达另 +{brief.bond.bonus}</span></span>
                 <span className={`mobile-card-state ${offer.fuse !== undefined ? 'fact-danger' : ''}`}>{boarded ? '已上车 · 撤回' : pending ? '已选 · 点空位' : full ? '车厢已满' : tooHeavy ? '载重不足' : offer.fuse !== undefined ? `引信 ${offer.fuse} · 危险` : partner ? `联动 · ${PASSENGERS[partner].name}` : '点选上车'}</span>
               </span>
               <span className="passenger-heading"><Portrait kind={offer.kind} /><span className="passenger-identity"><strong>{spec.name}</strong><span className="passenger-destination"><b>还剩 {brief.distance} 站</b><span> · 送达后领取奖励</span></span></span></span>
               <span className="passenger-facts"><span>占载重 <b>{brief.weight}</b></span><span title="每站通常消耗 1 点，高躁动时消耗 2 点；归零提前离开，并增加 2 躁动。">耐心 <b>{offer.patience} 点</b></span>{offer.fuse !== undefined && <span className="fact-danger">引信 <b>{offer.fuse} 格</b></span>}{spec.risk && <span className="fact-danger">{spec.risk.label}</span>}</span>
               <span className="arrival-reward"><span>到站基础奖励</span><span className="reward-coins"><Coins />金币 <b>{brief.coins === null ? '？到站揭晓' : `+${brief.coins}`}</b></span></span>
               {brief.tip > 0 && <span className="passenger-tip">另有升级小费 +{brief.tip} 金币，不参与车费倍率。</span>}
-              <span className="passenger-rules"><span>{spec.short}</span><span className="bond-compact"><b>协作</b> {profile.bond.likes.map(k=>PASSENGERS[k].name).join(' / ')} <b>避让</b> {profile.bond.avoids.map(k=>PASSENGERS[k].name).join(' / ')}</span></span>
+              <span className="passenger-rules"><span>{spec.short}</span><span className="bond-compact bond-cooperation"><b>协作：{brief.bond.partners}</b><strong>{brief.bond.benefit}</strong><span>{brief.bond.condition}</span></span><span className="bond-compact bond-conflict"><b>冲突：{brief.bond.opponents}</b><span>{brief.bond.conflict}</span></span></span>
               <span className="passenger-action"><span>{boarded ? '已上车 · 点击可撤回' : pending ? '已选中 · 请安排站位' : full ? '轿厢已满 · 暂不能上车' : tooHeavy ? '剩余载重不足' : '拖入空位，或点选安排'}</span>{partner ? <b>可联动 · {PASSENGERS[partner].name}</b> : firstPairLesson && offer.kind === 'lover' ? <b>教学配对</b> : offer.calledByLover ? <b>回应呼唤</b> : null}</span>
             </button><button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(offer);}} aria-label={`查看${spec.name}规则`}><HelpCircle /></button></div>;
           })}
@@ -327,7 +327,7 @@ export default function ElevatorGame() {
     <Dialog open={passengerDetails !== null} onOpenChange={(open) => {if(!open){setPassengerDetails(null);setEjectArmed(false);}}}><DialogContent className="story-dialog passenger-detail-dialog">
       {detailRider && detailBrief && <><p className="dialog-kicker">PASSENGER NOTES</p><DialogHeader><DialogTitle>{PASSENGERS[detailRider.kind].name}</DialogTitle><DialogDescription>还剩 {detailBrief.distance} 站 · 载重 {detailBrief.weight} · 耐心 {detailRider.patience}{detailRider.fuse !== undefined ? ` · 引信 ${detailRider.fuse}` : ''}</DialogDescription></DialogHeader>
         <div className="passenger-detail-reward">到站车费：{detailBrief.coins === null ? '？封存中，到站揭晓' : `+${detailBrief.coins} 金币`}{detailBrief.tip ? ` · 升级小费 +${detailBrief.tip}` : ''}</div>
-        <div className="passenger-detail-rules">{detailBrief.rules.map(rule=><p key={rule}>{rule}</p>)}</div>
+        <div className="passenger-detail-rules"><h3>角色技能</h3>{detailBrief.skillRules.map(rule=><p key={rule}>{rule}</p>)}<h3>协作收益与冲突代价</h3>{detailBrief.bondRules.map(rule=><p key={rule}>{rule}</p>)}</div>
         {canDismiss && <section className="dismiss-panel"><b>提前请离 · 赔偿 {penalty} 金币</b><p>不结算到站收益，也不获得送达舒缓。已赚取的途中收益保留。赔偿 = 4 + 剩余站数 ×2。</p>
           {ejectArmed && <p className="dismiss-confirm">确定让这位乘客在 {run.floor} 层下车？此操作不可撤回。</p>}
           <button className="dismiss-button" disabled={run.coins < penalty} onClick={()=>ejectArmed ? confirmDismiss() : setEjectArmed(true)}><UserMinus />{run.coins < penalty ? `金币不足 · 还差 ${penalty-run.coins}` : ejectArmed ? `确认请离 · 支付 ${penalty}` : '提前请离这位乘客'}</button>
@@ -357,7 +357,7 @@ export default function ElevatorGame() {
       <div><b>还剩几站</b><p>每次关门上行算一站，人物身上的剩余站数会递减；幽灵可能延误邻座。</p></div>
       <div><b>躁动会传染</b><p>4–5人每站 +1，满6人 +2；最多2人时 −1。每位乘客到站再 −1。达到上限会结束本班。</p></div>
       <div><b>高躁动与耐心</b><p>躁动达到上限的三分之二时，每站耐心改为 −2。耐心归零提前离开，没有到站奖励，并额外 +2 躁动。</p></div>
-      <div><b>十层补给</b><p>充电每点2金币，先留路费再买卡；右上角叠层图标可查看已装升级。</p></div><div><b>协作与冲突</b><p>每个人都有协作和冲突对象。协作到站额外赚金币；无协作时，冲突邻座会在偶数层加1躁动。旧有特殊技能仍生效。</p></div><div><b>到层请离</b><p>选中车内人物，打开人物详情后请离。赔偿4+剩余站数×2金币，不结算到站奖励。本层刚上车仍可免费撤回。</p></div>
+      <div><b>十层补给</b><p>充电每点2金币，先留路费再买卡；右上角叠层图标可查看已装升级。</p></div><div><b>协作与冲突</b><p>每个人都有协作和冲突对象。本人到站时仍与任意协作对象相邻，额外 +{cooperationBonus(run)} 金币，每人只领一次。角色技能另算；没有协作邻座时，冲突邻座会在偶数层增加1躁动。</p></div><div><b>到层请离</b><p>选中车内人物，打开人物详情后请离。赔偿4+剩余站数×2金币，不结算到站奖励。本层刚上车仍可免费撤回。</p></div>
       <div><b>空驶休整</b><p>开局3次；每送达1人恢复1次，最多3次。空车上行自动消耗1次，免除本层长班疲劳。用尽后仍能空驶，但不再免疲劳。接客、撤回、请离与购物都不恢复次数。</p></div>
       <div><b>无尽难度</b><p>初始20电、容量24。每站基础耗2电，节能最低耗1。每过30层增加长班疲劳；电量不足要到补给站付费充电。</p></div>
     </div></DialogContent></Dialog>

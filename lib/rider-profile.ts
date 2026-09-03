@@ -69,13 +69,23 @@ export function bondStatus(rider:Rider,cabin:Array<Rider|null>,slot=cabin.findIn
  return {supported,conflict,...profile};
 }
 export const profileWeight=(cabin:Array<Rider|null>)=>cabin.reduce((sum,r,i)=>sum+(r?riderProfile(r,cabin,i).weight:0),0);
-export function bondLines(rider:Rider,cabin:Array<Rider|null>=[],bonus=3){
- const {bond,copies}=riderProfile(rider,cabin);
+export function bondSummary(rider:Rider,cabin:Array<Rider|null>=[],bonus=3){
+ const {bond}=riderProfile(rider,cabin);
  const names=(kinds:PassengerKind[])=>kinds.map(k=>PASSENGERS[k].name).join(' / ');
+ return {
+  partners:names(bond.likes),opponents:names(bond.avoids),bonus,
+  benefit:`本人到站额外 +${bonus} 金币`,
+  condition:'到站时仍与任意协作对象相邻',
+  conflict:'相邻时，偶数层躁动 +1；有协作邻座时免除',
+ };
+}
+export function bondLines(rider:Rider,cabin:Array<Rider|null>=[],bonus=3){
+ const {copies}=riderProfile(rider,cabin);
+ const summary=bondSummary(rider,cabin,bonus);
  return [
-  '协作：'+names(bond.likes)+'邻座 → 到站额外 +'+bonus+' 金币。',
-  '冲突：'+names(bond.avoids)+'邻座 → 偶数层躁动 +1；有协作邻座可压住。',
+  `协作：${summary.partners}。本人到站时，仍与其中任意一人相邻 → 额外 +${bonus} 金币。`,
+  '每位乘客只领一次协作奖励，多个协作邻座不叠加；恋人翻倍、途中收入等角色技能另外计算。',
+  `冲突：${summary.opponents}。${summary.conflict}；只免除这项冲突，不改变角色自身技能的触发规则。`,
   ...copies.map(c=>'复制 '+PASSENGERS[c.sourceKind].name+' 的'+COPY_LABELS[c.field]+'。'),
  ];
 }
-

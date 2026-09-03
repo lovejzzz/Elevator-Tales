@@ -375,6 +375,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .passenger-detail-reward { color:#e6c68d; font:500 14px/1.7 var(--font-sans); padding:12px; background:#bd994416; border:1px solid var(--border); }
 .passenger-detail-rules { color:#d2d9cb; font:400 15px/1.75 var(--font-sans); }
 .passenger-detail-rules p { margin:0 0 12px; }
+.passenger-detail-rules h3 { margin:12px 0 5px; color:#e8cf9f; font:600 15px/1.5 var(--font-sans); }
 @media (max-width:700px) {
   html,body { height:100%; overflow:hidden; overscroll-behavior:none; }
   .game-shell { height:100dvh; min-height:0; display:flex; flex-direction:column; gap:6px; padding:max(6px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left)); overflow:hidden; }
@@ -581,7 +582,11 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .passenger-item .mobile-rule-button { display:grid; place-items:center; position:absolute; right:5px; top:5px; width:36px; height:36px; border:0; background:#13221bd9; color:#dbc79e; cursor:pointer; }
  .passenger-item .mobile-rule-button svg { width:17px; height:17px; }
  .passenger-heading { padding-right:25px; }
- .bond-compact b { color:#8fcaaa; font-weight:500; }.bond-compact b:last-of-type { color:#d9a98d; margin-left:6px; }
+ .bond-compact { display:grid; gap:2px; padding-top:5px; white-space:normal; overflow-wrap:anywhere; }
+ .bond-compact b { color:#9bd4b0; font-weight:500; }
+ .bond-compact strong { color:#ecd49e; font:500 13px/1.5 var(--font-sans); }
+ .bond-compact>span { color:#bcc8ba; font:400 12px/1.5 var(--font-sans); }
+ .bond-conflict b { color:#e3ab91; }
  .passenger-destination>span { display:none; }
  .passenger-card { gap:5px; padding:10px; }
  .passenger-rules { font-size:12px; line-height:1.5; gap:3px; }

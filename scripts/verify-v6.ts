@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { PASSENGER_ORDER, type PassengerKind } from '../lib/game-data';
+import { PASSENGERS, PASSENGER_ORDER, type PassengerKind } from '../lib/game-data';
 import { chargeBattery, chargingPlan, cooperationBonus, dismissRider, dismissalCost, initialRun, installedUpgradeSummary, makeOffers, resolveFloor, totalWeight, upgradeChoices, type Rider } from '../lib/game-engine';
 import { BONDS, bondStatus, randomTraits, riderProfile } from '../lib/rider-profile';
 import { passengerBrief } from '../lib/passenger-presentation';
@@ -57,6 +57,42 @@ const contractRun={...initialRun(),upgrades:{...initialRun().upgrades,battery:2}
 assert.equal(cooperationBonus(contractRun),7);
 assert.equal(resolveFloor(contractRun,rng).coins,14);
 assert.match(installedUpgradeSummary(contractRun,'battery'),/共 \+7/);
+
+// Relationship copy states beneficiary, timing, amount and conditions, and
+// follows the current contract/profile rather than hard-coding the base +3.
+for(const kind of PASSENGER_ORDER)for(const bonus of [3,5,7]){
+ const brief=passengerBrief(rider(kind),1,[],bonus);
+ assert.equal(brief.bond.bonus,bonus);
+ assert.equal(brief.bond.partners,BONDS[kind].likes.map(k=>PASSENGERS[k].name).join(' / '));
+ assert.match(brief.bond.benefit,new RegExp('本人到站额外 \\+'+bonus+' 金币'));
+ assert.match(brief.bondRules[0],/到站时.*仍.*相邻/);
+ assert.match(brief.bondRules[1],/多个协作邻座不叠加/);
+ assert.match(brief.bondRules[2],/偶数层躁动 \+1/);
+ assert.match(brief.bondRules[2],/有协作邻座时免除/);
+ assert.ok(!brief.rules.join('').includes('避让'));
+}
+const unupgraded={...initialRun(),cabin:cabin(collaborating,rider('courier'))};
+assert.equal(resolveFloor(unupgraded,rng).coins,10,'base fare7 + advertised cooperation3');
+const twoPartners=[collaborating,rider('courier','partner1'),null,rider('courier','partner2'),null,null];
+assert.equal(resolveFloor({...initialRun(),cabin:twoPartners},rng).coins,10,'bonus does not multiply by partners');
+const earlyPartner={...initialRun(),cabin:cabin(rider('commuter','later',{destination:3}),rider('courier','early',{destination:2}))};
+assert.equal(resolveFloor(resolveFloor(earlyPartner,rng),rng).lastEarnings.total,7,'departed partner cannot grant cooperation');
+const loverPair={...initialRun(),cabin:cabin(rider('lover','l1',{destination:2}),rider('lover','l2',{destination:2}))};
+assert.equal(resolveFloor(loverPair,rng).coins,32,'two en-route coins + doubled fares24 + separate generic bonuses6');
+const randomBond={...mystery,traits:{...mystery.traits!,bond:BONDS.coach}};
+const dynamicBrief=passengerBrief(randomBond,3,[],7);
+assert.equal(dynamicBrief.bond.partners,'通勤者 / 快递员');
+assert.equal(dynamicBrief.coins,null);
+assert.ok(!JSON.stringify(dynamicBrief).includes('37'),'known bonus must not expose the sealed fare');
+let inheritedCopies=0;
+for(let n=0;n<100;n++){
+ const copy=rider('mimic','copy-label',{copySeed:n}),arr=cabin(copy,randomBond);
+ if(riderProfile(copy,arr).copies[0]?.field==='bond'){
+  assert.equal(passengerBrief(copy,3,arr,5).bond.partners,'通勤者 / 快递员');
+  inheritedCopies++;
+ }
+}
+assert.ok(inheritedCopies>0);
 
 // Copy assignment is one unique field per neighbor, stable under reconnection,
 // responsive to changed source values, bounded and nonrecursive.
