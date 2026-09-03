@@ -980,3 +980,41 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .status-rail .meter-card>div:first-child>svg,
  .game-shell .status-rail .score-card>svg { display:block; width:13px; height:13px; color:var(--brass); }
 }
+
+/* v7.0 desktop cockpit: instruments left, elevator center, passengers right. */
+@media (min-width:1101px) and (min-height:501px) {
+ .game-shell .game-grid {
+  grid-template-columns:184px minmax(0,1fr) minmax(350px,390px);
+  grid-template-rows:minmax(0,1fr) 105px;
+  gap:10px;
+ }
+ .game-shell .status-rail { grid-column:1; grid-row:1/3; }
+ .game-shell .elevator-stage { grid-column:2; grid-row:1/3; }
+ .game-shell .departure-controls { grid-column:3; grid-row:2; }
+ .candidate-panel {
+  grid-column:3;
+  grid-row:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+ }
+ .game-shell .passenger-list {
+  flex:1;
+  min-height:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:repeat(3,minmax(0,1fr));
+  gap:8px;
+  overflow:hidden;
+ }
+ .game-shell .passenger-item { min-height:0; }
+ .game-shell .passenger-card { padding:9px 11px; overflow:hidden; }
+ .game-shell .passenger-card>.unified-passenger-summary { gap:3px; font-size:12px; line-height:1.3; }
+ .game-shell .card-head .portrait-window { width:38px; height:38px; }
+ .game-shell .card-head strong { font-size:20px; }
+ .game-shell .card-trip,.game-shell .unified-passenger-summary>.card-action { font-size:12px; }
+ .game-shell .card-values { padding-top:3px; }
+ .game-shell .card-cooperation { padding-block:3px; }
+ .game-shell .candidate-notes { flex:none; padding:6px 2px 0; }
+}

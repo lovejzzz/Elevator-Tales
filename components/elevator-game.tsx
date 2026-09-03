@@ -343,7 +343,7 @@ export default function ElevatorGame() {
         </div>
       </aside>
     </section>
-    <footer className="footer-line"><span>ELV–07 / v6.9</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
+    <footer className="footer-line"><span>ELV–07 / v7.0</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
 
 
     <Dialog open={passengerDetails !== null} onOpenChange={(open) => {if(!open){setPassengerDetails(null);setEjectArmed(false);}}}><DialogContent className="story-dialog passenger-detail-dialog">
