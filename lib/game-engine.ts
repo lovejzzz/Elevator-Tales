@@ -14,6 +14,7 @@ export type RunState = {
 
 export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 };
 export const LOVER_CALL_CHANCE = .25;
+export const INSPECTOR_COMPLIANCE_REWARD = 1;
 export const initialRun = (): RunState => ({ floor: 1, restStops: 3, energy: 20, energyCap: 24, stress: 0, stressCap: 15, weightCap: 10, coins: 0, earned: 0, shop: [], cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 无尽班次开始'], lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] } });
 export const nextShopFloor = (floor: number) => (Math.floor(floor / 10) + 1) * 10;
 export const difficultyTier = (floor: number) => Math.floor(Math.max(0, floor - 1) / 30);
@@ -100,7 +101,6 @@ export const energySavings = (state: RunState) => {
   state.cabin.forEach((rider,slot)=>{
     if(rider?.kind==='mechanic'&&next%3===0)saved++;
     if(rider?.kind==='ghost'&&hasNeighbour(state.cabin,slot,['exorcist']))saved++;
-    if(rider?.kind==='inspector'&&next%2===0&&passengerEnergy(state)===0)saved++;
   });return Math.min(1,saved,Math.max(0,travelEnergyCost(next)+passengerEnergy(state)-stabilizedEnergy(state)-1));
 };
 export const expressTrip = (baseTrip: number, installed: number) => installed > 0 && baseTrip >= 5 ? baseTrip - 1 : baseTrip;
@@ -171,18 +171,18 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
     const calmDrunk = hasNeighbour(effectCabin, slot, ['musician', 'nurse']); const controlledThief = hasNeighbour(effectCabin, slot, ['cop', 'lawyer']);
     const pairedLover = hasNeighbour(effectCabin, slot, ['lover']); const controlledGhost = hasNeighbour(effectCabin, slot, ['exorcist']);
     switch (rider.kind) {
-      case 'mechanic': if (nextFloor % 3 === 0) notes.push('维修工减少行驶耗电'); break;
+      case 'mechanic': break; // Shared savings are itemized in lastEnergy.
       case 'lover': if (pairedLover) addCoins('恋人连携', 1); break;
       case 'thief': addCoins(controlledThief ? '受控小偷' : '小偷', controlledThief ? 1 : 3); break;
       case 'drunk': if (calmDrunk) addCoins('醉汉安抚', 1); else if (rng() < .25) { const rise = riderAgitation(state, slot).random; adjustPressure('醉汉闹事', rise); const options = neighbours(slot); deferredSwaps.push([slot, options[rand(0, options.length - 1, rng)]]); stressReasons.push(`醉汉闹事并乱换位，躁动 +${rise}`); } break;
-      case 'ghost': if (controlledGhost) notes.push('幽灵受控，行驶少耗电'); else if (nextFloor % 3 === 0) { const nearby = neighbours(slot).filter((i) => effectCabin[i]); if (nearby.length) { effectCabin[nearby[rand(0, nearby.length - 1, rng)]]!.destination += 1; notes.push('幽灵令邻座延误一层'); } } break;
+      case 'ghost': if (controlledGhost) notes.push('幽灵受控，不再延误邻座'); else if (nextFloor % 3 === 0) { const nearby = neighbours(slot).filter((i) => effectCabin[i]); if (nearby.length) { effectCabin[nearby[rand(0, nearby.length - 1, rng)]]!.destination += 1; notes.push('幽灵令邻座延误一层'); } } break;
       case 'celebrity': if (neighbourCount(effectCabin, slot) === 1) addCoins('名人关注', 3); break;
-      case 'inspector': if (nextFloor % 2 === 0 && passengerEnergy(state) === 0) notes.push('检查通过，行驶少耗电'); break;
+      case 'inspector': if (nextFloor % 2 === 0 && passengerEnergy(state) === 0) addCoins('检查员合规奖励', INSPECTOR_COMPLIANCE_REWARD); break;
       case 'bomb': { const paused = hasNeighbour(effectCabin, slot, ['cop']) && nextFloor % 2 === 0; if (!paused) rider.fuse = (rider.fuse ?? 1) - 1; break; }
     }
   });
   deferredSwaps.forEach(([from, to]) => { [cabin[from], cabin[to]] = [cabin[to], cabin[from]]; });
-  if (state.upgrades.solar && nextFloor % 4 === 0) notes.push('节能线路生效');
+  if (state.upgrades.solar && nextFloor % 4 === 0 && energySavings(state)>0) notes.push('节能已计入：全车合计最多抵消1点额外耗电');
   let arrivals = 0; let cooperativeArrival = false;
   cabin = cabin.map((rider, slot) => {
     if (!rider) return null;

@@ -12,7 +12,7 @@
     "lint": "oxlint",
     "format": "oxfmt",
     "simulate": "tsx scripts/simulate-balance.ts",
-    "verify": "tsx scripts/verify-three-values.ts && tsx scripts/verify-audio.ts",
+    "verify": "tsx scripts/verify-three-values.ts && tsx scripts/verify-browser-fixes.ts && tsx scripts/verify-audio.ts",
     "verify:legacy": "tsx scripts/verify-legacy-v64.ts"
   },
   "dependencies": {

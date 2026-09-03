@@ -1,13 +1,15 @@
 import { PASSENGERS, type PassengerKind } from './game-data';
 import { bondLines, bondSummary, riderProfile } from './rider-profile';
-import { eventPressureMultiplier, riderAgitation, type Rider, type RunState } from './game-engine';
+import { INSPECTOR_COMPLIANCE_REWARD, eventPressureMultiplier, riderAgitation, type Rider, type RunState } from './game-engine';
+
+export const SHARED_SAVING_RULE = '节能全车每站最多抵1额外电；稳压先算，总耗电至少1。';
 
 // Cooperation conditions stay on the card face, including on phones.
 export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
   commuter: ['短途稳定，送达领取车费。'],
   tourist: ['旅途较长，送达车费较高。'],
   courier: ['短途周转，快速送达赚取金币。'],
-  mechanic: ['抵达 3、6、9… 层时，少耗 1 电。'],
+  mechanic: ['抵达 3、6、9… 层时，抵消1点额外耗电。', SHARED_SAVING_RULE],
   lover: ['有恋人邻座：本人每层 +1 金币，到站车费翻倍。', '没有恋人邻座：每层有 25% 概率呼唤另一位恋人候客。'],
   musician: ['车内至少 4 人：每层躁动 −1。', '安抚相邻的醉汉和儿童，阻止其负面效果。'],
   thief: ['没有警察或律师邻座：每层 +3 金币，偶数层躁动 +1。', '有警察或律师邻座：改为每层 +1 金币，不再加压，到站车费 +5。'],
@@ -16,11 +18,11 @@ export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
   drunk: ['没有音乐家或护士邻座：每层 25% 概率闹事，躁动 +2，并随机与邻座换位。', '有音乐家或护士邻座：不再闹事，每层 +1 金币。'],
   nurse: ['每逢偶数层，躁动 −1。', '安抚相邻的醉汉和儿童，阻止其负面效果。'],
   child: ['没有恋人、音乐家或护士邻座：偶数层躁动 +1。', '与其中任一角色相邻，即可阻止这项躁动。'],
-  ghost: ['没有驱魔师邻座：抵达 3、6、9… 层时，随机让一名邻座的目的地延后 1 层。', '有驱魔师邻座：不再延误邻座，每层少耗 1 电，到站车费 +6。'],
-  exorcist: ['镇压相邻幽灵：阻止延误，每位受控幽灵每层少耗 1 电，到站车费 +6。'],
-  coach: ['邻座到站时，车费 ×1.5（向上取整）。', '本人到站时，每位仍在身旁的邻座使车费 +3。'],
+  ghost: ['没有驱魔师邻座：抵达 3、6、9… 层时，随机让一名邻座的目的地延后 1 层。', '有驱魔师邻座：不再延误邻座，每层抵消1点额外耗电，幽灵到站车费 +6。',SHARED_SAVING_RULE],
+  exorcist: ['镇压相邻幽灵：阻止延误，每层抵消1点额外耗电，受控幽灵到站车费 +6。',SHARED_SAVING_RULE],
+  coach: ['非教练邻座到站时，车费 ×1.5（向上取整）；多位教练不叠加。', '本人到站时，每位仍在身旁的邻座使车费 +3。'],
   celebrity: ['恰好 1 位邻座：每层 +3 金币。', '至少 2 位邻座：偶数层躁动 +1。没有邻座则无额外效果。'],
-  inspector: ['每逢偶数层检查：人物额外耗电合计为0，少耗 1 电；否则躁动 +1。'],
+  inspector: [`每逢偶数层：人物额外耗电合计为0，金币 +${INSPECTOR_COMPLIANCE_REWARD}；否则躁动 +1。`,'检查原始额外耗电，稳压模块和节能不改变检查结果。'],
   bomb: ['引信每层减少 1 格；到站前归零，本局立即结束。到站当层归零则安全。', '有警察邻座：偶数层暂停倒计时。'],
   mystery: ['额外耗电、自身躁动、路程及协作/冲突对象每次出现时随机。','车费已封存，到站才揭晓；请离不结算隐藏车费。'],
   shifter: ['每到一层重新抽取额外耗电（0–1）、自身躁动（0–1）、车费（28–48）和联动偏好。','目的地不延长。开门后先看新数值，再决定去留。'],
@@ -38,24 +40,23 @@ export function passengerFace(rider: Rider, state: RunState) {
  const pressure=[profile.agitation?`每站躁动 +${profile.agitation*m}`:'自身躁动 +0'];
  let moneyNote='',special='';
  switch(rider.kind){
-  case 'tourist':moneyNote='高车费，持续耗电';break;
-  case 'lover':moneyNote='挨恋人：每站+1，到站车费×2';break;
+  case 'lover':moneyNote='邻恋人：每站+1币，到站基价×2';special='无恋人邻座：每站25%呼唤恋人';break;
   case 'thief':moneyNote='无警察/律师：每站+3；有则+1，到站再+5';pressure.splice(0,1,`偶数层 +${m}`,'挨警察或律师免除');break;
   case 'drunk':moneyNote='挨护士或音乐家：每站+1';pressure.splice(0,1,`每站25%概率 +${2*m}`,'挨护士或音乐家免除');special='闹事时随机换位';break;
   case 'child':pressure.splice(0,1,`偶数层 +${m}`,'挨恋人/护士/音乐家免除');break;
   case 'celebrity':moneyNote='恰好1邻座：每站+3';pressure.splice(0,1,`2+邻座：偶数层 +${m}`);break;
   case 'musician':pressure.splice(0,1,'车内≥4人：每站 −1');special='安抚相邻醉汉、儿童';break;
   case 'nurse':pressure.splice(0,1,'偶数层 −1');special='安抚相邻醉汉、儿童';break;
-  case 'mechanic':energy.push('3的倍数层少耗1电');break;
-  case 'ghost':energy.push('挨驱魔师：每站少耗1电');special='否则每3层随机延误邻座1站';moneyNote='挨驱魔师到站再+6';break;
-  case 'exorcist':special='相邻幽灵不再延误，每站少耗1电';break;
-  case 'inspector':energy.push('偶数层无人额外耗电：少耗1电');pressure.splice(0,1,`否则偶数层 +${m}`);break;
-  case 'coach':moneyNote='邻座到站车费×1.5；自己到站每邻座再+3';break;
-  case 'cop':special='控制相邻小偷；相邻炸弹偶数层不减引信';break;
-  case 'lawyer':special='控制相邻小偷，不延缓炸弹';break;
+  case 'mechanic':energy.push('3的倍数层：节能1');break;
+  case 'ghost':special='无驱魔师：3的倍数层随机延误邻座1站';moneyNote='邻驱魔师：不延误，每站节能1，到站再+6币';break;
+  case 'exorcist':special='邻幽灵：阻止延误，每站节能1；幽灵到站再+6币';break;
+  case 'inspector':moneyNote=`偶数层无人额外耗电：+${INSPECTOR_COMPLIANCE_REWARD}币`;pressure.splice(0,1,`有人额外耗电：偶数层 +${m}`);special='检查抵消前的额外耗电';break;
+  case 'coach':moneyNote='非教练邻座到站车费×1.5（不叠加）；本人到站每邻座+3币';break;
+  case 'cop':special='邻小偷：每站改赚1币，免偷窃躁动；邻炸弹：偶数层不减引信';break;
+  case 'lawyer':special='邻小偷：每站改赚1币，免偷窃躁动；不延缓炸弹';break;
   case 'bomb':special=`引信 ${rider.fuse??0}：到站前归零即失败；挨警察偶数层不减`;break;
   case 'mystery':special='本次参数已固定；车费到站揭晓';break;
-  case 'shifter':special='每站重抽三个值和关系';break;
+  case 'shifter':special='每站重抽三值和关系；基价28–48币';break;
   case 'mimic':special=profile.copies.length?profile.copies.map(c=>`复制${PASSENGERS[c.sourceKind].name}的${c.field==='energy'?'耗电':c.field==='fare'?'金钱':'躁动/关系'}`).join('；'):'每位邻座复制一项，随邻座变化';break;
  }
  const slot=state.cabin.findIndex(r=>r?.id===rider.id),actual=slot>=0?riderAgitation(state,slot):null;
@@ -71,8 +72,7 @@ const pressureText=(text:string,m:number)=>text.replace(/躁动 \+(\d+)/g,(_,n)=
 export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bonus=3, relief=0, multiplier=1): PassengerRuleBlock[] {
  const bond=bondSummary(rider,cabin,bonus),name=PASSENGERS[rider.kind].name;
  const partners=bond.partners.replaceAll(' / ','或'),opponents=bond.opponents.replaceAll(' / ','或');
- const short=pressureText(PASSENGERS[rider.kind].short,multiplier);
- const ability:PassengerRuleBlock={tone:'neutral',heading:'人物能力',lines:[short.endsWith('。')?short:short+'。']};
+ const ability:PassengerRuleBlock={tone:'neutral',heading:'人物能力',lines:PASSENGER_RULES[rider.kind].map(rule=>pressureText(rule,multiplier))};
  const cooperation:PassengerRuleBlock={
   tone:'good',heading:`协作：旁边有${partners}`,
   lines:[`${name}到站时，额外赚 ${bonus} 金币。`],
@@ -116,7 +116,7 @@ export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|n
   limit:relief>0 ? '舒缓全车每层1次' : null,
  };
  const skillRules=PASSENGER_RULES[rider.kind].map(rule=>pressureText(rule,multiplier)),bondRules=bondLines(rider,cabin,bonus).map(rule=>pressureText(rule,multiplier));
- const detailRules=[...(['thief','cop','lawyer'].includes(rider.kind)?[]:skillRules),bondRules[1],'协作免除的只是邻座冲突，其他角色技能仍按各自条件触发。',...bondRules.slice(3)];
+ const detailRules=[bondRules[1],'协作免除的只是邻座冲突，其他角色技能仍按各自条件触发。',...bondRules.slice(3)];
  return {coins:profile.hidden?null:profile.fare, tip:rider.fareBonus, energy:profile.energy,agitation:profile.agitation,weight:0,hidden:profile.hidden,
   distance:Math.max(0,rider.destination-floor),bond,cooperation,cardRules:passengerCardRules(rider,cabin,bonus,relief,multiplier),detailRules,skillRules,bondRules,rules:[...skillRules,...bondRules]};
 }
