@@ -33,5 +33,5 @@ for(const kind of ['mechanic','ghost','exorcist'] as const){
 }
 const duplicate=state({cabin:[rider('inspector','a'),rider('inspector','b'),null,null,null,null]});
 assert.equal(resolveFloor(duplicate,()=>.9).coins,2,'each inspector grants one bounded reward');
-assert.equal(resolveFloor(duplicate,()=>.9).energy,57);
+assert.equal(resolveFloor(duplicate,()=>.9).energy,69);
 console.log(JSON.stringify({version:'v6.8',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,savingsCopy:true}));

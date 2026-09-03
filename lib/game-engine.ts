@@ -16,7 +16,7 @@ export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, solar: 0
 export const LOVER_CALL_CHANCE = .25;
 export const INSPECTOR_COMPLIANCE_REWARD = 1;
 export const INSPECTOR_ENERGY_LIMIT = 4;
-export const INITIAL_ENERGY = 60;
+export const INITIAL_ENERGY = 72;
 export const ENERGY_CAPACITY = 72;
 export const initialRun = (): RunState => ({ floor: 1, restStops: 3, energy: INITIAL_ENERGY, energyCap: ENERGY_CAPACITY, stress: 0, stressCap: 15, weightCap: 10, coins: 0, earned: 0, shop: [], cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 无尽班次开始'], lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] } });
 export const nextShopFloor = (floor: number) => (Math.floor(floor / 10) + 1) * 10;
