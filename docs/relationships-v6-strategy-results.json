@@ -1,0 +1,1988 @@
+{
+  "unrestricted": {
+    "source": "f59e02c7cea65e56ef4dba61233a10a7e7444525",
+    "seedBase": 842917,
+    "horizon": 600,
+    "totalGames": 6000,
+    "note": "Floor/phase seeded randomness prevents action-dependent RNG consumption shifting all subsequent floors. Actual offers can still differ because lover calls depend on cabin state. All policies use the same admission valuation, dismissal rule and charging-first shop policy. Only legal positioning policy differs. This is a bot experiment, not a human retention test.",
+    "summaries": [
+      {
+        "policy": "random-placement",
+        "runs": 2000,
+        "median": 97,
+        "mean": 103.29,
+        "p10": 67,
+        "p90": 147,
+        "max": 282,
+        "deaths": {
+          "power": 64,
+          "agitation": 1929,
+          "fuse": 7,
+          "censored": 0
+        },
+        "steps": 204577,
+        "moves": 0,
+        "meanMoveScoreImprovement": 0,
+        "meanIncome": 1419.57,
+        "dismissals": 13272,
+        "compensation": 141380,
+        "conflictFloors": 9936,
+        "conflictFloorPct": 4.86,
+        "pressureSources": {
+          "轿厢拥挤": 217433,
+          "邻座冲突": 11005,
+          "小偷未受控": 13962,
+          "醉汉闹事": 6418,
+          "长班疲劳": 178776,
+          "名人被围": 2424,
+          "检查员超载": 2454,
+          "耐心归零": 530,
+          "变动超载": 32
+        },
+        "shifterAboardFloors": 38931,
+        "shifterOverloadFloors": 16,
+        "roles": {
+          "commuter": {
+            "offered": 73167,
+            "boarded": 24351,
+            "dismissed": 518,
+            "aboardFloors": 76694,
+            "conflictFloors": 2509,
+            "supportedFloors": 7946
+          },
+          "tourist": {
+            "offered": 43887,
+            "boarded": 15706,
+            "dismissed": 715,
+            "aboardFloors": 69573,
+            "conflictFloors": 6786,
+            "supportedFloors": 2321
+          },
+          "courier": {
+            "offered": 41142,
+            "boarded": 19032,
+            "dismissed": 94,
+            "aboardFloors": 33217,
+            "conflictFloors": 697,
+            "supportedFloors": 4007
+          },
+          "mechanic": {
+            "offered": 32311,
+            "boarded": 8768,
+            "dismissed": 503,
+            "aboardFloors": 38374,
+            "conflictFloors": 1350,
+            "supportedFloors": 1613
+          },
+          "lover": {
+            "offered": 55744,
+            "boarded": 20099,
+            "dismissed": 1043,
+            "aboardFloors": 90676,
+            "conflictFloors": 644,
+            "supportedFloors": 41418
+          },
+          "musician": {
+            "offered": 31952,
+            "boarded": 15363,
+            "dismissed": 875,
+            "aboardFloors": 81548,
+            "conflictFloors": 1700,
+            "supportedFloors": 16638
+          },
+          "thief": {
+            "offered": 36022,
+            "boarded": 10375,
+            "dismissed": 1905,
+            "aboardFloors": 42826,
+            "conflictFloors": 486,
+            "supportedFloors": 12217
+          },
+          "cop": {
+            "offered": 35676,
+            "boarded": 9768,
+            "dismissed": 452,
+            "aboardFloors": 42469,
+            "conflictFloors": 1093,
+            "supportedFloors": 9496
+          },
+          "lawyer": {
+            "offered": 23590,
+            "boarded": 7046,
+            "dismissed": 288,
+            "aboardFloors": 29899,
+            "conflictFloors": 517,
+            "supportedFloors": 4061
+          },
+          "drunk": {
+            "offered": 27496,
+            "boarded": 6530,
+            "dismissed": 966,
+            "aboardFloors": 19496,
+            "conflictFloors": 365,
+            "supportedFloors": 9781
+          },
+          "nurse": {
+            "offered": 26626,
+            "boarded": 10937,
+            "dismissed": 439,
+            "aboardFloors": 47628,
+            "conflictFloors": 881,
+            "supportedFloors": 7771
+          },
+          "child": {
+            "offered": 26568,
+            "boarded": 5769,
+            "dismissed": 1239,
+            "aboardFloors": 21987,
+            "conflictFloors": 159,
+            "supportedFloors": 11879
+          },
+          "ghost": {
+            "offered": 18518,
+            "boarded": 2791,
+            "dismissed": 693,
+            "aboardFloors": 12660,
+            "conflictFloors": 346,
+            "supportedFloors": 1648
+          },
+          "exorcist": {
+            "offered": 18997,
+            "boarded": 4865,
+            "dismissed": 341,
+            "aboardFloors": 19896,
+            "conflictFloors": 637,
+            "supportedFloors": 1650
+          },
+          "coach": {
+            "offered": 22345,
+            "boarded": 8660,
+            "dismissed": 738,
+            "aboardFloors": 43572,
+            "conflictFloors": 1117,
+            "supportedFloors": 12242
+          },
+          "celebrity": {
+            "offered": 13134,
+            "boarded": 3390,
+            "dismissed": 659,
+            "aboardFloors": 14367,
+            "conflictFloors": 278,
+            "supportedFloors": 2299
+          },
+          "inspector": {
+            "offered": 16019,
+            "boarded": 3301,
+            "dismissed": 650,
+            "aboardFloors": 14732,
+            "conflictFloors": 564,
+            "supportedFloors": 1592
+          },
+          "bomb": {
+            "offered": 9999,
+            "boarded": 4372,
+            "dismissed": 141,
+            "aboardFloors": 13329,
+            "conflictFloors": 298,
+            "supportedFloors": 1175
+          },
+          "mystery": {
+            "offered": 23200,
+            "boarded": 10636,
+            "dismissed": 325,
+            "aboardFloors": 40241,
+            "conflictFloors": 2821,
+            "supportedFloors": 4764
+          },
+          "shifter": {
+            "offered": 17107,
+            "boarded": 9240,
+            "dismissed": 386,
+            "aboardFloors": 42511,
+            "conflictFloors": 3010,
+            "supportedFloors": 3165
+          },
+          "mimic": {
+            "offered": 20231,
+            "boarded": 5677,
+            "dismissed": 302,
+            "aboardFloors": 22106,
+            "conflictFloors": 399,
+            "supportedFloors": 3504
+          }
+        }
+      },
+      {
+        "policy": "best-boarding-position",
+        "runs": 2000,
+        "median": 91,
+        "mean": 93.71,
+        "p10": 65,
+        "p90": 133,
+        "max": 310,
+        "deaths": {
+          "power": 27,
+          "agitation": 1971,
+          "fuse": 2,
+          "censored": 0
+        },
+        "steps": 185421,
+        "moves": 0,
+        "meanMoveScoreImprovement": 0,
+        "meanIncome": 1470.66,
+        "dismissals": 11232,
+        "compensation": 119048,
+        "conflictFloors": 9002,
+        "conflictFloorPct": 4.85,
+        "pressureSources": {
+          "轿厢拥挤": 222014,
+          "小偷未受控": 12732,
+          "长班疲劳": 158666,
+          "检查员超载": 2694,
+          "名人被围": 2117,
+          "醉汉闹事": 5502,
+          "邻座冲突": 9919,
+          "耐心归零": 330,
+          "变动超载": 50
+        },
+        "shifterAboardFloors": 35176,
+        "shifterOverloadFloors": 25,
+        "roles": {
+          "commuter": {
+            "offered": 66432,
+            "boarded": 23761,
+            "dismissed": 432,
+            "aboardFloors": 74964,
+            "conflictFloors": 2352,
+            "supportedFloors": 9880
+          },
+          "tourist": {
+            "offered": 40135,
+            "boarded": 15280,
+            "dismissed": 556,
+            "aboardFloors": 68039,
+            "conflictFloors": 6366,
+            "supportedFloors": 2716
+          },
+          "courier": {
+            "offered": 37849,
+            "boarded": 18391,
+            "dismissed": 63,
+            "aboardFloors": 32683,
+            "conflictFloors": 651,
+            "supportedFloors": 4943
+          },
+          "mechanic": {
+            "offered": 29490,
+            "boarded": 8540,
+            "dismissed": 400,
+            "aboardFloors": 37560,
+            "conflictFloors": 1275,
+            "supportedFloors": 2096
+          },
+          "lover": {
+            "offered": 51970,
+            "boarded": 21199,
+            "dismissed": 940,
+            "aboardFloors": 95488,
+            "conflictFloors": 701,
+            "supportedFloors": 57387
+          },
+          "musician": {
+            "offered": 29440,
+            "boarded": 15358,
+            "dismissed": 670,
+            "aboardFloors": 81575,
+            "conflictFloors": 1300,
+            "supportedFloors": 21512
+          },
+          "thief": {
+            "offered": 33281,
+            "boarded": 10452,
+            "dismissed": 1752,
+            "aboardFloors": 43262,
+            "conflictFloors": 463,
+            "supportedFloors": 15352
+          },
+          "cop": {
+            "offered": 32961,
+            "boarded": 9762,
+            "dismissed": 330,
+            "aboardFloors": 42674,
+            "conflictFloors": 1000,
+            "supportedFloors": 11809
+          },
+          "lawyer": {
+            "offered": 21439,
+            "boarded": 6936,
+            "dismissed": 219,
+            "aboardFloors": 29652,
+            "conflictFloors": 513,
+            "supportedFloors": 5148
+          },
+          "drunk": {
+            "offered": 24968,
+            "boarded": 6709,
+            "dismissed": 924,
+            "aboardFloors": 20444,
+            "conflictFloors": 375,
+            "supportedFloors": 11699
+          },
+          "nurse": {
+            "offered": 23875,
+            "boarded": 10335,
+            "dismissed": 329,
+            "aboardFloors": 45027,
+            "conflictFloors": 973,
+            "supportedFloors": 9514
+          },
+          "child": {
+            "offered": 23935,
+            "boarded": 5736,
+            "dismissed": 1017,
+            "aboardFloors": 22294,
+            "conflictFloors": 159,
+            "supportedFloors": 14206
+          },
+          "ghost": {
+            "offered": 16180,
+            "boarded": 3168,
+            "dismissed": 764,
+            "aboardFloors": 14289,
+            "conflictFloors": 342,
+            "supportedFloors": 2466
+          },
+          "exorcist": {
+            "offered": 16696,
+            "boarded": 4774,
+            "dismissed": 275,
+            "aboardFloors": 19591,
+            "conflictFloors": 589,
+            "supportedFloors": 2478
+          },
+          "coach": {
+            "offered": 20065,
+            "boarded": 8936,
+            "dismissed": 590,
+            "aboardFloors": 45034,
+            "conflictFloors": 1182,
+            "supportedFloors": 14815
+          },
+          "celebrity": {
+            "offered": 11137,
+            "boarded": 3415,
+            "dismissed": 516,
+            "aboardFloors": 14600,
+            "conflictFloors": 213,
+            "supportedFloors": 2748
+          },
+          "inspector": {
+            "offered": 14017,
+            "boarded": 3316,
+            "dismissed": 503,
+            "aboardFloors": 15019,
+            "conflictFloors": 544,
+            "supportedFloors": 2112
+          },
+          "bomb": {
+            "offered": 8478,
+            "boarded": 3953,
+            "dismissed": 146,
+            "aboardFloors": 12145,
+            "conflictFloors": 286,
+            "supportedFloors": 1497
+          },
+          "mystery": {
+            "offered": 20839,
+            "boarded": 10163,
+            "dismissed": 248,
+            "aboardFloors": 38616,
+            "conflictFloors": 2409,
+            "supportedFloors": 6015
+          },
+          "shifter": {
+            "offered": 15129,
+            "boarded": 8364,
+            "dismissed": 301,
+            "aboardFloors": 38339,
+            "conflictFloors": 2794,
+            "supportedFloors": 3502
+          },
+          "mimic": {
+            "offered": 17947,
+            "boarded": 5712,
+            "dismissed": 257,
+            "aboardFloors": 22180,
+            "conflictFloors": 405,
+            "supportedFloors": 4081
+          }
+        }
+      },
+      {
+        "policy": "best-boarding-and-reseat",
+        "runs": 2000,
+        "median": 92,
+        "mean": 93.76,
+        "p10": 66,
+        "p90": 129,
+        "max": 301,
+        "deaths": {
+          "power": 6,
+          "agitation": 1994,
+          "fuse": 0,
+          "censored": 0
+        },
+        "steps": 185521,
+        "moves": 56839,
+        "meanMoveScoreImprovement": 5.24,
+        "meanIncome": 1648.91,
+        "dismissals": 9666,
+        "compensation": 101800,
+        "conflictFloors": 2332,
+        "conflictFloorPct": 1.26,
+        "pressureSources": {
+          "轿厢拥挤": 233715,
+          "醉汉闹事": 4678,
+          "长班疲劳": 162509,
+          "邻座冲突": 2430,
+          "小偷未受控": 11620,
+          "耐心归零": 122,
+          "检查员超载": 2956,
+          "名人被围": 1901,
+          "变动超载": 34
+        },
+        "shifterAboardFloors": 34574,
+        "shifterOverloadFloors": 17,
+        "roles": {
+          "commuter": {
+            "offered": 66291,
+            "boarded": 24837,
+            "dismissed": 353,
+            "aboardFloors": 78705,
+            "conflictFloors": 1376,
+            "supportedFloors": 14677
+          },
+          "tourist": {
+            "offered": 40286,
+            "boarded": 15603,
+            "dismissed": 490,
+            "aboardFloors": 69325,
+            "conflictFloors": 2808,
+            "supportedFloors": 4090
+          },
+          "courier": {
+            "offered": 37796,
+            "boarded": 18686,
+            "dismissed": 71,
+            "aboardFloors": 33626,
+            "conflictFloors": 444,
+            "supportedFloors": 7259
+          },
+          "mechanic": {
+            "offered": 29485,
+            "boarded": 9023,
+            "dismissed": 389,
+            "aboardFloors": 39642,
+            "conflictFloors": 704,
+            "supportedFloors": 2903
+          },
+          "lover": {
+            "offered": 51982,
+            "boarded": 21620,
+            "dismissed": 735,
+            "aboardFloors": 97398,
+            "conflictFloors": 459,
+            "supportedFloors": 64839
+          },
+          "musician": {
+            "offered": 29358,
+            "boarded": 15340,
+            "dismissed": 514,
+            "aboardFloors": 81723,
+            "conflictFloors": 782,
+            "supportedFloors": 30960
+          },
+          "thief": {
+            "offered": 33384,
+            "boarded": 10922,
+            "dismissed": 1514,
+            "aboardFloors": 45616,
+            "conflictFloors": 317,
+            "supportedFloors": 20170
+          },
+          "cop": {
+            "offered": 33040,
+            "boarded": 10388,
+            "dismissed": 351,
+            "aboardFloors": 45455,
+            "conflictFloors": 597,
+            "supportedFloors": 15566
+          },
+          "lawyer": {
+            "offered": 21478,
+            "boarded": 7295,
+            "dismissed": 212,
+            "aboardFloors": 31232,
+            "conflictFloors": 337,
+            "supportedFloors": 7032
+          },
+          "drunk": {
+            "offered": 24883,
+            "boarded": 7057,
+            "dismissed": 848,
+            "aboardFloors": 21811,
+            "conflictFloors": 234,
+            "supportedFloors": 14247
+          },
+          "nurse": {
+            "offered": 23959,
+            "boarded": 10492,
+            "dismissed": 269,
+            "aboardFloors": 45784,
+            "conflictFloors": 610,
+            "supportedFloors": 12782
+          },
+          "child": {
+            "offered": 23978,
+            "boarded": 6050,
+            "dismissed": 804,
+            "aboardFloors": 24184,
+            "conflictFloors": 67,
+            "supportedFloors": 17948
+          },
+          "ghost": {
+            "offered": 16227,
+            "boarded": 3468,
+            "dismissed": 714,
+            "aboardFloors": 16051,
+            "conflictFloors": 286,
+            "supportedFloors": 3383
+          },
+          "exorcist": {
+            "offered": 16737,
+            "boarded": 5089,
+            "dismissed": 251,
+            "aboardFloors": 20964,
+            "conflictFloors": 367,
+            "supportedFloors": 3389
+          },
+          "coach": {
+            "offered": 19990,
+            "boarded": 9016,
+            "dismissed": 465,
+            "aboardFloors": 45666,
+            "conflictFloors": 1186,
+            "supportedFloors": 20844
+          },
+          "celebrity": {
+            "offered": 11205,
+            "boarded": 3559,
+            "dismissed": 445,
+            "aboardFloors": 15336,
+            "conflictFloors": 114,
+            "supportedFloors": 4055
+          },
+          "inspector": {
+            "offered": 14037,
+            "boarded": 3512,
+            "dismissed": 505,
+            "aboardFloors": 15974,
+            "conflictFloors": 359,
+            "supportedFloors": 2930
+          },
+          "bomb": {
+            "offered": 8347,
+            "boarded": 3957,
+            "dismissed": 94,
+            "aboardFloors": 12165,
+            "conflictFloors": 157,
+            "supportedFloors": 2067
+          },
+          "mystery": {
+            "offered": 20987,
+            "boarded": 10212,
+            "dismissed": 196,
+            "aboardFloors": 38853,
+            "conflictFloors": 1378,
+            "supportedFloors": 8328
+          },
+          "shifter": {
+            "offered": 15110,
+            "boarded": 8257,
+            "dismissed": 239,
+            "aboardFloors": 37779,
+            "conflictFloors": 1801,
+            "supportedFloors": 5129
+          },
+          "mimic": {
+            "offered": 18003,
+            "boarded": 5940,
+            "dismissed": 207,
+            "aboardFloors": 23086,
+            "conflictFloors": 355,
+            "supportedFloors": 5959
+          }
+        }
+      }
+    ],
+    "comparisons": [
+      {
+        "from": "random-placement",
+        "to": "best-boarding-position",
+        "meanFloorDifference": -9.58,
+        "bootstrap95": [
+          -11.41,
+          -7.66
+        ],
+        "improvedPct": 38.95,
+        "tiedPct": 3.85
+      },
+      {
+        "from": "best-boarding-position",
+        "to": "best-boarding-and-reseat",
+        "meanFloorDifference": 0.05,
+        "bootstrap95": [
+          -1.73,
+          1.84
+        ],
+        "improvedPct": 48.85,
+        "tiedPct": 4.85
+      },
+      {
+        "from": "random-placement",
+        "to": "best-boarding-and-reseat",
+        "meanFloorDifference": -9.53,
+        "bootstrap95": [
+          -11.43,
+          -7.78
+        ],
+        "improvedPct": 39.2,
+        "tiedPct": 3.35
+      }
+    ],
+    "occupancyCap": 6
+  },
+  "cap3": {
+    "source": "f59e02c7cea65e56ef4dba61233a10a7e7444525",
+    "seedBase": 842917,
+    "horizon": 600,
+    "occupancyCap": 3,
+    "totalGames": 2250,
+    "note": "Floor/phase seeded randomness prevents action-dependent RNG consumption shifting all subsequent floors. Actual offers can still differ because lover calls depend on cabin state. All policies use the same admission valuation, dismissal rule and charging-first shop policy. Only legal positioning policy differs. This is a bot experiment, not a human retention test.",
+    "summaries": [
+      {
+        "policy": "random-placement",
+        "runs": 750,
+        "median": 118,
+        "mean": 114.41,
+        "p10": 69,
+        "p90": 157,
+        "max": 217,
+        "deaths": {
+          "power": 273,
+          "agitation": 476,
+          "fuse": 1,
+          "censored": 0
+        },
+        "steps": 85061,
+        "moves": 0,
+        "meanMoveScoreImprovement": 0,
+        "meanIncome": 723.13,
+        "dismissals": 4309,
+        "compensation": 46866,
+        "conflictFloors": 1293,
+        "conflictFloorPct": 1.52,
+        "pressureSources": {
+          "醉汉闹事": 2568,
+          "邻座冲突": 1352,
+          "小偷未受控": 4209,
+          "长班疲劳": 72366,
+          "名人被围": 102,
+          "耐心归零": 504,
+          "检查员超载": 6,
+          "变动超载": 2
+        },
+        "shifterAboardFloors": 12203,
+        "shifterOverloadFloors": 1,
+        "roles": {
+          "commuter": {
+            "offered": 30201,
+            "boarded": 5240,
+            "dismissed": 178,
+            "aboardFloors": 16459,
+            "conflictFloors": 299,
+            "supportedFloors": 714
+          },
+          "tourist": {
+            "offered": 18033,
+            "boarded": 3513,
+            "dismissed": 315,
+            "aboardFloors": 15524,
+            "conflictFloors": 659,
+            "supportedFloors": 382
+          },
+          "courier": {
+            "offered": 17092,
+            "boarded": 4280,
+            "dismissed": 23,
+            "aboardFloors": 7021,
+            "conflictFloors": 60,
+            "supportedFloors": 309
+          },
+          "mechanic": {
+            "offered": 13339,
+            "boarded": 1856,
+            "dismissed": 147,
+            "aboardFloors": 8508,
+            "conflictFloors": 257,
+            "supportedFloors": 299
+          },
+          "lover": {
+            "offered": 21377,
+            "boarded": 3700,
+            "dismissed": 310,
+            "aboardFloors": 17281,
+            "conflictFloors": 34,
+            "supportedFloors": 4680
+          },
+          "musician": {
+            "offered": 13188,
+            "boarded": 1520,
+            "dismissed": 176,
+            "aboardFloors": 8349,
+            "conflictFloors": 116,
+            "supportedFloors": 695
+          },
+          "thief": {
+            "offered": 14965,
+            "boarded": 2307,
+            "dismissed": 383,
+            "aboardFloors": 10125,
+            "conflictFloors": 118,
+            "supportedFloors": 1194
+          },
+          "cop": {
+            "offered": 14581,
+            "boarded": 1957,
+            "dismissed": 142,
+            "aboardFloors": 8741,
+            "conflictFloors": 119,
+            "supportedFloors": 961
+          },
+          "lawyer": {
+            "offered": 9849,
+            "boarded": 1312,
+            "dismissed": 125,
+            "aboardFloors": 5520,
+            "conflictFloors": 29,
+            "supportedFloors": 410
+          },
+          "drunk": {
+            "offered": 11544,
+            "boarded": 1546,
+            "dismissed": 199,
+            "aboardFloors": 4680,
+            "conflictFloors": 80,
+            "supportedFloors": 911
+          },
+          "nurse": {
+            "offered": 11102,
+            "boarded": 2520,
+            "dismissed": 261,
+            "aboardFloors": 11030,
+            "conflictFloors": 68,
+            "supportedFloors": 718
+          },
+          "child": {
+            "offered": 11168,
+            "boarded": 1000,
+            "dismissed": 310,
+            "aboardFloors": 3800,
+            "conflictFloors": 22,
+            "supportedFloors": 1001
+          },
+          "ghost": {
+            "offered": 7955,
+            "boarded": 518,
+            "dismissed": 144,
+            "aboardFloors": 2651,
+            "conflictFloors": 42,
+            "supportedFloors": 175
+          },
+          "exorcist": {
+            "offered": 8142,
+            "boarded": 964,
+            "dismissed": 142,
+            "aboardFloors": 3788,
+            "conflictFloors": 35,
+            "supportedFloors": 175
+          },
+          "coach": {
+            "offered": 9563,
+            "boarded": 1748,
+            "dismissed": 342,
+            "aboardFloors": 8895,
+            "conflictFloors": 144,
+            "supportedFloors": 1288
+          },
+          "celebrity": {
+            "offered": 5870,
+            "boarded": 1061,
+            "dismissed": 250,
+            "aboardFloors": 5024,
+            "conflictFloors": 119,
+            "supportedFloors": 386
+          },
+          "inspector": {
+            "offered": 6838,
+            "boarded": 966,
+            "dismissed": 170,
+            "aboardFloors": 4629,
+            "conflictFloors": 120,
+            "supportedFloors": 300
+          },
+          "bomb": {
+            "offered": 4679,
+            "boarded": 1263,
+            "dismissed": 124,
+            "aboardFloors": 3715,
+            "conflictFloors": 26,
+            "supportedFloors": 188
+          },
+          "mystery": {
+            "offered": 9803,
+            "boarded": 2866,
+            "dismissed": 168,
+            "aboardFloors": 10867,
+            "conflictFloors": 351,
+            "supportedFloors": 536
+          },
+          "shifter": {
+            "offered": 7171,
+            "boarded": 2664,
+            "dismissed": 270,
+            "aboardFloors": 12843,
+            "conflictFloors": 422,
+            "supportedFloors": 374
+          },
+          "mimic": {
+            "offered": 8723,
+            "boarded": 1267,
+            "dismissed": 130,
+            "aboardFloors": 4950,
+            "conflictFloors": 25,
+            "supportedFloors": 291
+          }
+        }
+      },
+      {
+        "policy": "best-boarding-position",
+        "runs": 750,
+        "median": 118,
+        "mean": 117.74,
+        "p10": 81,
+        "p90": 156,
+        "max": 218,
+        "deaths": {
+          "power": 188,
+          "agitation": 561,
+          "fuse": 1,
+          "censored": 0
+        },
+        "steps": 87554,
+        "moves": 0,
+        "meanMoveScoreImprovement": 0,
+        "meanIncome": 791.56,
+        "dismissals": 4245,
+        "compensation": 46382,
+        "conflictFloors": 1309,
+        "conflictFloorPct": 1.5,
+        "pressureSources": {
+          "醉汉闹事": 2544,
+          "邻座冲突": 1385,
+          "长班疲劳": 74918,
+          "小偷未受控": 3855,
+          "耐心归零": 400,
+          "名人被围": 20,
+          "检查员超载": 9,
+          "变动超载": 4
+        },
+        "shifterAboardFloors": 11348,
+        "shifterOverloadFloors": 2,
+        "roles": {
+          "commuter": {
+            "offered": 30997,
+            "boarded": 5278,
+            "dismissed": 151,
+            "aboardFloors": 16866,
+            "conflictFloors": 294,
+            "supportedFloors": 1424
+          },
+          "tourist": {
+            "offered": 18489,
+            "boarded": 3467,
+            "dismissed": 305,
+            "aboardFloors": 15479,
+            "conflictFloors": 691,
+            "supportedFloors": 517
+          },
+          "courier": {
+            "offered": 17540,
+            "boarded": 4375,
+            "dismissed": 25,
+            "aboardFloors": 7207,
+            "conflictFloors": 85,
+            "supportedFloors": 730
+          },
+          "mechanic": {
+            "offered": 13665,
+            "boarded": 1996,
+            "dismissed": 177,
+            "aboardFloors": 9108,
+            "conflictFloors": 317,
+            "supportedFloors": 533
+          },
+          "lover": {
+            "offered": 21888,
+            "boarded": 4037,
+            "dismissed": 298,
+            "aboardFloors": 19024,
+            "conflictFloors": 83,
+            "supportedFloors": 10065
+          },
+          "musician": {
+            "offered": 13529,
+            "boarded": 1632,
+            "dismissed": 167,
+            "aboardFloors": 9125,
+            "conflictFloors": 112,
+            "supportedFloors": 1859
+          },
+          "thief": {
+            "offered": 15333,
+            "boarded": 2318,
+            "dismissed": 359,
+            "aboardFloors": 10303,
+            "conflictFloors": 146,
+            "supportedFloors": 2206
+          },
+          "cop": {
+            "offered": 15152,
+            "boarded": 2201,
+            "dismissed": 151,
+            "aboardFloors": 10024,
+            "conflictFloors": 147,
+            "supportedFloors": 1846
+          },
+          "lawyer": {
+            "offered": 10153,
+            "boarded": 1368,
+            "dismissed": 106,
+            "aboardFloors": 5897,
+            "conflictFloors": 45,
+            "supportedFloors": 691
+          },
+          "drunk": {
+            "offered": 11907,
+            "boarded": 1654,
+            "dismissed": 212,
+            "aboardFloors": 5185,
+            "conflictFloors": 94,
+            "supportedFloors": 1477
+          },
+          "nurse": {
+            "offered": 11445,
+            "boarded": 2487,
+            "dismissed": 268,
+            "aboardFloors": 10764,
+            "conflictFloors": 106,
+            "supportedFloors": 1370
+          },
+          "child": {
+            "offered": 11633,
+            "boarded": 1062,
+            "dismissed": 264,
+            "aboardFloors": 4325,
+            "conflictFloors": 31,
+            "supportedFloors": 1918
+          },
+          "ghost": {
+            "offered": 8252,
+            "boarded": 671,
+            "dismissed": 151,
+            "aboardFloors": 3616,
+            "conflictFloors": 46,
+            "supportedFloors": 404
+          },
+          "exorcist": {
+            "offered": 8482,
+            "boarded": 991,
+            "dismissed": 141,
+            "aboardFloors": 3997,
+            "conflictFloors": 52,
+            "supportedFloors": 402
+          },
+          "coach": {
+            "offered": 9815,
+            "boarded": 2022,
+            "dismissed": 392,
+            "aboardFloors": 10244,
+            "conflictFloors": 176,
+            "supportedFloors": 2281
+          },
+          "celebrity": {
+            "offered": 5997,
+            "boarded": 1051,
+            "dismissed": 225,
+            "aboardFloors": 5144,
+            "conflictFloors": 86,
+            "supportedFloors": 526
+          },
+          "inspector": {
+            "offered": 7073,
+            "boarded": 1083,
+            "dismissed": 171,
+            "aboardFloors": 5276,
+            "conflictFloors": 143,
+            "supportedFloors": 541
+          },
+          "bomb": {
+            "offered": 4755,
+            "boarded": 1238,
+            "dismissed": 101,
+            "aboardFloors": 3638,
+            "conflictFloors": 44,
+            "supportedFloors": 323
+          },
+          "mystery": {
+            "offered": 10154,
+            "boarded": 2838,
+            "dismissed": 198,
+            "aboardFloors": 10594,
+            "conflictFloors": 368,
+            "supportedFloors": 1068
+          },
+          "shifter": {
+            "offered": 7386,
+            "boarded": 2494,
+            "dismissed": 263,
+            "aboardFloors": 11846,
+            "conflictFloors": 545,
+            "supportedFloors": 553
+          },
+          "mimic": {
+            "offered": 9017,
+            "boarded": 1338,
+            "dismissed": 120,
+            "aboardFloors": 5357,
+            "conflictFloors": 39,
+            "supportedFloors": 490
+          }
+        }
+      },
+      {
+        "policy": "best-boarding-and-reseat",
+        "runs": 750,
+        "median": 120,
+        "mean": 118.61,
+        "p10": 84,
+        "p90": 157,
+        "max": 215,
+        "deaths": {
+          "power": 174,
+          "agitation": 576,
+          "fuse": 0,
+          "censored": 0
+        },
+        "steps": 88207,
+        "moves": 3213,
+        "meanMoveScoreImprovement": 4.13,
+        "meanIncome": 811.13,
+        "dismissals": 4227,
+        "compensation": 45838,
+        "conflictFloors": 309,
+        "conflictFloorPct": 0.35,
+        "pressureSources": {
+          "醉汉闹事": 2578,
+          "长班疲劳": 76226,
+          "小偷未受控": 3887,
+          "邻座冲突": 310,
+          "耐心归零": 370,
+          "检查员超载": 11,
+          "名人被围": 1,
+          "变动超载": 2
+        },
+        "shifterAboardFloors": 11614,
+        "shifterOverloadFloors": 1,
+        "roles": {
+          "commuter": {
+            "offered": 31174,
+            "boarded": 5295,
+            "dismissed": 142,
+            "aboardFloors": 16956,
+            "conflictFloors": 162,
+            "supportedFloors": 1514
+          },
+          "tourist": {
+            "offered": 18618,
+            "boarded": 3491,
+            "dismissed": 269,
+            "aboardFloors": 15716,
+            "conflictFloors": 277,
+            "supportedFloors": 743
+          },
+          "courier": {
+            "offered": 17658,
+            "boarded": 4439,
+            "dismissed": 27,
+            "aboardFloors": 7363,
+            "conflictFloors": 50,
+            "supportedFloors": 743
+          },
+          "mechanic": {
+            "offered": 13758,
+            "boarded": 1964,
+            "dismissed": 173,
+            "aboardFloors": 9057,
+            "conflictFloors": 135,
+            "supportedFloors": 540
+          },
+          "lover": {
+            "offered": 22080,
+            "boarded": 4123,
+            "dismissed": 313,
+            "aboardFloors": 19422,
+            "conflictFloors": 23,
+            "supportedFloors": 10268
+          },
+          "musician": {
+            "offered": 13654,
+            "boarded": 1666,
+            "dismissed": 167,
+            "aboardFloors": 9284,
+            "conflictFloors": 34,
+            "supportedFloors": 1862
+          },
+          "thief": {
+            "offered": 15447,
+            "boarded": 2324,
+            "dismissed": 337,
+            "aboardFloors": 10426,
+            "conflictFloors": 62,
+            "supportedFloors": 2256
+          },
+          "cop": {
+            "offered": 15227,
+            "boarded": 2221,
+            "dismissed": 154,
+            "aboardFloors": 10050,
+            "conflictFloors": 61,
+            "supportedFloors": 1887
+          },
+          "lawyer": {
+            "offered": 10242,
+            "boarded": 1371,
+            "dismissed": 98,
+            "aboardFloors": 5936,
+            "conflictFloors": 24,
+            "supportedFloors": 695
+          },
+          "drunk": {
+            "offered": 11954,
+            "boarded": 1680,
+            "dismissed": 211,
+            "aboardFloors": 5260,
+            "conflictFloors": 53,
+            "supportedFloors": 1495
+          },
+          "nurse": {
+            "offered": 11533,
+            "boarded": 2456,
+            "dismissed": 276,
+            "aboardFloors": 10734,
+            "conflictFloors": 74,
+            "supportedFloors": 1359
+          },
+          "child": {
+            "offered": 11627,
+            "boarded": 1062,
+            "dismissed": 278,
+            "aboardFloors": 4326,
+            "conflictFloors": 15,
+            "supportedFloors": 2066
+          },
+          "ghost": {
+            "offered": 8332,
+            "boarded": 717,
+            "dismissed": 156,
+            "aboardFloors": 3880,
+            "conflictFloors": 15,
+            "supportedFloors": 455
+          },
+          "exorcist": {
+            "offered": 8548,
+            "boarded": 985,
+            "dismissed": 132,
+            "aboardFloors": 3947,
+            "conflictFloors": 24,
+            "supportedFloors": 455
+          },
+          "coach": {
+            "offered": 9866,
+            "boarded": 2012,
+            "dismissed": 401,
+            "aboardFloors": 10358,
+            "conflictFloors": 325,
+            "supportedFloors": 2572
+          },
+          "celebrity": {
+            "offered": 6154,
+            "boarded": 1038,
+            "dismissed": 229,
+            "aboardFloors": 5080,
+            "conflictFloors": 43,
+            "supportedFloors": 755
+          },
+          "inspector": {
+            "offered": 7150,
+            "boarded": 1054,
+            "dismissed": 160,
+            "aboardFloors": 5168,
+            "conflictFloors": 61,
+            "supportedFloors": 537
+          },
+          "bomb": {
+            "offered": 4791,
+            "boarded": 1250,
+            "dismissed": 112,
+            "aboardFloors": 3643,
+            "conflictFloors": 20,
+            "supportedFloors": 334
+          },
+          "mystery": {
+            "offered": 10224,
+            "boarded": 2818,
+            "dismissed": 191,
+            "aboardFloors": 10635,
+            "conflictFloors": 235,
+            "supportedFloors": 1094
+          },
+          "shifter": {
+            "offered": 7480,
+            "boarded": 2554,
+            "dismissed": 277,
+            "aboardFloors": 12147,
+            "conflictFloors": 405,
+            "supportedFloors": 689
+          },
+          "mimic": {
+            "offered": 9104,
+            "boarded": 1377,
+            "dismissed": 124,
+            "aboardFloors": 5472,
+            "conflictFloors": 32,
+            "supportedFloors": 584
+          }
+        }
+      }
+    ],
+    "comparisons": [
+      {
+        "from": "random-placement",
+        "to": "best-boarding-position",
+        "meanFloorDifference": 3.32,
+        "bootstrap95": [
+          0.35,
+          6.27
+        ],
+        "improvedPct": 46.4,
+        "tiedPct": 7.07
+      },
+      {
+        "from": "best-boarding-position",
+        "to": "best-boarding-and-reseat",
+        "meanFloorDifference": 0.87,
+        "bootstrap95": [
+          -1.27,
+          3.06
+        ],
+        "improvedPct": 40.4,
+        "tiedPct": 28
+      },
+      {
+        "from": "random-placement",
+        "to": "best-boarding-and-reseat",
+        "meanFloorDifference": 4.19,
+        "bootstrap95": [
+          1.17,
+          7.3
+        ],
+        "improvedPct": 47.07,
+        "tiedPct": 8.13
+      }
+    ]
+  },
+  "cap4": {
+    "source": "f59e02c7cea65e56ef4dba61233a10a7e7444525",
+    "seedBase": 842917,
+    "horizon": 600,
+    "occupancyCap": 4,
+    "totalGames": 2250,
+    "note": "Floor/phase seeded randomness prevents action-dependent RNG consumption shifting all subsequent floors. Actual offers can still differ because lover calls depend on cabin state. All policies use the same admission valuation, dismissal rule and charging-first shop policy. Only legal positioning policy differs. This is a bot experiment, not a human retention test.",
+    "summaries": [
+      {
+        "policy": "random-placement",
+        "runs": 750,
+        "median": 112,
+        "mean": 115.81,
+        "p10": 78,
+        "p90": 157,
+        "max": 226,
+        "deaths": {
+          "power": 122,
+          "agitation": 627,
+          "fuse": 1,
+          "censored": 0
+        },
+        "steps": 86104,
+        "moves": 0,
+        "meanMoveScoreImprovement": 0,
+        "meanIncome": 958.29,
+        "dismissals": 5317,
+        "compensation": 59086,
+        "conflictFloors": 1895,
+        "conflictFloorPct": 2.2,
+        "pressureSources": {
+          "轿厢拥挤": 42481,
+          "醉汉闹事": 2306,
+          "邻座冲突": 1993,
+          "长班疲劳": 71911,
+          "小偷未受控": 4480,
+          "检查员超载": 127,
+          "名人被围": 263,
+          "耐心归零": 286,
+          "变动超载": 4
+        },
+        "shifterAboardFloors": 13933,
+        "shifterOverloadFloors": 2,
+        "roles": {
+          "commuter": {
+            "offered": 30578,
+            "boarded": 6463,
+            "dismissed": 210,
+            "aboardFloors": 19893,
+            "conflictFloors": 420,
+            "supportedFloors": 1379
+          },
+          "tourist": {
+            "offered": 18361,
+            "boarded": 4589,
+            "dismissed": 368,
+            "aboardFloors": 20159,
+            "conflictFloors": 1286,
+            "supportedFloors": 438
+          },
+          "courier": {
+            "offered": 17211,
+            "boarded": 5585,
+            "dismissed": 31,
+            "aboardFloors": 9217,
+            "conflictFloors": 84,
+            "supportedFloors": 657
+          },
+          "mechanic": {
+            "offered": 13508,
+            "boarded": 2354,
+            "dismissed": 201,
+            "aboardFloors": 10287,
+            "conflictFloors": 259,
+            "supportedFloors": 445
+          },
+          "lover": {
+            "offered": 21750,
+            "boarded": 4547,
+            "dismissed": 316,
+            "aboardFloors": 21209,
+            "conflictFloors": 58,
+            "supportedFloors": 8091
+          },
+          "musician": {
+            "offered": 13327,
+            "boarded": 3539,
+            "dismissed": 476,
+            "aboardFloors": 18613,
+            "conflictFloors": 363,
+            "supportedFloors": 2541
+          },
+          "thief": {
+            "offered": 15109,
+            "boarded": 2884,
+            "dismissed": 602,
+            "aboardFloors": 12065,
+            "conflictFloors": 125,
+            "supportedFloors": 2247
+          },
+          "cop": {
+            "offered": 14820,
+            "boarded": 2439,
+            "dismissed": 166,
+            "aboardFloors": 10653,
+            "conflictFloors": 160,
+            "supportedFloors": 1634
+          },
+          "lawyer": {
+            "offered": 9949,
+            "boarded": 1757,
+            "dismissed": 130,
+            "aboardFloors": 7452,
+            "conflictFloors": 54,
+            "supportedFloors": 810
+          },
+          "drunk": {
+            "offered": 11668,
+            "boarded": 1801,
+            "dismissed": 261,
+            "aboardFloors": 5174,
+            "conflictFloors": 91,
+            "supportedFloors": 1690
+          },
+          "nurse": {
+            "offered": 11264,
+            "boarded": 3193,
+            "dismissed": 280,
+            "aboardFloors": 13765,
+            "conflictFloors": 72,
+            "supportedFloors": 1346
+          },
+          "child": {
+            "offered": 11287,
+            "boarded": 1206,
+            "dismissed": 370,
+            "aboardFloors": 4526,
+            "conflictFloors": 23,
+            "supportedFloors": 1893
+          },
+          "ghost": {
+            "offered": 8019,
+            "boarded": 591,
+            "dismissed": 166,
+            "aboardFloors": 2838,
+            "conflictFloors": 46,
+            "supportedFloors": 251
+          },
+          "exorcist": {
+            "offered": 8226,
+            "boarded": 1210,
+            "dismissed": 169,
+            "aboardFloors": 4743,
+            "conflictFloors": 46,
+            "supportedFloors": 252
+          },
+          "coach": {
+            "offered": 9757,
+            "boarded": 2481,
+            "dismissed": 411,
+            "aboardFloors": 12533,
+            "conflictFloors": 202,
+            "supportedFloors": 2529
+          },
+          "celebrity": {
+            "offered": 5907,
+            "boarded": 1153,
+            "dismissed": 286,
+            "aboardFloors": 5199,
+            "conflictFloors": 99,
+            "supportedFloors": 438
+          },
+          "inspector": {
+            "offered": 7006,
+            "boarded": 1154,
+            "dismissed": 205,
+            "aboardFloors": 5379,
+            "conflictFloors": 124,
+            "supportedFloors": 444
+          },
+          "bomb": {
+            "offered": 4532,
+            "boarded": 1431,
+            "dismissed": 114,
+            "aboardFloors": 4156,
+            "conflictFloors": 38,
+            "supportedFloors": 191
+          },
+          "mystery": {
+            "offered": 9952,
+            "boarded": 3502,
+            "dismissed": 206,
+            "aboardFloors": 13177,
+            "conflictFloors": 539,
+            "supportedFloors": 955
+          },
+          "shifter": {
+            "offered": 7286,
+            "boarded": 3101,
+            "dismissed": 224,
+            "aboardFloors": 14801,
+            "conflictFloors": 672,
+            "supportedFloors": 624
+          },
+          "mimic": {
+            "offered": 8795,
+            "boarded": 1547,
+            "dismissed": 125,
+            "aboardFloors": 6018,
+            "conflictFloors": 48,
+            "supportedFloors": 553
+          }
+        }
+      },
+      {
+        "policy": "best-boarding-position",
+        "runs": 750,
+        "median": 108,
+        "mean": 112.07,
+        "p10": 73,
+        "p90": 152,
+        "max": 219,
+        "deaths": {
+          "power": 75,
+          "agitation": 675,
+          "fuse": 0,
+          "censored": 0
+        },
+        "steps": 83301,
+        "moves": 0,
+        "meanMoveScoreImprovement": 0,
+        "meanIncome": 1035.54,
+        "dismissals": 4969,
+        "compensation": 54462,
+        "conflictFloors": 1487,
+        "conflictFloorPct": 1.79,
+        "pressureSources": {
+          "轿厢拥挤": 45022,
+          "醉汉闹事": 1864,
+          "邻座冲突": 1569,
+          "长班疲劳": 70084,
+          "小偷未受控": 3858,
+          "名人被围": 62,
+          "检查员超载": 142,
+          "耐心归零": 150,
+          "变动超载": 2
+        },
+        "shifterAboardFloors": 12629,
+        "shifterOverloadFloors": 1,
+        "roles": {
+          "commuter": {
+            "offered": 29745,
+            "boarded": 6382,
+            "dismissed": 170,
+            "aboardFloors": 19912,
+            "conflictFloors": 347,
+            "supportedFloors": 2326
+          },
+          "tourist": {
+            "offered": 17767,
+            "boarded": 4368,
+            "dismissed": 333,
+            "aboardFloors": 19258,
+            "conflictFloors": 1012,
+            "supportedFloors": 577
+          },
+          "courier": {
+            "offered": 16674,
+            "boarded": 5421,
+            "dismissed": 24,
+            "aboardFloors": 9125,
+            "conflictFloors": 63,
+            "supportedFloors": 1111
+          },
+          "mechanic": {
+            "offered": 13055,
+            "boarded": 2262,
+            "dismissed": 168,
+            "aboardFloors": 10038,
+            "conflictFloors": 184,
+            "supportedFloors": 669
+          },
+          "lover": {
+            "offered": 21274,
+            "boarded": 5352,
+            "dismissed": 367,
+            "aboardFloors": 24704,
+            "conflictFloors": 74,
+            "supportedFloors": 15423
+          },
+          "musician": {
+            "offered": 12956,
+            "boarded": 3496,
+            "dismissed": 454,
+            "aboardFloors": 18064,
+            "conflictFloors": 215,
+            "supportedFloors": 4353
+          },
+          "thief": {
+            "offered": 14764,
+            "boarded": 2910,
+            "dismissed": 579,
+            "aboardFloors": 12191,
+            "conflictFloors": 113,
+            "supportedFloors": 3743
+          },
+          "cop": {
+            "offered": 14515,
+            "boarded": 2513,
+            "dismissed": 168,
+            "aboardFloors": 11165,
+            "conflictFloors": 157,
+            "supportedFloors": 2798
+          },
+          "lawyer": {
+            "offered": 9576,
+            "boarded": 1781,
+            "dismissed": 108,
+            "aboardFloors": 7684,
+            "conflictFloors": 42,
+            "supportedFloors": 1273
+          },
+          "drunk": {
+            "offered": 11228,
+            "boarded": 1821,
+            "dismissed": 269,
+            "aboardFloors": 5412,
+            "conflictFloors": 97,
+            "supportedFloors": 2558
+          },
+          "nurse": {
+            "offered": 10909,
+            "boarded": 3125,
+            "dismissed": 251,
+            "aboardFloors": 13536,
+            "conflictFloors": 114,
+            "supportedFloors": 2277
+          },
+          "child": {
+            "offered": 10937,
+            "boarded": 1293,
+            "dismissed": 307,
+            "aboardFloors": 5160,
+            "conflictFloors": 20,
+            "supportedFloors": 3236
+          },
+          "ghost": {
+            "offered": 7739,
+            "boarded": 708,
+            "dismissed": 176,
+            "aboardFloors": 3402,
+            "conflictFloors": 56,
+            "supportedFloors": 554
+          },
+          "exorcist": {
+            "offered": 7802,
+            "boarded": 1199,
+            "dismissed": 155,
+            "aboardFloors": 4710,
+            "conflictFloors": 64,
+            "supportedFloors": 557
+          },
+          "coach": {
+            "offered": 9387,
+            "boarded": 2698,
+            "dismissed": 443,
+            "aboardFloors": 13567,
+            "conflictFloors": 281,
+            "supportedFloors": 3907
+          },
+          "celebrity": {
+            "offered": 5570,
+            "boarded": 1190,
+            "dismissed": 243,
+            "aboardFloors": 5323,
+            "conflictFloors": 72,
+            "supportedFloors": 580
+          },
+          "inspector": {
+            "offered": 6643,
+            "boarded": 1146,
+            "dismissed": 177,
+            "aboardFloors": 5470,
+            "conflictFloors": 122,
+            "supportedFloors": 677
+          },
+          "bomb": {
+            "offered": 4323,
+            "boarded": 1378,
+            "dismissed": 92,
+            "aboardFloors": 3995,
+            "conflictFloors": 28,
+            "supportedFloors": 380
+          },
+          "mystery": {
+            "offered": 9588,
+            "boarded": 3293,
+            "dismissed": 181,
+            "aboardFloors": 12415,
+            "conflictFloors": 509,
+            "supportedFloors": 1547
+          },
+          "shifter": {
+            "offered": 7015,
+            "boarded": 2834,
+            "dismissed": 199,
+            "aboardFloors": 13418,
+            "conflictFloors": 634,
+            "supportedFloors": 793
+          },
+          "mimic": {
+            "offered": 8436,
+            "boarded": 1644,
+            "dismissed": 105,
+            "aboardFloors": 6424,
+            "conflictFloors": 46,
+            "supportedFloors": 704
+          }
+        }
+      },
+      {
+        "policy": "best-boarding-and-reseat",
+        "runs": 750,
+        "median": 108,
+        "mean": 112.58,
+        "p10": 72,
+        "p90": 156,
+        "max": 226,
+        "deaths": {
+          "power": 78,
+          "agitation": 672,
+          "fuse": 0,
+          "censored": 0
+        },
+        "steps": 83682,
+        "moves": 7138,
+        "meanMoveScoreImprovement": 4.4,
+        "meanIncome": 1080.88,
+        "dismissals": 4584,
+        "compensation": 50082,
+        "conflictFloors": 312,
+        "conflictFloorPct": 0.37,
+        "pressureSources": {
+          "轿厢拥挤": 46069,
+          "醉汉闹事": 1980,
+          "长班疲劳": 70823,
+          "小偷未受控": 3823,
+          "邻座冲突": 316,
+          "耐心归零": 92,
+          "检查员超载": 141,
+          "名人被围": 2,
+          "变动超载": 4
+        },
+        "shifterAboardFloors": 12360,
+        "shifterOverloadFloors": 2,
+        "roles": {
+          "commuter": {
+            "offered": 29718,
+            "boarded": 6439,
+            "dismissed": 165,
+            "aboardFloors": 20211,
+            "conflictFloors": 194,
+            "supportedFloors": 2599
+          },
+          "tourist": {
+            "offered": 17786,
+            "boarded": 4381,
+            "dismissed": 299,
+            "aboardFloors": 19448,
+            "conflictFloors": 406,
+            "supportedFloors": 997
+          },
+          "courier": {
+            "offered": 16741,
+            "boarded": 5451,
+            "dismissed": 37,
+            "aboardFloors": 9250,
+            "conflictFloors": 58,
+            "supportedFloors": 1246
+          },
+          "mechanic": {
+            "offered": 13045,
+            "boarded": 2312,
+            "dismissed": 167,
+            "aboardFloors": 10353,
+            "conflictFloors": 89,
+            "supportedFloors": 749
+          },
+          "lover": {
+            "offered": 21394,
+            "boarded": 5391,
+            "dismissed": 329,
+            "aboardFloors": 24923,
+            "conflictFloors": 34,
+            "supportedFloors": 15752
+          },
+          "musician": {
+            "offered": 13079,
+            "boarded": 3507,
+            "dismissed": 431,
+            "aboardFloors": 18146,
+            "conflictFloors": 95,
+            "supportedFloors": 4803
+          },
+          "thief": {
+            "offered": 14769,
+            "boarded": 2946,
+            "dismissed": 533,
+            "aboardFloors": 12432,
+            "conflictFloors": 65,
+            "supportedFloors": 4062
+          },
+          "cop": {
+            "offered": 14583,
+            "boarded": 2574,
+            "dismissed": 147,
+            "aboardFloors": 11529,
+            "conflictFloors": 79,
+            "supportedFloors": 3052
+          },
+          "lawyer": {
+            "offered": 9621,
+            "boarded": 1788,
+            "dismissed": 88,
+            "aboardFloors": 7791,
+            "conflictFloors": 13,
+            "supportedFloors": 1392
+          },
+          "drunk": {
+            "offered": 11300,
+            "boarded": 1942,
+            "dismissed": 266,
+            "aboardFloors": 5823,
+            "conflictFloors": 41,
+            "supportedFloors": 2809
+          },
+          "nurse": {
+            "offered": 10993,
+            "boarded": 3027,
+            "dismissed": 241,
+            "aboardFloors": 13089,
+            "conflictFloors": 50,
+            "supportedFloors": 2437
+          },
+          "child": {
+            "offered": 11015,
+            "boarded": 1292,
+            "dismissed": 279,
+            "aboardFloors": 5168,
+            "conflictFloors": 21,
+            "supportedFloors": 3423
+          },
+          "ghost": {
+            "offered": 7849,
+            "boarded": 740,
+            "dismissed": 155,
+            "aboardFloors": 3690,
+            "conflictFloors": 26,
+            "supportedFloors": 569
+          },
+          "exorcist": {
+            "offered": 7888,
+            "boarded": 1217,
+            "dismissed": 117,
+            "aboardFloors": 4922,
+            "conflictFloors": 27,
+            "supportedFloors": 574
+          },
+          "coach": {
+            "offered": 9495,
+            "boarded": 2619,
+            "dismissed": 405,
+            "aboardFloors": 13247,
+            "conflictFloors": 353,
+            "supportedFloors": 4487
+          },
+          "celebrity": {
+            "offered": 5585,
+            "boarded": 1225,
+            "dismissed": 248,
+            "aboardFloors": 5504,
+            "conflictFloors": 29,
+            "supportedFloors": 1013
+          },
+          "inspector": {
+            "offered": 6755,
+            "boarded": 1155,
+            "dismissed": 154,
+            "aboardFloors": 5633,
+            "conflictFloors": 59,
+            "supportedFloors": 743
+          },
+          "bomb": {
+            "offered": 4387,
+            "boarded": 1407,
+            "dismissed": 87,
+            "aboardFloors": 4122,
+            "conflictFloors": 26,
+            "supportedFloors": 418
+          },
+          "mystery": {
+            "offered": 9530,
+            "boarded": 3209,
+            "dismissed": 142,
+            "aboardFloors": 12144,
+            "conflictFloors": 269,
+            "supportedFloors": 1748
+          },
+          "shifter": {
+            "offered": 7099,
+            "boarded": 2804,
+            "dismissed": 190,
+            "aboardFloors": 13188,
+            "conflictFloors": 421,
+            "supportedFloors": 1029
+          },
+          "mimic": {
+            "offered": 8414,
+            "boarded": 1698,
+            "dismissed": 104,
+            "aboardFloors": 6734,
+            "conflictFloors": 44,
+            "supportedFloors": 937
+          }
+        }
+      }
+    ],
+    "comparisons": [
+      {
+        "from": "random-placement",
+        "to": "best-boarding-position",
+        "meanFloorDifference": -3.74,
+        "bootstrap95": [
+          -6.92,
+          -0.94
+        ],
+        "improvedPct": 44.53,
+        "tiedPct": 4.27
+      },
+      {
+        "from": "best-boarding-position",
+        "to": "best-boarding-and-reseat",
+        "meanFloorDifference": 0.51,
+        "bootstrap95": [
+          -2.12,
+          3.33
+        ],
+        "improvedPct": 45.47,
+        "tiedPct": 12.67
+      },
+      {
+        "from": "random-placement",
+        "to": "best-boarding-and-reseat",
+        "meanFloorDifference": -3.23,
+        "bootstrap95": [
+          -6.24,
+          -0.21
+        ],
+        "improvedPct": 42.93,
+        "tiedPct": 4.4
+      }
+    ]
+  }
+}

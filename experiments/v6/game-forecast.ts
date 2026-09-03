@@ -59,7 +59,7 @@ export function stressForecast(state: RunState, weight = totalWeight(state.cabin
   const minImpatient = Math.min(...variants.map((variant) => variant.impatient)); const maxImpatient = Math.max(...variants.map((variant) => variant.impatient));
   const minArrivals = Math.min(...variants.map((variant) => variant.arrivals)); const maxArrivals = Math.max(...variants.map((variant) => variant.arrivals));
   const arrivalReason = !maxArrivals ? '' : minArrivals === maxArrivals ? `到站舒缓 −${maxArrivals}` : minArrivals === 0 ? `到站舒缓最多 −${maxArrivals}` : `到站舒缓 −${minArrivals}～−${maxArrivals}`;
-  const crowd = crowdAgitation(occupied); const fatigue = shiftAgitation(nextFloor, occupied, state.restStops);
+  const crowd = crowdAgitation(occupied); const fatigue = shiftAgitation(nextFloor, occupied);
   const conflicts = nextFloor % 2 === 0 ? state.cabin.reduce((sum,rider,slot)=>sum+(rider && bondStatus(rider,state.cabin,slot).conflict ? 1 : 0),0) : 0;
   const overload = weight > state.weightCap ? 2 : 0;
   const fixedRise = thieves + celebrities + inspectors + crowd + fatigue + conflicts + overload;
@@ -76,7 +76,6 @@ export function stressForecast(state: RunState, weight = totalWeight(state.cabin
     overload ? '载重超限 +2' : '',
     crowd ? crowd > 0 ? `拥挤 +${crowd}` : '宽松 −1' : '',
     fatigue ? `长班疲劳 +${fatigue}` : '',
-    occupied === 0 ? state.restStops > 0 ? `休整 ${state.restStops}→${state.restStops - 1}，免疲劳` : '休整用尽，空驶不免疲劳' : '',
     arrivalReason,
     patienceCost(state) > 1 ? '高躁动：耐心每站 −2' : '',
     impatienceReason,

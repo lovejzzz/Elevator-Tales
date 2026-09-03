@@ -350,6 +350,16 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .slot-state { top:36px; max-width:calc(100% - 12px); font-size:9px; }
 .agitation-threshold { position:absolute; z-index:2; top:-3px; height:11px; border-left:2px solid #e3a07b; }
 .agitation-state { border-top:1px solid var(--border); margin-top:7px; padding-top:7px; display:grid; gap:4px; }
+.rest-stops { display:flex; align-items:center; justify-content:space-between; gap:5px; width:100%; min-height:32px; margin-top:5px; border-top:1px solid var(--border); color:#b7d6c0; font:400 12px/1.4 var(--font-sans); cursor:pointer; }
+.meter-card .rest-stops b { font:600 12px/1.4 var(--font-mono); white-space:nowrap; color:inherit; }
+.rest-stops.rest-empty { color:#e0ba80; }
+.rest-stops:focus-visible { outline:2px solid var(--gold); outline-offset:2px; }
+@media(max-width:700px) {
+  .status-rail .rest-stops { position:relative; z-index:4; flex-wrap:nowrap; gap:3px; min-height:22px; flex-shrink:0; margin-top:2px; font-size:10px; }
+  .status-rail .rest-stops>span { font-size:10px; color:inherit; white-space:nowrap; }
+  .status-rail .rest-stops .rest-label-prefix { display:none; }
+  .status-rail .rest-stops b { font-size:11px; }
+}
 .agitation-state b { font:500 11px/1.5 var(--font-sans); color:#d7b793; }.agitation-state span { font:400 10px/1.5 var(--font-sans); color:#a6b7a5; }
 .cabin-agitated { box-shadow:inset 0 0 60px #8f382433; border-color:#ad7854; }.cabin-agitated .floor-indicator { border-color:#d58a66; }
 .wallet-card small { font:400 11px/1.7 var(--font-sans); color:#aeb9a7; text-align:left; }
@@ -485,13 +495,13 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .upgrade-dialog .story-primary { min-height:44px; height:44px; margin:0; }
 }
 @media (max-width:700px) and (max-height:700px) {
-  .game-grid { grid-template-rows:174px minmax(0,1fr) 65px; gap:5px; }
+  .game-grid { grid-template-rows:160px minmax(0,1fr) 65px; gap:5px; }
   .brand-bar { flex-basis:34px; height:34px; }.brand-bar h1 { font-size:24px; }
   .brand-actions .icon-button { width:36px; height:34px; }
   .mobile-passenger-summary { gap:3px; }.mobile-passenger-summary .portrait-window { width:36px; height:36px; }
   .mobile-passenger-summary>strong { font-size:17px; }
   .standing-grid { top:64px; bottom:35px; gap:5px; }.adjacency-key { top:47px; font-size:9px; }
-  .status-rail { display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(48px,1fr) minmax(64px,1.4fr) minmax(38px,.8fr) minmax(54px,1fr) 32px; gap:4px; }
+  .status-rail { display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(48px,1fr) minmax(88px,1.4fr) minmax(38px,.8fr) minmax(54px,1fr) 32px; gap:4px; }
   .status-rail .meter-card,.status-rail .load-card,.status-rail .score-card { padding:2px 5px; gap:2px; }
   .status-rail .meter-card>div:first-child>b { font-size:19px; }.status-rail .agitation-state b { font-size:9px; }
   .status-rail .receipt-button { min-height:32px; font-size:10px; }

@@ -1,0 +1,4823 @@
+{
+  "source": "f59e02c7cea65e56ef4dba61233a10a7e7444525",
+  "resolves": 126310,
+  "forecastChecks": 126310,
+  "pairRosterCount": 231,
+  "pairJourneys": 29568,
+  "pairResults": [
+    {
+      "first": "commuter",
+      "second": "commuter",
+      "names": [
+        "通勤者",
+        "通勤者"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "tourist",
+      "names": [
+        "通勤者",
+        "游客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "courier",
+      "names": [
+        "通勤者",
+        "快递员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 3,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "mechanic",
+      "names": [
+        "通勤者",
+        "维修工"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "lover",
+      "names": [
+        "通勤者",
+        "恋人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "musician",
+      "names": [
+        "通勤者",
+        "音乐家"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "thief",
+      "names": [
+        "通勤者",
+        "小偷"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "cop",
+      "names": [
+        "通勤者",
+        "警察"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "lawyer",
+      "names": [
+        "通勤者",
+        "律师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "drunk",
+      "names": [
+        "通勤者",
+        "醉汉"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 1.438,
+        "power": 0,
+        "conflict": 1.438,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "nurse",
+      "names": [
+        "通勤者",
+        "护士"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "child",
+      "names": [
+        "通勤者",
+        "儿童"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "ghost",
+      "names": [
+        "通勤者",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -7,
+        "pressure": 1,
+        "power": 0,
+        "conflict": 0,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "exorcist",
+      "names": [
+        "通勤者",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "coach",
+      "names": [
+        "通勤者",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 10,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "celebrity",
+      "names": [
+        "通勤者",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "inspector",
+      "names": [
+        "通勤者",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "bomb",
+      "names": [
+        "通勤者",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "mystery",
+      "names": [
+        "通勤者",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "shifter",
+      "names": [
+        "通勤者",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.188,
+        "pressure": 0.188,
+        "power": 0,
+        "conflict": 0.188,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "commuter",
+      "second": "mimic",
+      "names": [
+        "通勤者",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -1.312,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "tourist",
+      "names": [
+        "游客",
+        "游客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "courier",
+      "names": [
+        "游客",
+        "快递员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "mechanic",
+      "names": [
+        "游客",
+        "维修工"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "lover",
+      "names": [
+        "游客",
+        "恋人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "musician",
+      "names": [
+        "游客",
+        "音乐家"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 3,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "thief",
+      "names": [
+        "游客",
+        "小偷"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 2,
+        "power": 0,
+        "conflict": 2,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "cop",
+      "names": [
+        "游客",
+        "警察"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "lawyer",
+      "names": [
+        "游客",
+        "律师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "drunk",
+      "names": [
+        "游客",
+        "醉汉"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "nurse",
+      "names": [
+        "游客",
+        "护士"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "child",
+      "names": [
+        "游客",
+        "儿童"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "ghost",
+      "names": [
+        "游客",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -13,
+        "pressure": 1,
+        "power": 0,
+        "conflict": 0,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "exorcist",
+      "names": [
+        "游客",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "coach",
+      "names": [
+        "游客",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 10,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "celebrity",
+      "names": [
+        "游客",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 18,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "inspector",
+      "names": [
+        "游客",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "bomb",
+      "names": [
+        "游客",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "mystery",
+      "names": [
+        "游客",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.188,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "shifter",
+      "names": [
+        "游客",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.281,
+        "pressure": 0.172,
+        "power": 0,
+        "conflict": 0.172,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "tourist",
+      "second": "mimic",
+      "names": [
+        "游客",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.563,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "courier",
+      "names": [
+        "快递员",
+        "快递员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "mechanic",
+      "names": [
+        "快递员",
+        "维修工"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 3,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "lover",
+      "names": [
+        "快递员",
+        "恋人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "musician",
+      "names": [
+        "快递员",
+        "音乐家"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "thief",
+      "names": [
+        "快递员",
+        "小偷"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "cop",
+      "names": [
+        "快递员",
+        "警察"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "lawyer",
+      "names": [
+        "快递员",
+        "律师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "drunk",
+      "names": [
+        "快递员",
+        "醉汉"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "nurse",
+      "names": [
+        "快递员",
+        "护士"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "child",
+      "names": [
+        "快递员",
+        "儿童"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "ghost",
+      "names": [
+        "快递员",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -6,
+        "pressure": 3,
+        "power": 0,
+        "conflict": 2,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "courier",
+      "second": "exorcist",
+      "names": [
+        "快递员",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "coach",
+      "names": [
+        "快递员",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 9,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "celebrity",
+      "names": [
+        "快递员",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "inspector",
+      "names": [
+        "快递员",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "bomb",
+      "names": [
+        "快递员",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "mystery",
+      "names": [
+        "快递员",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.188,
+        "pressure": 0.125,
+        "power": 0,
+        "conflict": 0.125,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "shifter",
+      "names": [
+        "快递员",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.281,
+        "pressure": 0.172,
+        "power": 0,
+        "conflict": 0.172,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "courier",
+      "second": "mimic",
+      "names": [
+        "快递员",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -1.5,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "mechanic",
+      "names": [
+        "维修工",
+        "维修工"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "lover",
+      "names": [
+        "维修工",
+        "恋人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "musician",
+      "names": [
+        "维修工",
+        "音乐家"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "thief",
+      "names": [
+        "维修工",
+        "小偷"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "cop",
+      "names": [
+        "维修工",
+        "警察"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "lawyer",
+      "names": [
+        "维修工",
+        "律师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "drunk",
+      "names": [
+        "维修工",
+        "醉汉"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 1.531,
+        "power": 0,
+        "conflict": 1.531,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "nurse",
+      "names": [
+        "维修工",
+        "护士"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "child",
+      "names": [
+        "维修工",
+        "儿童"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "ghost",
+      "names": [
+        "维修工",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -7,
+        "pressure": 1,
+        "power": 0,
+        "conflict": 0,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "exorcist",
+      "names": [
+        "维修工",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "coach",
+      "names": [
+        "维修工",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 7,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "celebrity",
+      "names": [
+        "维修工",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "inspector",
+      "names": [
+        "维修工",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 6,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "bomb",
+      "names": [
+        "维修工",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "mystery",
+      "names": [
+        "维修工",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.375,
+        "pressure": 0.125,
+        "power": 0,
+        "conflict": 0.125,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "shifter",
+      "names": [
+        "维修工",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.281,
+        "pressure": 0.188,
+        "power": 0,
+        "conflict": 0.188,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mechanic",
+      "second": "mimic",
+      "names": [
+        "维修工",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -1.125,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "lover",
+      "names": [
+        "恋人",
+        "恋人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 26,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "musician",
+      "names": [
+        "恋人",
+        "音乐家"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "thief",
+      "names": [
+        "恋人",
+        "小偷"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "cop",
+      "names": [
+        "恋人",
+        "警察"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "lawyer",
+      "names": [
+        "恋人",
+        "律师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "drunk",
+      "names": [
+        "恋人",
+        "醉汉"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "nurse",
+      "names": [
+        "恋人",
+        "护士"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "child",
+      "names": [
+        "恋人",
+        "儿童"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 3,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "ghost",
+      "names": [
+        "恋人",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -6,
+        "pressure": 3,
+        "power": 0,
+        "conflict": 2,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "lover",
+      "second": "exorcist",
+      "names": [
+        "恋人",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "coach",
+      "names": [
+        "恋人",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 6,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "celebrity",
+      "names": [
+        "恋人",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "inspector",
+      "names": [
+        "恋人",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "bomb",
+      "names": [
+        "恋人",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "mystery",
+      "names": [
+        "恋人",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0.25,
+        "power": 0,
+        "conflict": 0.25,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "shifter",
+      "names": [
+        "恋人",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.281,
+        "pressure": 0.094,
+        "power": 0,
+        "conflict": 0.094,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lover",
+      "second": "mimic",
+      "names": [
+        "恋人",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -0.75,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "musician",
+      "names": [
+        "音乐家",
+        "音乐家"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "thief",
+      "names": [
+        "音乐家",
+        "小偷"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "cop",
+      "names": [
+        "音乐家",
+        "警察"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "lawyer",
+      "names": [
+        "音乐家",
+        "律师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "drunk",
+      "names": [
+        "音乐家",
+        "醉汉"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 6.5,
+        "pressure": -1.75,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "nurse",
+      "names": [
+        "音乐家",
+        "护士"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "child",
+      "names": [
+        "音乐家",
+        "儿童"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 3,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "ghost",
+      "names": [
+        "音乐家",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -8,
+        "pressure": 1,
+        "power": 0,
+        "conflict": 0,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "musician",
+      "second": "exorcist",
+      "names": [
+        "音乐家",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "coach",
+      "names": [
+        "音乐家",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 7,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "celebrity",
+      "names": [
+        "音乐家",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "inspector",
+      "names": [
+        "音乐家",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 2,
+        "power": 0,
+        "conflict": 2,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "bomb",
+      "names": [
+        "音乐家",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "mystery",
+      "names": [
+        "音乐家",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "shifter",
+      "names": [
+        "音乐家",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.375,
+        "pressure": 0.125,
+        "power": 0,
+        "conflict": 0.125,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "musician",
+      "second": "mimic",
+      "names": [
+        "音乐家",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -0.5,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "thief",
+      "names": [
+        "小偷",
+        "小偷"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "cop",
+      "names": [
+        "小偷",
+        "警察"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 3,
+        "pressure": -2,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "lawyer",
+      "names": [
+        "小偷",
+        "律师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 3,
+        "pressure": -2,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "drunk",
+      "names": [
+        "小偷",
+        "醉汉"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "nurse",
+      "names": [
+        "小偷",
+        "护士"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "child",
+      "names": [
+        "小偷",
+        "儿童"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "ghost",
+      "names": [
+        "小偷",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -5,
+        "pressure": 1,
+        "power": 0,
+        "conflict": 0,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "thief",
+      "second": "exorcist",
+      "names": [
+        "小偷",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "coach",
+      "names": [
+        "小偷",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 6,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "celebrity",
+      "names": [
+        "小偷",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "inspector",
+      "names": [
+        "小偷",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 4,
+        "power": 0,
+        "conflict": 4,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "bomb",
+      "names": [
+        "小偷",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "mystery",
+      "names": [
+        "小偷",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.375,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "shifter",
+      "names": [
+        "小偷",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.375,
+        "pressure": 0.156,
+        "power": 0,
+        "conflict": 0.156,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "thief",
+      "second": "mimic",
+      "names": [
+        "小偷",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -1.25,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "cop",
+      "names": [
+        "警察",
+        "警察"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "lawyer",
+      "names": [
+        "警察",
+        "律师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "drunk",
+      "names": [
+        "警察",
+        "醉汉"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 1.375,
+        "power": 0,
+        "conflict": 1.375,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "nurse",
+      "names": [
+        "警察",
+        "护士"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "child",
+      "names": [
+        "警察",
+        "儿童"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "ghost",
+      "names": [
+        "警察",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -8,
+        "pressure": 1,
+        "power": 0,
+        "conflict": 0,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "cop",
+      "second": "exorcist",
+      "names": [
+        "警察",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "coach",
+      "names": [
+        "警察",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 7,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "celebrity",
+      "names": [
+        "警察",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "inspector",
+      "names": [
+        "警察",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "bomb",
+      "names": [
+        "警察",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 6,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "mystery",
+      "names": [
+        "警察",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.188,
+        "pressure": 0.25,
+        "power": 0,
+        "conflict": 0.25,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "shifter",
+      "names": [
+        "警察",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.281,
+        "pressure": 0.078,
+        "power": 0,
+        "conflict": 0.078,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "cop",
+      "second": "mimic",
+      "names": [
+        "警察",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -0.875,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "lawyer",
+      "names": [
+        "律师",
+        "律师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "drunk",
+      "names": [
+        "律师",
+        "醉汉"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "nurse",
+      "names": [
+        "律师",
+        "护士"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "child",
+      "names": [
+        "律师",
+        "儿童"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "ghost",
+      "names": [
+        "律师",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -10,
+        "pressure": 3,
+        "power": 0,
+        "conflict": 2,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "exorcist",
+      "names": [
+        "律师",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "coach",
+      "names": [
+        "律师",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 8,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "celebrity",
+      "names": [
+        "律师",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "inspector",
+      "names": [
+        "律师",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "bomb",
+      "names": [
+        "律师",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "mystery",
+      "names": [
+        "律师",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.375,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "shifter",
+      "names": [
+        "律师",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.094,
+        "pressure": 0.109,
+        "power": 0,
+        "conflict": 0.109,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "lawyer",
+      "second": "mimic",
+      "names": [
+        "律师",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "drunk",
+      "second": "drunk",
+      "names": [
+        "醉汉",
+        "醉汉"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "drunk",
+      "second": "nurse",
+      "names": [
+        "醉汉",
+        "护士"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 8.813,
+        "pressure": -2,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "drunk",
+      "second": "child",
+      "names": [
+        "醉汉",
+        "儿童"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "drunk",
+      "second": "ghost",
+      "names": [
+        "醉汉",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -14,
+        "pressure": 1.063,
+        "power": 0,
+        "conflict": 0,
+        "delays": 1.344,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "drunk",
+      "second": "exorcist",
+      "names": [
+        "醉汉",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 1.875,
+        "power": 0,
+        "conflict": 1.875,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "drunk",
+      "second": "coach",
+      "names": [
+        "醉汉",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 4.375,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "drunk",
+      "second": "celebrity",
+      "names": [
+        "醉汉",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 9.563,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "drunk",
+      "second": "inspector",
+      "names": [
+        "醉汉",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 1.625,
+        "power": 0,
+        "conflict": 1.625,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "drunk",
+      "second": "bomb",
+      "names": [
+        "醉汉",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "drunk",
+      "second": "mystery",
+      "names": [
+        "醉汉",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0.125,
+        "power": 0,
+        "conflict": 0.125,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "drunk",
+      "second": "shifter",
+      "names": [
+        "醉汉",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.281,
+        "pressure": 0.016,
+        "power": 0,
+        "conflict": 0.016,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "drunk",
+      "second": "mimic",
+      "names": [
+        "醉汉",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.75,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "nurse",
+      "second": "nurse",
+      "names": [
+        "护士",
+        "护士"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "nurse",
+      "second": "child",
+      "names": [
+        "护士",
+        "儿童"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 6,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "nurse",
+      "second": "ghost",
+      "names": [
+        "护士",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -9,
+        "pressure": 3,
+        "power": 0,
+        "conflict": 2,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "nurse",
+      "second": "exorcist",
+      "names": [
+        "护士",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "nurse",
+      "second": "coach",
+      "names": [
+        "护士",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 8,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "nurse",
+      "second": "celebrity",
+      "names": [
+        "护士",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "nurse",
+      "second": "inspector",
+      "names": [
+        "护士",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "nurse",
+      "second": "bomb",
+      "names": [
+        "护士",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "nurse",
+      "second": "mystery",
+      "names": [
+        "护士",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "nurse",
+      "second": "shifter",
+      "names": [
+        "护士",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.094,
+        "pressure": 0.078,
+        "power": 0,
+        "conflict": 0.078,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "nurse",
+      "second": "mimic",
+      "names": [
+        "护士",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -0.312,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "child",
+      "second": "child",
+      "names": [
+        "儿童",
+        "儿童"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "child",
+      "second": "ghost",
+      "names": [
+        "儿童",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -5,
+        "pressure": 1,
+        "power": 0,
+        "conflict": 0,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "child",
+      "second": "exorcist",
+      "names": [
+        "儿童",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "child",
+      "second": "coach",
+      "names": [
+        "儿童",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 6,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "child",
+      "second": "celebrity",
+      "names": [
+        "儿童",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "child",
+      "second": "inspector",
+      "names": [
+        "儿童",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "child",
+      "second": "bomb",
+      "names": [
+        "儿童",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 4,
+        "power": 0,
+        "conflict": 4,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "child",
+      "second": "mystery",
+      "names": [
+        "儿童",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.375,
+        "pressure": 0.125,
+        "power": 0,
+        "conflict": 0.125,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "child",
+      "second": "shifter",
+      "names": [
+        "儿童",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.094,
+        "pressure": 0.109,
+        "power": 0,
+        "conflict": 0.109,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "child",
+      "second": "mimic",
+      "names": [
+        "儿童",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -1.25,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "ghost",
+      "second": "ghost",
+      "names": [
+        "幽灵",
+        "幽灵"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -16,
+        "pressure": 2,
+        "power": 0,
+        "conflict": 0,
+        "delays": 3,
+        "remaining": 2
+      }
+    },
+    {
+      "first": "ghost",
+      "second": "exorcist",
+      "names": [
+        "幽灵",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 4,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "ghost",
+      "second": "coach",
+      "names": [
+        "幽灵",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -6,
+        "pressure": 1,
+        "power": 0,
+        "conflict": 0,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "ghost",
+      "second": "celebrity",
+      "names": [
+        "幽灵",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -6,
+        "pressure": 1,
+        "power": 0,
+        "conflict": 0,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "ghost",
+      "second": "inspector",
+      "names": [
+        "幽灵",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -12,
+        "pressure": 3,
+        "power": 0,
+        "conflict": 2,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "ghost",
+      "second": "bomb",
+      "names": [
+        "幽灵",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -26,
+        "pressure": 1,
+        "power": 0,
+        "conflict": 0,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "ghost",
+      "second": "mystery",
+      "names": [
+        "幽灵",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -24.875,
+        "pressure": 1.125,
+        "power": 0,
+        "conflict": 0.125,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "ghost",
+      "second": "shifter",
+      "names": [
+        "幽灵",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -37.125,
+        "pressure": 1.094,
+        "power": 0,
+        "conflict": 0.094,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "ghost",
+      "second": "mimic",
+      "names": [
+        "幽灵",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -10,
+        "pressure": 2,
+        "power": 0,
+        "conflict": 1,
+        "delays": 1.5,
+        "remaining": 1
+      }
+    },
+    {
+      "first": "exorcist",
+      "second": "exorcist",
+      "names": [
+        "驱魔师",
+        "驱魔师"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "exorcist",
+      "second": "coach",
+      "names": [
+        "驱魔师",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 8,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "exorcist",
+      "second": "celebrity",
+      "names": [
+        "驱魔师",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "exorcist",
+      "second": "inspector",
+      "names": [
+        "驱魔师",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "exorcist",
+      "second": "bomb",
+      "names": [
+        "驱魔师",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "exorcist",
+      "second": "mystery",
+      "names": [
+        "驱魔师",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.375,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "exorcist",
+      "second": "shifter",
+      "names": [
+        "驱魔师",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.094,
+        "pressure": 0.125,
+        "power": 0,
+        "conflict": 0.125,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "exorcist",
+      "second": "mimic",
+      "names": [
+        "驱魔师",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": -0.437,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "coach",
+      "second": "coach",
+      "names": [
+        "教练",
+        "教练"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 6,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "coach",
+      "second": "celebrity",
+      "names": [
+        "教练",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 24,
+        "pressure": 2,
+        "power": 0,
+        "conflict": 2,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "coach",
+      "second": "inspector",
+      "names": [
+        "教练",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 9,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "coach",
+      "second": "bomb",
+      "names": [
+        "教练",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 16,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "coach",
+      "second": "mystery",
+      "names": [
+        "教练",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 14.938,
+        "pressure": 0.25,
+        "power": 0,
+        "conflict": 0.25,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "coach",
+      "second": "shifter",
+      "names": [
+        "教练",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 22.875,
+        "pressure": 0.125,
+        "power": 0,
+        "conflict": 0.125,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "coach",
+      "second": "mimic",
+      "names": [
+        "教练",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 8,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "celebrity",
+      "second": "celebrity",
+      "names": [
+        "名人",
+        "名人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 24,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "celebrity",
+      "second": "inspector",
+      "names": [
+        "名人",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 2,
+        "power": 0,
+        "conflict": 2,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "celebrity",
+      "second": "bomb",
+      "names": [
+        "名人",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "celebrity",
+      "second": "mystery",
+      "names": [
+        "名人",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12.188,
+        "pressure": 0.25,
+        "power": 0,
+        "conflict": 0.25,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "celebrity",
+      "second": "shifter",
+      "names": [
+        "名人",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 12,
+        "pressure": 0.016,
+        "power": 0,
+        "conflict": 0.016,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "celebrity",
+      "second": "mimic",
+      "names": [
+        "名人",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 16.5,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "inspector",
+      "second": "inspector",
+      "names": [
+        "检查员",
+        "检查员"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "inspector",
+      "second": "bomb",
+      "names": [
+        "检查员",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "inspector",
+      "second": "mystery",
+      "names": [
+        "检查员",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.375,
+        "pressure": 0.125,
+        "power": 0,
+        "conflict": 0.125,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "inspector",
+      "second": "shifter",
+      "names": [
+        "检查员",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.094,
+        "pressure": 0.078,
+        "power": 0,
+        "conflict": 0.078,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "inspector",
+      "second": "mimic",
+      "names": [
+        "检查员",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.5,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "bomb",
+      "second": "bomb",
+      "names": [
+        "炸弹客",
+        "炸弹客"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "bomb",
+      "second": "mystery",
+      "names": [
+        "炸弹客",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.188,
+        "pressure": 0.125,
+        "power": 0,
+        "conflict": 0.125,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "bomb",
+      "second": "shifter",
+      "names": [
+        "炸弹客",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0.188,
+        "pressure": 0.094,
+        "power": 0,
+        "conflict": 0.094,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "bomb",
+      "second": "mimic",
+      "names": [
+        "炸弹客",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 8,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mystery",
+      "second": "mystery",
+      "names": [
+        "神秘人",
+        "神秘人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mystery",
+      "second": "shifter",
+      "names": [
+        "神秘人",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mystery",
+      "second": "mimic",
+      "names": [
+        "神秘人",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 7.875,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "shifter",
+      "second": "shifter",
+      "names": [
+        "百变人",
+        "百变人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 0,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "shifter",
+      "second": "mimic",
+      "names": [
+        "百变人",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 9.813,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "first": "mimic",
+      "second": "mimic",
+      "names": [
+        "复制人",
+        "复制人"
+      ],
+      "cases": 64,
+      "adjacentMinusSeparated": {
+        "coins": 6,
+        "pressure": 0,
+        "power": 0,
+        "conflict": 0,
+        "delays": 0,
+        "remaining": 0
+      }
+    }
+  ],
+  "tripleRosterCount": 1330,
+  "arrangementChecks": 7980,
+  "triplesWithDifferentOutcomes": 942,
+  "triplesWithMoneyRiskTradeoff": 91,
+  "tripleExamples": [
+    {
+      "kinds": [
+        "commuter",
+        "tourist",
+        "celebrity"
+      ],
+      "contexts": [
+        {
+          "floor": 40,
+          "values": [
+            {
+              "center": "commuter",
+              "coins": 41,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "tourist",
+              "coins": 47,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "celebrity",
+              "coins": 44,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": false
+        },
+        {
+          "floor": 41,
+          "values": [
+            {
+              "center": "commuter",
+              "coins": 41,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "tourist",
+              "coins": 47,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "celebrity",
+              "coins": 44,
+              "pressure": -1,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": true
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "commuter",
+        "courier",
+        "ghost"
+      ],
+      "contexts": [
+        {
+          "floor": 40,
+          "values": [
+            {
+              "center": "commuter",
+              "coins": 24,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "courier",
+              "coins": 24,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "ghost",
+              "coins": 21,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": false
+        },
+        {
+          "floor": 41,
+          "values": [
+            {
+              "center": "commuter",
+              "coins": 14,
+              "pressure": -1,
+              "power": -2
+            },
+            {
+              "center": "courier",
+              "coins": 18,
+              "pressure": 0,
+              "power": -2
+            },
+            {
+              "center": "ghost",
+              "coins": 15,
+              "pressure": 0,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": true
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "commuter",
+        "lover",
+        "ghost"
+      ],
+      "contexts": [
+        {
+          "floor": 40,
+          "values": [
+            {
+              "center": "commuter",
+              "coins": 21,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "lover",
+              "coins": 21,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "ghost",
+              "coins": 21,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": false,
+          "tradeoff": false
+        },
+        {
+          "floor": 41,
+          "values": [
+            {
+              "center": "commuter",
+              "coins": 14,
+              "pressure": -1,
+              "power": -2
+            },
+            {
+              "center": "lover",
+              "coins": 15,
+              "pressure": 0,
+              "power": -2
+            },
+            {
+              "center": "ghost",
+              "coins": 15,
+              "pressure": 0,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": true
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "commuter",
+        "drunk",
+        "ghost"
+      ],
+      "contexts": [
+        {
+          "floor": 40,
+          "values": [
+            {
+              "center": "commuter",
+              "coins": 29,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "drunk",
+              "coins": 29,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "ghost",
+              "coins": 29,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": false,
+          "tradeoff": false
+        },
+        {
+          "floor": 41,
+          "values": [
+            {
+              "center": "commuter",
+              "coins": 22,
+              "pressure": 0,
+              "power": -2
+            },
+            {
+              "center": "drunk",
+              "coins": 15,
+              "pressure": 0,
+              "power": -2
+            },
+            {
+              "center": "ghost",
+              "coins": 15,
+              "pressure": -1,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": true
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "commuter",
+        "drunk",
+        "mimic"
+      ],
+      "contexts": [
+        {
+          "floor": 40,
+          "values": [
+            {
+              "center": "commuter",
+              "coins": 31,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "drunk",
+              "coins": 31,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "mimic",
+              "coins": 28,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": false
+        },
+        {
+          "floor": 41,
+          "values": [
+            {
+              "center": "commuter",
+              "coins": 31,
+              "pressure": -1,
+              "power": -2
+            },
+            {
+              "center": "drunk",
+              "coins": 31,
+              "pressure": -1,
+              "power": -2
+            },
+            {
+              "center": "mimic",
+              "coins": 28,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": true
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "tourist",
+        "courier",
+        "ghost"
+      ],
+      "contexts": [
+        {
+          "floor": 40,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 27,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "courier",
+              "coins": 27,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "ghost",
+              "coins": 27,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": false,
+          "tradeoff": false
+        },
+        {
+          "floor": 41,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 14,
+              "pressure": -1,
+              "power": -2
+            },
+            {
+              "center": "courier",
+              "coins": 21,
+              "pressure": 0,
+              "power": -2
+            },
+            {
+              "center": "ghost",
+              "coins": 21,
+              "pressure": 0,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": true
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "tourist",
+        "courier",
+        "celebrity"
+      ],
+      "contexts": [
+        {
+          "floor": 40,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 46,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "courier",
+              "coins": 40,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "celebrity",
+              "coins": 43,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": false
+        },
+        {
+          "floor": 41,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 46,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "courier",
+              "coins": 40,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "celebrity",
+              "coins": 43,
+              "pressure": -1,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": true
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "tourist",
+        "mechanic",
+        "celebrity"
+      ],
+      "contexts": [
+        {
+          "floor": 40,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 47,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "mechanic",
+              "coins": 41,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "celebrity",
+              "coins": 44,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": false
+        },
+        {
+          "floor": 41,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 47,
+              "pressure": -2,
+              "power": -1
+            },
+            {
+              "center": "mechanic",
+              "coins": 41,
+              "pressure": -2,
+              "power": -1
+            },
+            {
+              "center": "celebrity",
+              "coins": 44,
+              "pressure": -1,
+              "power": -1
+            }
+          ],
+          "different": true,
+          "tradeoff": true
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "tourist",
+        "lover",
+        "ghost"
+      ],
+      "contexts": [
+        {
+          "floor": 40,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 27,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "lover",
+              "coins": 27,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "ghost",
+              "coins": 27,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": false,
+          "tradeoff": false
+        },
+        {
+          "floor": 41,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 14,
+              "pressure": -1,
+              "power": -2
+            },
+            {
+              "center": "lover",
+              "coins": 21,
+              "pressure": 0,
+              "power": -2
+            },
+            {
+              "center": "ghost",
+              "coins": 21,
+              "pressure": 0,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": true
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "tourist",
+        "lover",
+        "celebrity"
+      ],
+      "contexts": [
+        {
+          "floor": 40,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 46,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "lover",
+              "coins": 40,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "celebrity",
+              "coins": 43,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": false
+        },
+        {
+          "floor": 41,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 46,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "lover",
+              "coins": 40,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "celebrity",
+              "coins": 43,
+              "pressure": -1,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": true
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "tourist",
+        "cop",
+        "celebrity"
+      ],
+      "contexts": [
+        {
+          "floor": 40,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 48,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "cop",
+              "coins": 42,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "celebrity",
+              "coins": 45,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": false
+        },
+        {
+          "floor": 41,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 48,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "cop",
+              "coins": 42,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "celebrity",
+              "coins": 45,
+              "pressure": -1,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": true
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "tourist",
+        "lawyer",
+        "ghost"
+      ],
+      "contexts": [
+        {
+          "floor": 40,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 31,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "lawyer",
+              "coins": 31,
+              "pressure": -2,
+              "power": -2
+            },
+            {
+              "center": "ghost",
+              "coins": 31,
+              "pressure": -2,
+              "power": -2
+            }
+          ],
+          "different": false,
+          "tradeoff": false
+        },
+        {
+          "floor": 41,
+          "values": [
+            {
+              "center": "tourist",
+              "coins": 18,
+              "pressure": -1,
+              "power": -2
+            },
+            {
+              "center": "lawyer",
+              "coins": 21,
+              "pressure": 0,
+              "power": -2
+            },
+            {
+              "center": "ghost",
+              "coins": 21,
+              "pressure": 0,
+              "power": -2
+            }
+          ],
+          "different": true,
+          "tradeoff": true
+        }
+      ]
+    }
+  ],
+  "edgeChecks": 280,
+  "suppressionChecks": 20,
+  "copyCases": 10000,
+  "thiefTradeoffs": [
+    {
+      "trip": 2,
+      "coinsControlled": 26,
+      "coinsSeparate": 19,
+      "pressureControlled": -4,
+      "pressureSeparate": -3
+    },
+    {
+      "trip": 4,
+      "coinsControlled": 28,
+      "coinsSeparate": 25,
+      "pressureControlled": -6,
+      "pressureSeparate": -4
+    },
+    {
+      "trip": 6,
+      "coinsControlled": 30,
+      "coinsSeparate": 31,
+      "pressureControlled": -8,
+      "pressureSeparate": -5
+    }
+  ],
+  "childComparisons": [
+    {
+      "kind": "child",
+      "supported": false,
+      "coins": 0,
+      "remaining": 0,
+      "pressure": 0
+    },
+    {
+      "kind": "commuter",
+      "supported": false,
+      "coins": 7,
+      "remaining": 0,
+      "pressure": 0
+    },
+    {
+      "kind": "child",
+      "supported": true,
+      "coins": 8,
+      "remaining": 1,
+      "pressure": 0
+    },
+    {
+      "kind": "commuter",
+      "supported": true,
+      "coins": 7,
+      "remaining": 1,
+      "pressure": 0
+    }
+  ],
+  "startupUnavailable": [
+    {
+      "kind": "commuter",
+      "likes": [
+        "courier"
+      ],
+      "unavailable": false
+    },
+    {
+      "kind": "tourist",
+      "likes": [
+        "celebrity"
+      ],
+      "unavailable": true
+    },
+    {
+      "kind": "courier",
+      "likes": [
+        "mechanic"
+      ],
+      "unavailable": false
+    },
+    {
+      "kind": "mechanic",
+      "likes": [
+        "inspector"
+      ],
+      "unavailable": true
+    },
+    {
+      "kind": "lover",
+      "likes": [
+        "lover"
+      ],
+      "unavailable": false
+    },
+    {
+      "kind": "musician",
+      "likes": [
+        "tourist"
+      ],
+      "unavailable": false
+    },
+    {
+      "kind": "thief",
+      "likes": [
+        "cop",
+        "lawyer"
+      ],
+      "unavailable": false
+    },
+    {
+      "kind": "cop",
+      "likes": [
+        "thief",
+        "bomb"
+      ],
+      "unavailable": false
+    }
+  ],
+  "supportExpiry": {
+    "stays": {
+      "floor": 47,
+      "status": "playing"
+    },
+    "leaves": {
+      "floor": 45,
+      "status": "lost"
+    }
+  },
+  "mimicWitnesses": {
+    "worseGreen": {
+      "seed": 0,
+      "baselineFare": 10,
+      "copiedFare": 6,
+      "green": true,
+      "message": "复制人与邻座联动已生效。"
+    },
+    "removalOverload": {
+      "seed": 3,
+      "beforeWeight": 10,
+      "afterWeight": 11,
+      "dismissedWeight": 11,
+      "beforeCopy": [
+        {
+          "sourceId": "heavy",
+          "sourceKind": "coach",
+          "field": "fare"
+        },
+        {
+          "sourceId": "nurse",
+          "sourceKind": "nurse",
+          "field": "weight"
+        },
+        {
+          "sourceId": "weight-zero",
+          "sourceKind": "ghost",
+          "field": "bond"
+        }
+      ],
+      "afterCopy": [
+        {
+          "sourceId": "heavy",
+          "sourceKind": "coach",
+          "field": "weight"
+        },
+        {
+          "sourceId": "nurse",
+          "sourceKind": "nurse",
+          "field": "bond"
+        }
+      ]
+    }
+  },
+  "controlledGhostSavings": 1,
+  "stackingAndSimultaneousArrivalChecks": 8,
+  "helperNonEdge": true
+}

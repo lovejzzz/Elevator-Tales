@@ -7,21 +7,19 @@ export type ShopCard = { key: UpgradeKey; price: number; purchased: boolean };
 export type RunState = {
   floor: number; energy: number; energyCap: number; stress: number; stressCap: number; weightCap: number; coins: number; earned: number; shop: ShopCard[];
   cabin: Array<Rider | null>; swapped: boolean; upgrades: Record<UpgradeKey, number>;
-  restStops: number;
   status: 'playing' | 'upgrade' | 'lost'; message: string; log: string[];
   lastEarnings: { total: number; sources: ChangeLine[] }; lastPressure: { delta: number; sources: ChangeLine[] }; lastEnergy: { delta: number; sources: ChangeLine[] };
 };
 
 export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, solar: 0, calm: 0, concierge: 0, reinforced: 0, express: 0 };
 export const LOVER_CALL_CHANCE = .25;
-export const initialRun = (): RunState => ({ floor: 1, restStops: 3, energy: 20, energyCap: 24, stress: 0, stressCap: 15, weightCap: 10, coins: 0, earned: 0, shop: [], cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 无尽班次开始'], lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] } });
+export const initialRun = (): RunState => ({ floor: 1, energy: 20, energyCap: 24, stress: 0, stressCap: 15, weightCap: 10, coins: 0, earned: 0, shop: [], cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 无尽班次开始'], lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] } });
 export const nextShopFloor = (floor: number) => (Math.floor(floor / 10) + 1) * 10;
 export const difficultyTier = (floor: number) => Math.floor(Math.max(0, floor - 1) / 30);
 export const agitationThreshold = (cap: number) => Math.ceil(cap * 2 / 3);
 export const patienceCost = (state: RunState) => state.stress >= agitationThreshold(state.stressCap) ? 2 : 1;
 export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 4 ? 1 : occupied <= 2 ? -1 : 0;
-export const REST_STOP_CAP = 3;
-export const shiftAgitation = (floor: number, occupied: number, restStops = 0) => occupied > 0 || restStops <= 0 ? difficultyTier(floor) : 0;
+export const shiftAgitation = (floor: number, occupied: number) => occupied > 0 ? difficultyTier(floor) : 0;
 
 export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);
 export const hasNeighbour = (cabin: Array<Rider | null>, slot: number, kinds: PassengerKind[]) => neighbours(slot).some((i) => cabin[i] && kinds.includes(cabin[i]!.kind));
@@ -104,10 +102,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   if (energySavings(state)) adjustEnergy('节能少耗', energySavings(state));
   let cabin = state.cabin.map((rider) => rider ? { ...rider, patience: rider.patience - patienceCost(state) } : null);
   const notes: string[] = []; const stressReasons: string[] = []; const occupied = cabin.filter(Boolean).length; const weight = totalWeight(cabin);
-  const crowd = crowdAgitation(occupied); const fatigue = shiftAgitation(nextFloor, occupied, state.restStops);
-  const resting = occupied === 0 && state.restStops > 0;
-  if (resting) notes.push(`空驶休整 −1 次，剩余 ${state.restStops - 1} 次`);
-  else if (!occupied && fatigue) notes.push('休整用尽：空驶仍承受长班疲劳；送达乘客可恢复休整');
+  const crowd = crowdAgitation(occupied); const fatigue = shiftAgitation(nextFloor, occupied);
   adjustPressure(crowd > 0 ? '轿厢拥挤' : '宽松轿厢', crowd);
   adjustPressure('长班疲劳', fatigue);
   if (weight > state.weightCap) { adjustPressure('变动超载', 2); stressReasons.push('载重超限，躁动 +2'); }
@@ -152,16 +147,13 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
     if (profile.hidden) notes.push(`${spec.name}封存车费揭晓：${profile.fare} 金币`);
     addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare); arrivals += 1; return null;
   });
-  // Arrivals take priority, but an expired fuse cannot be escaped by losing
-  // patience on the same floor. Capture this before impatience removes riders.
-  const bombFailed = cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0);
   let impatient = 0;
   cabin = cabin.map((rider) => { if (rider && rider.patience <= 0) { impatient += 1; adjustPressure('耐心归零', 2); return null; } return rider; });
   if (impatient) stressReasons.push(`${impatient} 位乘客失去耐心，躁动 +${impatient * 2}`);
   if (arrivals) adjustPressure('乘客到站舒缓', -arrivals);
   if (energy > state.energyCap) adjustEnergy('超额回充未储存', state.energyCap - energy);
   energy = Math.min(state.energyCap, energy); stress = Math.max(0, stress);
-  const checkpoint = nextFloor % 10 === 0;
+  const bombFailed = cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0); const checkpoint = nextFloor % 10 === 0;
   let status: RunState['status'] = checkpoint ? 'upgrade' : 'playing';
   let message = arrivals ? `${arrivals} 位乘客抵达。门再次开启。` : '电梯继续向上，新的面孔正在等候。';
   if (impatient) message = `${impatient} 位乘客失去耐心离开，躁动上升。`;
@@ -175,8 +167,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   if (cabin.some(rider => rider?.kind === 'shifter') && status === 'playing') message += ' 百变人已变化，关门前查看新属性。';
   const crisis: UpgradeCrisis = energy <= 0 && stress >= state.stressCap ? 'both' : energy <= 0 ? 'energy' : stress >= state.stressCap ? 'stress' : null;
   const shop = status === 'upgrade' ? upgradeChoices(state.upgrades, rng, crisis).map((key) => ({ key, price: upgradePrice(key, nextFloor, state.upgrades[key]), purchased: false })) : [];
-  const restStops = Math.min(REST_STOP_CAP, Math.max(0, state.restStops - (resting ? 1 : 0)) + arrivals);
-  return { ...state, floor: nextFloor, energy, stress, coins, restStops, earned: state.earned + lastEarnings.total, shop, cabin, swapped: false, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
+  return { ...state, floor: nextFloor, energy, stress, coins, earned: state.earned + lastEarnings.total, shop, cabin, swapped: false, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
 }
 
 export type UpgradeCrisis = 'energy' | 'stress' | 'both' | null;
