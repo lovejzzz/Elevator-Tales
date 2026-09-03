@@ -8,9 +8,27 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.9';
+export const GAME_VERSION = '8.10';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.10',
+    date: '2026-09-03',
+    title: '英文卡面规则完整可读',
+    summary: '线上目视复测发现部分人物的紧凑规则仍混有中文；本次补齐全部21类人物的运行时卡面翻译，并把这些动态句式纳入自动回归。',
+    changes: [
+      '补齐小偷、警察、律师、醉汉、音乐家、护士、儿童、幽灵、驱魔师、教练、名人、检查员、炸弹客、神秘人、百变人与复制人的紧凑规则翻译。',
+      '修复数值会变化的偶数层躁动、25%闹事、检查员阈值、炸弹引信和复制属性句式，避免运行时替换后残留中文。',
+      '教练卡仍只写通用相邻加成规则，不为神秘人组合增加特例文案；隐藏车费结算逻辑保持不变。',
+      '本次未改变任何人物数值、材质分级、出现概率、耗电、躁动、金币或升级效果。',
+    ],
+    experiments: [
+      '新增21类人物在普通与高躁动两种状态下的运行时卡面翻译回归，覆盖静态规则与动态数值句式。',
+      '线上目视复测确认英文候客卡不再中英混排，卡面正文无裁切，主操作按钮保持单行。',
+      '完整规则验证继续覆盖52,920个定向人物配对/站位案例、48,000次随机状态跳转、60个连接案例、8类堆叠与768个交互案例。',
+    ],
+    watch: ['继续观察高规则密度人物在较窄桌面宽度下的阅读节奏。'],
+  },
   {
     version: '8.9',
     date: '2026-09-03',
@@ -196,6 +214,22 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.10', date: '2026-09-03', title: 'Every English rider rule reads cleanly',
+    summary: 'Production visual testing found Chinese fragments in several compact rider rules. All 21 runtime card faces are now fully localized, and those dynamic phrases are covered by regression tests.',
+    changes: [
+      'Completed compact-rule translations for Thief, Officer, Lawyer, Drunk, Musician, Nurse, Child, Ghost, Exorcist, Coach, Celebrity, Inspector, Bomb Carrier, Mystery, Shifter, and Mimic.',
+      'Covered dynamic even-floor agitation, 25% incident, Inspector threshold, bomb fuse, and copied-stat phrases so runtime values cannot leave Chinese fragments behind.',
+      'The Coach card still states only its general adjacency rule. It does not call out Mystery as a special case, and hidden-fare settlement is unchanged.',
+      'No rider value, material tier, appearance weight, power, agitation, coin, or upgrade effect changed.',
+    ],
+    experiments: [
+      'Added runtime-card localization checks for all 21 riders at both normal and high agitation, covering static rules and value-dependent phrases.',
+      'Production visual testing confirmed fully English candidate cards, unclipped card copy, and a single-line primary action.',
+      'Full verification still covers 52,920 targeted rider-pair and position cases, 48,000 random state transitions, 60 connection cases, 8 stacking families, and 768 interaction cases.',
+    ],
+    watch: ['Continue observing reading rhythm for rule-dense riders at narrower desktop widths.'],
+  },
   {
     version: '8.9', date: '2026-09-03', title: 'Rider value becomes a physical material',
     summary: 'Candidate cards no longer look like one uniform print run. Appearance rarity and base reward now determine the material tier, while full rules can never be clipped inside a card.',

@@ -1,6 +1,17 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.9**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.10**.
+
+## v8.10 — 2026-09-03 — Every English rider rule reads cleanly
+
+- Completed compact-rule translations for Thief, Officer, Lawyer, Drunk, Musician, Nurse, Child, Ghost, Exorcist, Coach, Celebrity, Inspector, Bomb Carrier, Mystery, Shifter, and Mimic.
+- Covered dynamic even-floor agitation, 25% incident, Inspector threshold, bomb fuse, and copied-stat phrases so runtime values cannot leave Chinese fragments behind.
+- The Coach card still states only its general adjacency rule. It does not call out Mystery as a special case, and hidden-fare settlement is unchanged.
+- Added runtime-card localization checks for all 21 riders at both normal and high agitation.
+- Production visual testing confirmed fully English candidate cards, unclipped card copy, and a single-line primary action.
+- No rider value, material tier, appearance weight, power, agitation, coin, or upgrade effect changed.
+- Full verification still covers 52,920 targeted pair/position cases, 48,000 random transitions, 60 connection cases, 8 stacking families, and 768 interaction cases.
+- Watch item: continue observing reading rhythm for rule-dense riders at narrower desktop widths.
 
 ## v8.9 — 2026-09-03 — Rider value becomes a physical material
 

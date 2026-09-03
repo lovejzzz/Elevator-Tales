@@ -30,47 +30,70 @@ const exactPairs: Array<[string, string]> = [
   ['每位邻座恋人：每站+1币，到站基价+100%；多位逐个叠加。', 'Each adjacent Lover grants +1 coin per floor and +100% base fare. Multiple Lovers stack.'],
   ['没有恋人邻座：每层有 25% 概率呼唤另一位恋人候客。', 'With no adjacent Lover: 25% chance each floor to call another Lover into the next queue.'],
   ['车内 ≥4人：每层躁动 −1', '4+ riders: −1 agitation/floor'],
+  ['车内≥4人：每站 −1', '4+ riders: −1 agitation/floor'],
   ['车内至少 4 人：每层躁动 −1。', 'With at least 4 riders: −1 agitation each floor.'],
   ['安抚相邻的醉汉和儿童，阻止其负面效果。', 'Calms adjacent Drunks and Children, preventing their negative effects.'],
   ['未控制 +3 金币/层 · 偶数层 +1 躁动', 'Uncontrolled: +3 coins/floor · +1 agitation on even floors'],
+  ['无警察/律师：每站+3；有则+1，到站再+5', 'No Officer/Lawyer: +3 coins/floor; with one: +1 and +5 on arrival'],
+  ['挨警察或律师免除', 'Prevented by an adjacent Officer or Lawyer'],
   ['没有警察或律师邻座：每层 +3 金币，偶数层躁动 +1。', 'Without an adjacent Officer or Lawyer: +3 coins per floor and +1 agitation on even floors.'],
   ['有警察或律师邻座：改为每层 +1 金币，不再加压，到站车费 +5。', 'With an adjacent Officer or Lawyer: +1 coin per floor, no theft agitation, and +5 arrival fare.'],
   ['控制小偷，延缓炸弹', 'Controls Thieves and slows bombs'],
+  ['邻小偷：小偷每站改赚1币', 'Adjacent Thief: earns 1 coin/floor'],
+  ['邻小偷：免偷窃躁动；邻炸弹：偶数层暂停引信', 'Adjacent Thief: prevents theft agitation; adjacent Bomb Carrier: pauses its fuse on even floors'],
+  ['邻小偷：免偷窃躁动；不能暂停炸弹引信', 'Adjacent Thief: prevents theft agitation; cannot pause a bomb fuse'],
   ['控制相邻的小偷，消除其加压效果。', 'Controls adjacent Thieves and removes their agitation effect.'],
   ['与炸弹客相邻：偶数层暂停引信倒计时。', 'Adjacent Bomb Carrier: the fuse does not tick down on even floors.'],
   ['控制小偷，每站耗1电', 'Controls Thieves; consumes 1 power/floor'],
   ['控制相邻的小偷，消除其加压效果。不能暂停炸弹引信。', 'Controls adjacent Thieves and removes their agitation. Cannot pause a bomb fuse.'],
   ['未安抚每层 25% 闹事 · 躁动 +2', 'Uncalmed: 25% chance/floor to cause +2 agitation'],
+  ['挨护士或音乐家：每站+1', 'Adjacent Nurse or Musician: +1 coin/floor'],
+  ['挨护士或音乐家免除', 'Prevented by an adjacent Nurse or Musician'],
+  ['闹事时随机换位', 'Swaps with a random neighbor during an incident'],
   ['没有音乐家或护士邻座：每层 25% 概率闹事，躁动 +2，并随机与邻座换位。', 'Without an adjacent Musician or Nurse: 25% chance each floor to cause +2 agitation and swap with a random neighbor.'],
   ['有音乐家或护士邻座：不再闹事，每层 +1 金币。', 'With an adjacent Musician or Nurse: no incidents and +1 coin per floor.'],
   ['每逢偶数层：躁动 −1', 'Even floors: −1 agitation'],
+  ['偶数层 −1', 'Even floors: −1 agitation'],
+  ['安抚相邻醉汉、儿童', 'Calms adjacent Drunks and Children'],
   ['每逢偶数层，躁动 −1。', 'On every even floor: −1 agitation.'],
   ['无照顾者：偶数层躁动 +1', 'Unattended: +1 agitation on even floors'],
+  ['挨恋人/护士/音乐家免除', 'Prevented by an adjacent Lover, Nurse, or Musician'],
   ['没有恋人、音乐家或护士邻座：偶数层躁动 +1。', 'Without an adjacent Lover, Musician, or Nurse: +1 agitation on even floors.'],
   ['与其中任一角色相邻，即可阻止这项躁动。', 'Adjacency to any of those roles prevents this agitation.'],
   ['不耗电，但会延误邻座', 'Uses no power, but delays neighbors'],
   ['没有驱魔师邻座：抵达 3、6、9… 层时，随机让一名邻座的目的地延后 1 层。', 'Without an adjacent Exorcist: on floors 3, 6, 9… delay one random neighbor by 1 floor.'],
   ['有驱魔师邻座：不再延误邻座；每位受控幽灵每层节能1电，到站车费 +6。', 'With an adjacent Exorcist: no delays; each controlled Ghost saves 1 power per floor and gains +6 arrival fare.'],
   ['每位受控幽灵每站节能1电', 'Each controlled Ghost saves 1 power/floor'],
+  ['邻驱魔师：到站再+6币', 'Adjacent Exorcist: +6 coins on arrival'],
+  ['无驱魔师：3的倍数层随机延误邻座1站；邻驱魔师：不延误且每站节能1', 'No Exorcist: every third floor delays a random neighbor by 1; adjacent Exorcist: no delay and saves 1 power/floor'],
+  ['受控幽灵到站再+6币', 'Controlled Ghost: +6 coins on arrival'],
+  ['邻幽灵：阻止延误，每站节能1', 'Adjacent Ghost: prevents delays and saves 1 power/floor'],
   ['每位相邻幽灵分别受控：阻止延误、每层节能1电，幽灵到站车费 +6。', 'Each adjacent Ghost is controlled: no delay, saves 1 power per floor, and gains +6 arrival fare.'],
   ['每位邻座教练使车费+50%', 'Each adjacent Coach adds +50% base fare'],
+  ['每位相邻教练：基础车费+50%；本人到站每邻座+3币', 'Each adjacent Coach: +50% base fare; on the Coach’s arrival: +3 coins per neighbor'],
   ['非教练邻座到站时：每位相邻教练使基础车费 +50%，线性叠加。', 'When a non-Coach neighbor arrives, each adjacent Coach adds +50% base fare. Bonuses stack linearly.'],
   ['本人到站时，每位仍在身旁的邻座使车费 +3。', 'When the Coach arrives, each remaining neighbor adds +3 coins.'],
   ['恰好 1 邻座 +3 金币/层 · 2+ 邻座会加压', 'Exactly 1 neighbor: +3 coins/floor · 2+ causes agitation'],
+  ['恰好1邻座：每站+3', 'Exactly 1 neighbor: +3 coins/floor'],
   ['恰好 1 位邻座：每层 +3 金币。', 'Exactly 1 neighbor: +3 coins per floor.'],
   ['至少 2 位邻座：偶数层躁动 +1。没有邻座则无额外效果。', 'At least 2 neighbors: +1 agitation on even floors. No neighbor gives no extra effect.'],
   ['偶数层：总耗电≤4则+1币，超过则躁动+1', 'Even floors: total power ≤4 gives +1 coin; otherwise +1 agitation'],
+  ['总耗电≤4：偶数层+1币', 'Total power ≤4: +1 coin on even floors'],
+  ['检查整趟耗电，含本人；扣除稳压和节能', 'Checks full-trip power including self, after Stabilizer and savings'],
   ['总耗电＝电梯运转＋所有人物耗电−节能。包括检查员本人；稳压模块和节能可帮助通过检查。', 'Total power = motor + all rider power − savings. The Inspector is included; Stabilizer and savings help pass inspection.'],
   ['引信归零则本局立即结束', 'Fuse reaches zero: the run ends immediately'],
   ['引信每层减少 1 格；到站前归零，本局立即结束。到站当层归零则安全。', 'The fuse drops by 1 each floor. Reaching zero before arrival ends the run; reaching zero on the arrival floor is safe.'],
   ['有警察邻座：偶数层暂停倒计时。', 'With an adjacent Officer: the fuse pauses on even floors.'],
   ['参数与关系随机 · 到站才揭晓车费', 'Random stats and links · fare revealed on arrival'],
+  ['本次参数已固定；车费到站揭晓', 'Current stats are sealed; fare is revealed on arrival'],
   ['耗电、自身躁动、路程及协作/冲突对象每次出现时随机。', 'Power, personal agitation, trip length, and cooperation/conflict targets are randomized each appearance.'],
   ['车费已封存，到站才揭晓；请离不结算隐藏车费。', 'Fare is sealed until arrival. Dismissing the rider does not reveal or pay it.'],
   ['每到一层换属性 · 高额车费', 'Stats change every floor · high fare'],
+  ['每站重抽三值和关系；基价28–48币', 'Rerolls all three stats and links each floor; base fare 28–48'],
   ['每到一层重新抽取耗电（1–2）、自身躁动（0–1）、车费（28–48）和联动偏好。', 'Every floor rerolls power (1–2), personal agitation (0–1), fare (28–48), and link preferences.'],
   ['目的地不延长。开门后先看新数值，再决定去留。', 'The destination does not move. Check the new stats when the doors open, then decide whether to keep the rider.'],
   ['每位邻座复制一项 · 随邻座改变', 'Copies one stat per neighbor · changes with neighbors'],
+  ['每位邻座复制一项，随邻座变化', 'Copies one stat per neighbor and updates with them'],
   ['每位邻座复制一项：耗电、车费或躁动（含联动偏好），最多三项且不重复。', 'Copies one field from each neighbor: power, fare, or agitation (including link preferences), up to three unique fields.'],
   ['同一邻座组合不会重抽；邻座属性变化会同步。隐藏车费不会提前公开。', 'The same neighbor set does not reroll. Changes to neighbor stats update the copy. Hidden fares remain hidden.'],
   ['不复制技能、引信、路程；复制人互相连接时只取各自本体属性，避免递归。', 'Does not copy abilities, fuse, or trip length. Linked Mimics use base stats to prevent recursion.'],
@@ -271,7 +294,15 @@ export function translateGameText(value: string, locale: GameLocale): string {
   if (direct) return `${leading}${direct}${trailing}`;
   let translated = value
     .replace(/查看已装升级，共 (\d+) 次/gu, 'View installed upgrades: $1')
-    .replace(/每邻(.+?)：偶数层 \+(\d+) 躁动/gu, 'Each adjacent $1: +$2 agitation on even floors');
+    .replace(/每邻(.+?)：偶数层 \+(\d+) 躁动/gu, 'Each adjacent $1: +$2 agitation on even floors')
+    .replace(/2\+邻座：偶数层 \+(\d+)/gu, '2+ neighbors: +$1 agitation on even floors')
+    .replace(/总耗电>(\d+)：偶数层 \+(\d+)/gu, 'Total power >$1: +$2 agitation on even floors')
+    .replace(/每站25%概率 \+(\d+)/gu, '25% chance/floor: +$1 agitation')
+    .replace(/偶数层 \+(\d+)/gu, 'Even floors: +$1 agitation')
+    .replace(/引信 (\d+)：到站前归零即失败；挨警察偶数层不减/gu, 'Fuse $1: reaching zero before arrival ends the run; adjacent Officer pauses it on even floors')
+    .replace(/复制(.+?)的耗电/gu, 'Copies $1 power')
+    .replace(/复制(.+?)的金钱/gu, 'Copies $1 fare')
+    .replace(/复制(.+?)的躁动\/关系/gu, 'Copies $1 agitation/links');
   for (const [source, target] of phrases) translated = translated.replaceAll(source, target);
   return normalizePunctuation(translated);
 }

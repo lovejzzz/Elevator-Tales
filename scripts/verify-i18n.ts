@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import { CHANGELOG_EN } from '../lib/changelog';
-import { PASSENGERS, UPGRADES } from '../lib/game-data';
+import { initialRun, type Rider } from '../lib/game-engine';
+import { PASSENGERS, PASSENGER_ORDER, UPGRADES } from '../lib/game-data';
 import { I18N_CORE_SAMPLES, translateGameText } from '../lib/i18n';
-import { PASSENGER_RULES, SHARED_SAVING_RULE } from '../lib/passenger-presentation';
+import { PASSENGER_RULES, SHARED_SAVING_RULE, passengerFace } from '../lib/passenger-presentation';
 
 const dynamicSamples = [
   '当前楼层 · BEST 27',
@@ -19,9 +20,18 @@ const dynamicSamples = [
   '电量耗尽，轿厢停在了楼层之间。',
   '躁动突破上限，午夜班次失控。',
 ];
+const runtimeFaceSamples=PASSENGER_ORDER.flatMap((kind)=>[0,10].flatMap((agitation)=>{
+  const run=initialRun();
+  run.agitation=agitation;
+  const rider:Rider={kind,id:`i18n-${kind}-${agitation}`,destination:5,boardedAt:1,patience:0,fareBonus:0,fuse:kind==='bomb'?4:undefined};
+  run.cabin=[rider,null,null,null,null,null];
+  const face=passengerFace(rider,run);
+  return [face.moneyNote,...face.pressure,face.special];
+}));
 const corpus = [
   ...I18N_CORE_SAMPLES,
   ...dynamicSamples,
+  ...runtimeFaceSamples,
   ...Object.values(PASSENGERS).flatMap((rider) => [rider.name, rider.short, rider.detail, rider.risk?.label ?? '', rider.risk?.guide ?? '']),
   ...Object.values(UPGRADES).flatMap((upgrade) => [upgrade.name, upgrade.description, upgrade.strategy]),
   ...Object.values(PASSENGER_RULES).flat(),
