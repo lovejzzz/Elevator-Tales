@@ -8,9 +8,30 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.6';
+export const GAME_VERSION = '8.7';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.7',
+    date: '2026-09-03',
+    title: '午夜班次走向双语',
+    summary: '游戏现在默认以完整英文呈现，同时保留一键切换的完整中文界面；玩法与平衡数值不变。',
+    changes: [
+      '默认语言改为英文；顶部新增“中文 / EN”切换按钮，选择中文后网址会保留 ?lang=zh，刷新后仍进入中文界面。',
+      '英文覆盖开场、人物卡、车内状态、协作与冲突、值班手册、乘客档案、升级商店、结算、失败提示和完整更新记录。',
+      '浏览器页面语言默认标记为 en，切换中文时同步改为 zh-CN，辅助技术可识别当前语言。',
+      '本次未改变人物、耗电、躁动、金币、难度段或升级的任何玩法数值。',
+    ],
+    experiments: [
+      '新增本地化覆盖校验，逐项检查人物、升级、规则、动态界面文案及版本记录，不允许默认英文界面残留未授权中文。',
+      '完整规则验证继续覆盖 52,920 个定向人物配对/站位案例、48,000 次随机状态跳转、60 个连接案例、8 类堆叠与 768 个交互案例。',
+      '生产构建与 GitHub Pages 静态构建均通过；默认静态 HTML 的 lang 为 en，并保留中文入口。',
+    ],
+    watch: [
+      '继续观察英文长规则在 375×667 等短手机上的阅读密度；必要时只压缩措辞，不隐藏关键数值。',
+      '新人物与新机制以后必须同时补齐中英文文案，避免两种语言的规则产生分叉。',
+    ],
+  },
   {
     version: '8.6',
     date: '2026-09-03',
@@ -128,5 +149,87 @@ export const CHANGELOG: ChangelogEntry[] = [
     ],
     experiments: ['验证旧存档、异常档案数据和重复人物不会错误解锁档案。'],
     watch: ['档案仍保存在当前设备，更换浏览器不会同步。'],
+  },
+];
+
+export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.7', date: '2026-09-03', title: 'The midnight shift goes bilingual',
+    summary: 'The complete game now opens in English by default, with one-click access to the full Chinese interface. Gameplay and balance values are unchanged.',
+    changes: [
+      'English is now the default. A 中文 / EN switch appears in the header; Chinese mode keeps ?lang=zh in the URL and survives refreshes.',
+      'English covers the intro, rider cards, cabin states, cooperation and conflict, shift manual, archive, upgrade shop, results, failures, and the full release archive.',
+      'The document language defaults to en and changes to zh-CN with the interface, so assistive technology can identify the active language.',
+      'No rider, power, agitation, coin, difficulty-wave, or upgrade values changed in this release.',
+    ],
+    experiments: [
+      'Added localization coverage checks across riders, upgrades, rules, dynamic interface copy, and release notes; the default English interface may not contain unapproved Chinese text.',
+      'Full rules verification still covers 52,920 targeted rider-pair and position cases, 48,000 random state transitions, 60 connection cases, 8 stacking families, and 768 interaction cases.',
+      'Production and GitHub Pages static builds pass. The default static document declares lang=en and retains a direct Chinese entry point.',
+    ],
+    watch: [
+      'Watch the density of long English rules on short 375×667 phones. If needed, shorten wording without hiding decision-critical values.',
+      'Future riders and mechanics must ship with both English and Chinese copy so the two rulesets never drift.',
+    ],
+  },
+  {
+    version: '8.6', date: '2026-09-03', title: 'Turn the difficulty wall into a survival test',
+    summary: 'The pressure wave stays threatening, but players who manage agitation correctly now have a reliable path through it. Mobile controls and tutorial copy are tighter too.',
+    changes: [
+      'Shift agitation on floors 17–19, 27–29, and later pressure waves drops from +5 to +4 per floor. The +1 rhythm on floors ending 4–6 is unchanged.',
+      'Mobile controls remove repeated forecasts, power formulas, and move reminders. Close Doors & Ascend grows from 44 to 74 pixels tall.',
+      'A one-line placement hint appears only when a position is required instead of occupying the screen continuously.',
+      'The tutorial now uses Lovers as an example for reading a green link, not as the only correct strategy.',
+      'Candidate lists gain proper list semantics; invalid accessibility attributes were removed from animated numbers.',
+    ],
+    experiments: [
+      'Fixed the simulator so computer strategies recharge at supply stations and follow the in-game reserve guidance.',
+      'Ran 20,000 games and 370,594 floor resolutions with zero power or agitation forecast errors.',
+      'The balanced strategy reached floor 10 in 99.92% of runs, floor 20 in 44.58%, floor 30 in 19.60%, and peaked at 100. Ignoring agitation reached floor 20 only 2.66% of the time.',
+      'Retested the opening screen, pairing, settlement feedback, and floor-10 shop at 1440×900, 390×844, and 375×667 without page scrolling.',
+    ],
+    watch: ['The balanced median remains floor 19, matching the hard-fought target; keep watching whether the first pressure wave feels too abrupt to human players.', 'Short phones focus on one candidate card at a time to preserve full rules; watch whether horizontal switching feels natural.'],
+  },
+  {
+    version: '8.5', date: '2026-09-03', title: 'Release history enters the game',
+    summary: 'The version number is now an entrance to release history rather than footer decoration.',
+    changes: ['Added a clickable version button in the header and footer.', 'Release notes now record gameplay changes, exact values, test scale, findings, and watch items.', 'A release invariant fails verification when the visible version and repository history disagree.'],
+    experiments: ['Inherited v8.4’s 17,750 build tests and 1,083,654 floor resolutions.', 'Reran 52,920 targeted rider-pair/position cases and 48,000 random transitions with zero forecast error.', 'Production build and release-entry checks passed.'],
+    watch: ['Watch whether players use release notes to understand value changes.', 'Every public release must add its record before the version is raised.'],
+  },
+  {
+    version: '8.4', date: '2026-09-03', title: 'Stacks and builds take shape',
+    summary: 'Duplicate riders and multiple links now form real builds while respecting clear physical limits.',
+    changes: ['Each green link pays its own arrival bonus; cards show current results such as +3×2.', 'Each red conflict link adds agitation. Any green cooperation link protects that rider from neighbor conflicts.', 'Each Mechanic saves 2 power per floor; controlled Ghosts, Eco Circuit, and Mechanics stack.', 'Lovers and Coaches stack linearly; Nurses, Musicians, Inspectors, and other duplicates resolve independently.'],
+    experiments: ['Two rounds totaling 17,750 build comparisons covered Mechanic, Lover, Coach, occult, agitation-control, and mixed strategies.', '1,083,654 floor resolutions produced zero power or agitation forecast errors.', 'All 21 rider types passed double-green, double-red, and green-protection checks, plus 8 special stacking families.'],
+    watch: ['Pure stacking builds did not outperform adaptive mixed play, but humans may concentrate resources better than the heuristic.', 'Savings can cancel passenger power only; they never cancel the motor or charge the battery.'],
+  },
+  {
+    version: '8.3', date: '2026-09-03', title: 'Mechanic becomes a steady saver',
+    summary: 'Removed the “multiple of three” memory burden so the Mechanic provides predictable value every floor.',
+    changes: ['Mechanic changed from periodic activation to savings every floor.', 'Agitation now consistently uses a flame icon instead of a clock-like symbol.', 'The supply shop is denser and keeps Continue Upward within one screen.'],
+    experiments: ['Verified a lone Mechanic with low- and high-power rider groups.', 'Checked that savings never cancel motor power or increase the battery.'],
+    watch: ['This release still used a shared Mechanic cap; v8.4 made savings stack in response to play feedback.'],
+  },
+  {
+    version: '8.2', date: '2026-09-03', title: 'Clearer agitation and shop',
+    summary: 'The unclear patience concept is fully reduced to three core values: coins, power, and agitation.',
+    changes: ['Rider cards state exactly when they raise or lower agitation.', 'Ability values include their matching icons and avoid duplicate labels.', 'Shop cards are compressed while preserving the information needed to buy.'],
+    experiments: ['Rechecked high-agitation multipliers, Inspector power checks, and shop exit conditions.'],
+    watch: ['Keep watching whether long rider abilities wrap on small screens.'],
+  },
+  {
+    version: '8.1', date: '2026-09-03', title: 'On-board stats stay visible',
+    summary: 'Players can see the essential values of riders already aboard without relying on memory or hover.',
+    changes: ['On-board riders retain coins, power, agitation, and floors remaining.', 'Portraits crop instead of stretch; on-board states and connection lines are stronger.'],
+    experiments: ['Verified that names and three core values remain intact across card widths.'],
+    watch: ['Keep card copy concise so state changes do not cause layout jumps.'],
+  },
+  {
+    version: '8.0', date: '2026-09-03', title: 'Passenger cards and archive repaired',
+    summary: 'Rebuilt the candidate-card hierarchy and fixed the archive starting fully unlocked.',
+    changes: ['Moved core stats beside the rider name and increased their type size.', 'Fixed long names and abilities overlapping or being cut off.', 'The archive records only riders actually encountered on this device.'],
+    experiments: ['Verified old saves, malformed archive data, and duplicate riders cannot unlock the archive incorrectly.'],
+    watch: ['Archive discovery remains local to this device and does not sync across browsers.'],
   },
 ];

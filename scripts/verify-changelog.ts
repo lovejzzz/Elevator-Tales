@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { CHANGELOG, GAME_VERSION } from '../lib/changelog';
+import { CHANGELOG, CHANGELOG_EN, GAME_VERSION } from '../lib/changelog';
 
 const component=readFileSync(new URL('../components/elevator-game.tsx',import.meta.url),'utf8');
 const markdown=readFileSync(new URL('../CHANGELOG.md',import.meta.url),'utf8');
 assert.equal(CHANGELOG[0]?.version,GAME_VERSION,'newest changelog entry must match the game version');
+assert.equal(CHANGELOG_EN[0]?.version,GAME_VERSION,'newest English changelog entry must match the game version');
+assert.deepEqual(CHANGELOG_EN.map(entry=>entry.version),CHANGELOG.map(entry=>entry.version),'Chinese and English changelogs must cover the same versions');
 assert.match(markdown,new RegExp(`## v${GAME_VERSION.replaceAll('.','\\.')}\\b`),'repository changelog must contain the current version');
 assert.ok(component.includes('GAME_VERSION')&&component.includes('CHANGELOG'),'the game must render the shared version and changelog data');
 for(const entry of CHANGELOG){

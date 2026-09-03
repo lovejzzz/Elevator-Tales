@@ -2,47 +2,41 @@
 
 ![Elevator Tales](public/assets/elevator-cabin.png)
 
-一款发生在午夜电梯里的无尽乘客编排游戏。把乘客放入六个位置，利用人物之间的协作与冲突，在电量耗尽或躁动失控前尽可能抵达更高楼层。
+An endless passenger-placement game set inside a midnight elevator. Arrange riders across six positions, exploit cooperation, avoid conflict, and climb as high as possible before the battery dies or cabin agitation spirals out of control.
 
-[在线游玩](https://lovejzzz.github.io/Elevator-Tales/) · [稳定公开版](https://elevator-tales-midnight.skylab.chatgpt.site/) · [更新日志](CHANGELOG.md)
+[Play on GitHub Pages](https://lovejzzz.github.io/Elevator-Tales/) · [Stable public build](https://elevator-tales-midnight.skylab.chatgpt.site/) · [Release notes](CHANGELOG.md)
 
-## 核心玩法
+## Play
 
-- 每层会出现三名候选乘客，玩家决定谁上车，以及站在哪里。
-- 每位乘客有三项核心数值：到站金币、每层耗电、每层躁动。
-- 相邻人物可能产生协作或冲突；同类效果可以堆叠。
-- 玩家可以提前赶客，但会失去其到站收益并支付赔偿。
-- 每十层进入一次商店，用本班赚到的金币充电或购买升级。
-- 游戏没有终点。楼层越高，资源越紧，躁动压力越强。
+- Each floor presents three candidate riders. Choose who boards and where they stand.
+- Every rider has three core values: arrival fare, power consumed per floor, and agitation.
+- Adjacent riders can cooperate or conflict, and compatible effects can stack.
+- You may dismiss a rider early, but you lose their arrival reward and pay compensation.
+- Every tenth floor opens a supply shop where shift earnings buy power and upgrades.
+- There is no final floor. Resources tighten and pressure rises as the elevator climbs.
 
-## 操作
+Click a candidate and then an open position, or drag riders directly on desktop. Riders already inside may also be repositioned. Once the formation is ready, press **Close Doors & Ascend**.
 
-- 点击候选乘客，再点击空位让其上车。
-- 桌面端可直接拖拽乘客到位置；车内乘客也可换位。
-- 手机端使用上方乘客卡与下方电梯，不需要滚动页面。
-- 点击已上车乘客可以查看或执行赶客。
-- 安排完成后点击“关门上行”。
+The game opens in English. Use **中文** in the header—or add `?lang=zh` to the URL—to switch to the complete Chinese interface.
 
-建议第一次从带教学的地址开始：
+[Start with the guided shift](https://lovejzzz.github.io/Elevator-Tales/?tutorial=1)
 
-<https://lovejzzz.github.io/Elevator-Tales/?tutorial=1>
+## Design goal
 
-## 设计目标
+Elevator Tales aims for a hard-fought survival rhythm: the next milestone should feel barely reachable, but good decisions should matter. Chasing coins while ignoring agitation, hoarding without investing, or relying on one dominant formation are not intended to be stable solutions. The interesting decisions come from rider combinations, position relationships, immediate risk, and preparation for the next supply floor.
 
-游戏追求的是“勉强能过、举步维艰”的生存感。单纯追逐金币、忽略躁动或囤积资源都不是稳定解；真正的决策来自乘客组合、位置关系、短期风险与下一次补给之间的取舍。
+Balance checks cover rule invariants, rider links, stacking, forecast accuracy, audio feedback, interaction regressions, and large batches of automated runs. Every public release records its exact value changes, verification scale, findings, and remaining watch items.
 
-当前平衡检查会覆盖规则不变量、人物联动、堆叠、预测一致性、音效反馈与大量自动对局。每次公开更新都必须同步记录实验规模、具体数值变化、结论和仍需观察的问题。
+## Local development
 
-## 本地运行
-
-需要 Node.js 22.13 或更高版本。
+Requires Node.js 22.13 or newer.
 
 ```bash
 npm ci
 npm run dev
 ```
 
-常用检查：
+Useful checks:
 
 ```bash
 npm run verify
@@ -50,21 +44,22 @@ npm run simulate -- 5000
 npm run build
 ```
 
-## 发布
+## Deployment
 
-推送到 `main` 后，GitHub Actions 会先运行完整规则检查，再生成静态版本并部署到 GitHub Pages。
+Pushing to `main` runs the complete verification suite, creates a static export, and deploys it to GitHub Pages.
 
-GitHub Pages 使用仓库子路径 `/Elevator-Tales/`；普通构建仍保持原有服务器发布方式，两种发布不会互相影响。
+GitHub Pages uses the `/Elevator-Tales/` repository base path. The regular production build keeps the server-hosted release path intact, so the two publishing targets do not interfere with each other.
 
-## 项目结构
+## Project map
 
-- `components/elevator-game.tsx`：主要游戏界面与交互
-- `lib/game-engine.ts`：回合推进、结算和失败条件
-- `lib/game-data.ts`：乘客与升级数据
-- `lib/game-interaction.ts`：人物协作、冲突与堆叠
-- `scripts/`：规则验证、平衡模拟和回归测试
-- `CHANGELOG.md`：每个公开版本的实验与改进记录
+- `components/elevator-game.tsx` — primary interface and interactions
+- `lib/game-engine.ts` — floor resolution, rewards, and failure conditions
+- `lib/game-data.ts` — rider and upgrade data
+- `lib/game-interaction.ts` — cooperation, conflict, and stacking
+- `lib/i18n.tsx` — English localization and runtime language switching
+- `scripts/` — rule verification, balance simulation, and regression checks
+- `CHANGELOG.md` — experiment and improvement history for every public release
 
-## 状态
+## Status
 
-当前版本仍处于持续平衡与体验打磨阶段。欢迎在 Issues 中记录到达楼层、失败原因、难以理解的角色描述或显示问题；这些信息会直接用于下一轮测试。
+The game remains in active balance and experience refinement. Issue reports are especially useful when they include the floor reached, failure cause, unclear rider text, device size, or a screenshot of a display problem.

@@ -28,5 +28,5 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     '--elevator-cabin-image': `url("${elevatorImage}")`,
   } as CSSProperties;
 
-  return <html lang="zh-CN" className="dark" style={imageStyle}><body className={`${sans.variable} ${mono.variable} ${display.variable}`}>{children}</body></html>;
+  return <html lang="en" className="dark" style={imageStyle}><body className={`${sans.variable} ${mono.variable} ${display.variable}`}>{children}</body></html>;
 }

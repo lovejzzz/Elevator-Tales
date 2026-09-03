@@ -1,6 +1,18 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.6**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.7**.
+
+## v8.7 — 2026-09-03 — The midnight shift goes bilingual
+
+- English is now the default. A `中文 / EN` switch appears in the header; Chinese mode keeps `?lang=zh` in the URL and survives refreshes.
+- English covers the intro, rider cards, cabin states, cooperation and conflict, shift manual, archive, upgrade shop, results, failures, and the complete release archive.
+- The document language defaults to `en` and changes to `zh-CN` with the interface.
+- No rider, power, agitation, coin, difficulty-wave, or upgrade values changed in this release.
+- Added localization coverage checks across rider, upgrade, rule, dynamic interface, and release-note copy.
+- Full rules verification still covers 52,920 targeted rider-pair and position cases, 48,000 random state transitions, 60 connection cases, 8 stacking families, and 768 interaction cases.
+- Production and GitHub Pages static builds must both pass. The default static document declares `lang=en` and retains a direct Chinese entry point.
+- Watch item: review long English rules on short 375×667 phones, shortening wording only when no decision-critical value is lost.
+- Watch item: future riders and mechanics must ship with both languages so the two rulesets never drift.
 
 ## v8.6 — 2026-09-03 — High pressure without a forced death wall
 
