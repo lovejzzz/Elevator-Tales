@@ -79,7 +79,7 @@ button:focus-visible { outline:1px solid var(--brass-pale); outline-offset:3px; 
 .elevator-stage::before { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; opacity:0; background:linear-gradient(180deg,rgba(232,180,92,.2),transparent 38%),radial-gradient(circle at 50% 8%,rgba(247,202,120,.22),transparent 29%); transition:opacity .9s ease; }
 .phase-dawn .elevator-stage::before { opacity:1; }.phase-dawn .elevator-image { filter:saturate(.8) brightness(.79) contrast(1.08); }.phase-dawn .floor-indicator { border-color:rgba(242,196,110,.72); box-shadow:inset 0 0 20px #000,0 0 24px rgba(226,169,69,.16); }
 .elevator-stage::after { content:''; position:absolute; inset:9px; border:1px solid rgba(229,189,116,.18); pointer-events:none; z-index:20; }
-.elevator-image { position:absolute; inset:0; background:linear-gradient(to bottom,transparent 48%,rgba(2,6,5,.45)),url('/assets/elevator-cabin.png') center/cover no-repeat; filter:saturate(.76) brightness(.72) contrast(1.1); transition:filter .35s ease; }
+.elevator-image { position:absolute; inset:0; background:linear-gradient(to bottom,transparent 48%,rgba(2,6,5,.45)),var(--elevator-cabin-image) center/cover no-repeat; filter:saturate(.76) brightness(.72) contrast(1.1); transition:filter .35s ease; }
 .motion-lines { position:absolute; inset:0; z-index:2; pointer-events:none; opacity:0; background:repeating-linear-gradient(0deg,transparent 0 8px,rgba(236,196,113,.08) 9px 10px); }
 .doors-moving .motion-lines { opacity:1; animation:rise .22s linear infinite; }.doors-moving .elevator-image { filter:saturate(.65) brightness(.58) blur(1px); }
 @keyframes rise { to { transform:translateY(-20px); } }
@@ -182,7 +182,7 @@ button:focus-visible { outline:1px solid var(--brass-pale); outline-offset:3px; 
 .dialog-kicker { margin:0; color:#ca9859; font:600 10px var(--font-mono); letter-spacing:.17em; }
 .story-dialog [data-slot='dialog-title'] { color:#f4e7cd; font:600 39px/.98 var(--font-display); letter-spacing:-.01em; }
 .story-dialog [data-slot='dialog-description'] { color:#b1bab4; font-size:14px; line-height:1.65; max-width:540px; }
-.intro-dialog { max-width:620px!important; background:linear-gradient(90deg,rgba(8,16,14,.95),rgba(9,18,15,.9)),url('/assets/elevator-cabin.png') center/cover!important; }
+.intro-dialog { max-width:620px!important; background:linear-gradient(90deg,rgba(8,16,14,.95),rgba(9,18,15,.9)),var(--elevator-cabin-image) center/cover!important; }
 .intro-rules { display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--border); }.intro-rules span { padding:15px 11px; color:#d4d0c3; font-size:12px; text-align:center; border-right:1px solid var(--border); }.intro-rules span:last-child { border:0; }.intro-rules b { display:block; color:#b8874e; font:600 10px var(--font-mono); margin-bottom:5px; }
 .story-primary { width:100%; height:52px!important; border-radius:0!important; background:linear-gradient(135deg,#d6ae65,#91632d)!important; color:#08100e!important; font-weight:700!important; letter-spacing:.06em; }.story-primary svg { width:15px; }
 .story-link { position:relative; z-index:2; margin:0 auto; border:0; background:transparent; color:#a9b3ac; font-size:12px; text-decoration:underline; text-underline-offset:4px; cursor:pointer; display:flex; align-items:center; gap:6px; }.story-link svg { width:14px; }
