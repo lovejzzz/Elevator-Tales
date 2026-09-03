@@ -34,14 +34,14 @@ export const shiftAgitation = (floor: number, occupied: number, restStops = 0) =
   if (occupied === 0 && restStops > 0 || floor <= 10) return 0;
   const position = floor % 10;
   const base = Math.floor((floor - 11) / 40);
-  const wave = position >= 7 ? 5 : position >= 4 ? 1 : 0;
+  const wave = position >= 7 ? 4 : position >= 4 ? 1 : 0;
   return base + wave;
 };
 export function shiftOutlook(floor: number, occupied = 1, restStops = 0) {
   const next = floor + 1;
   if (next % 10 === 0) return '下一站到补给站';
   const fatigue = shiftAgitation(next, occupied, restStops);
-  return fatigue >= 5 ? `下一站疲劳：躁动 +${fatigue}` : '';
+  return fatigue >= 4 ? `下一站疲劳：躁动 +${fatigue}` : '';
 }
 
 export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);

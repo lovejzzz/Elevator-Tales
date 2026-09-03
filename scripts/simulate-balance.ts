@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { PASSENGERS, type UpgradeKey } from '../lib/game-data';
-import { agitationThreshold, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, patienceCost, resolveFloor, totalWeight, type Rider, type RunState } from '../lib/game-engine';
+import { agitationThreshold, chargeBattery, chargingPlan, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, resolveFloor, totalWeight, type Rider, type RunState } from '../lib/game-engine';
 import { energyForecast, stressForecast } from '../lib/game-forecast';
 
 type Policy = 'balanced' | 'ignore-agitation' | 'hoard' | 'greedy';
@@ -33,7 +33,6 @@ function cabinValue(state: RunState, policy: Policy) {
     }
     if (rider.kind === 'mechanic') recovery += 2;
     if (rider.kind === 'inspector' && totalWeight(state.cabin) <= 8) recovery += .5;
-    if (rider.patience < trip * patienceCost(state)) risk += ignoresAgitation(policy) ? 0 : 3;
     income += fare / trip; recovery += spec.energy / trip;
   });
   const stress = stressForecast(state); const energy = energyForecast(state);
@@ -88,6 +87,12 @@ const results = policies.map((policy) => {
         visitedShops += 1; let bought = 0;
         if (state.shop.reduce((sum, card) => sum + card.price, 0) > state.coins) budgetChoices += 1;
         if (state.shop.every((card) => card.price > state.coins)) brokeShops += 1;
+        // A real player is explicitly told to reserve charging money before buying cards.
+        // Model that core shop decision; the previous harness skipped charging entirely
+        // and therefore measured a deliberately impossible strategy.
+        const plan = chargingPlan(state);
+        const rechargeUnits = Math.min(plan.units, state.coins);
+        if (rechargeUnits > 0) state = chargeBattery(state, rechargeUnits);
         for (;;) {
           const candidates = state.shop.filter((card) => !card.purchased && card.price <= state.coins)
             .map((card) => ({ ...card, value: shopValue(state, card.key, policy) / card.price })).sort((a, b) => b.value - a.value);
@@ -105,7 +110,7 @@ const results = policies.map((policy) => {
       }
       state = board(state, offers, policy);
       const pressure = stressForecast(state); const energy = energyForecast(state);
-      if (patienceCost(state) === 2) highAgitationStations += 1;
+      if (state.stress >= agitationThreshold(state.stressCap)) highAgitationStations += 1;
       stations += 1;
       const next = resolveFloor(state, rng);
       if (next.lastPressure.delta < pressure.lowDelta || next.lastPressure.delta > pressure.highDelta || next.lastEnergy.delta < energy.lowDelta || next.lastEnergy.delta > energy.highDelta) forecastMisses += 1;
@@ -124,7 +129,7 @@ const results = policies.map((policy) => {
   const round = (n: number) => Math.round(n * 100) / 100;
   return { policy, runs, horizon, averageFloor: round(floors.reduce((a, b) => a + b, 0) / runs),
     p10: floors[Math.floor(runs * .1)], median: floors[Math.floor(runs * .5)], p90: floors[Math.floor(runs * .9)], maximum: floors.at(-1),
-    reach10: round(floors.filter((f) => f >= 10).length / runs * 100), reach30: round(floors.filter((f) => f >= 30).length / runs * 100), reach60: round(floors.filter((f) => f >= 60).length / runs * 100),
+    reach10: round(floors.filter((f) => f >= 10).length / runs * 100), reach20: round(floors.filter((f) => f >= 20).length / runs * 100), reach30: round(floors.filter((f) => f >= 30).length / runs * 100), reach40: round(floors.filter((f) => f >= 40).length / runs * 100), reach60: round(floors.filter((f) => f >= 60).length / runs * 100),
     highAgitationRate: round(highAgitationStations / stations * 100), averagePurchases: round(purchases / runs), averageEarned: round(totalEarned / runs), averageSpent: round(totalSpent / runs),
     shops: { visited: visitedShops, skipped: skippedShops, unaffordable: brokeShops, cannotBuyAll: budgetChoices }, upgradeMix, deaths, forecastMisses, stations };
 });

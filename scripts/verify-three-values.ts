@@ -110,6 +110,6 @@ for(let i=0;i<500;i++){
  assert.ok(offers.every(r=>r.patience===0&&r.fareBonus===6));
  for(const r of offers)assert.ok(BONDS[r.kind].likes.length&&BONDS[r.kind].avoids.length);
 }
-assert.deepEqual(Array.from({length:10},(_,i)=>shiftAgitation(i+11,4)),[0,0,0,1,1,1,5,5,5,0]);
+assert.deepEqual(Array.from({length:10},(_,i)=>shiftAgitation(i+11,4)),[0,0,0,1,1,1,4,4,4,0]);
 const ui=readFileSync(new URL('../components/elevator-game.tsx',import.meta.url),'utf8');assert.ok(ui.includes('本班失败'));assert.ok(ui.includes('failure-cause'));assert.ok(!ui.includes('data-metric="weight"'));assert.ok(!ui.includes('耐心 {'));
 console.log(JSON.stringify({version:'v6.8',pairCases:pairs,randomTransitions:transitions,mysteries,shifters,mimics,noRetiredMechanics:true,forecastErrors:0}));

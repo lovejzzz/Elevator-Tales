@@ -831,8 +831,9 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .reseat-allowance b { color:#ebcb86; }
 .energy-equation { grid-column:1/-1; margin:0; text-align:center; color:#c9dfcf; font:500 13px/19px var(--font-sans); }
 .energy-equation b { color:#f0d49a; white-space:nowrap; }
-.game-shell .game-grid { grid-template-rows:max-content minmax(0,1fr) 105px; }
-.game-shell .departure-controls { grid-template-rows:44px 17px 19px 17px; }
+.game-shell .game-grid { grid-template-rows:max-content minmax(0,1fr) 74px; }
+.game-shell .departure-controls { grid-template-rows:minmax(0,1fr); }
+.game-shell .departure-controls .depart-button { height:100%; min-height:0; }
 .recharge-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
 .recharge-actions button { min-width:0; min-height:40px; white-space:normal; }
 .metric-response,.metric-response * { pointer-events:none!important; }
@@ -853,7 +854,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell { padding:6px 8px; gap:5px; }
  .game-shell .brand-bar { height:34px; flex-basis:34px; margin:0; padding:0; }
  .brand-bar h1 { font-size:24px; }.brand-actions .icon-button { width:34px; height:34px; }
- .game-shell .game-grid { grid-template-columns:minmax(0,1fr) 82px; grid-template-rows:max-content minmax(0,1fr) 105px; gap:5px; }
+ .game-shell .game-grid { grid-template-columns:minmax(0,1fr) 82px; grid-template-rows:max-content minmax(0,1fr) 74px; gap:5px; }
  .game-shell .status-rail { grid-column:2; grid-row:2; gap:4px; }
  .game-shell .status-rail .meter-card,.game-shell .status-rail .score-card { padding:3px 5px; gap:3px; }
  .game-shell .status-rail .pressure { min-height:82px; }
@@ -878,6 +879,8 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .floor-indicator { top:5px; height:29px; min-width:70px; }.floor-indicator b { font-size:22px; }
  .game-shell .cabin-title { display:none; }
  .game-shell .departure-controls { grid-column:1/-1; grid-row:3; grid-template-columns:54px 1fr; }
+ .game-shell .departure-controls:has(.mobile-departure-note) { grid-template-rows:minmax(0,1fr) 18px; }
+ .game-shell .departure-controls:has(.mobile-departure-note) .depart-button { height:52px; min-height:52px; }
  .game-shell .mobile-departure-note,.reseat-allowance { font-size:11px; white-space:normal; }
  .reseat-allowance { letter-spacing:-.2px; }
 }
@@ -900,7 +903,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .brand-bar { height:30px; margin:0; padding:0; align-items:center; }
  .brand-bar h1 { font-size:23px; }.brand-bar .eyebrow,.footer-line { display:none; }
  .brand-actions .icon-button { width:30px; height:28px; }.brand-actions .text-button { display:none; }
- .game-shell .game-grid { grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 78px; grid-template-rows:minmax(0,1fr) 105px; gap:5px; }
+ .game-shell .game-grid { grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 78px; grid-template-rows:minmax(0,1fr) 74px; gap:5px; }
  .candidate-panel { grid-column:1; grid-row:1/3; }
  .game-shell .passenger-list { gap:4px; }
  .game-shell .passenger-card { padding:5px; }

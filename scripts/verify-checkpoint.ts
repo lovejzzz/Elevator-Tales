@@ -29,7 +29,7 @@ const face=passengerFace(rider('inspector','i'),initialRun());assert.match(face.
 assert.ok(PASSENGER_RULES.inspector.some(s=>s.includes('不超过4')));
 assert.equal(shiftOutlook(1),'');assert.equal(shiftOutlook(8),'');
 assert.equal(shiftOutlook(9),'下一站到补给站');
-assert.equal(shiftOutlook(16,2,0),'下一站疲劳：躁动 +5');
+assert.equal(shiftOutlook(16,2,0),'下一站疲劳：躁动 +4');
 assert.equal(shiftOutlook(16,0,1),'','resting cabins must not display a fatigue warning');
-assert.equal(shiftOutlook(56,2,0),'下一站疲劳：躁动 +6');
+assert.equal(shiftOutlook(56,2,0),'下一站疲劳：躁动 +5');
 console.log(JSON.stringify({version:'v6.8',inspectionInteractions:cases,generatedChildren:children,childRange:[2,5],fare:7}));

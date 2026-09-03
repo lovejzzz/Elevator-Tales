@@ -35,7 +35,7 @@ function AnimatedNumber({ value }: { value: number }) {
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
   }, [value]);
-  return <span className="animated-number" aria-label={String(value)}>{shown}</span>;
+  return <span className="animated-number">{shown}</span>;
 }
 
 // Explicit line breaks keep each rule readable even if a legacy span style
@@ -335,16 +335,16 @@ export default function ElevatorGame() {
         <div className={`cabin-message ${hoveredPlan && !hoveredPlan.ok ? 'message-error' : ''}`} aria-live="polite"><Sparkles /><span>{hoveredPlan ? hoveredPlan.ok ? hoveredPlan.next.message : hoveredPlan.label : run.message}</span></div><div className="swap-status">{pendingOfferId ? '选择发光站位 · ESC 取消' : selectedSlot !== null ? '再选一个站位完成调整 · ESC 取消' : run.swapped ? <><LockKeyhole /> 旧乘客换位已用 · 新上客仍可调整</> : '拖拽人物安排站位 · 有效组合会亮起'}</div>
       </section>
       <aside className="arrival-panel">
-        <div className={`arrival-heading ${loverResponse || firstPairLesson ? 'lover-response' : ''}`}><div><span>{loverResponse ? 'LOVER SIGNAL · RESPONSE' : firstPairLesson ? 'FIRST PAIR · GUIDED SHIFT' : doors === 'open' ? 'DOORS OPEN' : 'IN TRANSIT'}</span><h2>{loverResponse ? '有人回应了呼唤' : firstPairLesson ? firstPairActive ? '配对完成，可以上行' : '先让恋人成为邻座' : '谁要上楼？'}</h2></div><div className="arrival-count">{offers.length} 位</div></div>
+        <div className={`arrival-heading ${loverResponse || firstPairLesson ? 'lover-response' : ''}`}><div><span>{loverResponse ? 'LOVER SIGNAL · RESPONSE' : firstPairLesson ? 'FIRST LINK · GUIDED SHIFT' : doors === 'open' ? 'DOORS OPEN' : 'IN TRANSIT'}</span><h2>{loverResponse ? '有人回应了呼唤' : firstPairLesson ? firstPairActive ? '绿色协作已生效' : '试着连出一条绿线' : '谁要上楼？'}</h2></div><div className="arrival-count">{offers.length} 位</div></div>
         <p className="arrival-explainer">送达后领取基础奖励 · 途中收益与人物联动另算</p>
-        <div className="candidate-panel"><nav className="compact-candidate-tabs" aria-label="切换候客卡片">{offers.map((rider,index)=><button key={rider.id} onClick={()=>document.querySelectorAll('.passenger-item')[index]?.scrollIntoView({block:'nearest',inline:'start',behavior:'smooth'})}>{PASSENGERS[rider.kind].name}<span>查看第 {index+1} 位</span></button>)}</nav><div className="passenger-list" key={run.floor} aria-label="本层候客乘客">
+        <div className="candidate-panel"><nav className="compact-candidate-tabs" aria-label="切换候客卡片">{offers.map((rider,index)=><button key={rider.id} onClick={()=>document.querySelectorAll('.passenger-item')[index]?.scrollIntoView({block:'nearest',inline:'start',behavior:'smooth'})}>{PASSENGERS[rider.kind].name}<span>查看第 {index+1} 位</span></button>)}</nav><div className="passenger-list" key={run.floor} role="list" aria-label="本层候客乘客">
           {offers.map((offer) => {
             const spec = PASSENGERS[offer.kind];
             const boarded = run.cabin.some((rider) => rider?.id === offer.id); const pending = pendingOfferId === offer.id;
             const full = !boarded && cabinFull;
             const unavailable = full; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id;
             const partner = unavailable ? null : readyPartner(offer.kind, run.cabin, offer.id, offer);
-            return <div className="passenger-item" key={offer.id}><button className={`passenger-card tone-${spec.tone} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
+            return <div className="passenger-item" role="listitem" key={offer.id}><button className={`passenger-card tone-${spec.tone} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
               {boarded && <span className="boarded-status" aria-hidden="true"><Check />已上车</span>}
               <PassengerCardFace rider={offer} run={run} action={boarded?'点此撤回':pending?'已选中 · 点空位':full?'车厢已满':partner?`上车可联动 · ${PASSENGERS[partner].name}`:'拖入空位 / 点选上车'}/>
             </button><button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(offer);}} aria-label={`查看${spec.name}规则`}><HelpCircle /></button></div>;
@@ -353,10 +353,8 @@ export default function ElevatorGame() {
         <div className="departure-controls">
           <button className="mobile-inspect-button" disabled={!activeRider || locked} onClick={() => {if(activeRider){setEjectArmed(false);setPassengerDetails(activeRider);}}} aria-label="查看选中人物规则"><BookOpen /><span>人物/请离</span></button>
           <button className="depart-button" onClick={depart} disabled={locked}><span>{doors === 'open' ? '关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
-          <p className={`mobile-departure-note forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? `已选${activeRider ? PASSENGERS[activeRider.kind].name : '乘客'} · 点下方空位` : selectedSlot !== null ? '点另一站位换位 · 再点原位取消' : firstPairLesson && !firstPairActive ? '先选上方恋人，再点相邻的两个空位' : `下一站：电量 ${energyPreview.range} · 躁动 ${pressurePreview.range}`}</p>
-          <p className={`panel-hint forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : firstPairLesson && !firstPairActive ? '第一班 · 把两位恋人放进连线相连的站位' : departureForecast}</p>
-          <p className="energy-equation" aria-live="polite">运转 {power.motor} ＋ 人物 {power.people} − 节能 {power.saved} ＝ <b>{power.total} 电/站</b></p>
-          <p className="reseat-allowance" aria-live="polite">旧乘客换位 <b>{run.swapped?0:1}/1 次</b> · 新上客之间可自由调整</p>
+          {(pendingOfferId || selectedSlot !== null || firstPairLesson && !firstPairActive) && <p className={`mobile-departure-note forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? `已选${activeRider ? PASSENGERS[activeRider.kind].name : '乘客'} · 点下方空位` : selectedSlot !== null ? '点另一站位换位 · 再点原位取消' : '新手示例：让两位恋人成为邻座，观察绿色协作线'}</p>}
+          <p className={`panel-hint forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : firstPairLesson && !firstPairActive ? '新手示例 · 让两位恋人成为邻座，观察绿色协作线' : departureForecast}</p>
         </div>
       </aside>
     </section>
@@ -398,11 +396,11 @@ export default function ElevatorGame() {
       <div><b>人物直接影响躁动</b><p>卡片写明何时加减躁动。达到上限三分之二时，人物技能与邻座冲突造成的正向躁动翻倍；安抚、拥挤和班次压力不翻倍。按关门前的躁动判断，卡片显示已换算数值。</p></div>
       <div><b>十层补给</b><p>充电每点{CHARGE_PRICE}金币，先留路费再买卡；右上角叠层图标可查看已装升级。</p></div><div><b>协作、冲突与堆叠</b><p>绿线表示协作：本人到站时，每条仍连接的绿线额外 +{cooperationBonus(run)} 金币，多条逐条叠加。没有绿线保护时，每条红色冲突线会在偶数层增加1躁动。有任意绿线时免除该人物全部邻座冲突；人物技能另算。</p></div><div><b>到层请离</b><p>选中车内人物，打开人物详情后请离。赔偿4+剩余站数×2金币，不结算到站奖励。本层刚上车仍可免费撤回。</p></div>
       <div><b>空驶休整</b><p>开局3次；每送达1人恢复1次，最多3次。空车上行自动消耗1次，免除本层长班疲劳。用尽后仍能空驶，但不再免疲劳。接客、撤回、请离与购物都不恢复次数。</p></div>
-      <div><b>先准备，再闯高压段</b><p>初始{INITIAL_ENERGY}电、容量{ENERGY_CAPACITY}。大多数人物每站耗1电，游客、教练耗2电，幽灵不耗电；神秘人、百变人按当前属性耗1–2电。节能只抵消人物耗电，空驶仍耗1电。首10层不加班次压力；之后尾数1–3的楼层用于准备，4–6每站额外 +1 躁动，7–9高压三层每站额外 +5。整十层补给时撤去这部分压力，但不会自动清零躁动。51层起基础压力 +1，此后每40层再 +1。时段固定，不会因为你变强而临时加难。</p></div>
+      <div><b>先准备，再闯高压段</b><p>初始{INITIAL_ENERGY}电、容量{ENERGY_CAPACITY}。大多数人物每站耗1电，游客、教练耗2电，幽灵不耗电；神秘人、百变人按当前属性耗1–2电。节能只抵消人物耗电，空驶仍耗1电。首10层不加班次压力；之后尾数1–3的楼层用于准备，4–6每站额外 +1 躁动，7–9高压三层每站额外 +4。整十层补给时撤去这部分压力，但不会自动清零躁动。51层起基础压力 +1，此后每40层再 +1。时段固定，不会因为你变强而临时加难。</p></div>
       <div><b>默契契约 · 协作送达</b><p>购买后，每位带着至少一条绿线到站的乘客都会使躁动 −{COOPERATION_RELIEF}。同层送达多人可分别触发；契约等级只提高每条绿线的金币，不提高单次舒缓。请离不算送达，购买时也不立即舒缓。</p></div>
     </div></DialogContent></Dialog>
     <Dialog open={pressureHelp} onOpenChange={setPressureHelp}><DialogContent className="story-dialog pressure-dialog"><p className="dialog-kicker">CABIN AGITATION</p><DialogHeader><DialogTitle>人多、等得久，就会躁动。</DialogTitle><DialogDescription>躁动达到 {agitationThreshold(run.stressCap)}：人物造成的正向躁动翻倍；达到 {run.stressCap}：本班失控。音乐家、护士和快速送达能缓解。</DialogDescription></DialogHeader><div className="pressure-rule-grid">
-      <section className="pressure-rise"><small>会增加躁动</small><b>轿厢拥挤</b><p>5人每站 +1；满6人每站 +2。</p><b>班次压力 · 提前准备</b><p>首10层不增加。之后每段尾数1–3与整十层只算基础压力，4–6再 +1，7–9再 +5。51层起基础 +1，此后每40层再 +1。空车且有休整次数时免除本层班次压力。下一站实际 +{shiftAgitation(run.floor + 1, occupied, run.restStops)}。</p><b>人物事件</b><p>未受控小偷、无人照顾的儿童、醉汉、被围住的名人和耗电检查，会按卡片规则增加躁动。</p><b>高躁动放大人物风险</b><p>技能和邻座冲突的正向增量 ×2；安抚不变。卡片已显示当前倍率后的数值。</p></section>
+      <section className="pressure-rise"><small>会增加躁动</small><b>轿厢拥挤</b><p>5人每站 +1；满6人每站 +2。</p><b>班次压力 · 提前准备</b><p>首10层不增加。之后每段尾数1–3与整十层只算基础压力，4–6再 +1，7–9再 +4。51层起基础 +1，此后每40层再 +1。空车且有休整次数时免除本层班次压力。下一站实际 +{shiftAgitation(run.floor + 1, occupied, run.restStops)}。</p><b>人物事件</b><p>未受控小偷、无人照顾的儿童、醉汉、被围住的名人和耗电检查，会按卡片规则增加躁动。</p><b>高躁动放大人物风险</b><p>技能和邻座冲突的正向增量 ×2；安抚不变。卡片已显示当前倍率后的数值。</p></section>
       <section className="pressure-relief"><small>可以主动缓解</small><b>给组合留空间</b><p>3–4人不增加拥挤躁动；最多2人，每站 −1。人物事件和长班疲劳仍会结算。</p><b>快速送达</b><p>每位正常到站的乘客 −1，并恢复1次空驶休整，最多3次。</p><b>空驶休整 · 还剩 {run.restStops} 次</b><p>空车上行自动消耗1次，本层免长班疲劳，仍有宽松 −1。用尽后空驶也会疲劳。只在成功送达时恢复；接客、请离和商店不能刷新。</p><b>安排安抚角色</b><p>至少4人时，每位音乐家每站 −1；每位护士每逢偶数层 −1。多人效果可以相加。</p><b>购买舒缓系统</b><p>立即 −6 躁动，上限 +3。不再需要维持“热区”来赚小费。</p></section>
     </div><div className={`pressure-now forecast-${pressurePreview.tone}`}><small>按现在的站位</small><b>{pressurePreview.summary}</b></div></DialogContent></Dialog>
     <Dialog open={archive} onOpenChange={setArchive}><DialogContent className="story-dialog archive-dialog"><p className="dialog-kicker">PASSENGER ARCHIVE</p><DialogHeader><DialogTitle>午夜乘客档案</DialogTitle><DialogDescription>遇见过的乘客会录入档案。最高抵达 {highest}F。</DialogDescription></DialogHeader><div className="archive-grid">{PASSENGER_ORDER.map((kind) => { const open = discovered.includes(kind); const spec = PASSENGERS[kind]; return <div className={`archive-item ${open ? '' : 'locked'}`} key={kind}>{open ? <Portrait kind={kind} /> : <LockKeyhole />}<span><b>{open ? spec.name : '尚未遇见'}</b><small>{open ? spec.short : '继续向上，等待相遇'}</small></span></div>; })}</div></DialogContent></Dialog>
