@@ -509,3 +509,71 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .game-shell *,.game-shell *::before,.game-shell *::after,.story-dialog,.story-dialog * { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
   .motion-lines { display:none; }.slot-reaction { display:none; }.metric-ring { display:none; }
 }
+ /* v6: explicit passenger decisions and installed systems, preserving the one-screen cockpit. */
+.inventory-button { position:relative; }
+.inventory-button span { position:absolute; right:1px; bottom:1px; min-width:16px; height:16px; display:grid; place-items:center; background:#d4af6b; color:#101813; font:700 10px var(--font-mono); border-radius:50%; }
+.cabin-inspect-button { position:absolute; z-index:8; top:80px; right:16px; min-height:40px; display:flex; align-items:center; gap:7px; padding:8px 12px; border:1px solid #c3a36966; background:#09120fed; color:#ead9b3; font-size:12px; cursor:pointer; }
+.cabin-inspect-button svg { width:16px; height:16px; }
+.cabin-inspect-button:disabled { opacity:.4; cursor:default; }
+.connection-map .conflict-link,.connection-lines .conflict-link,.standing-grid svg line.conflict-link { stroke:#eb8f71; stroke-dasharray:4 5; opacity:.9; }
+.inventory-dialog { max-width:660px!important; max-height:90dvh; overflow:auto; }
+.inventory-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.inventory-summary span { padding:12px; border:1px solid #bfa16640; color:#a5b6aa; font-size:12px; }
+.inventory-summary b { display:block; margin-top:4px; color:#e6c886; font:500 27px var(--font-mono); }
+.inventory-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.inventory-list section { padding:13px; border:1px solid #bfa16640; background:#0d1814; }
+.inventory-list section.installed { border-color:#8cc4a06b; background:#16302566; }
+.inventory-list section>div { display:flex; justify-content:space-between; gap:8px; }
+.inventory-list b { color:#edddbd; font-size:16px; }
+.inventory-list span { white-space:nowrap; color:#a8ceb8; font-size:12px; }
+.inventory-list p { margin:9px 0 0; line-height:1.55; font-size:12px; color:#b4c0b5; }
+.inventory-list .not-installed { opacity:.65; }
+.dismiss-panel { padding:14px; border:1px solid #d28d7466; background:#642f201c; }
+.dismiss-panel>b { color:#edc0a7; font-size:16px; }
+.dismiss-panel p,.detail-footnote { font-size:12px; line-height:1.6; color:#bac1b5; }
+.dismiss-panel .dismiss-confirm { color:#f3b99d; }
+.dismiss-button { width:100%; min-height:44px; display:flex; gap:8px; align-items:center; justify-content:center; border:1px solid #d89d7f; background:#80452c44; color:#f1d7bc; cursor:pointer; }
+.dismiss-button:disabled { opacity:.5; cursor:not-allowed; }
+.dismiss-button svg { width:17px; }
+.recharge-panel { padding:14px; background:#24493936; border:1px solid #8dbb945e; }
+.recharge-panel>div:first-child { display:flex; gap:10px; align-items:center; justify-content:space-between; }
+.recharge-panel b { font-size:16px; color:#e8d7b0; }
+.recharge-panel span,.recharge-panel p { font-size:12px; color:#b5cbb8; }
+.recharge-panel p { margin:8px 0 0; }
+.recharge-actions { display:flex; gap:8px; margin-top:10px; }
+.recharge-actions button { min-height:42px; flex:1; padding:8px; border:1px solid #a8c9a66b; background:#22382c; color:#ecdfbf; font-size:13px; cursor:pointer; }
+.recharge-actions button:disabled { opacity:.45; cursor:not-allowed; }
+.shop-inventory-link { display:flex; align-items:center; gap:7px; justify-content:flex-end; border:0; background:none; color:#cbbb95; font-size:12px; cursor:pointer; }
+.shop-inventory-link svg { width:15px; height:15px; }
+.reserve-warning { color:#ebac84; font-size:11px; line-height:1.4; }
+.passenger-detail-dialog { max-height:90dvh; overflow:auto; }
+.archive-item:not(.locked) { text-align:left; }
+@media(max-width:700px) {
+ .cabin-inspect-button { display:none; }
+ .inventory-dialog { padding:20px!important; gap:12px!important; }
+ .inventory-dialog [data-slot=dialog-title] { font-size:25px; }
+ .inventory-summary span { padding:8px; font-size:10px; }
+ .inventory-list { grid-template-columns:1fr; }
+ .inventory-list section { padding:10px; }
+ .inventory-list b { font-size:15px; }
+ .recharge-panel { padding:10px; }
+ .recharge-panel>div:first-child { flex-direction:column; align-items:flex-start; gap:4px; }
+ .recharge-panel b { font-size:14px; }
+ .recharge-panel span,.recharge-panel p { font-size:11px; }
+ .recharge-actions { gap:6px; margin-top:7px; }
+ .recharge-actions button { min-height:40px; font-size:11px; }
+ .shop-inventory-link { font-size:11px; }
+ .mobile-inspect-button { font-size:9px; }
+ .reserve-warning { font-size:10px; }
+}
+@media(min-width:701px) {
+ .passenger-item { display:block; position:relative; flex:none; }
+ .passenger-item .mobile-rule-button { display:grid; place-items:center; position:absolute; right:5px; top:5px; width:36px; height:36px; border:0; background:#13221bd9; color:#dbc79e; cursor:pointer; }
+ .passenger-item .mobile-rule-button svg { width:17px; height:17px; }
+ .passenger-heading { padding-right:25px; }
+ .bond-compact b { color:#8fcaaa; font-weight:500; }.bond-compact b:last-of-type { color:#d9a98d; margin-left:6px; }
+ .passenger-destination>span { display:none; }
+ .passenger-card { gap:5px; padding:10px; }
+ .passenger-rules { font-size:12px; line-height:1.5; gap:3px; }
+ .passenger-action { padding-top:5px; }
+}

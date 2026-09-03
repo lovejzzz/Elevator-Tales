@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { agitationThreshold, crowdAgitation, difficultyTier, expressTrip, failureLesson, initialRun, installUpgrade, leaveShop, makeOffers, nextShopFloor, patienceCost, previewUpgrade, readyPartner, resolveFloor, synergyPartnerAtSlot, travelEnergyCost, upgradeChoices, upgradePrice, type ChangeLine, type Rider, type RunState } from '../lib/game-engine';
+import { chargeBattery, agitationThreshold, crowdAgitation, difficultyTier, expressTrip, failureLesson, initialRun, installUpgrade, leaveShop, makeOffers, nextShopFloor, patienceCost, previewUpgrade, readyPartner, resolveFloor, synergyPartnerAtSlot, travelEnergyCost, upgradeChoices, upgradePrice, type ChangeLine, type Rider, type RunState } from '../lib/game-engine';
 import { PASSENGER_ORDER, PASSENGERS, UPGRADES, type PassengerKind } from '../lib/game-data';
 import { energyForecast, stressForecast } from '../lib/game-forecast';
 import { activeConnection, planPlacement } from '../lib/game-interaction';
@@ -82,7 +82,7 @@ assert.equal(sourceMap(controlled.lastEarnings.sources)['受控小偷'], 1);
 assert.equal(controlled.lastPressure.sources.some((s) => s.label === '小偷未受控'), false);
 
 assert.equal(difficultyTier(30), 0); assert.equal(difficultyTier(31), 1);
-assert.deepEqual([travelEnergyCost(2), travelEnergyCost(31), travelEnergyCost(61), travelEnergyCost(301)], [2, 3, 4, 12]);
+assert.deepEqual([travelEnergyCost(2), travelEnergyCost(31), travelEnergyCost(61), travelEnergyCost(301)], [2, 2, 2, 2]);
 for (const floor of [59, 60, 99, 999]) {
   const offers = makeOffers(floor, initialRun().upgrades, false, () => .5);
   assert.ok(offers.every((p) => p.destination > floor), 'destinations never clamp to a final floor');
@@ -106,7 +106,7 @@ const preview = previewUpgrade(shop, 'battery');
 assert.equal(preview.coins, 70); assert.equal(shop.energy, 10, 'preview does not mutate actual state');
 const boughtBattery = installUpgrade(shop, 'battery');
 assert.equal(boughtBattery.coins, 35); assert.equal(boughtBattery.earned, 70);
-assert.equal(boughtBattery.energy, 18); assert.equal(boughtBattery.energyCap, 29);
+assert.equal(boughtBattery.energy, 10); assert.equal(boughtBattery.energyCap, 24);
 assert.equal(boughtBattery.status, 'upgrade', 'buying one card keeps other purchases available');
 assert.equal(installUpgrade(boughtBattery, 'battery'), boughtBattery, 'double click must not double-charge');
 assert.equal(installUpgrade(boughtBattery, 'solar'), boughtBattery, 'insufficient money must change nothing');
@@ -118,16 +118,14 @@ const left = leaveShop(boughtBoth); assert.equal(left.status, 'playing'); assert
 assert.equal(installUpgrade(left, 'calm'), left, 'leaving cannot reopen/rebuy');
 assert.equal(leaveShop({ ...shop, coins: 0 }).status, 'playing', 'healthy players can leave without a purchase');
 assert.equal(leaveShop({ ...shop, coins: 0, energy: 0 }).status, 'lost', 'no unearned crisis rescue');
-const crisis = resolveFloor({ ...initialRun(), floor: 9, energy: 1, coins: 100, earned: 100 }, () => .5);
+const crisis = resolveFloor({ ...initialRun(), floor: 9, energy: 2, coins: 100, earned: 100 }, () => .5);
 assert.equal(crisis.status, 'upgrade');
-const rescue = crisis.shop.find((card) => card.key === 'battery' || card.key === 'reinforced')!;
-assert.ok(rescue);
-assert.equal(leaveShop(installUpgrade(crisis, rescue.key)).status, 'playing');
-const doubleCrisis = resolveFloor({ ...initialRun(), floor: 9, energy: 1, stress: 14, coins: 200, earned: 200, cabin: packed.map((p) => ({ ...p, destination: 16, patience: 20 })) }, () => .5);
+assert.equal(leaveShop(chargeBattery(crisis,22)).status, 'playing');
+const doubleCrisis = resolveFloor({ ...initialRun(), floor: 9, energy: 2, stress: 14, coins: 200, earned: 200, cabin: packed.map((p) => ({ ...p, destination: 16, patience: 20 })) }, () => .5);
 assert.equal(doubleCrisis.status, 'upgrade', 'a paid multi-card shop can rescue both issues when affordable');
-assert.ok(doubleCrisis.shop.some((c) => c.key === 'battery') && doubleCrisis.shop.some((c) => c.key === 'calm'));
+assert.ok(doubleCrisis.shop.some((c) => c.key === 'calm'));
 assert.equal(leaveShop(doubleCrisis).status, 'lost');
-assert.equal(leaveShop(installUpgrade(installUpgrade(doubleCrisis, 'battery'), 'calm')).status, 'playing');
+assert.equal(leaveShop(installUpgrade(chargeBattery(doubleCrisis,22), 'calm')).status, 'playing');
 assert.ok(upgradePrice('battery', 70, 2) > upgradePrice('battery', 10, 0));
 assert.ok(upgradePrice('calm', 20, 1) > upgradePrice('calm', 20, 0));
 assert.ok(!upgradeChoices({ ...initialRun().upgrades, express: 1 }, () => .5).includes('express'));
@@ -146,7 +144,7 @@ assert.equal(safeBomb.status, 'playing'); assert.equal(safeBomb.coins, 26);
 
 for (const kind of PASSENGER_ORDER) {
   const brief = passengerBrief(rider(kind, `brief-${kind}`, { fareBonus: 4 }), 2);
-  assert.equal(brief.coins, PASSENGERS[kind].fare); assert.equal(brief.tip, 4);
+  assert.equal(brief.coins, kind === 'mystery' ? null : PASSENGERS[kind].fare); assert.equal(brief.tip, 4);
   assert.equal(brief.energy, PASSENGERS[kind].energy); assert.equal(brief.distance, 6);
   assert.ok(brief.rules.length > 0 && brief.rules.every((line) => line.endsWith('。')));
 }
@@ -164,9 +162,9 @@ assert.equal(purchaseMetrics.find((c) => c.key === 'coins')?.delta, -35);
 assert.equal(metricSound(purchaseMetrics.find((c) => c.key === 'coins')!), 'drain');
 const zeroBefore = { ...initialRun(), cabin: [rider('courier', 'zero', { destination: 2 }), null, null, null, null, null] };
 const zeroMetrics = metricChanges(zeroBefore, resolveFloor(zeroBefore, () => .9), '到站');
-assert.equal(zeroMetrics.find((c) => c.key === 'energy')?.delta, 0);
-assert.equal(zeroMetrics.find((c) => c.key === 'energy')?.sources.length, 2);
-assert.equal(metricSound(zeroMetrics.find((c) => c.key === 'energy')!), null);
+assert.equal(zeroMetrics.find((c) => c.key === 'energy')?.delta, -2);
+assert.equal(zeroMetrics.find((c) => c.key === 'energy')?.sources.length, 1);
+assert.equal(metricSound(zeroMetrics.find((c) => c.key === 'energy')!), 'drain');
 
 let seed = 47081;
 const rng = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };

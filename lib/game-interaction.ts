@@ -1,9 +1,12 @@
+import { bondStatus, riderProfile } from './rider-profile';
 import { ADJACENT, PASSENGERS, type PassengerKind } from './game-data';
 import { hasNeighbour, isFreeReseat, neighbourCount, totalWeight, type Rider, type RunState } from './game-engine';
 
 export function activeConnection(cabin: Array<Rider | null>, first: number, second: number): boolean {
   const a = cabin[first]; const b = cabin[second];
-  if (!a || !b) return false;
+  if (!a || !b || !ADJACENT.some(([x,y])=>(x===first&&y===second)||(y===first&&x===second))) return false;
+  if(a.kind==='mimic'||b.kind==='mimic')return true;
+  if(riderProfile(a,cabin,first).bond.likes.includes(b.kind)||riderProfile(b,cabin,second).bond.likes.includes(a.kind))return true;
   const supports = (source: PassengerKind, target: PassengerKind, slot: number) => {
     if (source === 'lover') return target === 'lover';
     if (source === 'thief') return target === 'cop' || target === 'lawyer';
@@ -38,9 +41,9 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
     swapped ||= !free;
   } else {
     if (cabin[target]) return reject('这里已经有人 · 请选空位');
-    if (totalWeight(cabin) + PASSENGERS[rider.kind].weight > state.weightCap) return reject(`超过 ${state.weightCap} 载重 · 暂不能上车`);
     cabin[target] = rider;
   }
+  if(totalWeight(cabin)>state.weightCap && totalWeight(cabin)>=totalWeight(state.cabin))return reject(`安排后载重 ${totalWeight(cabin)} / ${state.weightCap} · 含复制效果`);
   const linkIds = (seats: Array<Rider | null>) => new Set(ADJACENT.filter(([a, b]) => activeConnection(seats, a, b)).map(([a, b]) => [seats[a]!.id, seats[b]!.id].sort().join(':')));
   const before = linkIds(state.cabin); const after = linkIds(cabin);
   const combo = [...after].some((id) => !before.has(id));
@@ -50,4 +53,11 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
   const slots = new Set(source >= 0 ? [source, target] : [target]);
   if (combo) ADJACENT.forEach(([a, b]) => { if (activeConnection(cabin, a, b) && !before.has([cabin[a]!.id, cabin[b]!.id].sort().join(':'))) { slots.add(a); slots.add(b); } });
   return { ok: true, changed: true, next: { ...state, cabin, swapped, message }, tone: combo ? 'combo' : 'place', label, slots: [...slots] };
+}
+
+export function conflictingConnection(cabin: Array<Rider|null>,first:number,second:number) {
+ const a=cabin[first],b=cabin[second];
+ if(!a||!b)return false;
+ const left=bondStatus(a,cabin,first),right=bondStatus(b,cabin,second);
+ return (left.conflict&&left.bond.avoids.includes(b.kind))||(right.conflict&&right.bond.avoids.includes(a.kind));
 }

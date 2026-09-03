@@ -1,0 +1,2967 @@
+{
+  "date": "2026-09-02",
+  "productionCommit": "9006c68555f0f744cb945f2734ed0ff208605407",
+  "scope": "Offline initial charge and independent capacity sensitivity; no production changes",
+  "seedBase": 742891,
+  "horizon": 180,
+  "runsPerCell": 500,
+  "uniqueScenarioRuns": 18000,
+  "duplicateBaselineRunsExcluded": 500,
+  "groups": {
+    "initialEnergy": 14000,
+    "capacityAdditional": 2500,
+    "noNegativeCheckpoint": 1500
+  },
+  "results": [
+    {
+      "economy": "literal-start15",
+      "initialEnergy": 15,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 48.35,
+      "median": 65,
+      "p10": 9,
+      "p90": 97,
+      "max": 102,
+      "reach10": 53.6,
+      "reach20": 53.6,
+      "reach30": 53.6,
+      "reach60": 51.8,
+      "firstShop": {
+        "guidedReach": 45.2,
+        "randomReach": 62,
+        "meanCash": 106.99,
+        "meanPower": -0.55,
+        "negativePowerPct": 55.22,
+        "meanAfterReserve": 61.88,
+        "upgradePct": 96.27
+      },
+      "meanPurchases": 4.22,
+      "meanEarned": 662.6,
+      "meanChargeSpent": 201.98,
+      "meanUpgradeSpent": 330.77,
+      "shopVisits": 2055,
+      "noUpgradePct": 23.45,
+      "rechargeVisits": 2055,
+      "budgetCrowdingPct": 24.18,
+      "reserveShortfalls": 14,
+      "capacityShortfalls": 626,
+      "stations": 23673,
+      "highAgitationPct": 13.35,
+      "emptyPct": 4.6,
+      "meanOccupancy": 4.75,
+      "deaths": {
+        "energy": 315,
+        "agitation": 183,
+        "both": 0,
+        "fuse": 2,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 539,
+        "reinforced": 283,
+        "solar": 297,
+        "express": 154,
+        "calm": 599,
+        "concierge": 236
+      },
+      "commonDeathFloors": [
+        [
+          "9",
+          232
+        ],
+        [
+          "69",
+          21
+        ],
+        [
+          "98",
+          21
+        ],
+        [
+          "99",
+          20
+        ],
+        [
+          "79",
+          18
+        ],
+        [
+          "96",
+          13
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 308
+    },
+    {
+      "economy": "literal-start15",
+      "initialEnergy": 15,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 21.52,
+      "median": 12,
+      "p10": 9,
+      "p90": 56,
+      "max": 99,
+      "reach10": 53.6,
+      "reach20": 27.2,
+      "reach30": 20.6,
+      "reach60": 8.4,
+      "firstShop": {
+        "guidedReach": 45.2,
+        "randomReach": 62,
+        "meanCash": 106.99,
+        "meanPower": -0.55,
+        "negativePowerPct": 55.22,
+        "meanAfterReserve": 61.88,
+        "upgradePct": 100
+      },
+      "meanPurchases": 2.34,
+      "meanEarned": 291.4,
+      "meanChargeSpent": 43.18,
+      "meanUpgradeSpent": 150.01,
+      "shopVisits": 715,
+      "noUpgradePct": 4.9,
+      "rechargeVisits": 692,
+      "budgetCrowdingPct": 25.59,
+      "reserveShortfalls": 336,
+      "capacityShortfalls": 62,
+      "stations": 10260,
+      "highAgitationPct": 3.53,
+      "emptyPct": 0.49,
+      "meanOccupancy": 5.33,
+      "deaths": {
+        "energy": 485,
+        "agitation": 15,
+        "both": 0,
+        "fuse": 0,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 253,
+        "solar": 211,
+        "reinforced": 181,
+        "calm": 262,
+        "concierge": 170,
+        "express": 93
+      },
+      "commonDeathFloors": [
+        [
+          "9",
+          232
+        ],
+        [
+          "17",
+          23
+        ],
+        [
+          "18",
+          22
+        ],
+        [
+          "14",
+          17
+        ],
+        [
+          "19",
+          16
+        ],
+        [
+          "15",
+          14
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 469
+    },
+    {
+      "economy": "literal-start16",
+      "initialEnergy": 16,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 67.28,
+      "median": 76,
+      "p10": 9,
+      "p90": 98,
+      "max": 104,
+      "reach10": 80.2,
+      "reach20": 80.2,
+      "reach30": 80.2,
+      "reach60": 77.6,
+      "firstShop": {
+        "guidedReach": 75.2,
+        "randomReach": 85.2,
+        "meanCash": 110.27,
+        "meanPower": -0.04,
+        "negativePowerPct": 34.16,
+        "meanAfterReserve": 66.18,
+        "upgradePct": 97.26
+      },
+      "meanPurchases": 6.36,
+      "meanEarned": 941.1,
+      "meanChargeSpent": 296.7,
+      "meanUpgradeSpent": 497.99,
+      "shopVisits": 3045,
+      "noUpgradePct": 22.13,
+      "rechargeVisits": 3045,
+      "budgetCrowdingPct": 22.76,
+      "reserveShortfalls": 17,
+      "capacityShortfalls": 921,
+      "stations": 33142,
+      "highAgitationPct": 13.38,
+      "emptyPct": 4.36,
+      "meanOccupancy": 4.73,
+      "deaths": {
+        "energy": 225,
+        "agitation": 269,
+        "both": 3,
+        "fuse": 3,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 805,
+        "reinforced": 418,
+        "solar": 452,
+        "express": 246,
+        "calm": 903,
+        "concierge": 355
+      },
+      "commonDeathFloors": [
+        [
+          "9",
+          99
+        ],
+        [
+          "69",
+          45
+        ],
+        [
+          "99",
+          29
+        ],
+        [
+          "98",
+          27
+        ],
+        [
+          "79",
+          25
+        ],
+        [
+          "96",
+          16
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 222
+    },
+    {
+      "economy": "literal-start16",
+      "initialEnergy": 16,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 28.83,
+      "median": 19,
+      "p10": 9,
+      "p90": 66,
+      "max": 99,
+      "reach10": 80.2,
+      "reach20": 43.4,
+      "reach30": 34,
+      "reach60": 12.6,
+      "firstShop": {
+        "guidedReach": 75.2,
+        "randomReach": 85.2,
+        "meanCash": 110.27,
+        "meanPower": -0.04,
+        "negativePowerPct": 34.16,
+        "meanAfterReserve": 66.18,
+        "upgradePct": 100
+      },
+      "meanPurchases": 3.7,
+      "meanEarned": 408.75,
+      "meanChargeSpent": 68.74,
+      "meanUpgradeSpent": 240.71,
+      "shopVisits": 1117,
+      "noUpgradePct": 3.85,
+      "rechargeVisits": 1090,
+      "budgetCrowdingPct": 23.72,
+      "reserveShortfalls": 507,
+      "capacityShortfalls": 121,
+      "stations": 13915,
+      "highAgitationPct": 3.88,
+      "emptyPct": 0.73,
+      "meanOccupancy": 5.34,
+      "deaths": {
+        "energy": 473,
+        "agitation": 25,
+        "both": 1,
+        "fuse": 1,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 363,
+        "solar": 337,
+        "reinforced": 290,
+        "concierge": 295,
+        "calm": 419,
+        "express": 148
+      },
+      "commonDeathFloors": [
+        [
+          "9",
+          99
+        ],
+        [
+          "19",
+          33
+        ],
+        [
+          "17",
+          30
+        ],
+        [
+          "18",
+          26
+        ],
+        [
+          "13",
+          22
+        ],
+        [
+          "14",
+          21
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 452
+    },
+    {
+      "economy": "literal-start17",
+      "initialEnergy": 17,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 82.34,
+      "median": 82,
+      "p10": 67,
+      "p90": 98,
+      "max": 104,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 96.8,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 112.95,
+        "meanPower": 0.51,
+        "negativePowerPct": 23,
+        "meanAfterReserve": 69.97,
+        "upgradePct": 97.8
+      },
+      "meanPurchases": 8.04,
+      "meanEarned": 1161.13,
+      "meanChargeSpent": 371.24,
+      "meanUpgradeSpent": 629.55,
+      "shopVisits": 3822,
+      "noUpgradePct": 22.16,
+      "rechargeVisits": 3821,
+      "budgetCrowdingPct": 21.77,
+      "reserveShortfalls": 28,
+      "capacityShortfalls": 1138,
+      "stations": 40670,
+      "highAgitationPct": 13.95,
+      "emptyPct": 4.55,
+      "meanOccupancy": 4.71,
+      "deaths": {
+        "energy": 154,
+        "agitation": 333,
+        "both": 8,
+        "fuse": 5,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 1023,
+        "reinforced": 522,
+        "calm": 1146,
+        "solar": 576,
+        "concierge": 446,
+        "express": 305
+      },
+      "commonDeathFloors": [
+        [
+          "69",
+          50
+        ],
+        [
+          "98",
+          39
+        ],
+        [
+          "79",
+          36
+        ],
+        [
+          "99",
+          33
+        ],
+        [
+          "96",
+          25
+        ],
+        [
+          "95",
+          20
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 151
+    },
+    {
+      "economy": "literal-start17",
+      "initialEnergy": 17,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 34.34,
+      "median": 26,
+      "p10": 14,
+      "p90": 69,
+      "max": 99,
+      "reach10": 100,
+      "reach20": 55.2,
+      "reach30": 42.6,
+      "reach60": 16.2,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 112.95,
+        "meanPower": 0.51,
+        "negativePowerPct": 23,
+        "meanAfterReserve": 69.97,
+        "upgradePct": 100
+      },
+      "meanPurchases": 4.72,
+      "meanEarned": 495.51,
+      "meanChargeSpent": 87.64,
+      "meanUpgradeSpent": 307.14,
+      "shopVisits": 1417,
+      "noUpgradePct": 4.3,
+      "rechargeVisits": 1389,
+      "budgetCrowdingPct": 21.45,
+      "reserveShortfalls": 610,
+      "capacityShortfalls": 137,
+      "stations": 16672,
+      "highAgitationPct": 4.46,
+      "emptyPct": 0.88,
+      "meanOccupancy": 5.32,
+      "deaths": {
+        "energy": 460,
+        "agitation": 37,
+        "both": 1,
+        "fuse": 2,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 474,
+        "reinforced": 375,
+        "calm": 520,
+        "solar": 428,
+        "express": 192,
+        "concierge": 371
+      },
+      "commonDeathFloors": [
+        [
+          "19",
+          45
+        ],
+        [
+          "18",
+          38
+        ],
+        [
+          "17",
+          36
+        ],
+        [
+          "15",
+          25
+        ],
+        [
+          "13",
+          22
+        ],
+        [
+          "16",
+          22
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 436
+    },
+    {
+      "economy": "literal-start18",
+      "initialEnergy": 18,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 82.29,
+      "median": 82,
+      "p10": 67,
+      "p90": 98,
+      "max": 104,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 97.4,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.03,
+        "meanPower": 1.51,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 72.04,
+        "upgradePct": 98.8
+      },
+      "meanPurchases": 8.07,
+      "meanEarned": 1163.05,
+      "meanChargeSpent": 367.87,
+      "meanUpgradeSpent": 631.22,
+      "shopVisits": 3815,
+      "noUpgradePct": 21.91,
+      "rechargeVisits": 3814,
+      "budgetCrowdingPct": 20.73,
+      "reserveShortfalls": 28,
+      "capacityShortfalls": 1138,
+      "stations": 40643,
+      "highAgitationPct": 13.86,
+      "emptyPct": 4.47,
+      "meanOccupancy": 4.72,
+      "deaths": {
+        "energy": 157,
+        "agitation": 334,
+        "both": 6,
+        "fuse": 3,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 1016,
+        "reinforced": 520,
+        "calm": 1158,
+        "solar": 581,
+        "concierge": 450,
+        "express": 312
+      },
+      "commonDeathFloors": [
+        [
+          "69",
+          55
+        ],
+        [
+          "98",
+          39
+        ],
+        [
+          "79",
+          35
+        ],
+        [
+          "99",
+          34
+        ],
+        [
+          "96",
+          24
+        ],
+        [
+          "68",
+          19
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 155
+    },
+    {
+      "economy": "literal-start18",
+      "initialEnergy": 18,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 35.67,
+      "median": 28,
+      "p10": 15,
+      "p90": 71,
+      "max": 99,
+      "reach10": 100,
+      "reach20": 58.8,
+      "reach30": 46.2,
+      "reach60": 17.6,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.03,
+        "meanPower": 1.51,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 72.04,
+        "upgradePct": 100
+      },
+      "meanPurchases": 4.92,
+      "meanEarned": 520.15,
+      "meanChargeSpent": 91.1,
+      "meanUpgradeSpent": 323.48,
+      "shopVisits": 1476,
+      "noUpgradePct": 4.4,
+      "rechargeVisits": 1445,
+      "budgetCrowdingPct": 19.17,
+      "reserveShortfalls": 607,
+      "capacityShortfalls": 152,
+      "stations": 17334,
+      "highAgitationPct": 4.66,
+      "emptyPct": 0.68,
+      "meanOccupancy": 5.33,
+      "deaths": {
+        "energy": 460,
+        "agitation": 38,
+        "both": 1,
+        "fuse": 1,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 484,
+        "reinforced": 382,
+        "calm": 545,
+        "solar": 448,
+        "express": 207,
+        "concierge": 392
+      },
+      "commonDeathFloors": [
+        [
+          "19",
+          53
+        ],
+        [
+          "17",
+          36
+        ],
+        [
+          "18",
+          27
+        ],
+        [
+          "16",
+          25
+        ],
+        [
+          "14",
+          22
+        ],
+        [
+          "15",
+          17
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 440
+    },
+    {
+      "economy": "literal-start20",
+      "initialEnergy": 20,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 82.44,
+      "median": 82,
+      "p10": 67,
+      "p90": 98,
+      "max": 105,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 97,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.19,
+        "meanPower": 3.48,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 76.16,
+        "upgradePct": 99.4
+      },
+      "meanPurchases": 8.21,
+      "meanEarned": 1173.26,
+      "meanChargeSpent": 364.21,
+      "meanUpgradeSpent": 640.7,
+      "shopVisits": 3822,
+      "noUpgradePct": 21.64,
+      "rechargeVisits": 3820,
+      "budgetCrowdingPct": 20.23,
+      "reserveShortfalls": 25,
+      "capacityShortfalls": 1172,
+      "stations": 40721,
+      "highAgitationPct": 14.13,
+      "emptyPct": 4.5,
+      "meanOccupancy": 4.72,
+      "deaths": {
+        "energy": 148,
+        "agitation": 334,
+        "both": 12,
+        "fuse": 6,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 1019,
+        "reinforced": 516,
+        "calm": 1169,
+        "solar": 593,
+        "concierge": 473,
+        "express": 334
+      },
+      "commonDeathFloors": [
+        [
+          "69",
+          49
+        ],
+        [
+          "98",
+          42
+        ],
+        [
+          "99",
+          37
+        ],
+        [
+          "79",
+          32
+        ],
+        [
+          "95",
+          23
+        ],
+        [
+          "96",
+          23
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 152
+    },
+    {
+      "economy": "literal-start20",
+      "initialEnergy": 20,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 39.46,
+      "median": 35,
+      "p10": 16,
+      "p90": 75,
+      "max": 99,
+      "reach10": 100,
+      "reach20": 69.6,
+      "reach30": 55.8,
+      "reach60": 19,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.19,
+        "meanPower": 3.48,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 76.16,
+        "upgradePct": 100
+      },
+      "meanPurchases": 5.47,
+      "meanEarned": 583.04,
+      "meanChargeSpent": 102.98,
+      "meanUpgradeSpent": 368.26,
+      "shopVisits": 1655,
+      "noUpgradePct": 4.89,
+      "rechargeVisits": 1622,
+      "budgetCrowdingPct": 16.5,
+      "reserveShortfalls": 619,
+      "capacityShortfalls": 174,
+      "stations": 19232,
+      "highAgitationPct": 4.57,
+      "emptyPct": 0.94,
+      "meanOccupancy": 5.31,
+      "deaths": {
+        "energy": 456,
+        "agitation": 41,
+        "both": 2,
+        "fuse": 1,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 539,
+        "reinforced": 410,
+        "calm": 600,
+        "solar": 490,
+        "express": 250,
+        "concierge": 446
+      },
+      "commonDeathFloors": [
+        [
+          "19",
+          39
+        ],
+        [
+          "17",
+          31
+        ],
+        [
+          "18",
+          24
+        ],
+        [
+          "35",
+          20
+        ],
+        [
+          "15",
+          18
+        ],
+        [
+          "38",
+          17
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 446
+    },
+    {
+      "economy": "literal-start22",
+      "initialEnergy": 22,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 82.85,
+      "median": 85,
+      "p10": 67,
+      "p90": 98,
+      "max": 104,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 96.6,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.39,
+        "meanPower": 5.45,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 80.3,
+        "upgradePct": 99.8
+      },
+      "meanPurchases": 8.35,
+      "meanEarned": 1181.3,
+      "meanChargeSpent": 362.96,
+      "meanUpgradeSpent": 653.82,
+      "shopVisits": 3843,
+      "noUpgradePct": 21.47,
+      "rechargeVisits": 3842,
+      "budgetCrowdingPct": 18.84,
+      "reserveShortfalls": 28,
+      "capacityShortfalls": 1151,
+      "stations": 40923,
+      "highAgitationPct": 14.58,
+      "emptyPct": 4.53,
+      "meanOccupancy": 4.7,
+      "deaths": {
+        "energy": 140,
+        "agitation": 342,
+        "both": 8,
+        "fuse": 10,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 1035,
+        "reinforced": 526,
+        "calm": 1186,
+        "solar": 602,
+        "concierge": 488,
+        "express": 340
+      },
+      "commonDeathFloors": [
+        [
+          "98",
+          46
+        ],
+        [
+          "99",
+          40
+        ],
+        [
+          "69",
+          39
+        ],
+        [
+          "79",
+          25
+        ],
+        [
+          "95",
+          20
+        ],
+        [
+          "93",
+          19
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 144
+    },
+    {
+      "economy": "literal-start22",
+      "initialEnergy": 22,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 42.47,
+      "median": 37,
+      "p10": 17,
+      "p90": 79,
+      "max": 121,
+      "reach10": 100,
+      "reach20": 76.6,
+      "reach30": 62.6,
+      "reach60": 21.4,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.39,
+        "meanPower": 5.45,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 80.3,
+        "upgradePct": 100
+      },
+      "meanPurchases": 5.89,
+      "meanEarned": 631.52,
+      "meanChargeSpent": 113.23,
+      "meanUpgradeSpent": 404.21,
+      "shopVisits": 1802,
+      "noUpgradePct": 5.72,
+      "rechargeVisits": 1752,
+      "budgetCrowdingPct": 14.98,
+      "reserveShortfalls": 620,
+      "capacityShortfalls": 212,
+      "stations": 20735,
+      "highAgitationPct": 5.66,
+      "emptyPct": 1.22,
+      "meanOccupancy": 5.28,
+      "deaths": {
+        "energy": 451,
+        "agitation": 44,
+        "both": 2,
+        "fuse": 3,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 569,
+        "reinforced": 434,
+        "calm": 659,
+        "solar": 530,
+        "express": 282,
+        "concierge": 472
+      },
+      "commonDeathFloors": [
+        [
+          "19",
+          33
+        ],
+        [
+          "18",
+          26
+        ],
+        [
+          "17",
+          23
+        ],
+        [
+          "34",
+          21
+        ],
+        [
+          "49",
+          21
+        ],
+        [
+          "29",
+          19
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 441
+    },
+    {
+      "economy": "literal-start24",
+      "initialEnergy": 24,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 82.98,
+      "median": 85,
+      "p10": 67,
+      "p90": 99,
+      "max": 121,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 96,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.52,
+        "meanPower": 7.44,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 84.4,
+        "upgradePct": 100
+      },
+      "meanPurchases": 8.48,
+      "meanEarned": 1188.54,
+      "meanChargeSpent": 360.79,
+      "meanUpgradeSpent": 665.18,
+      "shopVisits": 3857,
+      "noUpgradePct": 21.55,
+      "rechargeVisits": 3857,
+      "budgetCrowdingPct": 18.02,
+      "reserveShortfalls": 27,
+      "capacityShortfalls": 1107,
+      "stations": 40988,
+      "highAgitationPct": 14.69,
+      "emptyPct": 4.66,
+      "meanOccupancy": 4.69,
+      "deaths": {
+        "energy": 137,
+        "agitation": 348,
+        "both": 5,
+        "fuse": 10,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 1052,
+        "reinforced": 530,
+        "calm": 1195,
+        "solar": 623,
+        "concierge": 499,
+        "express": 342
+      },
+      "commonDeathFloors": [
+        [
+          "98",
+          46
+        ],
+        [
+          "99",
+          43
+        ],
+        [
+          "69",
+          35
+        ],
+        [
+          "68",
+          19
+        ],
+        [
+          "79",
+          18
+        ],
+        [
+          "92",
+          18
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 138
+    },
+    {
+      "economy": "literal-start24",
+      "initialEnergy": 24,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 45.61,
+      "median": 39,
+      "p10": 18,
+      "p90": 83,
+      "max": 121,
+      "reach10": 100,
+      "reach20": 83,
+      "reach30": 69.6,
+      "reach60": 24.8,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.52,
+        "meanPower": 7.44,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 84.4,
+        "upgradePct": 100
+      },
+      "meanPurchases": 6.37,
+      "meanEarned": 686.04,
+      "meanChargeSpent": 123.66,
+      "meanUpgradeSpent": 444.7,
+      "shopVisits": 1960,
+      "noUpgradePct": 6.02,
+      "rechargeVisits": 1923,
+      "budgetCrowdingPct": 13.83,
+      "reserveShortfalls": 632,
+      "capacityShortfalls": 237,
+      "stations": 22304,
+      "highAgitationPct": 6.04,
+      "emptyPct": 1.22,
+      "meanOccupancy": 5.25,
+      "deaths": {
+        "energy": 444,
+        "agitation": 52,
+        "both": 1,
+        "fuse": 3,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "battery": 617,
+        "reinforced": 454,
+        "calm": 722,
+        "solar": 568,
+        "express": 313,
+        "concierge": 510
+      },
+      "commonDeathFloors": [
+        [
+          "19",
+          34
+        ],
+        [
+          "35",
+          29
+        ],
+        [
+          "17",
+          19
+        ],
+        [
+          "37",
+          18
+        ],
+        [
+          "47",
+          18
+        ],
+        [
+          "34",
+          17
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 434
+    },
+    {
+      "economy": "flat-start15",
+      "initialEnergy": 15,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 54.13,
+      "median": 68,
+      "p10": 9,
+      "p90": 104,
+      "max": 171,
+      "reach10": 53.6,
+      "reach20": 53.6,
+      "reach30": 53.6,
+      "reach60": 52.2,
+      "firstShop": {
+        "guidedReach": 45.2,
+        "randomReach": 62,
+        "meanCash": 106.99,
+        "meanPower": -0.55,
+        "negativePowerPct": 55.22,
+        "meanAfterReserve": 61.88,
+        "upgradePct": 91.42
+      },
+      "meanPurchases": 3.99,
+      "meanEarned": 801.93,
+      "meanChargeSpent": 162.14,
+      "meanUpgradeSpent": 351.72,
+      "shopVisits": 2372,
+      "noUpgradePct": 32.29,
+      "rechargeVisits": 2372,
+      "budgetCrowdingPct": 6.96,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 0,
+      "stations": 26564,
+      "highAgitationPct": 15.59,
+      "emptyPct": 5.66,
+      "meanOccupancy": 4.68,
+      "deaths": {
+        "energy": 232,
+        "agitation": 261,
+        "both": 0,
+        "fuse": 7,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "solar": 265,
+        "reinforced": 166,
+        "express": 248,
+        "calm": 879,
+        "concierge": 436
+      },
+      "commonDeathFloors": [
+        [
+          "9",
+          232
+        ],
+        [
+          "93",
+          21
+        ],
+        [
+          "96",
+          16
+        ],
+        [
+          "95",
+          15
+        ],
+        [
+          "91",
+          14
+        ],
+        [
+          "97",
+          12
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 232
+    },
+    {
+      "economy": "flat-start15",
+      "initialEnergy": 15,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 21.2,
+      "median": 11,
+      "p10": 9,
+      "p90": 65,
+      "max": 126,
+      "reach10": 53.6,
+      "reach20": 17,
+      "reach30": 12.4,
+      "reach60": 10,
+      "firstShop": {
+        "guidedReach": 45.2,
+        "randomReach": 62,
+        "meanCash": 106.99,
+        "meanPower": -0.55,
+        "negativePowerPct": 55.22,
+        "meanAfterReserve": 61.88,
+        "upgradePct": 100
+      },
+      "meanPurchases": 1.76,
+      "meanEarned": 291.53,
+      "meanChargeSpent": 40.9,
+      "meanUpgradeSpent": 120.59,
+      "shopVisits": 717,
+      "noUpgradePct": 18.69,
+      "rechargeVisits": 706,
+      "budgetCrowdingPct": 16.6,
+      "reserveShortfalls": 268,
+      "capacityShortfalls": 0,
+      "stations": 10101,
+      "highAgitationPct": 8,
+      "emptyPct": 2.29,
+      "meanOccupancy": 5.14,
+      "deaths": {
+        "energy": 450,
+        "agitation": 48,
+        "both": 0,
+        "fuse": 2,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "solar": 169,
+        "reinforced": 102,
+        "express": 106,
+        "calm": 298,
+        "concierge": 203
+      },
+      "commonDeathFloors": [
+        [
+          "9",
+          232
+        ],
+        [
+          "14",
+          26
+        ],
+        [
+          "13",
+          23
+        ],
+        [
+          "17",
+          23
+        ],
+        [
+          "19",
+          23
+        ],
+        [
+          "16",
+          17
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 428
+    },
+    {
+      "economy": "flat-start16",
+      "initialEnergy": 16,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 75.99,
+      "median": 91,
+      "p10": 9,
+      "p90": 111,
+      "max": 169,
+      "reach10": 80.2,
+      "reach20": 80.2,
+      "reach30": 80.2,
+      "reach60": 77,
+      "firstShop": {
+        "guidedReach": 75.2,
+        "randomReach": 85.2,
+        "meanCash": 110.27,
+        "meanPower": -0.04,
+        "negativePowerPct": 34.16,
+        "meanAfterReserve": 66.18,
+        "upgradePct": 93.77
+      },
+      "meanPurchases": 5.99,
+      "meanEarned": 1150.72,
+      "meanChargeSpent": 239.51,
+      "meanUpgradeSpent": 523.98,
+      "shopVisits": 3520,
+      "noUpgradePct": 32.3,
+      "rechargeVisits": 3520,
+      "budgetCrowdingPct": 5.94,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 0,
+      "stations": 37496,
+      "highAgitationPct": 16.57,
+      "emptyPct": 5.87,
+      "meanOccupancy": 4.66,
+      "deaths": {
+        "energy": 99,
+        "agitation": 389,
+        "both": 0,
+        "fuse": 12,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "solar": 395,
+        "reinforced": 252,
+        "express": 369,
+        "calm": 1301,
+        "concierge": 678
+      },
+      "commonDeathFloors": [
+        [
+          "9",
+          99
+        ],
+        [
+          "93",
+          29
+        ],
+        [
+          "95",
+          24
+        ],
+        [
+          "92",
+          19
+        ],
+        [
+          "94",
+          19
+        ],
+        [
+          "97",
+          17
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 99
+    },
+    {
+      "economy": "flat-start16",
+      "initialEnergy": 16,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 29.04,
+      "median": 15,
+      "p10": 9,
+      "p90": 93,
+      "max": 126,
+      "reach10": 80.2,
+      "reach20": 27.4,
+      "reach30": 21.4,
+      "reach60": 17.8,
+      "firstShop": {
+        "guidedReach": 75.2,
+        "randomReach": 85.2,
+        "meanCash": 110.27,
+        "meanPower": -0.04,
+        "negativePowerPct": 34.16,
+        "meanAfterReserve": 66.18,
+        "upgradePct": 100
+      },
+      "meanPurchases": 2.82,
+      "meanEarned": 417.77,
+      "meanChargeSpent": 66.86,
+      "meanUpgradeSpent": 196.46,
+      "shopVisits": 1160,
+      "noUpgradePct": 20.43,
+      "rechargeVisits": 1147,
+      "budgetCrowdingPct": 13.1,
+      "reserveShortfalls": 394,
+      "capacityShortfalls": 0,
+      "stations": 14022,
+      "highAgitationPct": 10.09,
+      "emptyPct": 3.02,
+      "meanOccupancy": 5.06,
+      "deaths": {
+        "energy": 411,
+        "agitation": 88,
+        "both": 0,
+        "fuse": 1,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "solar": 253,
+        "reinforced": 154,
+        "express": 186,
+        "calm": 477,
+        "concierge": 342
+      },
+      "commonDeathFloors": [
+        [
+          "9",
+          99
+        ],
+        [
+          "13",
+          46
+        ],
+        [
+          "14",
+          37
+        ],
+        [
+          "15",
+          31
+        ],
+        [
+          "17",
+          29
+        ],
+        [
+          "19",
+          29
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 385
+    },
+    {
+      "economy": "flat-start17",
+      "initialEnergy": 17,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 93.84,
+      "median": 94,
+      "p10": 71,
+      "p90": 117,
+      "max": 179,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 96.6,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 112.95,
+        "meanPower": 0.51,
+        "negativePowerPct": 23,
+        "meanAfterReserve": 69.97,
+        "upgradePct": 95.4
+      },
+      "meanPurchases": 7.53,
+      "meanEarned": 1423.89,
+      "meanChargeSpent": 301.49,
+      "meanUpgradeSpent": 657.83,
+      "shopVisits": 4458,
+      "noUpgradePct": 33.02,
+      "rechargeVisits": 4458,
+      "budgetCrowdingPct": 4.98,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 0,
+      "stations": 46421,
+      "highAgitationPct": 16.44,
+      "emptyPct": 6.61,
+      "meanOccupancy": 4.61,
+      "deaths": {
+        "energy": 0,
+        "agitation": 485,
+        "both": 0,
+        "fuse": 15,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "calm": 1644,
+        "reinforced": 322,
+        "solar": 494,
+        "express": 464,
+        "concierge": 839
+      },
+      "commonDeathFloors": [
+        [
+          "95",
+          36
+        ],
+        [
+          "93",
+          33
+        ],
+        [
+          "94",
+          27
+        ],
+        [
+          "97",
+          26
+        ],
+        [
+          "92",
+          22
+        ],
+        [
+          "96",
+          22
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 0
+    },
+    {
+      "economy": "flat-start17",
+      "initialEnergy": 17,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 36.01,
+      "median": 18,
+      "p10": 13,
+      "p90": 96,
+      "max": 126,
+      "reach10": 100,
+      "reach20": 36.8,
+      "reach30": 28.2,
+      "reach60": 24.4,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 112.95,
+        "meanPower": 0.51,
+        "negativePowerPct": 23,
+        "meanAfterReserve": 69.97,
+        "upgradePct": 100
+      },
+      "meanPurchases": 3.68,
+      "meanEarned": 532.23,
+      "meanChargeSpent": 89.33,
+      "meanUpgradeSpent": 258.32,
+      "shopVisits": 1538,
+      "noUpgradePct": 22.24,
+      "rechargeVisits": 1518,
+      "budgetCrowdingPct": 10.14,
+      "reserveShortfalls": 462,
+      "capacityShortfalls": 0,
+      "stations": 17504,
+      "highAgitationPct": 11.02,
+      "emptyPct": 3.38,
+      "meanOccupancy": 5.02,
+      "deaths": {
+        "energy": 377,
+        "agitation": 121,
+        "both": 0,
+        "fuse": 2,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "calm": 620,
+        "reinforced": 208,
+        "solar": 321,
+        "express": 253,
+        "concierge": 436
+      },
+      "commonDeathFloors": [
+        [
+          "13",
+          45
+        ],
+        [
+          "17",
+          41
+        ],
+        [
+          "15",
+          38
+        ],
+        [
+          "16",
+          38
+        ],
+        [
+          "14",
+          37
+        ],
+        [
+          "19",
+          36
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 345
+    },
+    {
+      "economy": "flat-start18",
+      "initialEnergy": 18,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 93.88,
+      "median": 94,
+      "p10": 71,
+      "p90": 117,
+      "max": 180,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 96.6,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.03,
+        "meanPower": 1.51,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 72.04,
+        "upgradePct": 96.8
+      },
+      "meanPurchases": 7.6,
+      "meanEarned": 1431.21,
+      "meanChargeSpent": 299.65,
+      "meanUpgradeSpent": 663.25,
+      "shopVisits": 4459,
+      "noUpgradePct": 32.7,
+      "rechargeVisits": 4459,
+      "budgetCrowdingPct": 4.26,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 0,
+      "stations": 46438,
+      "highAgitationPct": 16.19,
+      "emptyPct": 6.65,
+      "meanOccupancy": 4.61,
+      "deaths": {
+        "energy": 0,
+        "agitation": 483,
+        "both": 0,
+        "fuse": 16,
+        "censored": 1
+      },
+      "upgradeMix": {
+        "calm": 1657,
+        "reinforced": 328,
+        "solar": 494,
+        "express": 466,
+        "concierge": 854
+      },
+      "commonDeathFloors": [
+        [
+          "95",
+          39
+        ],
+        [
+          "93",
+          38
+        ],
+        [
+          "94",
+          28
+        ],
+        [
+          "97",
+          26
+        ],
+        [
+          "92",
+          23
+        ],
+        [
+          "96",
+          20
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 0
+    },
+    {
+      "economy": "flat-start18",
+      "initialEnergy": 18,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 37.89,
+      "median": 18,
+      "p10": 13,
+      "p90": 96,
+      "max": 165,
+      "reach10": 100,
+      "reach20": 40.2,
+      "reach30": 30.6,
+      "reach60": 26,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.03,
+        "meanPower": 1.51,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 72.04,
+        "upgradePct": 100
+      },
+      "meanPurchases": 3.84,
+      "meanEarned": 561.4,
+      "meanChargeSpent": 94.07,
+      "meanUpgradeSpent": 272.99,
+      "shopVisits": 1623,
+      "noUpgradePct": 22.8,
+      "rechargeVisits": 1600,
+      "budgetCrowdingPct": 9,
+      "reserveShortfalls": 450,
+      "capacityShortfalls": 0,
+      "stations": 18444,
+      "highAgitationPct": 10.89,
+      "emptyPct": 3.49,
+      "meanOccupancy": 5,
+      "deaths": {
+        "energy": 369,
+        "agitation": 129,
+        "both": 0,
+        "fuse": 2,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "calm": 651,
+        "reinforced": 218,
+        "solar": 326,
+        "express": 268,
+        "concierge": 457
+      },
+      "commonDeathFloors": [
+        [
+          "17",
+          55
+        ],
+        [
+          "14",
+          51
+        ],
+        [
+          "19",
+          43
+        ],
+        [
+          "16",
+          42
+        ],
+        [
+          "13",
+          28
+        ],
+        [
+          "15",
+          25
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 351
+    },
+    {
+      "economy": "flat-start20",
+      "initialEnergy": 20,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 93.52,
+      "median": 94,
+      "p10": 71,
+      "p90": 117,
+      "max": 180,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 96.8,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.19,
+        "meanPower": 3.48,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 76.16,
+        "upgradePct": 98.2
+      },
+      "meanPurchases": 7.63,
+      "meanEarned": 1437.94,
+      "meanChargeSpent": 294.33,
+      "meanUpgradeSpent": 663.92,
+      "shopVisits": 4443,
+      "noUpgradePct": 32.66,
+      "rechargeVisits": 4443,
+      "budgetCrowdingPct": 3.22,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 0,
+      "stations": 46258,
+      "highAgitationPct": 16.14,
+      "emptyPct": 6.63,
+      "meanOccupancy": 4.62,
+      "deaths": {
+        "energy": 0,
+        "agitation": 483,
+        "both": 0,
+        "fuse": 16,
+        "censored": 1
+      },
+      "upgradeMix": {
+        "calm": 1657,
+        "reinforced": 325,
+        "solar": 495,
+        "express": 471,
+        "concierge": 869
+      },
+      "commonDeathFloors": [
+        [
+          "95",
+          35
+        ],
+        [
+          "93",
+          32
+        ],
+        [
+          "94",
+          25
+        ],
+        [
+          "97",
+          24
+        ],
+        [
+          "92",
+          23
+        ],
+        [
+          "96",
+          19
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 0
+    },
+    {
+      "economy": "flat-start20",
+      "initialEnergy": 20,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 42.66,
+      "median": 19,
+      "p10": 14,
+      "p90": 97,
+      "max": 165,
+      "reach10": 100,
+      "reach20": 49,
+      "reach30": 37.6,
+      "reach60": 31.4,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.19,
+        "meanPower": 3.48,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 76.16,
+        "upgradePct": 100
+      },
+      "meanPurchases": 4.27,
+      "meanEarned": 640.33,
+      "meanChargeSpent": 107.66,
+      "meanUpgradeSpent": 311.45,
+      "shopVisits": 1858,
+      "noUpgradePct": 24.27,
+      "rechargeVisits": 1834,
+      "budgetCrowdingPct": 6.08,
+      "reserveShortfalls": 437,
+      "capacityShortfalls": 0,
+      "stations": 20832,
+      "highAgitationPct": 11.75,
+      "emptyPct": 3.79,
+      "meanOccupancy": 4.96,
+      "deaths": {
+        "energy": 342,
+        "agitation": 156,
+        "both": 0,
+        "fuse": 2,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "calm": 729,
+        "reinforced": 236,
+        "solar": 344,
+        "express": 304,
+        "concierge": 521
+      },
+      "commonDeathFloors": [
+        [
+          "17",
+          45
+        ],
+        [
+          "18",
+          42
+        ],
+        [
+          "15",
+          41
+        ],
+        [
+          "19",
+          32
+        ],
+        [
+          "16",
+          30
+        ],
+        [
+          "14",
+          29
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 333
+    },
+    {
+      "economy": "flat-start22",
+      "initialEnergy": 22,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 93.03,
+      "median": 93,
+      "p10": 71,
+      "p90": 115,
+      "max": 179,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 96.8,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.39,
+        "meanPower": 5.45,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 80.3,
+        "upgradePct": 98.8
+      },
+      "meanPurchases": 7.68,
+      "meanEarned": 1442.76,
+      "meanChargeSpent": 288.75,
+      "meanUpgradeSpent": 666.08,
+      "shopVisits": 4425,
+      "noUpgradePct": 32.36,
+      "rechargeVisits": 4425,
+      "budgetCrowdingPct": 2.37,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 0,
+      "stations": 46013,
+      "highAgitationPct": 16.45,
+      "emptyPct": 6.1,
+      "meanOccupancy": 4.65,
+      "deaths": {
+        "energy": 0,
+        "agitation": 484,
+        "both": 0,
+        "fuse": 16,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "calm": 1653,
+        "reinforced": 336,
+        "solar": 495,
+        "express": 476,
+        "concierge": 881
+      },
+      "commonDeathFloors": [
+        [
+          "95",
+          34
+        ],
+        [
+          "93",
+          32
+        ],
+        [
+          "92",
+          27
+        ],
+        [
+          "94",
+          25
+        ],
+        [
+          "96",
+          25
+        ],
+        [
+          "97",
+          25
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 0
+    },
+    {
+      "economy": "flat-start22",
+      "initialEnergy": 22,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 47.06,
+      "median": 26,
+      "p10": 15,
+      "p90": 98,
+      "max": 165,
+      "reach10": 100,
+      "reach20": 54.4,
+      "reach30": 43,
+      "reach60": 35.8,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.39,
+        "meanPower": 5.45,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 80.3,
+        "upgradePct": 100
+      },
+      "meanPurchases": 4.63,
+      "meanEarned": 713.23,
+      "meanChargeSpent": 119.4,
+      "meanUpgradeSpent": 346.14,
+      "shopVisits": 2061,
+      "noUpgradePct": 25.62,
+      "rechargeVisits": 2039,
+      "budgetCrowdingPct": 4.17,
+      "reserveShortfalls": 413,
+      "capacityShortfalls": 0,
+      "stations": 23029,
+      "highAgitationPct": 12.38,
+      "emptyPct": 4.26,
+      "meanOccupancy": 4.91,
+      "deaths": {
+        "energy": 318,
+        "agitation": 178,
+        "both": 0,
+        "fuse": 4,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "calm": 812,
+        "reinforced": 252,
+        "solar": 363,
+        "express": 325,
+        "concierge": 565
+      },
+      "commonDeathFloors": [
+        [
+          "19",
+          60
+        ],
+        [
+          "17",
+          48
+        ],
+        [
+          "16",
+          31
+        ],
+        [
+          "18",
+          31
+        ],
+        [
+          "14",
+          27
+        ],
+        [
+          "15",
+          22
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 314
+    },
+    {
+      "economy": "flat-start24",
+      "initialEnergy": 24,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 93.63,
+      "median": 94,
+      "p10": 69,
+      "p90": 117,
+      "max": 179,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 97,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.52,
+        "meanPower": 7.44,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 84.4,
+        "upgradePct": 99.6
+      },
+      "meanPurchases": 7.74,
+      "meanEarned": 1451.57,
+      "meanChargeSpent": 286.26,
+      "meanUpgradeSpent": 667.81,
+      "shopVisits": 4450,
+      "noUpgradePct": 33.03,
+      "rechargeVisits": 4450,
+      "budgetCrowdingPct": 2.07,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 0,
+      "stations": 46315,
+      "highAgitationPct": 16.64,
+      "emptyPct": 6.53,
+      "meanOccupancy": 4.62,
+      "deaths": {
+        "energy": 0,
+        "agitation": 484,
+        "both": 0,
+        "fuse": 16,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "calm": 1648,
+        "reinforced": 348,
+        "solar": 496,
+        "express": 478,
+        "concierge": 898
+      },
+      "commonDeathFloors": [
+        [
+          "95",
+          31
+        ],
+        [
+          "93",
+          30
+        ],
+        [
+          "92",
+          28
+        ],
+        [
+          "94",
+          25
+        ],
+        [
+          "97",
+          25
+        ],
+        [
+          "96",
+          21
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 0
+    },
+    {
+      "economy": "flat-start24",
+      "initialEnergy": 24,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "upgrades-first",
+      "runs": 500,
+      "meanFloor": 53.55,
+      "median": 34,
+      "p10": 17,
+      "p90": 100,
+      "max": 165,
+      "reach10": 100,
+      "reach20": 66.2,
+      "reach30": 51.4,
+      "reach60": 43.4,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.52,
+        "meanPower": 7.44,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 84.4,
+        "upgradePct": 100
+      },
+      "meanPurchases": 5.22,
+      "meanEarned": 824.4,
+      "meanChargeSpent": 138.6,
+      "meanUpgradeSpent": 398.62,
+      "shopVisits": 2383,
+      "noUpgradePct": 26.9,
+      "rechargeVisits": 2359,
+      "budgetCrowdingPct": 2.81,
+      "reserveShortfalls": 398,
+      "capacityShortfalls": 0,
+      "stations": 26274,
+      "highAgitationPct": 13.27,
+      "emptyPct": 4.29,
+      "meanOccupancy": 4.87,
+      "deaths": {
+        "energy": 278,
+        "agitation": 217,
+        "both": 0,
+        "fuse": 5,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "calm": 927,
+        "reinforced": 280,
+        "solar": 389,
+        "express": 362,
+        "concierge": 650
+      },
+      "commonDeathFloors": [
+        [
+          "19",
+          46
+        ],
+        [
+          "17",
+          41
+        ],
+        [
+          "18",
+          34
+        ],
+        [
+          "16",
+          22
+        ],
+        [
+          "15",
+          17
+        ],
+        [
+          "29",
+          17
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 276
+    },
+    {
+      "economy": "literal-start24-cap24",
+      "initialEnergy": 24,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": false,
+      "policy": "charge-only",
+      "runs": 500,
+      "meanFloor": 42.49,
+      "median": 39,
+      "p10": 38,
+      "p90": 49,
+      "max": 68,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 2.2,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.52,
+        "meanPower": 7.44,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 84.4,
+        "upgradePct": 0
+      },
+      "meanPurchases": 0,
+      "meanEarned": 559.59,
+      "meanChargeSpent": 125.82,
+      "meanUpgradeSpent": 0,
+      "shopVisits": 1703,
+      "noUpgradePct": 100,
+      "rechargeVisits": 1703,
+      "budgetCrowdingPct": 2.17,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 703,
+      "stations": 20744,
+      "highAgitationPct": 3.25,
+      "emptyPct": 0.36,
+      "meanOccupancy": 5.29,
+      "deaths": {
+        "energy": 458,
+        "agitation": 38,
+        "both": 4,
+        "fuse": 0,
+        "censored": 0
+      },
+      "upgradeMix": {},
+      "commonDeathFloors": [
+        [
+          "39",
+          242
+        ],
+        [
+          "38",
+          95
+        ],
+        [
+          "49",
+          75
+        ],
+        [
+          "48",
+          27
+        ],
+        [
+          "59",
+          19
+        ],
+        [
+          "67",
+          9
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 462
+    },
+    {
+      "economy": "literal-start24-cap30",
+      "initialEnergy": 24,
+      "initialCapacity": 30,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 87.07,
+      "median": 91,
+      "p10": 68,
+      "p90": 99,
+      "max": 122,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 97.8,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.52,
+        "meanPower": 7.44,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 84.4,
+        "upgradePct": 100
+      },
+      "meanPurchases": 8.6,
+      "meanEarned": 1254.59,
+      "meanChargeSpent": 402.91,
+      "meanUpgradeSpent": 701.54,
+      "shopVisits": 4082,
+      "noUpgradePct": 22.61,
+      "rechargeVisits": 4082,
+      "budgetCrowdingPct": 18.54,
+      "reserveShortfalls": 46,
+      "capacityShortfalls": 789,
+      "stations": 43037,
+      "highAgitationPct": 16.09,
+      "emptyPct": 5.55,
+      "meanOccupancy": 4.61,
+      "deaths": {
+        "energy": 94,
+        "agitation": 392,
+        "both": 5,
+        "fuse": 9,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "reinforced": 524,
+        "calm": 1255,
+        "solar": 699,
+        "express": 392,
+        "concierge": 574,
+        "battery": 857
+      },
+      "commonDeathFloors": [
+        [
+          "99",
+          61
+        ],
+        [
+          "98",
+          27
+        ],
+        [
+          "92",
+          24
+        ],
+        [
+          "93",
+          23
+        ],
+        [
+          "94",
+          23
+        ],
+        [
+          "91",
+          21
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 88
+    },
+    {
+      "economy": "literal-start24-cap30",
+      "initialEnergy": 24,
+      "initialCapacity": 30,
+      "noNegativeCheckpoint": false,
+      "policy": "charge-only",
+      "runs": 500,
+      "meanFloor": 62.12,
+      "median": 67,
+      "p10": 46,
+      "p90": 69,
+      "max": 78,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 76.6,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.52,
+        "meanPower": 7.44,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 84.4,
+        "upgradePct": 0
+      },
+      "meanPurchases": 0,
+      "meanEarned": 779.32,
+      "meanChargeSpent": 259.3,
+      "meanUpgradeSpent": 0,
+      "shopVisits": 2792,
+      "noUpgradePct": 100,
+      "rechargeVisits": 2792,
+      "budgetCrowdingPct": 1.33,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 387,
+      "stations": 30560,
+      "highAgitationPct": 9.68,
+      "emptyPct": 2,
+      "meanOccupancy": 4.83,
+      "deaths": {
+        "energy": 209,
+        "agitation": 262,
+        "both": 22,
+        "fuse": 7,
+        "censored": 0
+      },
+      "upgradeMix": {},
+      "commonDeathFloors": [
+        [
+          "68",
+          192
+        ],
+        [
+          "69",
+          48
+        ],
+        [
+          "64",
+          25
+        ],
+        [
+          "65",
+          24
+        ],
+        [
+          "67",
+          22
+        ],
+        [
+          "66",
+          19
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 231
+    },
+    {
+      "economy": "literal-start24-cap36",
+      "initialEnergy": 24,
+      "initialCapacity": 36,
+      "noNegativeCheckpoint": false,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 88.5,
+      "median": 91,
+      "p10": 67,
+      "p90": 108,
+      "max": 128,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 97.4,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.52,
+        "meanPower": 7.44,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 84.4,
+        "upgradePct": 99.6
+      },
+      "meanPurchases": 8.65,
+      "meanEarned": 1310.84,
+      "meanChargeSpent": 423.84,
+      "meanUpgradeSpent": 733.25,
+      "shopVisits": 4172,
+      "noUpgradePct": 22.27,
+      "rechargeVisits": 4172,
+      "budgetCrowdingPct": 16.66,
+      "reserveShortfalls": 86,
+      "capacityShortfalls": 623,
+      "stations": 43750,
+      "highAgitationPct": 15.93,
+      "emptyPct": 6.01,
+      "meanOccupancy": 4.62,
+      "deaths": {
+        "energy": 70,
+        "agitation": 410,
+        "both": 3,
+        "fuse": 17,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "calm": 1324,
+        "reinforced": 484,
+        "solar": 806,
+        "express": 433,
+        "concierge": 651,
+        "battery": 628
+      },
+      "commonDeathFloors": [
+        [
+          "95",
+          26
+        ],
+        [
+          "99",
+          24
+        ],
+        [
+          "92",
+          23
+        ],
+        [
+          "91",
+          21
+        ],
+        [
+          "93",
+          21
+        ],
+        [
+          "94",
+          19
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 58
+    },
+    {
+      "economy": "literal-start24-cap36",
+      "initialEnergy": 24,
+      "initialCapacity": 36,
+      "noNegativeCheckpoint": false,
+      "policy": "charge-only",
+      "runs": 500,
+      "meanFloor": 64.69,
+      "median": 67,
+      "p10": 46,
+      "p90": 79,
+      "max": 98,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 77.2,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.52,
+        "meanPower": 7.44,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 84.4,
+        "upgradePct": 0
+      },
+      "meanPurchases": 0,
+      "meanEarned": 795.75,
+      "meanChargeSpent": 292.92,
+      "meanUpgradeSpent": 0,
+      "shopVisits": 2949,
+      "noUpgradePct": 100,
+      "rechargeVisits": 2949,
+      "budgetCrowdingPct": 1.25,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 542,
+      "stations": 31844,
+      "highAgitationPct": 11.06,
+      "emptyPct": 3.11,
+      "meanOccupancy": 4.73,
+      "deaths": {
+        "energy": 117,
+        "agitation": 370,
+        "both": 6,
+        "fuse": 7,
+        "censored": 0
+      },
+      "upgradeMix": {},
+      "commonDeathFloors": [
+        [
+          "69",
+          96
+        ],
+        [
+          "79",
+          27
+        ],
+        [
+          "68",
+          26
+        ],
+        [
+          "64",
+          23
+        ],
+        [
+          "65",
+          23
+        ],
+        [
+          "66",
+          23
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 123
+    },
+    {
+      "economy": "flat-start17-no-negative",
+      "initialEnergy": 17,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": true,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 74.25,
+      "median": 91,
+      "p10": 10,
+      "p90": 111,
+      "max": 169,
+      "reach10": 77,
+      "reach20": 77,
+      "reach30": 77,
+      "reach60": 73.8,
+      "firstShop": {
+        "guidedReach": 72,
+        "randomReach": 82,
+        "meanCash": 110.33,
+        "meanPower": 0.96,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 68.26,
+        "upgradePct": 94.03
+      },
+      "meanPurchases": 5.79,
+      "meanEarned": 1119.01,
+      "meanChargeSpent": 230.67,
+      "meanUpgradeSpent": 506.46,
+      "shopVisits": 3416,
+      "noUpgradePct": 32.82,
+      "rechargeVisits": 3416,
+      "budgetCrowdingPct": 5.47,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 0,
+      "stations": 36627,
+      "highAgitationPct": 16.06,
+      "emptyPct": 6.33,
+      "meanOccupancy": 4.64,
+      "deaths": {
+        "energy": 115,
+        "agitation": 374,
+        "both": 0,
+        "fuse": 11,
+        "censored": 0
+      },
+      "upgradeMix": {
+        "solar": 381,
+        "reinforced": 247,
+        "express": 357,
+        "calm": 1261,
+        "concierge": 650
+      },
+      "commonDeathFloors": [
+        [
+          "10",
+          115
+        ],
+        [
+          "93",
+          27
+        ],
+        [
+          "95",
+          26
+        ],
+        [
+          "94",
+          22
+        ],
+        [
+          "92",
+          18
+        ],
+        [
+          "97",
+          17
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 115
+    },
+    {
+      "economy": "flat-start18-no-negative",
+      "initialEnergy": 18,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": true,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 93.88,
+      "median": 94,
+      "p10": 71,
+      "p90": 117,
+      "max": 180,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 96.6,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.03,
+        "meanPower": 1.51,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 72.04,
+        "upgradePct": 96.8
+      },
+      "meanPurchases": 7.6,
+      "meanEarned": 1431.21,
+      "meanChargeSpent": 299.65,
+      "meanUpgradeSpent": 663.25,
+      "shopVisits": 4459,
+      "noUpgradePct": 32.7,
+      "rechargeVisits": 4459,
+      "budgetCrowdingPct": 4.26,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 0,
+      "stations": 46438,
+      "highAgitationPct": 16.19,
+      "emptyPct": 6.65,
+      "meanOccupancy": 4.61,
+      "deaths": {
+        "energy": 0,
+        "agitation": 483,
+        "both": 0,
+        "fuse": 16,
+        "censored": 1
+      },
+      "upgradeMix": {
+        "calm": 1657,
+        "reinforced": 328,
+        "solar": 494,
+        "express": 466,
+        "concierge": 854
+      },
+      "commonDeathFloors": [
+        [
+          "95",
+          39
+        ],
+        [
+          "93",
+          38
+        ],
+        [
+          "94",
+          28
+        ],
+        [
+          "97",
+          26
+        ],
+        [
+          "92",
+          23
+        ],
+        [
+          "96",
+          20
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 0
+    },
+    {
+      "economy": "flat-start20-no-negative",
+      "initialEnergy": 20,
+      "initialCapacity": 24,
+      "noNegativeCheckpoint": true,
+      "policy": "balanced",
+      "runs": 500,
+      "meanFloor": 93.52,
+      "median": 94,
+      "p10": 71,
+      "p90": 117,
+      "max": 180,
+      "reach10": 100,
+      "reach20": 100,
+      "reach30": 100,
+      "reach60": 96.8,
+      "firstShop": {
+        "guidedReach": 100,
+        "randomReach": 100,
+        "meanCash": 113.19,
+        "meanPower": 3.48,
+        "negativePowerPct": 0,
+        "meanAfterReserve": 76.16,
+        "upgradePct": 98.2
+      },
+      "meanPurchases": 7.63,
+      "meanEarned": 1437.94,
+      "meanChargeSpent": 294.33,
+      "meanUpgradeSpent": 663.92,
+      "shopVisits": 4443,
+      "noUpgradePct": 32.66,
+      "rechargeVisits": 4443,
+      "budgetCrowdingPct": 3.22,
+      "reserveShortfalls": 0,
+      "capacityShortfalls": 0,
+      "stations": 46258,
+      "highAgitationPct": 16.14,
+      "emptyPct": 6.63,
+      "meanOccupancy": 4.62,
+      "deaths": {
+        "energy": 0,
+        "agitation": 483,
+        "both": 0,
+        "fuse": 16,
+        "censored": 1
+      },
+      "upgradeMix": {
+        "calm": 1657,
+        "reinforced": 325,
+        "solar": 495,
+        "express": 471,
+        "concierge": 869
+      },
+      "commonDeathFloors": [
+        [
+          "95",
+          35
+        ],
+        [
+          "93",
+          32
+        ],
+        [
+          "94",
+          25
+        ],
+        [
+          "97",
+          24
+        ],
+        [
+          "92",
+          23
+        ],
+        [
+          "96",
+          19
+        ]
+      ],
+      "forecastMisses": 0,
+      "energyDeathsWithCash": 0
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "seedBase": 660301,
+  "horizon": 600,
+  "totalRuns": 10000,
+  "summaries": [
+    {
+      "policy": "without-dismissal",
+      "runs": 5000,
+      "meanObservedFloor": 71.3,
+      "median": 69,
+      "p10": 46,
+      "p90": 93,
+      "max": 182,
+      "reachFirstShopPct": 99.96000000000001,
+      "deaths": {
+        "power": 1,
+        "agitation": 4909,
+        "fuse": 90,
+        "censored": 0
+      },
+      "dismissals": 0,
+      "compensation": 0,
+      "chargeSpent": 1144056,
+      "upgrades": 39838,
+      "seen": {
+        "mystery": 39140,
+        "shifter": 26201,
+        "mimic": 31649
+      },
+      "boarded": {
+        "mystery": 20472,
+        "shifter": 16022,
+        "mimic": 12311
+      },
+      "forecastErrors": 0
+    },
+    {
+      "policy": "with-dismissal",
+      "runs": 5000,
+      "meanObservedFloor": 105.3,
+      "median": 99,
+      "p10": 68,
+      "p90": 147,
+      "max": 326,
+      "reachFirstShopPct": 100,
+      "deaths": {
+        "power": 80,
+        "agitation": 4917,
+        "fuse": 3,
+        "censored": 0
+      },
+      "dismissals": 27279,
+      "compensation": 280912,
+      "chargeSpent": 1735496,
+      "upgrades": 44460,
+      "seen": {
+        "mystery": 59665,
+        "shifter": 43222,
+        "mimic": 51755
+      },
+      "boarded": {
+        "mystery": 28300,
+        "shifter": 23635,
+        "mimic": 16271
+      },
+      "forecastErrors": 0
+    }
+  ]
+}

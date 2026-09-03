@@ -1,5 +1,5 @@
-import { bondStatus } from './rider-profile';
-import { energySavings, crowdAgitation, hasNeighbour, neighbourCount, neighbours, patienceCost, shiftAgitation, totalWeight, travelEnergyCost, type RunState } from './game-engine';
+import { PASSENGERS } from './game-data';
+import { crowdAgitation, hasNeighbour, neighbourCount, neighbours, patienceCost, shiftAgitation, totalWeight, travelEnergyCost, type RunState } from './game-engine';
 
 export type StressForecast = {
   range: string;
@@ -60,9 +60,7 @@ export function stressForecast(state: RunState, weight = totalWeight(state.cabin
   const minArrivals = Math.min(...variants.map((variant) => variant.arrivals)); const maxArrivals = Math.max(...variants.map((variant) => variant.arrivals));
   const arrivalReason = !maxArrivals ? '' : minArrivals === maxArrivals ? `到站舒缓 −${maxArrivals}` : minArrivals === 0 ? `到站舒缓最多 −${maxArrivals}` : `到站舒缓 −${minArrivals}～−${maxArrivals}`;
   const crowd = crowdAgitation(occupied); const fatigue = shiftAgitation(nextFloor, occupied);
-  const conflicts = nextFloor % 2 === 0 ? state.cabin.reduce((sum,rider,slot)=>sum+(rider && bondStatus(rider,state.cabin,slot).conflict ? 1 : 0),0) : 0;
-  const overload = weight > state.weightCap ? 2 : 0;
-  const fixedRise = thieves + celebrities + inspectors + crowd + fatigue + conflicts + overload;
+  const fixedRise = thieves + celebrities + inspectors + crowd + fatigue;
   const lows = variants.map((variant) => Math.max(0, state.stress + fixedRise + variant.impatient * 2 - relief - variant.arrivals));
   const highs = variants.map((variant) => Math.max(0, state.stress + fixedRise + variant.impatient * 2 + drunks * 2 - relief - variant.arrivals));
   const low = Math.min(...lows); const high = Math.max(...highs);
@@ -72,8 +70,6 @@ export function stressForecast(state: RunState, weight = totalWeight(state.cabin
     ? `${maxImpatient} 人耐心归零 +${maxImpatient * 2}`
     : minImpatient === 0 ? `最多 ${maxImpatient} 人可能耐心归零 +${maxImpatient * 2}` : `${minImpatient}～${maxImpatient} 人可能耐心归零 +${minImpatient * 2}～${maxImpatient * 2}`;
   const reasons = [
-    conflicts ? `邻座冲突 +${conflicts}` : '',
-    overload ? '载重超限 +2' : '',
     crowd ? crowd > 0 ? `拥挤 +${crowd}` : '宽松 −1' : '',
     fatigue ? `长班疲劳 +${fatigue}` : '',
     arrivalReason,
@@ -91,7 +87,25 @@ export function stressForecast(state: RunState, weight = totalWeight(state.cabin
   return { range, details, summary, tone, lowDelta, highDelta };
 }
 
-export function energyForecast(state: RunState, _weight = totalWeight(state.cabin)): EnergyForecast {
- const drain=travelEnergyCost(state.floor+1), saved=energySavings(state), delta=-drain+saved;
- return {range:signedDelta(delta),summary:`下一层电量 ${signedDelta(delta)} · 行驶 −${drain}${saved ? ' · 节能少耗1' : ''}；乘客不赠电`,danger:state.energy+delta<=0,lowDelta:delta,highDelta:delta};
+export function energyForecast(state: RunState, weight = totalWeight(state.cabin)): EnergyForecast {
+  const nextFloor = state.floor + 1; const drain = travelEnergyCost(nextFloor);
+  let fixedGain = 0; const reasons: string[] = [];
+  state.cabin.forEach((rider, slot) => {
+    if (!rider) return;
+    if (rider.kind === 'mechanic' && nextFloor % 3 === 0) fixedGain += 1;
+    if (rider.kind === 'ghost' && hasNeighbour(state.cabin, slot, ['exorcist'])) fixedGain += 1;
+    if (rider.kind === 'inspector' && nextFloor % 2 === 0 && weight <= 8) fixedGain += 1;
+  });
+  if (state.upgrades.solar && nextFloor % 4 === 0) fixedGain += state.upgrades.solar;
+  const arrivalGains = projectedDestinationVariants(state).map((variant) => state.cabin.reduce((sum, rider, index) => sum + (rider && variant[index] !== null && nextFloor >= variant[index]! ? PASSENGERS[rider.kind].energy : 0), 0));
+  const deltas = arrivalGains.map((arrivalGain) => {
+    return Math.min(state.energyCap, state.energy - drain + fixedGain + arrivalGain) - state.energy;
+  });
+  const lowDelta = Math.min(...deltas); const highDelta = Math.max(...deltas); const range = lowDelta === highDelta ? signedDelta(lowDelta) : `${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
+  const lowArrivalGain = Math.min(...arrivalGains); const highArrivalGain = Math.max(...arrivalGains);
+  reasons.push(`行驶 −${drain}`); if (fixedGain) reasons.push(`效果 +${fixedGain}`);
+  if (highArrivalGain) reasons.push(lowArrivalGain === highArrivalGain ? `到站 +${highArrivalGain}` : `到站 +${lowArrivalGain}～+${highArrivalGain}`);
+  const danger = state.energy + lowDelta <= 0;
+  return { range, summary: `下一层能源 ${range} · ${reasons.join(' · ')}`, danger, lowDelta, highDelta };
 }
+

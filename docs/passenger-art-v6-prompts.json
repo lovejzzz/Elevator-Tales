@@ -1,0 +1,24 @@
+{
+  "mode": "built-in image_gen",
+  "reference": "/Users/tianxing/.codex/.chatgpt-projects/g-p-6a95c4090de481919fc7e2817e1b876e/LastElevator/public/assets/passengers-03.png",
+  "portraits": [
+    {
+      "name": "mystery",
+      "file": "mystery.png",
+      "prompt": "Use case: stylized-concept. Asset type: finished static passenger card portrait for the game Elevator Tales. Input image 1 is a STYLE AND SCALE REFERENCE only: match the painterly cinematic realism, 1930s midnight noir mood, adult human proportions, realistic face treatment, fabric rendering and lighting of ONE single cell of the reference; do not recreate the grid. Create one new single character in a square 1:1 canvas. Composition: standing waist-up adult at 3/4 frontal camera, entire head visible with a small margin above it, torso and hands visible, fills approximately the same relative area as a single reference cell. Plain near-black/deep bottle-green backdrop, restrained brass warm light and a cool teal rim. This is a static portrait, not a sprite or animation sheet. No text, borders, logos, watermark, duplicate people, extra limbs, cropped head or floating body parts. Subject: MYSTERY, an elegant unreadable adult traveler in a tailored charcoal coat and brimmed dark hat. Dark leather gloves naturally hold a sealed gold envelope at the lower chest. Face partly in the hat's shade, but anatomically complete and coherent with visible eyes and a distinct nose and mouth. Calm enigmatic expression. Real fabric texture, subtle gold wax seal without any lettering.",
+      "source": "/Users/tianxing/.codex/generated_images/01a064cc-94aa-7fb3-aea1-7c637781fd41/exec-d65837f6-b44c-4332-8567-7fbb6d934358.png"
+    },
+    {
+      "name": "shifter",
+      "file": "shifter.png",
+      "prompt": "Use case: stylized-concept. Asset type: finished static passenger card portrait for the game Elevator Tales. Input image 1 is a STYLE AND SCALE REFERENCE only: match the painterly cinematic realism, 1930s midnight noir mood, adult human proportions, realistic face treatment, fabric rendering and lighting of ONE single cell of the reference; do not recreate the grid. Create one new single character in a square 1:1 canvas. Composition: standing waist-up adult at 3/4 frontal camera, entire head visible with a small margin above it, torso and hands visible, fills approximately the same relative area as a single reference cell. Plain near-black/deep bottle-green backdrop, restrained brass warm light and a cool teal rim. This is a static portrait, not a sprite or animation sheet. No text, borders, logos, watermark, duplicate people, extra limbs, cropped head or floating body parts. Subject: SHIFTER, an androgynous adult theatrical traveler in a jewel-toned tailored coat with subtle patchwork and asymmetrical lapels. Face fully visible and realistic, no makeup distortion. One hand holds a single ivory theatrical mask against their chest; the mask is unmistakably a handheld theater prop, not a second living head. Suggest changing identity through the costume and confident ambiguous expression, never through grotesque anatomy.",
+      "source": "/Users/tianxing/.codex/generated_images/01a064cc-94aa-7fb3-aea1-7c637781fd41/exec-b98a1b19-9310-46b5-aebc-3bdeb65286c6.png"
+    },
+    {
+      "name": "mimic",
+      "file": "mimic.png",
+      "prompt": "Use case: stylized-concept. Asset type: finished static passenger card portrait for the game Elevator Tales. Input image 1 is a STYLE AND SCALE REFERENCE only: match the painterly cinematic realism, 1930s midnight noir mood, adult human proportions, realistic face treatment, fabric rendering and lighting of ONE single cell of the reference; do not recreate the grid. Create one new single character in a square 1:1 canvas. Composition: standing waist-up adult at 3/4 frontal camera, entire head visible with a small margin above it, torso and hands visible, fills approximately the same relative area as a single reference cell. Plain near-black/deep bottle-green backdrop, restrained brass warm light and a cool teal rim. This is a static portrait, not a sprite or animation sheet. No text, borders, logos, watermark, duplicate people, extra limbs, cropped head or floating body parts. Subject: MIMIC, a poised adult traveler in a silver-black 1930s suit with a mirrored geometric lapel and subtly iridescent woven fabric. One hand naturally holds a small round pocket mirror near the chest; its surface catches abstract teal and brass light, not a second face. One distinct realistic face and body, calm observant gaze, neatly styled hair. Understated uncanny elegance without distortion.",
+      "source": "/Users/tianxing/.codex/generated_images/01a064cc-94aa-7fb3-aea1-7c637781fd41/exec-2eda8416-aa36-41b6-bee4-c86f7e7b777a.png"
+    }
+  ]
+}
