@@ -309,6 +309,18 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .reward-coins { color:#f1ce83; }.reward-energy { color:#a9dbbc; }
 .passenger-rules { display:grid; gap:5px; color:#c3cbbf; font:400 13px/1.6 var(--font-sans); white-space:normal; overflow:visible; overflow-wrap:anywhere; }
 .passenger-rules>span { display:block; }
+.passenger-rule-blocks { display:block; }
+.passenger-rule-blocks>.passenger-rule-block { display:block; padding:8px 10px; margin-top:7px; border-left:2px solid #69736a; background:#b6c0a905; font:400 12px/1.65 var(--font-sans); color:#d2d9cb; white-space:normal; overflow-wrap:anywhere; }
+.passenger-rule-blocks>.passenger-rule-block:first-child { margin-top:0; }
+.passenger-rule-block>b { font:600 12px/1.65 var(--font-sans); color:#d2d9cb; }
+.passenger-rule-block.rule-good { border-color:#7fb99a; background:#81b69a09; }
+.passenger-rule-block.rule-good>b { color:#a9d8bb; }
+.passenger-rule-block.rule-risk { border-color:#c18b71; background:#c18b7107; }
+.passenger-rule-block.rule-risk>b { color:#e5b59d; }
+.passenger-rule-block .rule-note { color:#acb9ad; font:400 11px/1.6 var(--font-sans); }
+.passenger-detail-rules .passenger-rule-block { font-size:14px; }
+.passenger-detail-rules .passenger-rule-block>b { font-size:14px; }
+.passenger-detail-rules .rule-note { font-size:12px; }
 .passenger-tip { color:#d2c3a3; font:400 12px/1.5 var(--font-sans); }
 .passenger-action { display:flex; justify-content:space-between; flex-wrap:wrap; align-items:center; gap:4px 8px; border-top:1px solid rgba(188,159,100,.12); padding-top:8px; color:#8b9d90; font:400 11px/1.5 var(--font-sans); }
 .passenger-action b { color:#abd5b8; font-size:11px; font-weight:500; }.boarded .passenger-action>span,.pending .passenger-action>span { color:#f0cd88; }
@@ -582,11 +594,6 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .passenger-item .mobile-rule-button { display:grid; place-items:center; position:absolute; right:5px; top:5px; width:36px; height:36px; border:0; background:#13221bd9; color:#dbc79e; cursor:pointer; }
  .passenger-item .mobile-rule-button svg { width:17px; height:17px; }
  .passenger-heading { padding-right:25px; }
- .bond-compact { display:grid; gap:2px; padding-top:5px; white-space:normal; overflow-wrap:anywhere; }
- .bond-compact b { color:#9bd4b0; font-weight:500; }
- .bond-compact strong { color:#ecd49e; font:500 13px/1.5 var(--font-sans); }
- .bond-compact>span { color:#bcc8ba; font:400 12px/1.5 var(--font-sans); }
- .bond-conflict b { color:#e3ab91; }
  .passenger-destination>span { display:none; }
  .passenger-card { gap:5px; padding:10px; }
  .passenger-rules { font-size:12px; line-height:1.5; gap:3px; }

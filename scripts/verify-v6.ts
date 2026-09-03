@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { PASSENGERS, PASSENGER_ORDER, type PassengerKind } from '../lib/game-data';
 import { chargeBattery, chargingPlan, cooperationBonus, dismissRider, dismissalCost, initialRun, installedUpgradeSummary, makeOffers, resolveFloor, totalWeight, upgradeChoices, type Rider } from '../lib/game-engine';
 import { BONDS, bondStatus, randomTraits, riderProfile } from '../lib/rider-profile';
@@ -70,7 +71,31 @@ for(const kind of PASSENGER_ORDER)for(const bonus of [3,5,7]){
  assert.match(brief.bondRules[2],/偶数层躁动 \+1/);
  assert.match(brief.bondRules[2],/有协作邻座时免除/);
  assert.ok(!brief.rules.join('').includes('避让'));
+ assert.equal(brief.cardRules.length,3);
+ assert.deepEqual(brief.cardRules.map(rule=>rule.tone),['neutral','good','risk']);
+ assert.ok(brief.cardRules[1].lines.join('').includes(String(bonus)));
+ assert.equal(brief.cardRules[1].heading,'协作：旁边有'+brief.bond.partners.replaceAll(' / ','或'));
+ assert.equal(brief.cardRules[2].heading,'冲突：旁边有'+brief.bond.opponents.replaceAll(' / ','或'));
+ assert.ok(brief.cardRules.every(rule=>rule.lines.length>0&&rule.lines.every(line=>line.endsWith('。'))));
 }
+const thiefCopy=passengerBrief(rider('thief'),1);
+assert.equal(thiefCopy.cardRules[0].heading,'没人看管：旁边没有警察或律师');
+assert.match(thiefCopy.cardRules[0].lines.join(''),/赚 3 金币.*躁动 \+1/);
+assert.match(thiefCopy.cardRules[1].lines.join(''),/赚 1 金币.*受控奖励 \+5 金币.*再 \+3 金币/);
+for(const bonus of [3,5,7]){
+ const own=rider('thief','thief-arrive',{destination:2});
+ const state={...initialRun(),cabin:cabin(own,rider('cop')),upgrades:{...initialRun().upgrades,battery:(bonus-3)/2}};
+ const next=resolveFloor(state,()=>.9);
+ assert.equal(next.lastEarnings.sources.find(s=>s.label==='受控小偷')?.amount,1);
+ assert.equal(next.lastEarnings.sources.find(s=>s.label==='小偷到站')?.amount,5+5+bonus);
+ assert.ok(!next.lastPressure.sources.some(s=>s.label==='小偷未受控'));
+}
+// Regression for the screenshot: explicit line breaks plus independently
+// block-level sections cannot be flattened by .passenger-rules > span.
+const presentationSource=readFileSync(new URL('../components/elevator-game.tsx',import.meta.url),'utf8');
+const stylesheet=readFileSync(new URL('../app/globals.css',import.meta.url),'utf8');
+assert.match(presentationSource,/<span key={line}><br \/>{line}<\/span>/);
+assert.match(stylesheet,/\.passenger-rule-blocks>\.passenger-rule-block\s*{\s*display:block/);
 const unupgraded={...initialRun(),cabin:cabin(collaborating,rider('courier'))};
 assert.equal(resolveFloor(unupgraded,rng).coins,10,'base fare7 + advertised cooperation3');
 const twoPartners=[collaborating,rider('courier','partner1'),null,rider('courier','partner2'),null,null];

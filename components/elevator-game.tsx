@@ -11,7 +11,7 @@ import { conflictingConnection, activeConnection, planPlacement, type PlacementR
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
 import { bondStatus } from '@/lib/rider-profile';
 import { portraitAsset } from '@/lib/passenger-assets';
-import { passengerBrief } from '@/lib/passenger-presentation';
+import { passengerBrief, type PassengerRuleBlock } from '@/lib/passenger-presentation';
 import { metricChanges, type MetricChange, type MetricKey } from '@/lib/metric-feedback';
 
 type DragPayload = { type: 'offer'; id: string } | { type: 'slot'; slot: number };
@@ -33,6 +33,12 @@ function AnimatedNumber({ value }: { value: number }) {
     return () => cancelAnimationFrame(frame);
   }, [value]);
   return <span className="animated-number" aria-label={String(value)}>{shown}</span>;
+}
+
+// Explicit line breaks keep each rule readable even if a legacy span style
+// changes its layout. Each line is also a complete, punctuated sentence.
+function PassengerRuleBlocks({ rules }: { rules: PassengerRuleBlock[] }) {
+  return <span className="passenger-rule-blocks">{rules.map(rule=><span key={rule.heading} className={`passenger-rule-block rule-${rule.tone}`}><b>{rule.heading}</b>{rule.lines.map(line=><span key={line}><br />{line}</span>)}{rule.note&&<span className="rule-note"><br />{rule.note}</span>}</span>)}</span>;
 }
 
 const signedDelta = (value: number) => value > 0 ? `+${value}` : value < 0 ? `−${Math.abs(value)}` : '不变';
@@ -308,7 +314,7 @@ export default function ElevatorGame() {
               <span className="passenger-facts"><span>占载重 <b>{brief.weight}</b></span><span title="每站通常消耗 1 点，高躁动时消耗 2 点；归零提前离开，并增加 2 躁动。">耐心 <b>{offer.patience} 点</b></span>{offer.fuse !== undefined && <span className="fact-danger">引信 <b>{offer.fuse} 格</b></span>}{spec.risk && <span className="fact-danger">{spec.risk.label}</span>}</span>
               <span className="arrival-reward"><span>到站基础奖励</span><span className="reward-coins"><Coins />金币 <b>{brief.coins === null ? '？到站揭晓' : `+${brief.coins}`}</b></span></span>
               {brief.tip > 0 && <span className="passenger-tip">另有升级小费 +{brief.tip} 金币，不参与车费倍率。</span>}
-              <span className="passenger-rules"><span>{spec.short}</span><span className="bond-compact bond-cooperation"><b>协作：{brief.bond.partners}</b><strong>{brief.bond.benefit}</strong><span>{brief.bond.condition}</span></span><span className="bond-compact bond-conflict"><b>冲突：{brief.bond.opponents}</b><span>{brief.bond.conflict}</span></span></span>
+              <span className="passenger-rules"><PassengerRuleBlocks rules={brief.cardRules} /></span>
               <span className="passenger-action"><span>{boarded ? '已上车 · 点击可撤回' : pending ? '已选中 · 请安排站位' : full ? '轿厢已满 · 暂不能上车' : tooHeavy ? '剩余载重不足' : '拖入空位，或点选安排'}</span>{partner ? <b>可联动 · {PASSENGERS[partner].name}</b> : firstPairLesson && offer.kind === 'lover' ? <b>教学配对</b> : offer.calledByLover ? <b>回应呼唤</b> : null}</span>
             </button><button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(offer);}} aria-label={`查看${spec.name}规则`}><HelpCircle /></button></div>;
           })}
@@ -327,7 +333,7 @@ export default function ElevatorGame() {
     <Dialog open={passengerDetails !== null} onOpenChange={(open) => {if(!open){setPassengerDetails(null);setEjectArmed(false);}}}><DialogContent className="story-dialog passenger-detail-dialog">
       {detailRider && detailBrief && <><p className="dialog-kicker">PASSENGER NOTES</p><DialogHeader><DialogTitle>{PASSENGERS[detailRider.kind].name}</DialogTitle><DialogDescription>还剩 {detailBrief.distance} 站 · 载重 {detailBrief.weight} · 耐心 {detailRider.patience}{detailRider.fuse !== undefined ? ` · 引信 ${detailRider.fuse}` : ''}</DialogDescription></DialogHeader>
         <div className="passenger-detail-reward">到站车费：{detailBrief.coins === null ? '？封存中，到站揭晓' : `+${detailBrief.coins} 金币`}{detailBrief.tip ? ` · 升级小费 +${detailBrief.tip}` : ''}</div>
-        <div className="passenger-detail-rules"><h3>角色技能</h3>{detailBrief.skillRules.map(rule=><p key={rule}>{rule}</p>)}<h3>协作收益与冲突代价</h3>{detailBrief.bondRules.map(rule=><p key={rule}>{rule}</p>)}</div>
+        <div className="passenger-detail-rules"><PassengerRuleBlocks rules={detailBrief.cardRules} /><h3>补充说明</h3>{detailBrief.detailRules.map(rule=><p key={rule}>{rule}</p>)}</div>
         {canDismiss && <section className="dismiss-panel"><b>提前请离 · 赔偿 {penalty} 金币</b><p>不结算到站收益，也不获得送达舒缓。已赚取的途中收益保留。赔偿 = 4 + 剩余站数 ×2。</p>
           {ejectArmed && <p className="dismiss-confirm">确定让这位乘客在 {run.floor} 层下车？此操作不可撤回。</p>}
           <button className="dismiss-button" disabled={run.coins < penalty} onClick={()=>ejectArmed ? confirmDismiss() : setEjectArmed(true)}><UserMinus />{run.coins < penalty ? `金币不足 · 还差 ${penalty-run.coins}` : ejectArmed ? `确认请离 · 支付 ${penalty}` : '提前请离这位乘客'}</button>

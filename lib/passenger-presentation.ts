@@ -1,4 +1,4 @@
-import { type PassengerKind } from './game-data';
+import { PASSENGERS, type PassengerKind } from './game-data';
 import { bondLines, bondSummary, riderProfile } from './rider-profile';
 import type { Rider } from './game-engine';
 
@@ -27,9 +27,45 @@ export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
   mimic: ['每位邻座复制一项：载重、车费或联动偏好，最多三项且不重复。','同一邻座组合不会重抽；邻座属性变化会同步。隐藏车费不会提前公开。','不复制技能、引信、路程；复制人互相连接时只取各自本体属性，避免递归。'],
 };
 
+export type PassengerRuleBlock = {
+ tone: 'neutral' | 'good' | 'risk'; heading: string; lines: string[]; note?: string;
+};
+
+export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bonus=3): PassengerRuleBlock[] {
+ const bond=bondSummary(rider,cabin,bonus),name=PASSENGERS[rider.kind].name;
+ const partners=bond.partners.replaceAll(' / ','或'),opponents=bond.opponents.replaceAll(' / ','或');
+ const short=PASSENGERS[rider.kind].short;
+ const ability:PassengerRuleBlock={tone:'neutral',heading:'人物能力',lines:[short.endsWith('。')?short:short+'。']};
+ const cooperation:PassengerRuleBlock={
+  tone:'good',heading:`协作：旁边有${partners}`,
+  lines:[`${name}到站时，额外赚 ${bonus} 金币。`],
+  note:'到站那一刻仍相邻，才有这笔奖励。',
+ };
+ if(rider.kind==='thief'){
+  ability.heading='没人看管：旁边没有警察或律师';
+  ability.lines=['每上 1 层，赚 3 金币。','每到偶数层，躁动 +1。'];
+  cooperation.lines=['途中：每层赚 1 金币，不再产生偷窃躁动。',`到站：受控奖励 +5 金币，协作奖励再 +${bonus} 金币。`];
+ }
+ if(rider.kind==='cop'){
+  ability.heading='警察能帮谁？';
+  ability.lines=['旁边的小偷：每层收益从 3 降为 1 金币，不再产生偷窃躁动。','旁边的炸弹客：每到偶数层，引信不减。'];
+ }
+ if(rider.kind==='lawyer'){
+  ability.heading='律师能帮谁？';
+  ability.lines=['旁边的小偷：每层收益从 3 降为 1 金币，不再产生偷窃躁动。'];
+  ability.note='律师不能延缓炸弹引信。';
+ }
+ return [ability,cooperation,{
+  tone:'risk',heading:`冲突：旁边有${opponents}`,
+  lines:['每到偶数层，额外躁动 +1。'],
+  note:`同时有${partners}相邻时，不触发这项冲突。`,
+ }];
+}
+
 export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|null>=[], bonus=3) {
  const profile=riderProfile(rider,cabin);
  const skillRules=PASSENGER_RULES[rider.kind],bondRules=bondLines(rider,cabin,bonus);
+ const detailRules=[...(['thief','cop','lawyer'].includes(rider.kind)?[]:skillRules),bondRules[1],'协作免除的只是邻座冲突，其他角色技能仍按各自条件触发。',...bondRules.slice(3)];
  return {coins:profile.hidden?null:profile.fare, tip:rider.fareBonus, energy:0,weight:profile.weight,hidden:profile.hidden,
-  distance:Math.max(0,rider.destination-floor),bond:bondSummary(rider,cabin,bonus),skillRules,bondRules,rules:[...skillRules,...bondRules]};
+  distance:Math.max(0,rider.destination-floor),bond:bondSummary(rider,cabin,bonus),cardRules:passengerCardRules(rider,cabin,bonus),detailRules,skillRules,bondRules,rules:[...skillRules,...bondRules]};
 }
