@@ -1,15 +1,15 @@
-import { PASSENGERS, type PassengerKind } from './game-data';
+import { MECHANIC_SAVING, PASSENGERS, type PassengerKind } from './game-data';
 import { bondLines, bondSummary, riderProfile } from './rider-profile';
 import { INSPECTOR_COMPLIANCE_REWARD, INSPECTOR_ENERGY_LIMIT, eventPressureMultiplier, riderAgitation, type Rider, type RunState } from './game-engine';
 
-export const SHARED_SAVING_RULE = '维修工、幽灵配对、节能线路共享每站省1电；稳压另算，只抵人物耗电。';
+export const SHARED_SAVING_RULE = `通常节能共享1电上限；车内有维修工时，每层上限提升到${MECHANIC_SAVING}。稳压另算，只抵人物耗电。`;
 
 // Cooperation conditions stay on the card face, including on phones.
 export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
   commuter: ['短途稳定，送达领取车费。'],
   tourist: ['旅途较长，送达车费较高。'],
   courier: ['短途周转，快速送达赚取金币。'],
-  mechanic: ['抵达 3、6、9… 层时，抵消1点耗电。', SHARED_SAVING_RULE],
+  mechanic: [`每层最多节能${MECHANIC_SAVING}电；本人耗1电，因此载有其他乘客时全车净省1电。`, SHARED_SAVING_RULE],
   lover: ['有恋人邻座：本人每层 +1 金币，到站车费翻倍。', '没有恋人邻座：每层有 25% 概率呼唤另一位恋人候客。'],
   musician: ['车内至少 4 人：每层躁动 −1。', '安抚相邻的醉汉和儿童，阻止其负面效果。'],
   thief: ['没有警察或律师邻座：每层 +3 金币，偶数层躁动 +1。', '有警察或律师邻座：改为每层 +1 金币，不再加压，到站车费 +5。'],
@@ -47,13 +47,13 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'celebrity':moneyNote='恰好1邻座：每站+3';pressure.splice(0,1,`2+邻座：偶数层 +${m}`);break;
   case 'musician':pressure.splice(0,1,'车内≥4人：每站 −1');special='安抚相邻醉汉、儿童';break;
   case 'nurse':pressure.splice(0,1,'偶数层 −1');special='安抚相邻醉汉、儿童';break;
-  case 'mechanic':energy.push('3的倍数层：节能1');break;
-  case 'ghost':special='无驱魔师：3的倍数层随机延误邻座1站';moneyNote='邻驱魔师：不延误，每站节能1，到站再+6币';break;
-  case 'exorcist':special='邻幽灵：阻止延误，每站节能1；幽灵到站再+6币';break;
+  case 'mechanic':energy.push(`每层：最多节能${MECHANIC_SAVING}`);break;
+  case 'ghost':special='无驱魔师：3的倍数层随机延误邻座1站；邻驱魔师：不延误且每站节能1';moneyNote='邻驱魔师：到站再+6币';break;
+  case 'exorcist':special='邻幽灵：阻止延误，每站节能1';moneyNote='受控幽灵到站再+6币';break;
   case 'inspector':moneyNote=`总耗电≤${INSPECTOR_ENERGY_LIMIT}：偶数层+${INSPECTOR_COMPLIANCE_REWARD}币`;pressure.splice(0,1,`总耗电>${INSPECTOR_ENERGY_LIMIT}：偶数层 +${m}`);special='检查整趟耗电，含本人；扣除稳压和节能';break;
   case 'coach':moneyNote='非教练邻座到站车费×1.5（不叠加）；本人到站每邻座+3币';break;
-  case 'cop':special='邻小偷：每站改赚1币，免偷窃躁动；邻炸弹：偶数层不减引信';break;
-  case 'lawyer':special='邻小偷：每站改赚1币，免偷窃躁动；不延缓炸弹';break;
+  case 'cop':moneyNote='邻小偷：小偷每站改赚1币';special='邻小偷：免偷窃躁动；邻炸弹：偶数层暂停引信';break;
+  case 'lawyer':moneyNote='邻小偷：小偷每站改赚1币';special='邻小偷：免偷窃躁动；不能暂停炸弹引信';break;
   case 'bomb':special=`引信 ${rider.fuse??0}：到站前归零即失败；挨警察偶数层不减`;break;
   case 'mystery':special='本次参数已固定；车费到站揭晓';break;
   case 'shifter':special='每站重抽三值和关系；基价28–48币';break;

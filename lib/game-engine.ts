@@ -1,5 +1,5 @@
 import { BONDS, bondStatus, profileWeight, randomTraits, riderProfile, type VariableTraits } from './rider-profile';
-import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, type PassengerKind, type UpgradeKey } from './game-data';
+import { ADJACENT, MECHANIC_SAVING, PASSENGERS, UNLOCK_TIERS, UPGRADES, type PassengerKind, type UpgradeKey } from './game-data';
 
 export type Rider = { id: string; kind: PassengerKind; destination: number; patience: number; boardedAt: number; fareBonus: number; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number };
 export type ChangeLine = { label: string; amount: number };
@@ -98,11 +98,13 @@ export const readyPartner = (kind: PassengerKind, cabin: Array<Rider | null>, ex
 export const rand = (min: number, max: number, rng: () => number = Math.random) => Math.floor(rng() * (max - min + 1)) + min;
 export const travelEnergyCost = (_destinationFloor: number) => 1;
 export const energySavings = (state: RunState) => {
-  const next=state.floor+1;let saved=state.upgrades.solar&&next%4===0?1:0;
+  const next=state.floor+1;const mechanicActive=state.cabin.some(rider=>rider?.kind==='mechanic');
+  let saved=state.upgrades.solar&&next%4===0?1:0;
   state.cabin.forEach((rider,slot)=>{
-    if(rider?.kind==='mechanic'&&next%3===0)saved++;
     if(rider?.kind==='ghost'&&hasNeighbour(state.cabin,slot,['exorcist']))saved++;
-  });return Math.min(1,saved,Math.max(0,passengerEnergy(state)-stabilizedEnergy(state)));
+  });
+  if(mechanicActive)saved=Math.max(saved,MECHANIC_SAVING);
+  return Math.min(mechanicActive?MECHANIC_SAVING:1,saved,Math.max(0,passengerEnergy(state)-stabilizedEnergy(state)));
 };
 // Compatibility export for archived callers: the remaining passenger cost.
 export const inspectionExtraEnergy = (state: RunState) => Math.max(0, passengerEnergy(state) - stabilizedEnergy(state) - energySavings(state));
@@ -190,7 +192,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
     }
   });
   deferredSwaps.forEach(([from, to]) => { [cabin[from], cabin[to]] = [cabin[to], cabin[from]]; });
-  if (state.upgrades.solar && nextFloor % 4 === 0 && energySavings(state)>0) notes.push('节能已计入：与维修工、幽灵配对共享每站抵消1电上限');
+  if (state.upgrades.solar && nextFloor % 4 === 0 && energySavings(state)>0) notes.push(`节能已计入：通常共享1电上限${state.cabin.some(rider=>rider?.kind==='mechanic')?`，维修工将每层上限提升到${MECHANIC_SAVING}`:''}`);
   let arrivals = 0; let cooperativeArrival = false;
   cabin = cabin.map((rider, slot) => {
     if (!rider) return null;
@@ -296,7 +298,7 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  if(!count)return '未安装';
  switch(key){
   case 'battery':return `协作乘客到站加成共 +${cooperationBonus(state)} 金币（基础3 + 升级${count*2}）；本层有协作乘客送达，全车额外 −${cooperationRelief(state)} 躁动。每层最多一次，减躁动不随等级叠加。`;
-  case 'solar':return '到4的倍数层抵消1电；与维修工、幽灵配对共享每站1电上限。只抵人物耗电，稳压先算。';
+  case 'solar':return `到4的倍数层抵消1电；通常与幽灵配对共享1电上限，有维修工时每层上限为${MECHANIC_SAVING}。只抵人物耗电，稳压先算。`;
   case 'calm':return `躁动上限 ${state.stressCap}；每次购买时立即舒缓6点`;
   case 'concierge':return `此后新乘客到站小费 +${count*3}；不参与车费倍率`;
   case 'reinforced':return '每站抵消1点人物耗电，不影响运转1电；无人耗电时不触发，本局唯一。';

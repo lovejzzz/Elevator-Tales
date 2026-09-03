@@ -22,11 +22,13 @@ export type PassengerSpec = {
   risk?: { label: '风险交易' | '条件风险' | '致命风险'; guide: string };
 };
 
+export const MECHANIC_SAVING = 2;
+
 export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   commuter: { kind: 'commuter', name: '通勤者', title: 'The Commuter', weight: 1, fare: 7, energy: 1, trip: [2, 5], patience: 3, rarity: 18, sheet: '01', cell: 0, tone: 'steady', short: '安静、可靠、准时付费', detail: '没有特殊能力。平稳而可靠，是填补空位的可靠选择。' },
   tourist: { kind: 'tourist', name: '游客', title: 'The Tourist', weight: 2, fare: 22, energy: 2, trip: [3, 7], patience: 3, rarity: 10, sheet: '01', cell: 1, tone: 'steady', short: '长途，但报酬丰厚', detail: '每站耗2电，抵达后提供较高车费。' },
   courier: { kind: 'courier', name: '快递员', title: 'The Courier', weight: 1, fare: 6, energy: 1, trip: [1, 3], patience: 2, rarity: 9, sheet: '01', cell: 2, tone: 'support', short: '短途快速周转', detail: '目的地很近，适合迅速赚取车费并腾出座位。' },
-  mechanic: { kind: 'mechanic', name: '维修工', title: 'The Mechanic', weight: 2, fare: 7, energy: 1, trip: [3, 7], patience: 3, rarity: 7, sheet: '01', cell: 3, tone: 'support', short: '3的倍数层抵消1电（共享上限）', detail: '到3的倍数楼层时抵消1点人物耗电。节能全车每站合计最多抵消1点；稳压先算，总耗电最低1。' },
+  mechanic: { kind: 'mechanic', name: '维修工', title: 'The Mechanic', weight: 2, fare: 7, energy: 1, trip: [3, 7], patience: 3, rarity: 7, sheet: '01', cell: 3, tone: 'support', short: `每层最多节能${MECHANIC_SAVING}电`, detail: `每层最多抵消${MECHANIC_SAVING}点人物耗电。维修工本人耗1电；只要车内还有其他人物耗电，他就能替全车净省1电。多位维修工不叠加，剩余节能不会储存，也不能抵消电梯运转的1电。` },
   lover: { kind: 'lover', name: '恋人', title: 'The Lover', weight: 1, fare: 6, energy: 1, trip: [3, 7], patience: 4, rarity: 10, sheet: '01', cell: 4, tone: 'social', short: '邻恋人：每站+1币，到站基价×2', detail: '独处时，每层有25%概率让下一批候选出现另一位恋人。回应者会带有专属标记。两位恋人相邻后，每层合计获得2金币，且各自到站基础车费翻倍，小费不翻倍。' },
   musician: { kind: 'musician', name: '音乐家', title: 'The Musician', weight: 1, fare: 8, energy: 1, trip: [4, 8], patience: 3, rarity: 7, sheet: '01', cell: 5, tone: 'social', short: '车内 ≥4人：每层躁动 −1', detail: '车内至少有4名乘客时，每层降低1点躁动；也能安抚醉汉与儿童。' },
   thief: { kind: 'thief', name: '小偷', title: 'The Thief', weight: 1, fare: 5, energy: 1, trip: [3, 7], patience: 2, rarity: 8, sheet: '02', cell: 0, tone: 'risk', short: '未控制 +3 金币/层 · 偶数层 +1 躁动', detail: '未受控制时每层赚3金币、每两层增加1躁动。相邻警察或律师后每层赚1金币且不再制造躁动，抵达再奖励5金币。', risk: { label: '风险交易', guide: '警察 / 律师邻座可控' } },
@@ -35,8 +37,8 @@ export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   drunk: { kind: 'drunk', name: '醉汉', title: 'The Drifter', weight: 2, fare: 14, energy: 1, trip: [2, 6], patience: 1, rarity: 7, sheet: '02', cell: 3, tone: 'risk', short: '未安抚每层 25% 闹事 · 躁动 +2', detail: '高额底价补偿风险。被音乐家或护士安抚时每层再赚1金币；否则有25%概率增加2躁动并随机换位。', risk: { label: '风险交易', guide: '音乐家 / 护士邻座可安抚' } },
   nurse: { kind: 'nurse', name: '护士', title: 'The Nurse', weight: 2, fare: 9, energy: 1, trip: [3, 7], patience: 4, rarity: 7, sheet: '02', cell: 4, tone: 'support', short: '每逢偶数层：躁动 −1', detail: '每逢偶数层降低1点躁动，并安抚相邻的醉汉与儿童。' },
   child: { kind: 'child', name: '儿童', title: 'The Child', weight: 1, fare: 7, energy: 1, trip: [2, 5], patience: 1, rarity: 7, sheet: '02', cell: 5, tone: 'social', short: '无照顾者：偶数层躁动 +1', detail: '没有恋人、音乐家或护士相邻时，每逢偶数层躁动+1；有任意照顾者相邻时免除。' },
-  ghost: { kind: 'ghost', name: '幽灵', title: 'The Apparition', weight: 0, fare: 8, energy: 0, trip: [4, 9], patience: 5, rarity: 6, sheet: '03', cell: 0, tone: 'occult', short: '不耗电，但会延误邻座', detail: '相邻驱魔师时，不再延误邻座，每层抵消1电且幽灵到站多得6金币；否则到3的倍数层时随机延误一位邻座1站。节能全车每站合计最多抵消1点电，总耗电最低1。' },
-  exorcist: { kind: 'exorcist', name: '驱魔师', title: 'The Warden', weight: 1, fare: 9, energy: 1, trip: [3, 7], patience: 3, rarity: 6, sheet: '03', cell: 1, tone: 'occult', short: '镇压邻座幽灵，每站抵消1电', detail: '控制相邻幽灵，免除延误，每层抵消1电，幽灵到站再得6金币。节能全车每站合计最多抵消1点电，总耗电最低1。' },
+  ghost: { kind: 'ghost', name: '幽灵', title: 'The Apparition', weight: 0, fare: 8, energy: 0, trip: [4, 9], patience: 5, rarity: 6, sheet: '03', cell: 0, tone: 'occult', short: '不耗电，但会延误邻座', detail: `相邻驱魔师时，不再延误邻座，每层抵消1电且幽灵到站多得6金币；否则到3的倍数层时随机延误一位邻座1站。节能通常共享1电上限，有维修工时上限为${MECHANIC_SAVING}；电梯运转仍至少耗1电。` },
+  exorcist: { kind: 'exorcist', name: '驱魔师', title: 'The Warden', weight: 1, fare: 9, energy: 1, trip: [3, 7], patience: 3, rarity: 6, sheet: '03', cell: 1, tone: 'occult', short: '镇压邻座幽灵，每站抵消1电', detail: `控制相邻幽灵，免除延误，每层抵消1电，幽灵到站再得6金币。节能通常共享1电上限，有维修工时上限为${MECHANIC_SAVING}；电梯运转仍至少耗1电。` },
   coach: { kind: 'coach', name: '教练', title: 'The Coach', weight: 3, fare: 20, energy: 2, trip: [4, 8], patience: 3, rarity: 6, sheet: '03', cell: 2, tone: 'social', short: '非教练邻座车费×1.5；自己每邻座+3币', detail: '非教练邻座抵达时车费提高50%，多位教练不叠加，小费不参与倍率；自己抵达时，每名仍在身旁的邻座额外支付3金币。' },
   celebrity: { kind: 'celebrity', name: '名人', title: 'The Celebrity', weight: 1, fare: 18, energy: 1, trip: [4, 8], patience: 2, rarity: 5, sheet: '03', cell: 3, tone: 'risk', short: '恰好 1 邻座 +3 金币/层 · 2+ 邻座会加压', detail: '恰好一名邻座时每层赚3金币；两名以上邻座时只在偶数层增加1躁动。', risk: { label: '条件风险', guide: '保持恰好 1 名邻座' } },
   inspector: { kind: 'inspector', name: '检查员', title: 'The Inspector', weight: 2, fare: 12, energy: 1, trip: [4, 8], patience: 4, rarity: 5, sheet: '03', cell: 4, tone: 'risk', short: '偶数层：总耗电≤4则+1币，超过则躁动+1', detail: '偶数层检查整趟耗电：运转＋所有人物耗电−节能，总计不超过4电时奖励1金币，否则躁动+1。检查员本人也耗1电；稳压和节能能帮助通过检查。', risk: { label: '条件风险', guide: '偶数层总耗电尽量不超过4' } },
@@ -63,7 +65,7 @@ export const UNLOCK_TIERS: { floor: number; kinds: PassengerKind[] }[] = [
 export type UpgradeKey = 'battery' | 'solar' | 'calm' | 'concierge' | 'reinforced' | 'express';
 export const UPGRADES: Record<UpgradeKey, { name: string; label: string; description: string; strategy: string; tone: 'sustain' | 'control' | 'score' | 'capacity' | 'tempo' }> = {
   battery: { name: '默契契约', label: 'COOPERATION', description: '每级协作到站再 +2 金币，并解锁协作送达舒缓。减躁动全车每层最多一次，强度不随等级叠加；购买时不立即舒缓。', strategy: '协作控场', tone: 'control' },
-  solar: { name: '节能线路', label: 'ECO CIRCUIT', description: '到4的倍数层抵消1电。节能全车每站合计最多抵消1点，稳压先算，总耗电最低1。限装一次。', strategy: '长期节能', tone: 'sustain' },
+  solar: { name: '节能线路', label: 'ECO CIRCUIT', description: `到4的倍数层抵消1点人物耗电。通常节能共享1电上限；车内有维修工时，每层上限提升到${MECHANIC_SAVING}。稳压先算，电梯运转仍至少耗1电。限装一次。`, strategy: '长期节能', tone: 'sustain' },
   calm: { name: '舒缓系统', label: 'CALM SYSTEM', description: '躁动上限 +3，并立即降低 6 躁动。', strategy: '控场缓冲', tone: 'control' },
   concierge: { name: '礼宾服务', label: 'CONCIERGE', description: '此后新乘客到站小费 +3，可叠加；不参与车费倍率。', strategy: '收入投资', tone: 'score' },
   reinforced: { name: '稳压模块', label: 'STABILIZER', description: '每站抵消1点人物耗电；不影响电梯运转1电。本局限装一次。', strategy: '抵消耗电', tone: 'sustain' },

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } fro
 import { ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Check, Coins, Flame, HelpCircle, Info, LockKeyhole, RotateCcw, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
+import { ADJACENT, MECHANIC_SAVING, PASSENGER_ORDER, PASSENGERS, UPGRADES, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
 import { CHARGE_PRICE, INITIAL_ENERGY, ENERGY_CAPACITY, INSPECTOR_ENERGY_LIMIT, energyBreakdown, eventPressureMultiplier, riderAgitation, shiftOutlook, COOPERATION_RELIEF, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, crowdAgitation, difficultyTier, EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, shiftAgitation, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, stressForecast } from '@/lib/game-forecast';
 import { conflictingConnection, activeConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
@@ -77,9 +77,14 @@ function PassengerCardFace({ rider, run, action }: { rider: Rider; run: RunState
       </span>
     </span>
     {brief.tip>0&&<span className="card-tip" aria-label={`另有小费 ${brief.tip} 金币，不翻倍`}><Coins aria-hidden="true" />+{brief.tip} 小费（不翻倍）</span>}
-    <span className="card-skills">{[...face.energy.slice(1),...face.pressure.slice(1),face.moneyNote,face.special].filter(Boolean).map(line=><span key={line}>{line}</span>)}</span>
+    <span className="card-skills">
+      {face.energy.slice(1).map(line=><span className="skill-energy" key={line}><BatteryCharging aria-hidden="true" />{line}</span>)}
+      {face.pressure.slice(1).map(line=><span className="skill-agitation" key={line}><Flame aria-hidden="true" />{line}</span>)}
+      {face.moneyNote&&<span className="skill-money"><Coins aria-hidden="true" />{face.moneyNote}</span>}
+      {face.special&&<span>{face.special}</span>}
+    </span>
     <span className="card-cooperation"><span>本人到站仍邻{brief.cooperation.partners.join('或')}</span><b aria-label={`协作奖励 ${cooperationBonus(run)} 金币${cooperationRelief(run)>0?`，减少 ${cooperationRelief(run)} 躁动`:''}`}><span><Coins aria-hidden="true" />+{cooperationBonus(run)}</span>{cooperationRelief(run)>0&&<span><Flame aria-hidden="true" />−{cooperationRelief(run)}</span>}</b></span>
-    <span className="card-conflict">{face.conflict.replace('挨','邻')} 躁动</span>
+    <span className="card-conflict"><Flame aria-hidden="true" />{face.conflict.replace('挨','邻')} 躁动</span>
     <span className="card-action">{action}</span>
   </span>;
 }
@@ -123,7 +128,7 @@ function upgradeImpact(key: UpgradeKey, run: RunState): string {
     case 'battery': return `协作到站 +${cooperationBonus(run)} → +${cooperationBonus(preview)} 金币；${run.upgrades.battery ? '舒缓仍为' : '另减'} ${cooperationRelief(preview)} 躁动，全车每层仅1次，不叠加。购买时不立即减躁动。`;
     case 'calm': return `躁动 ${run.stress}/${run.stressCap} → ${preview.stress}/${preview.stressCap}`;
     case 'reinforced': return '每站抵消1点人物耗电 · 本局唯一';
-    case 'solar': return '4的倍数层抵消1点人物耗电 · 与其他节能共享每站1电上限';
+    case 'solar': return `4的倍数层抵消1点人物耗电 · 通常共享1电上限，有维修工时每层上限${MECHANIC_SAVING}`;
     case 'concierge': return `新乘客到站小费 +${(run.upgrades.concierge + 1) * 3}`;
     case 'express': return '新乘客原定 ≥5 层时，目的地提前 1 层 · 本局唯一';
   }
@@ -352,7 +357,7 @@ export default function ElevatorGame() {
         </div>
       </aside>
     </section>
-    <footer className="footer-line"><span>ELV–07 / v8.2</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
+    <footer className="footer-line"><span>ELV–07 / v8.3</span><i /><span>THE CITY NEVER REALLY SLEEPS</span></footer>
 
 
     <Dialog open={passengerDetails !== null} onOpenChange={(open) => {if(!open){setPassengerDetails(null);setEjectArmed(false);}}}><DialogContent className="story-dialog passenger-detail-dialog">

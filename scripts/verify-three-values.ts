@@ -26,6 +26,10 @@ assert.equal(resolveFloor(six,()=>.9).lastPressure.sources.some(x=>/载重|超�
 const stabilized=previewUpgrade(six,'reinforced');assert.equal(stabilizedEnergy(stabilized),1);assert.equal(resolveFloor(stabilized,()=>.9).energy,60);
 assert.equal(energySavings(state({cabin:[rider('ghost'),rider('exorcist'),null,null,null,null]})),1,'offset exorcist, never motor');
 assert.equal(energySavings(state({cabin:[rider('ghost'),rider('exorcist'),tourist,null,null,null]})),1);
+assert.equal(energySavings(state({floor:2,cabin:[rider('mechanic','m1'),rider('commuter','c1'),tourist,null,null,null]})),2,'mechanic offsets itself and one additional point of passenger energy every floor');
+assert.equal(energySavings(state({floor:1,cabin:[rider('mechanic','m1'),null,null,null,null,null]})),1,'unused mechanic savings never erase motor cost or charge the battery');
+assert.equal(resolveFloor(state({cabin:[rider('mechanic','m1'),rider('commuter','c1'),null,null,null,null]}),()=>.9).lastEnergy.delta,-1,'mechanic plus one rider costs only the motor energy');
+assert.equal(resolveFloor(state({cabin:[rider('mechanic','m1'),rider('mechanic','m2'),rider('commuter','c1'),null,null,null]}),()=>.9).lastEnergy.delta,-2,'a second mechanic does not stack and consumes a seat plus one net energy');
 assert.equal(resolveFloor(state({floor:9,energy:1}),()=>.9).status,'upgrade');
 assert.equal(resolveFloor(state({floor:8,energy:1}),()=>.9).status,'lost');
 assert.equal(resolveFloor(state({floor:9,energy:1,cabin:[tourist,null,null,null,null,null]}),()=>.9).status,'lost');

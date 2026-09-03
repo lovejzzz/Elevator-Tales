@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {initialRun,resolveFloor,makeOffers,riderAgitation,inspectionExtraEnergy,shiftOutlook,type Rider} from '../lib/game-engine';
-import {PASSENGERS} from '../lib/game-data';
+import {MECHANIC_SAVING,PASSENGERS} from '../lib/game-data';
 import {PASSENGER_RULES,passengerFace} from '../lib/passenger-presentation';
 const rider=(kind:Rider['kind'],id:string):Rider=>({kind,id,boardedAt:1,destination:80,patience:0,fareBonus:0});
 let cases=0;
@@ -11,9 +11,10 @@ for(let floor=1;floor<=12;floor++)for(const stress of [0,10])for(const stabilize
  if(mode==='ghost'){run.cabin[1]=rider('ghost','g');run.cabin[2]=rider('exorcist','e');}
  if(mode==='solar')run.upgrades.solar=1;
  for(let i=0;i<load;i++)run.cabin[5-i]=rider('tourist','t'+i);
- const next=floor+1,rawSaved=mode==='ghost'||mode==='mechanic'&&next%3===0||mode==='solar'&&next%4===0?1:0;
+ const next=floor+1,mechanicActive=mode==='mechanic';
+ const rawSaved=mechanicActive?MECHANIC_SAVING:mode==='ghost'||mode==='solar'&&next%4===0?1:0;
  const people=1+(mode==='mechanic'||mode==='ghost'?1:0)+load*2;
- const remainder=Math.max(0,people-stabilized-rawSaved);
+ const remainder=Math.max(0,people-stabilized-Math.min(rawSaved,people-stabilized));
  assert.equal(inspectionExtraEnergy(run),remainder);
  assert.equal(riderAgitation(run,0).low,next%2===0&&remainder>3?(stress>=10?2:1):0);
  const result=resolveFloor(run,()=>.9);

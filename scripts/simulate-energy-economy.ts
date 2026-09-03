@@ -93,7 +93,7 @@ function cabinValue(state: RunState, economy: Economy) {
       if (hasNeighbour(state.cabin, slot, ['exorcist'])) recovery += 1;
       else risk += 1.2;
     }
-    if (rider.kind === 'mechanic') recovery += 1 / 3;
+    if (rider.kind === 'mechanic') recovery += 2;
     if (rider.kind === 'inspector' && totalWeight(state.cabin) <= 8)
       recovery += 0.5;
     if (rider.patience < trip * patienceCost(state)) risk += 3;

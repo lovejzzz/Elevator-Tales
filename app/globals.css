@@ -755,9 +755,16 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .card-tip { color:#dac79f; }
 .card-agitation { color:#e6bda0; }
 .card-skills { display:grid; gap:2px; }
+.card-skills>span { min-width:0; }
+.card-skills>span:has(>svg) { display:flex; align-items:flex-start; gap:5px; }
+.card-skills svg { width:13px; height:13px; margin-top:2px; flex:none; }
+.card-skills .skill-energy { color:#c4dfcd; }
+.card-skills .skill-agitation { color:#e6bda0; }
+.card-skills .skill-money { color:#e2cc9d; }
 .card-cooperation { display:grid; padding-block:4px; border-block:1px solid #8eb99538; color:#bfdcc2; }
 .card-cooperation b { color:#c9e3b9; }
-.card-conflict { color:#f0b696; }
+.card-conflict { display:flex; align-items:center; gap:5px; color:#f0b696; }
+.card-conflict svg { width:13px; height:13px; flex:none; }
 .unified-passenger-summary>.card-action { margin-top:auto; padding-top:3px; color:#a8b5a6; font-size:12px; }
 .boarded .card-action,.pending .card-action { color:#f1d08e; }
 .candidate-notes { display:flex; flex-wrap:wrap; gap:2px 16px; padding:5px 2px 0; color:#bfcbba; font:400 12px/1.35 var(--font-sans); }
@@ -1078,6 +1085,8 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .card-trip,.game-shell .unified-passenger-summary>.card-action { font-size:12px; }
  .game-shell .card-values { padding-top:3px; }
  .game-shell .card-cooperation { padding-block:3px; }
+ .game-shell .card-cooperation { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+ .game-shell .card-cooperation>b { flex:none; }
  .game-shell .candidate-notes { flex:none; padding:6px 2px 0; }
 }
 

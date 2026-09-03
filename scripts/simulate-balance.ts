@@ -31,7 +31,7 @@ function cabinValue(state: RunState, policy: Policy) {
       if (hasNeighbour(state.cabin, slot, ['exorcist'])) recovery += 1;
       else risk += 1.2;
     }
-    if (rider.kind === 'mechanic') recovery += 1 / 3;
+    if (rider.kind === 'mechanic') recovery += 2;
     if (rider.kind === 'inspector' && totalWeight(state.cabin) <= 8) recovery += .5;
     if (rider.patience < trip * patienceCost(state)) risk += ignoresAgitation(policy) ? 0 : 3;
     income += fare / trip; recovery += spec.energy / trip;
