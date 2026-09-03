@@ -1,6 +1,19 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.11**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.12**.
+
+## v8.12 — 2026-09-03 — Two-resource squeeze
+
+- Agitation cap is 6. Removed crowding, shift pressure, empty-car rests, and the hidden high-agitation multiplier. Agitation now comes only from visible rider values, high-risk tags, rider events, and unprotected red links.
+- Each Nurse or Musician cancels 1 agitation from one adjacent rider per floor. Multiple calmers stack without going below zero. Any normal arrival reduces total agitation by at most 1 that floor. Calm System now gives cap +1 and immediate −2.
+- High-risk riders add +1 agitation and +8 arrival coins. They begin ramping at floor 30; offer sets guarantee at least one from floor 40, two from floor 80, and all three from floor 120.
+- Initial power is 48, capacity is 60, charging costs 1 coin per power, and the reference target is 50. At least one rider is required to ascend.
+- Inspector now checks total power every floor: at 4 or less it earns +1 coin; above 4 it adds +1 agitation.
+- Added a copper-red high-risk material, flame badge, and cabin marker so the risk is visible before committing.
+- Screened initial power 36–60, capacities 48–72, charging price 1–2, agitation caps 6–10, and six high-risk progression curves.
+- Independent holdout: 40,000 games and 1,050,768 floor settlements with zero forecast misses. Balanced play averaged floor 38.07 (median 43); 96.92% reached 10, 81.20% reached 20, 57.85% reached 40, and 6.26% reached 60. Failure causes were 28.66% power and 70.89% agitation.
+- Agitation-blind and greedy strategies both had median floor 9. A conservative two-rider reserve strategy had median 49, so full-cabin and pure-income strategies do not dominate.
+- Watch items: whether the floor 30–40 risk ramp feels too slow in human play, and whether +8 coins is enough to tempt players into visible danger.
 
 ## v8.11 — 2026-09-03 — Mechanic savings reads fully in English
 

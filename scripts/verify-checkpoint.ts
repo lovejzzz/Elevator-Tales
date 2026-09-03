@@ -16,9 +16,9 @@ for(let floor=1;floor<=12;floor++)for(const stress of [0,10])for(const stabilize
  const people=1+(mode==='mechanic'||mode==='ghost'?1:0)+load*2;
  const remainder=Math.max(0,people-stabilized-Math.min(rawSaved,people-stabilized));
  assert.equal(inspectionExtraEnergy(run),remainder);
- assert.equal(riderAgitation(run,0).low,next%2===0&&remainder>3?(stress>=10?2:1):0);
+ assert.equal(riderAgitation(run,0).low,remainder>3?1:0);
  const result=resolveFloor(run,()=>.9);
- assert.equal(result.lastEarnings.sources.find(s=>s.label==='检查员合规奖励')?.amount??0,next%2===0&&remainder<=3?1:0);
+ assert.equal(result.lastEarnings.sources.find(s=>s.label==='检查员合规奖励')?.amount??0,remainder<=3?1:0);
  assert.equal(result.lastEnergy.delta,-1-remainder);cases++;
 }
 assert.equal(PASSENGERS.child.fare,7);assert.deepEqual(PASSENGERS.child.trip,[2,5]);
@@ -29,7 +29,7 @@ const face=passengerFace(rider('inspector','i'),initialRun());assert.match(face.
 assert.ok(PASSENGER_RULES.inspector.some(s=>s.includes('不超过4')));
 assert.equal(shiftOutlook(1),'');assert.equal(shiftOutlook(8),'');
 assert.equal(shiftOutlook(9),'下一站到补给站');
-assert.equal(shiftOutlook(16,2,0),'下一站疲劳：躁动 +4');
-assert.equal(shiftOutlook(16,0,1),'','resting cabins must not display a fatigue warning');
-assert.equal(shiftOutlook(56,2,0),'下一站疲劳：躁动 +5');
-console.log(JSON.stringify({version:'v6.8',inspectionInteractions:cases,generatedChildren:children,childRange:[2,5],fare:7}));
+assert.equal(shiftOutlook(38,2,0),'');
+assert.equal(shiftOutlook(39,0,1),'下一站到补给站');
+assert.equal(shiftOutlook(40,2,0),'本层起，高危候客增加');
+console.log(JSON.stringify({version:'v8.12',inspectionInteractions:cases,generatedChildren:children,childRange:[2,5],fare:7}));

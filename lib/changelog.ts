@@ -8,9 +8,27 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.11';
+export const GAME_VERSION = '8.12';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.12', date: '2026-09-03', title: '双资源夹击',
+    summary: '躁动改成完全可追踪的人物风险，能源重新成为必须规划的生存资源；玩家要在充电、升级和高危高回报乘客之间持续取舍。',
+    changes: [
+      '躁动上限固定为6；移除拥挤、班次压力、空驶休整与高躁动倍率。躁动现在只来自卡片明示的人物自身、高危标记、人物事件和未被保护的红线。',
+      '护士与音乐家每位每层抵消一名相邻乘客的1躁动，可堆叠但不产生负数；本层只要有人正常到站，总躁动最多降低1。舒缓系统改为上限+1并立即−2。',
+      '高危乘客固定多+1躁动、到站多得8金币；30层起逐步出现，40层起每批至少1张，80层至少2张，120层起三张均为高危。',
+      '初始电量48、容量60、每点充电1金币、推荐补至50电。玩家必须至少搭载一名乘客才能上行，不能用空载绕过人物风险。',
+      '检查员改为每层检查总耗电；不超过4电每层+1金币，超过则每层+1躁动。高危卡增加铜红材质、火焰标签与车内标记。',
+    ],
+    experiments: [
+      '先后筛选初始电量36–60、容量48–72、充电价1–2、躁动上限6–10，以及六组高危起点、保底间隔和爬升速度。',
+      '最终独立留出测试共40,000局、1,050,768次楼层结算，电量与躁动预测误差均为0。',
+      '均衡策略平均38.07层、中位43层；96.92%抵达10层、81.20%抵达20层、57.85%抵达40层、6.26%抵达60层。失败中28.66%为电量耗尽、70.89%为躁动失控，形成双资源威胁。',
+      '忽略躁动与贪收益策略的中位数均为9层；限制载客并保守留电的策略中位49层，说明不存在靠单一高收益或满载策略稳定碾压的路径。',
+    ],
+    watch: ['真人是否会觉得30–40层的高危爬升过慢；高危+8金币是否足以诱惑玩家在低躁动时主动承险。'],
+  },
   {
     version: '8.11', date: '2026-09-03', title: '维修工节能行完成本地化',
     summary: '最终线上检查发现维修工独有的紧凑能源行仍为中文；现已补齐，并把能源行加入全人物运行时翻译回归。',
@@ -228,6 +246,24 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.12', date: '2026-09-03', title: 'Two-resource squeeze',
+    summary: 'Agitation is now a fully traceable rider risk, while power again demands active survival planning. Every shift asks how much money to spend on charge, upgrades, and visibly dangerous high-reward riders.',
+    changes: [
+      'Agitation cap is 6. Removed crowding, shift pressure, empty-car rests, and the hidden high-agitation multiplier. Agitation now comes only from visible rider values, high-risk tags, rider events, and unprotected red links.',
+      'Each Nurse or Musician cancels 1 agitation from one adjacent rider per floor. Multiple calmers stack but never go below zero. Any normal arrival reduces total agitation by at most 1 that floor. Calm System now gives cap +1 and immediate −2.',
+      'High-risk riders add +1 agitation and +8 arrival coins. They begin ramping at floor 30; each offer set guarantees at least one from floor 40, two from floor 80, and all three from floor 120.',
+      'Initial power is 48, capacity is 60, charging costs 1 coin per power, and the reference target is 50. At least one rider is required to ascend, so an empty car cannot bypass rider risk.',
+      'Inspector now checks total power every floor: at 4 or less it earns +1 coin; above 4 it adds +1 agitation. High-risk cards receive a copper-red material, flame badge, and cabin marker.',
+    ],
+    experiments: [
+      'Screened initial power 36–60, capacity 48–72, charging price 1–2, agitation caps 6–10, and six combinations of high-risk start, guarantee interval, and ramp speed.',
+      'The independent holdout ran 40,000 games and 1,050,768 floor settlements with zero power or agitation forecast misses.',
+      'Balanced play averaged floor 38.07 with median 43; 96.92% reached 10, 81.20% reached 20, 57.85% reached 40, and 6.26% reached 60. Of failures, 28.66% were power and 70.89% agitation, establishing a real two-resource squeeze.',
+      'Agitation-blind and greedy play both had median floor 9. A conservative two-rider reserve strategy reached median 49, so neither full-cabin nor pure high-income play dominates.',
+    ],
+    watch: ['Watch whether the floor 30–40 risk ramp feels too slow in human play, and whether +8 coins is enough to tempt players into visible danger when agitation is low.'],
+  },
   {
     version: '8.11', date: '2026-09-03', title: 'Mechanic savings reads fully in English',
     summary: 'The final production pass found the Mechanic’s compact power-savings line still in Chinese. It is now localized, and energy rows are included in the all-rider runtime regression.',

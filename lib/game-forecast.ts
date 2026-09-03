@@ -1,5 +1,4 @@
-import { bondStatus } from './rider-profile';
-import { cooperationRelief, energyBreakdown, riderAgitation, eventPressureMultiplier, crowdAgitation, hasNeighbour, neighbours, shiftAgitation, type RunState } from './game-engine';
+import { energyBreakdown, riderAgitation, hasNeighbour, neighbours, type RunState } from './game-engine';
 
 export type StressForecast = {
   range: string;
@@ -34,47 +33,26 @@ function projectedDestinationVariants(state: RunState): Array<Array<number | nul
 
 export function stressForecast(state: RunState, _legacyWeight?: number): StressForecast {
   const nextFloor = state.floor + 1;
-  const occupied = state.cabin.filter(Boolean).length;
   const effects = state.cabin.map((_, slot) => riderAgitation(state, slot));
-  const drunks = effects.filter(effect => effect.random > 0).length;
-  const passengerFixed = effects.reduce((sum, effect) => sum + effect.low, 0);
-  const passengerRandom = effects.reduce((sum, effect) => sum + effect.random, 0);
-  const contract = cooperationRelief(state);
+  const passengerRise = effects.reduce((sum, effect) => sum + effect.low, 0);
   const variants = projectedDestinationVariants(state).map((destinations) => {
     const arriving = state.cabin.flatMap((rider, slot) => rider && destinations[slot] !== null && nextFloor >= destinations[slot]! ? [slot] : []);
-    const supportedArrivals = arriving.filter(slot => bondStatus(state.cabin[slot]!, state.cabin, slot).supported).length;
-    // Drunks can change the arrival-time neighbor before settlement. Do not
-    // promise a bonus using the departure layout; include either outcome.
-    const contractLow = !drunks ? supportedArrivals * contract : 0;
-    const contractHigh = (drunks ? arriving.length : supportedArrivals) * contract;
-    return {
-    contractLow, contractHigh,
-    arrivals: state.cabin.reduce((count, rider, index) => count + (rider && destinations[index] !== null && nextFloor >= destinations[index]! ? 1 : 0), 0),
-  }; });
+    return { arrivals: arriving.length };
+  });
   const minArrivals = Math.min(...variants.map((variant) => variant.arrivals)); const maxArrivals = Math.max(...variants.map((variant) => variant.arrivals));
-  const arrivalReason = !maxArrivals ? '' : minArrivals === maxArrivals ? `到站舒缓 −${maxArrivals}` : minArrivals === 0 ? `到站舒缓最多 −${maxArrivals}` : `到站舒缓 −${minArrivals}～−${maxArrivals}`;
-  const crowd = crowdAgitation(occupied); const fatigue = shiftAgitation(nextFloor, occupied, state.restStops);
-  const fixedRise = passengerFixed + crowd + fatigue;
-  const lows = variants.map((variant) => Math.max(0, state.stress + fixedRise - variant.arrivals - variant.contractHigh));
-  const highs = variants.map((variant) => Math.max(0, state.stress + fixedRise + passengerRandom - variant.arrivals - variant.contractLow));
-  const minContract = Math.min(...variants.map(v => v.contractLow)), maxContract = Math.max(...variants.map(v => v.contractHigh));
-  const contractReason = maxContract ? minContract === maxContract ? `契约舒缓 −${maxContract}` : `契约舒缓可能 −${maxContract}` : '';
+  const arrivalReason = !maxArrivals ? '' : minArrivals === maxArrivals ? '到站舒缓 −1' : '可能到站舒缓 −1';
+  const lows = variants.map((variant) => Math.max(0, state.stress + passengerRise - (variant.arrivals ? 1 : 0)));
+  const highs = lows;
   const low = Math.min(...lows); const high = Math.max(...highs);
   const lowDelta = low - state.stress; const highDelta = high - state.stress;
   const range = lowDelta === highDelta ? signedDelta(lowDelta) : `${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
   const reasons = [
     ...effects.flatMap(effect => effect.fixed.map(line => `${line.label} ${signedDelta(line.amount)}`)),
-    crowd ? crowd > 0 ? `拥挤 +${crowd}` : '宽松 −1' : '',
-    fatigue ? `班次压力 +${fatigue}` : '',
-    occupied === 0 ? state.restStops > 0 ? `休整 ${state.restStops}→${state.restStops - 1}，免疲劳` : '休整用尽，空驶不免疲劳' : '',
     arrivalReason,
-    contractReason,
-    eventPressureMultiplier(state) > 1 ? '人物正向躁动已按 ×2 计算' : '',
-    drunks ? `每位醉汉各25%概率躁动 +${2 * eventPressureMultiplier(state)}` : '',
   ].filter(Boolean);
   const details = reasons.join(' · ');
   const summary = details ? `下一层 ${range} · ${details}` : '下一层躁动不变 · 没有已知来源';
-  const tone = state.stress + highDelta >= state.stressCap || lowDelta >= 2 ? 'danger' : highDelta > 0 ? 'caution' : 'safe';
+  const tone = state.stress + highDelta >= state.stressCap || highDelta >= 2 ? 'danger' : highDelta > 0 ? 'caution' : 'safe';
   return { range, details, summary, tone, lowDelta, highDelta };
 }
 

@@ -9,9 +9,9 @@ let checks=0;
 for(const floor of [1,2,3,4])for(const extraEnergy of [0,1])for(const upgraded of [false,true])for(const stress of [0,10]){
  const run=state({floor,stress,cabin:[rider('inspector'),null,extraEnergy?rider('tourist'):null,null,null,null]});
  if(upgraded)run.upgrades={...run.upgrades,reinforced:1,solar:1};
- const after=resolveFloor(run,()=>.9),even=(floor+1)%2===0;
+ const after=resolveFloor(run,()=>.9);
  const people=1+extraEnergy*2,stabilizer=upgraded?1:0,saving=upgraded&&(floor+1)%4===0&&people>stabilizer?1:0;
- assert.equal(after.lastEarnings.sources.find(s=>s.label==='检查员合规奖励')?.amount??0,even?1:0);
+ assert.equal(after.lastEarnings.sources.find(s=>s.label==='检查员合规奖励')?.amount??0,1);
  assert.equal(riderAgitation(run,0).low,0);
  assert.equal(energySavings(run),saving,'savings apply only after stabilizer');
  assert.equal(after.energy,run.energy-1-people+stabilizer+saving);
@@ -46,9 +46,9 @@ for(const kind of ['mechanic','ghost','exorcist'] as const){
 }
 const duplicate=state({cabin:[rider('inspector','a'),rider('inspector','b'),null,null,null,null]});
 assert.equal(resolveFloor(duplicate,()=>.9).coins,2,'each inspector grants one bounded reward');
-assert.equal(resolveFloor(duplicate,()=>.9).energy,69);
+assert.equal(resolveFloor(duplicate,()=>.9).energy,45);
 assert.deepEqual(sanitizeDiscoveredPassengers(null),[],'an old save does not unlock the archive');
 assert.deepEqual(sanitizeDiscoveredPassengers(['lover','bogus','lover']),['lover'],'saved discoveries are validated and deduplicated');
 assert.deepEqual(addDiscoveredPassengers([],['lover','lover','courier']),['courier','lover'],'only passengers actually seen are collected');
 assert.equal(addDiscoveredPassengers(['courier','lover'],['thief']).length,3,'new encounters extend the archive');
-console.log(JSON.stringify({version:'v8.11',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:4,savingsCopy:true,archiveDiscovery:true}));
+console.log(JSON.stringify({version:'v8.12',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:4,savingsCopy:true,archiveDiscovery:true}));

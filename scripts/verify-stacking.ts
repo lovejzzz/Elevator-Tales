@@ -36,11 +36,9 @@ assert.equal(loverResult.lastEarnings.sources.find(line=>line.label==='恋人到
 const coaches=state({floor:1,cabin:[rider('coach','c1'),rider('tourist','t',{destination:2}),rider('coach','c2'),null,null,null]});
 assert.equal(resolveFloor(coaches,()=>.9).lastEarnings.sources.find(line=>line.label==='游客到站')?.amount,44,'two coaches linearly double a non-coach base fare');
 
-const calmers=state({floor:1,cabin:[rider('nurse','n1'),rider('nurse','n2'),null,null,null,null]});
-assert.equal(riderAgitation(calmers,0).low+riderAgitation(calmers,1).low,-2,'each nurse applies its own calming stack');
-
-const musicians=state({floor:2,cabin:[rider('musician','u1'),rider('commuter','a'),rider('musician','u2'),rider('commuter','b'),null,null]});
-assert.equal(riderAgitation(musicians,0).low+riderAgitation(musicians,2).low,-2,'each musician applies its own full-cabin calming stack');
+const calmers=state({floor:1,cabin:[rider('nurse','n1'),rider('thief','hot',{volatile:true}),null,null,rider('musician','m1'),null]});
+assert.equal(riderAgitation(calmers,1).low,0,'two adjacent calmers cancel two visible points from one rider');
+assert.equal(riderAgitation(calmers,0).low+riderAgitation(calmers,4).low,0,'calmers never create negative agitation');
 
 const inspectors=state({floor:1,cabin:[rider('inspector','i1'),rider('inspector','i2'),null,null,null,null]});
 assert.equal(resolveFloor(inspectors,()=>.9).lastEarnings.sources.find(line=>line.label==='检查员合规奖励')?.amount,2,'each inspector independently pays');
@@ -51,4 +49,4 @@ assert.equal(resolveFloor(controlledDrunks,()=>.9).lastEarnings.sources.find(lin
 const copied=[rider('commuter','a'),rider('mimic','copy'),rider('tourist','b'),null,rider('nurse','c'),null];
 assert.equal(riderProfile(copied[1]!,copied,1).copies.length,3,'mimic stacks one distinct copied field from every neighbor');
 
-console.log(JSON.stringify({version:'v8.4',passengers:PASSENGER_ORDER.length,directedLinkChecks,stackFamilies:8,hardStops:['节能不抵运转','控制状态不重复','同一复制字段不重复']}));
+console.log(JSON.stringify({version:'v8.12',passengers:PASSENGER_ORDER.length,directedLinkChecks,stackFamilies:8,hardStops:['节能不抵运转','控制状态不重复','同一复制字段不重复']}));

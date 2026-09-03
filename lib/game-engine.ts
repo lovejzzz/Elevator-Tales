@@ -1,7 +1,7 @@
 import { BONDS, bondStatus, profileWeight, randomTraits, riderProfile, type VariableTraits } from './rider-profile';
 import { ADJACENT, MECHANIC_SAVING, PASSENGERS, UNLOCK_TIERS, UPGRADES, type PassengerKind, type UpgradeKey } from './game-data';
 
-export type Rider = { id: string; kind: PassengerKind; destination: number; patience: number; boardedAt: number; fareBonus: number; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number };
+export type Rider = { id: string; kind: PassengerKind; destination: number; patience: number; boardedAt: number; fareBonus: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number };
 export type ChangeLine = { label: string; amount: number };
 export type ShopCard = { key: UpgradeKey; price: number; purchased: boolean };
 export type RunState = {
@@ -16,67 +16,78 @@ export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, solar: 0
 export const LOVER_CALL_CHANCE = .25;
 export const INSPECTOR_COMPLIANCE_REWARD = 1;
 export const INSPECTOR_ENERGY_LIMIT = 4;
-export const INITIAL_ENERGY = 72;
-export const ENERGY_CAPACITY = 72;
-export const initialRun = (): RunState => ({ floor: 1, restStops: 3, energy: INITIAL_ENERGY, energyCap: ENERGY_CAPACITY, stress: 0, stressCap: 15, weightCap: 10, coins: 0, earned: 0, shop: [], cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 无尽班次开始'], lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] } });
+export const INITIAL_ENERGY = 48;
+export const ENERGY_CAPACITY = 60;
+export const AGITATION_CAPACITY = 6;
+export const HIGH_RISK_BONUS = 8;
+export const HIGH_RISK_START = 30;
+export const OFFER_PRESSURE_STEP = 40;
+export type OfferTuning = { highRiskStart?: number; pressureStep?: number; volatileSpan?: number };
+export const initialRun = (): RunState => ({ floor: 1, restStops: 0, energy: INITIAL_ENERGY, energyCap: ENERGY_CAPACITY, stress: 0, stressCap: AGITATION_CAPACITY, weightCap: 10, coins: 0, earned: 0, shop: [], cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 无尽班次开始'], lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] } });
 export const nextShopFloor = (floor: number) => (Math.floor(floor / 10) + 1) * 10;
 export const difficultyTier = (floor: number) => Math.floor(Math.max(0, floor - 1) / 30);
-export const agitationThreshold = (cap: number) => Math.ceil(cap * 2 / 3);
+export const agitationThreshold = (cap: number) => Math.max(1, cap - 2);
 // Retained only for archived experiment callers. Patience no longer affects play.
 export const patienceCost = (_state: RunState) => 0;
-export const eventPressureMultiplier = (state: Pick<RunState, 'stress' | 'stressCap'>) => state.stress >= agitationThreshold(state.stressCap) ? 2 : 1;
+export const eventPressureMultiplier = (_state: Pick<RunState, 'stress' | 'stressCap'>) => 1;
 export const passengerEnergy = (state: RunState) => state.cabin.reduce((sum,rider,slot)=>sum+(rider?riderProfile(rider,state.cabin,slot).energy:0),0);
 export const stabilizedEnergy = (state: RunState) => state.upgrades.reinforced > 0 ? Math.min(1,passengerEnergy(state)) : 0;
-export const crowdAgitation = (occupied: number) => occupied >= 6 ? 2 : occupied >= 5 ? 1 : occupied <= 2 ? -1 : 0;
-export const REST_STOP_CAP = 3;
-// Fixed, public schedule: no adaptation to the player's coins or build.
-export const shiftAgitation = (floor: number, occupied: number, restStops = 0) => {
-  if (occupied === 0 && restStops > 0 || floor <= 10) return 0;
-  const position = floor % 10;
-  const base = Math.floor((floor - 11) / 40);
-  const wave = position >= 7 ? 4 : position >= 4 ? 1 : 0;
-  return base + wave;
-};
-export function shiftOutlook(floor: number, occupied = 1, restStops = 0) {
+export const crowdAgitation = (_occupied: number) => 0;
+export const REST_STOP_CAP = 0;
+export const shiftAgitation = (_floor: number, _occupied: number, _restStops = 0) => 0;
+export function shiftOutlook(floor: number, _occupied = 1, _restStops = 0) {
   const next = floor + 1;
   if (next % 10 === 0) return '下一站到补给站';
-  const fatigue = shiftAgitation(next, occupied, restStops);
-  return fatigue >= 4 ? `下一站疲劳：躁动 +${fatigue}` : '';
+  return floor >= OFFER_PRESSURE_STEP && floor % OFFER_PRESSURE_STEP === 0 ? '本层起，高危候客增加' : '';
 }
 
 export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);
 export const hasNeighbour = (cabin: Array<Rider | null>, slot: number, kinds: PassengerKind[]) => neighbours(slot).some((i) => cabin[i] && kinds.includes(cabin[i]!.kind));
 export const neighbourCount = (cabin: Array<Rider | null>, slot: number) => neighbours(slot).filter((i) => cabin[i]).length;
 export const totalWeight = profileWeight;
-/** Direct passenger effects, evaluated from the departure layout. Shared by UI,
- * forecast and settlement; global crowd/wave/arrival effects are separate. */
-export function riderAgitation(state: RunState, slot: number) {
+function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
   const rider = state.cabin[slot], fixed: ChangeLine[] = [];
-  let random = 0;
-  if (!rider) return { fixed, random, low: 0, high: 0 };
-  const even = (state.floor + 1) % 2 === 0, multiplier = eventPressureMultiplier(state);
-  const add = (label: string, amount: number) => fixed.push({ label, amount: amount > 0 ? amount * multiplier : amount });
-  const base = riderProfile(rider,state.cabin,slot).agitation;
-  if (base) add(`${PASSENGERS[rider.kind].name}自身躁动`, base);
+  if (!rider) return fixed;
+  const add = (label: string, amount: number) => { if (amount > 0) fixed.push({ label, amount }); };
+  add(`${PASSENGERS[rider.kind].name}自身躁动`, riderProfile(rider,state.cabin,slot).agitation);
+  if (rider.volatile) add(`${PASSENGERS[rider.kind].name}高危`, 1);
   const bonds=bondStatus(rider,state.cabin,slot);
-  if (even && bonds.conflictCount) add('邻座冲突', bonds.conflictCount);
+  add('邻座冲突', bonds.conflictCount);
   switch (rider.kind) {
-    case 'thief': if (even && !hasNeighbour(state.cabin, slot, ['cop', 'lawyer'])) add('小偷未受控', 1); break;
-    case 'child': if (even && !hasNeighbour(state.cabin, slot, ['lover', 'musician', 'nurse'])) add('儿童无人照顾', 1); break;
-    case 'drunk': if (!hasNeighbour(state.cabin, slot, ['musician', 'nurse'])) random = 2 * multiplier; break;
-    case 'celebrity': if (even && neighbourCount(state.cabin, slot) > 1) add('名人被围', 1); break;
-    case 'inspector': if (even && totalEnergyCost(state) > INSPECTOR_ENERGY_LIMIT) add('检查员：总耗电超过4', 1); break;
-    case 'musician': if (state.cabin.filter(Boolean).length >= 4) add('音乐家安抚', -1); break;
-    case 'nurse': if (even) add('护士安抚', -1); break;
+    case 'thief': if (!hasNeighbour(state.cabin, slot, ['cop', 'lawyer'])) add('小偷未受控', 1); break;
+    case 'child': if (!hasNeighbour(state.cabin, slot, ['lover', 'musician', 'nurse'])) add('儿童无人照顾', 1); break;
+    case 'drunk': if (!hasNeighbour(state.cabin, slot, ['musician', 'nurse'])) add('醉汉未安抚', 1); break;
+    case 'celebrity': if (neighbourCount(state.cabin, slot) > 1) add('名人被围', 1); break;
+    case 'inspector': if (totalEnergyCost(state) > INSPECTOR_ENERGY_LIMIT) add('检查员：总耗电超过4', 1); break;
   }
+  return fixed;
+}
+
+function agitationBySlot(state: RunState) {
+  const lines = state.cabin.map((_, slot) => rawRiderAgitation(state, slot).map(line => ({...line})));
+  state.cabin.forEach((rider, calmerSlot) => {
+    if (!rider || !['musician','nurse'].includes(rider.kind)) return;
+    const target = neighbours(calmerSlot)
+      .filter(slot => lines[slot].some(line => line.amount > 0))
+      .sort((a,b) => lines[b].reduce((sum,line)=>sum+line.amount,0)-lines[a].reduce((sum,line)=>sum+line.amount,0) || a-b)[0];
+    if (target === undefined) return;
+    const source = lines[target].find(line => line.amount > 0);
+    if (source) source.amount -= 1;
+  });
+  return lines.map(fixed => fixed.filter(line => line.amount > 0));
+}
+
+/** Visible, deterministic passenger agitation after adjacent calming. */
+export function riderAgitation(state: RunState, slot: number) {
+  const fixed = agitationBySlot(state)[slot] ?? [];
   const low = fixed.reduce((sum, line) => sum + line.amount, 0);
-  return { fixed, random, low, high: low + random };
+  return { fixed, random: 0, low, high: low };
 }
 export const cooperationBonus = (state: RunState) => 3 + state.upgrades.battery * 2;
 // One cabin-wide reward per travelled floor. Further contract levels improve
 // coins, not soothing; boarding, reseating and dismissing cannot trigger it.
-export const COOPERATION_RELIEF = 3;
-export const cooperationRelief = (state: Pick<RunState, 'upgrades'>) => state.upgrades.battery > 0 ? COOPERATION_RELIEF : 0;
+export const COOPERATION_RELIEF = 0;
+export const cooperationRelief = (_state: Pick<RunState, 'upgrades'>) => 0;
 export const isFreeReseat = (cabin: Array<Rider | null>, source: number, target: number, floor: number) => Boolean(cabin[source] && cabin[source]!.boardedAt === floor && (!cabin[target] || cabin[target]!.boardedAt === floor));
 export const unlockedAt = (floor: number) => UNLOCK_TIERS.flatMap((tier) => tier.floor <= floor ? tier.kinds : []);
 const READY_PARTNERS: Partial<Record<PassengerKind, PassengerKind[]>> = { lover: ['lover'], thief: ['cop', 'lawyer'], cop: ['thief', 'bomb'], lawyer: ['thief'], drunk: ['musician', 'nurse'], musician: ['drunk', 'child'], nurse: ['drunk', 'child'], child: ['lover', 'musician', 'nurse'], ghost: ['exorcist'], exorcist: ['ghost'], bomb: ['cop'] };
@@ -122,34 +133,42 @@ export function shuffle<T>(items: T[], rng: () => number = Math.random): T[] {
   return result;
 }
 
-function weightedKind(floor: number, rng: () => number): PassengerKind {
-  const pool = unlockedAt(floor);
+const INTRINSIC_RISK: PassengerKind[] = ['thief','drunk','child','celebrity','inspector','mystery','shifter'];
+function weightedKind(floor: number, rng: () => number, forcedRisk = false): PassengerKind {
+  const unlocked = unlockedAt(floor);
+  const pool = forcedRisk ? unlocked.filter(kind => INTRINSIC_RISK.includes(kind)) : unlocked;
   const total = pool.reduce((sum, kind) => sum + PASSENGERS[kind].rarity, 0);
   let roll = rng() * total;
   for (const kind of pool) { roll -= PASSENGERS[kind].rarity; if (roll <= 0) return kind; }
   return pool[0];
 }
 
-export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, tutorial = false, rng: () => number = Math.random, cabin: Array<Rider | null> = [], loverCallChance = LOVER_CALL_CHANCE): Rider[] {
+export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, tutorial = false, rng: () => number = Math.random, cabin: Array<Rider | null> = [], loverCallChance = LOVER_CALL_CHANCE, tuning: OfferTuning = {}): Rider[] {
   const used = new Set<PassengerKind>();
   const firstShift: PassengerKind[] = ['lover', 'lover', 'courier']; const firstShiftTrips = [5, 5, 2]; const guidedShift = floor === 1 && tutorial;
+  const pressureStep=tuning.pressureStep??OFFER_PRESSURE_STEP, highRiskStart=tuning.highRiskStart??HIGH_RISK_START, volatileSpan=tuning.volatileSpan??55;
+  const pressureQuota = guidedShift ? 0 : Math.min(3, Math.floor(floor / pressureStep));
   const waitingLover = cabin.some((rider, slot) => rider?.kind === 'lover' && !hasNeighbour(cabin, slot, ['lover']));
   const loverCalled = !tutorial && waitingLover && loverCallChance > 0 && rng() < loverCallChance;
   return Array.from({ length: 3 }, (_, index) => {
-    let kind = guidedShift ? firstShift[index] : loverCalled && index === 0 ? 'lover' : weightedKind(floor, rng); let guard = 0;
-    while (!guidedShift && used.has(kind) && guard++ < 15) kind = weightedKind(floor, rng);
+    const forcedRisk = index < pressureQuota;
+    let kind = guidedShift ? firstShift[index] : loverCalled && index === 0 && !forcedRisk ? 'lover' : weightedKind(floor, rng, forcedRisk); let guard = 0;
+    while (!guidedShift && used.has(kind) && guard++ < 15) kind = weightedKind(floor, rng, forcedRisk);
     used.add(kind);
     const spec = PASSENGERS[kind];
     const baseTrip = guidedShift ? firstShiftTrips[index] : rand(spec.trip[0], spec.trip[1], rng);
     const trip = expressTrip(baseTrip, upgrades.express);
     const traits = kind === 'mystery' || kind === 'shifter' ? randomTraits(kind, unlockedAt(floor), rng) : undefined;
     const patience = 0; // Retired field, retained for old report readers only.
-    return { id: `f${floor}-${index}-${rng().toString(36).slice(2, 7)}`, kind, destination: floor + trip, patience, traits, copySeed: kind === 'mimic' ? rand(0, 2147483647, rng) : undefined, boardedAt: floor, fareBonus: upgrades.concierge * 3, fuse: kind === 'bomb' ? rand(3, 6, rng) : undefined, calledByLover: loverCalled && index === 0 };
+    const highRiskChance = floor < highRiskStart ? 0 : Math.min(.75, (floor - highRiskStart + 1) / volatileSpan);
+    const volatile = index < pressureQuota || rng() < highRiskChance;
+    return { id: `f${floor}-${index}-${rng().toString(36).slice(2, 7)}`, kind, destination: floor + trip, patience, traits, volatile, copySeed: kind === 'mimic' ? rand(0, 2147483647, rng) : undefined, boardedAt: floor, fareBonus: upgrades.concierge * 3, fuse: kind === 'bomb' ? rand(3, 6, rng) : undefined, calledByLover: loverCalled && index === 0 };
   });
 }
 
 export function resolveFloor(state: RunState, rng: () => number = Math.random): RunState {
   if (state.status !== 'playing') return state;
+  if (!state.cabin.some(Boolean)) return { ...state, message: '至少接一位乘客才能上行。' };
   const nextFloor = state.floor + 1;
   const energyCost = travelEnergyCost(nextFloor);
   let energy = state.energy; let stress = state.stress; let coins = state.coins;
@@ -162,21 +181,12 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   if (stabilizedEnergy(state)) adjustEnergy('稳压模块抵消', stabilizedEnergy(state));
   if (energySavings(state)) adjustEnergy('节能少耗', energySavings(state));
   let cabin = state.cabin.map((rider) => rider ? { ...rider } : null);
-  const notes: string[] = []; const stressReasons: string[] = []; const occupied = cabin.filter(Boolean).length;
-  const crowd = crowdAgitation(occupied); const fatigue = shiftAgitation(nextFloor, occupied, state.restStops);
-  const resting = occupied === 0 && state.restStops > 0;
-  if (resting) notes.push(`空驶休整 −1 次，剩余 ${state.restStops - 1} 次`);
-  else if (!occupied && fatigue) notes.push('休整用尽：空驶仍承受长班疲劳；送达乘客可恢复休整');
-  adjustPressure(crowd > 0 ? '轿厢拥挤' : '宽松轿厢', crowd);
-  adjustPressure('班次压力', fatigue);
+  const notes: string[] = []; const stressReasons: string[] = [];
   state.cabin.forEach((rider, slot) => { if (rider) riderAgitation(state, slot).fixed.forEach(line => {
     adjustPressure(line.label, line.amount);
     if (line.amount > 0) stressReasons.push(`${PASSENGERS[rider.kind].name}：${line.label}，躁动 +${line.amount}`);
   }); });
-  if (crowd > 0) stressReasons.push(`轿厢拥挤，躁动 +${crowd}`);
-  if (fatigue) stressReasons.push(`长班疲劳，躁动 +${fatigue}`);
-  if (eventPressureMultiplier(state) > 1 && occupied) notes.push('高躁动：人物引起的正向躁动 ×2');
-  const effectCabin = [...cabin]; const deferredSwaps: Array<[number, number]> = [];
+  const effectCabin = [...cabin];
   effectCabin.forEach((rider, slot) => {
     if (!rider) return;
     const calmDrunk = hasNeighbour(effectCabin, slot, ['musician', 'nurse']); const controlledThief = hasNeighbour(effectCabin, slot, ['cop', 'lawyer']);
@@ -185,21 +195,20 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
       case 'mechanic': break; // Shared savings are itemized in lastEnergy.
       case 'lover': if (loverLinks) addCoins('恋人连携', loverLinks); break;
       case 'thief': addCoins(controlledThief ? '受控小偷' : '小偷', controlledThief ? 1 : 3); break;
-      case 'drunk': if (calmDrunk) addCoins('醉汉安抚', 1); else if (rng() < .25) { const rise = riderAgitation(state, slot).random; adjustPressure('醉汉闹事', rise); const options = neighbours(slot); deferredSwaps.push([slot, options[rand(0, options.length - 1, rng)]]); stressReasons.push(`醉汉闹事并乱换位，躁动 +${rise}`); } break;
+      case 'drunk': if (calmDrunk) addCoins('醉汉安抚', 1); break;
       case 'ghost': if (controlledGhost) notes.push('幽灵受控，不再延误邻座'); else if (nextFloor % 3 === 0) { const nearby = neighbours(slot).filter((i) => effectCabin[i]); if (nearby.length) { effectCabin[nearby[rand(0, nearby.length - 1, rng)]]!.destination += 1; notes.push('幽灵令邻座延误一层'); } } break;
       case 'celebrity': if (neighbourCount(effectCabin, slot) === 1) addCoins('名人关注', 3); break;
-      case 'inspector': if (nextFloor % 2 === 0 && totalEnergyCost(state) <= INSPECTOR_ENERGY_LIMIT) addCoins('检查员合规奖励', INSPECTOR_COMPLIANCE_REWARD); break;
+      case 'inspector': if (totalEnergyCost(state) <= INSPECTOR_ENERGY_LIMIT) addCoins('检查员合规奖励', INSPECTOR_COMPLIANCE_REWARD); break;
       case 'bomb': { const paused = hasNeighbour(effectCabin, slot, ['cop']) && nextFloor % 2 === 0; if (!paused) rider.fuse = (rider.fuse ?? 1) - 1; break; }
     }
   });
-  deferredSwaps.forEach(([from, to]) => { [cabin[from], cabin[to]] = [cabin[to], cabin[from]]; });
   if (state.upgrades.solar && nextFloor % 4 === 0 && energySavings(state)>0) notes.push('节能线路已计入；所有节能效果逐项叠加');
-  let arrivals = 0; let cooperativeArrivals = 0;
+  let arrivals = 0;
   cabin = cabin.map((rider, slot) => {
     if (!rider) return null;
     if (rider.kind === 'bomb' && (rider.fuse ?? 0) <= 0 && nextFloor < rider.destination) return rider;
     if (nextFloor < rider.destination) return rider;
-    const spec = PASSENGERS[rider.kind]; const profile = riderProfile(rider, cabin, slot); let fare = profile.fare;
+    const spec = PASSENGERS[rider.kind]; const profile = riderProfile(rider, cabin, slot); let fare = profile.fare + (rider.volatile ? HIGH_RISK_BONUS : 0);
     if (rider.kind === 'lover') fare *= 1 + neighbours(slot).filter(nearby=>cabin[nearby]?.kind==='lover').length;
     if (rider.kind === 'thief' && hasNeighbour(cabin, slot, ['cop', 'lawyer'])) fare += 5;
     if (rider.kind === 'ghost' && hasNeighbour(cabin, slot, ['exorcist'])) fare += 6;
@@ -207,14 +216,13 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
     if (rider.kind !== 'coach') fare = Math.ceil(fare * (1 + .5 * neighbours(slot).filter(nearby=>cabin[nearby]?.kind==='coach').length));
     fare += rider.fareBonus;
     const supportCount=bondStatus(rider,cabin,slot).supportCount;
-    if (supportCount) { fare += cooperationBonus(state)*supportCount; cooperativeArrivals += 1; }
+    if (supportCount) fare += cooperationBonus(state)*supportCount;
     if (profile.hidden) notes.push(`${spec.name}封存车费揭晓：${profile.fare} 金币`);
     addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare); arrivals += 1; return null;
   });
   // Arriving on the same floor as fuse expiry is still safe.
   const bombFailed = cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0);
-  if (arrivals) adjustPressure('乘客到站舒缓', -arrivals);
-  if (cooperativeArrivals) adjustPressure('默契契约 · 协作送达', -cooperationRelief(state)*cooperativeArrivals);
+  if (arrivals) adjustPressure('乘客到站舒缓', -1);
   if (energy > state.energyCap) adjustEnergy('超额回充未储存', state.energyCap - energy);
   energy = Math.min(state.energyCap, energy); stress = Math.max(0, stress);
   const checkpoint = nextFloor % 10 === 0;
@@ -230,8 +238,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   if (cabin.some(rider => rider?.kind === 'shifter') && status === 'playing') message += ' 百变人已变化，关门前查看新属性。';
   const crisis: UpgradeCrisis = energy <= 0 && stress >= state.stressCap ? 'both' : energy <= 0 ? 'energy' : stress >= state.stressCap ? 'stress' : null;
   const shop = status === 'upgrade' ? upgradeChoices(state.upgrades, rng, crisis).map((key) => ({ key, price: upgradePrice(key, nextFloor, state.upgrades[key]), purchased: false })) : [];
-  const restStops = Math.min(REST_STOP_CAP, Math.max(0, state.restStops - (resting ? 1 : 0)) + arrivals);
-  return { ...state, floor: nextFloor, energy, stress, coins, restStops, earned: state.earned + lastEarnings.total, shop, cabin, swapped: false, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
+  return { ...state, floor: nextFloor, energy, stress, coins, restStops: 0, earned: state.earned + lastEarnings.total, shop, cabin, swapped: false, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
 }
 
 export type UpgradeCrisis = 'energy' | 'stress' | 'both' | null;
@@ -249,14 +256,14 @@ export function failureLesson(state: RunState): string {
   if (state.message.includes('电量')) return '电量耗尽 · 每站耗电＝运转1＋所有人物耗电−节能。下次少接高耗电长途客，并先留充电费再买升级。';
   if (state.message.includes('躁动')) {
     const source = state.lastPressure.sources.filter((line) => line.amount > 0).sort((a, b) => b.amount - a.amount)[0];
-    return source ? `躁动失控 · 最后一层主要来源：${source.label} +${source.amount}。下一班减少满载等待，安排安抚或购买舒缓系统。` : '躁动失控 · 下一班减少拥挤、安排安抚，并留出舒缓系统的预算。';
+    return source ? `躁动失控 · 最后一层主要来源：${source.label} +${source.amount}。下一班让护士或音乐家靠近高躁动乘客。` : '躁动失控 · 下一班优先处理高危乘客与红色冲突。';
   }
   return '班次中断 · 下一班留意关门前的电量与躁动预报。';
 }
 
 export function previewUpgrade(current: RunState, key: UpgradeKey): RunState {
   const upgrades = { ...current.upgrades, [key]: current.upgrades[key] + 1 }; const energyCap = current.energyCap; const energy = current.energy; let stressCap = current.stressCap; let stress = current.stress; const weightCap = current.weightCap;
-  if (key === 'calm') { stressCap += 3; stress = Math.max(0, stress - 6); }
+  if (key === 'calm') { stressCap += 1; stress = Math.max(0, stress - 2); }
   return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap };
 }
 
@@ -277,7 +284,7 @@ export function leaveShop(current: RunState): RunState {
 
 export const CHARGE_PRICE = 1;
 export function chargingPlan(state: RunState) {
-  const target = Math.min(state.energyCap, 62);
+  const target = Math.min(state.energyCap, 50);
   const units = Math.max(0, target - state.energy);
   return {target,units,cost:units*CHARGE_PRICE,baseline:(nextShopFloor(state.floor)-state.floor)*travelEnergyCost(state.floor+1)};
 }
@@ -299,9 +306,9 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  const count=state.upgrades[key];
  if(!count)return '未安装';
  switch(key){
-  case 'battery':return `每条协作连接的到站加成 +${cooperationBonus(state)} 金币（基础3 + 升级${count*2}）；每位协作乘客送达，全车额外 −${cooperationRelief(state)} 躁动。减躁动不随等级叠加。`;
+  case 'battery':return `每条协作连接的到站加成 +${cooperationBonus(state)} 金币（基础3 + 升级${count*2}）。`;
   case 'solar':return '到4的倍数层抵消1点人物耗电；与维修工、受控幽灵逐项叠加。所有节能最多抵完人物耗电，稳压先算。';
-  case 'calm':return `躁动上限 ${state.stressCap}；每次购买时立即舒缓6点`;
+  case 'calm':return `躁动上限 ${state.stressCap}；每次购买时立即舒缓2点`;
   case 'concierge':return `此后新乘客到站小费 +${count*3}；不参与车费倍率`;
   case 'reinforced':return '每站抵消1点人物耗电，不影响运转1电；无人耗电时不触发，本局唯一。';
   case 'express':return '新乘客原定路程≥5站时少坐1站；本局唯一';

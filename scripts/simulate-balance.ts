@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { PASSENGERS, type UpgradeKey } from '../lib/game-data';
-import { agitationThreshold, chargeBattery, chargingPlan, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, resolveFloor, totalWeight, type Rider, type RunState } from '../lib/game-engine';
+import { HIGH_RISK_BONUS, agitationThreshold, chargingPlan, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, resolveFloor, totalEnergyCost, type Rider, type RunState } from '../lib/game-engine';
 import { energyForecast, stressForecast } from '../lib/game-forecast';
 
 type Policy = 'balanced' | 'ignore-agitation' | 'hoard' | 'greedy';
@@ -9,6 +9,14 @@ const runs = Math.max(1, Number(process.argv[2] || 2500));
 const horizon = 300; // Test censoring only, never a game endpoint.
 const seedBase = Number(process.env.ET_SEED || 91007);
 const priceScale = Number(process.env.ET_PRICE_SCALE || 1);
+const initialEnergy = Number(process.env.ET_INITIAL_ENERGY || 48);
+const energyCap = Number(process.env.ET_ENERGY_CAP || 60);
+const chargePrice = Number(process.env.ET_CHARGE_PRICE || 1);
+const agitationCap = Number(process.env.ET_AGITATION_CAP || 6);
+const highRiskStart = Number(process.env.ET_HIGH_RISK_START || 15);
+const pressureStep = Number(process.env.ET_PRESSURE_STEP || 20);
+const volatileSpan = Number(process.env.ET_VOLATILE_SPAN || 35);
+const offerTuning={highRiskStart,pressureStep,volatileSpan};
 const rngFor = (seed: number) => () => { let t = seed += 0x6d2b79f5; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 const ignoresAgitation = (policy: Policy) => policy === 'ignore-agitation' || policy === 'greedy';
 
@@ -22,7 +30,7 @@ function cabinValue(state: RunState, policy: Policy) {
       const paused = hasNeighbour(state.cabin, slot, ['cop']) ? Math.floor((state.floor + trip) / 2) - Math.floor(state.floor / 2) : 0;
       if ((rider.fuse ?? 0) < trip - paused) risk += 500;
     }
-    let fare = spec.fare + rider.fareBonus;
+    let fare = spec.fare + rider.fareBonus + (rider.volatile ? HIGH_RISK_BONUS : 0);
     if (rider.kind === 'lover' && hasNeighbour(state.cabin, slot, ['lover'])) { income += 1; fare += spec.fare; }
     if (rider.kind === 'thief') income += hasNeighbour(state.cabin, slot, ['cop', 'lawyer']) ? 1 : 3;
     if (rider.kind === 'drunk' && hasNeighbour(state.cabin, slot, ['musician', 'nurse'])) income += 1;
@@ -32,23 +40,24 @@ function cabinValue(state: RunState, policy: Policy) {
       else risk += 1.2;
     }
     if (rider.kind === 'mechanic') recovery += 2;
-    if (rider.kind === 'inspector' && totalWeight(state.cabin) <= 8) recovery += .5;
-    income += fare / trip; recovery += spec.energy / trip;
+    if (rider.kind === 'inspector' && totalEnergyCost(state) <= 4) recovery += .5;
+    income += fare / trip;
   });
   const stress = stressForecast(state); const energy = energyForecast(state);
   const pressureWeight = ignoresAgitation(policy) ? 0 : state.stress >= agitationThreshold(state.stressCap) - 2 ? 12 : state.stress >= 5 ? 5 : 2;
   const averageRise = (stress.lowDelta + stress.highDelta) / 2;
   const pressurePenalty = averageRise * pressureWeight + (state.stress + stress.highDelta >= state.stressCap ? pressureWeight * 30 : 0);
-  return income * (policy === 'greedy' ? 3 : 1.5) + recovery * (state.energy < 9 ? 10 : 5) - pressurePenalty - risk - count * .15 - (state.energy + energy.highDelta <= 0 ? 100 : 0);
+  const energyPenalty = Math.abs(energy.highDelta) * (policy === 'greedy' ? .35 : policy === 'hoard' ? 2.5 : 1.4) * (state.energy < 12 ? 3 : 1);
+  return income * (policy === 'greedy' ? 3 : 1.5) + recovery * (state.energy < 9 ? 10 : 5) - energyPenalty - pressurePenalty - risk - count * .15 - (state.energy + energy.highDelta <= 0 ? 100 : 0);
 }
 
 function board(state: RunState, offers: Rider[], policy: Policy) {
   let current = state; const waiting = [...offers];
-  while (waiting.length && current.cabin.some((rider) => !rider)) {
+  const riderCap = policy === 'hoard' ? 2 : policy === 'balanced' ? 4 : 6;
+  while (waiting.length && current.cabin.some((rider) => !rider) && current.cabin.filter(Boolean).length < riderCap) {
     const baseline = cabinValue(current, policy);
-    let best = baseline + .01; let chosen = -1; let next = current;
+    let best = current.cabin.some(Boolean) ? baseline + .01 : -Infinity; let chosen = -1; let next = current;
     waiting.forEach((rider, index) => {
-      if (totalWeight(current.cabin) + PASSENGERS[rider.kind].weight > current.weightCap) return;
       current.cabin.forEach((occupant, slot) => {
         if (occupant) return;
         const candidate = { ...current, cabin: current.cabin.map((old, i) => i === slot ? rider : old) };
@@ -65,7 +74,7 @@ function board(state: RunState, offers: Rider[], policy: Policy) {
 function shopValue(state: RunState, key: UpgradeKey, policy: Policy) {
   if (policy === 'hoard') return -1;
   switch (key) {
-    case 'battery': return Math.min(8, state.energyCap + 5 - state.energy) * (state.energy < 12 ? 6 : 2) + 5;
+    case 'battery': return 12 + state.upgrades.battery * 4;
     case 'calm': return ignoresAgitation(policy) ? -1 : Math.min(6, state.stress) * 5 + 9;
     case 'solar': return state.energy > 7 ? 30 : 14;
     case 'concierge': return state.energy > 8 ? 27 : 9;
@@ -79,8 +88,8 @@ const results = policies.map((policy) => {
   let purchases = 0; let skippedShops = 0; let visitedShops = 0; let totalEarned = 0; let totalSpent = 0; let highAgitationStations = 0; let stations = 0; let forecastMisses = 0; let brokeShops = 0; let budgetChoices = 0;
   const upgradeMix: Record<string, number> = {};
   for (let n = 0; n < runs; n += 1) {
-    const rng = rngFor(seedBase + n * 97); let state = initialRun();
-    let offers = makeOffers(1, state.upgrades, true, rng);
+    const rng = rngFor(seedBase + n * 97); let state = {...initialRun(),energy:initialEnergy,energyCap,stressCap:agitationCap};
+    let offers = makeOffers(1, state.upgrades, true, rng, [], undefined, offerTuning);
     while (state.status !== 'lost' && state.floor < horizon) {
       if (state.status === 'upgrade') {
         if (priceScale !== 1) state = { ...state, shop: state.shop.map((card) => ({ ...card, price: Math.round(card.price * priceScale) })) };
@@ -91,8 +100,8 @@ const results = policies.map((policy) => {
         // Model that core shop decision; the previous harness skipped charging entirely
         // and therefore measured a deliberately impossible strategy.
         const plan = chargingPlan(state);
-        const rechargeUnits = Math.min(plan.units, state.coins);
-        if (rechargeUnits > 0) state = chargeBattery(state, rechargeUnits);
+        const rechargeUnits = Math.min(plan.units, Math.floor(state.coins/chargePrice));
+        if (rechargeUnits > 0) state = {...state,energy:state.energy+rechargeUnits,coins:state.coins-rechargeUnits*chargePrice};
         for (;;) {
           const candidates = state.shop.filter((card) => !card.purchased && card.price <= state.coins)
             .map((card) => ({ ...card, value: shopValue(state, card.key, policy) / card.price })).sort((a, b) => b.value - a.value);
@@ -105,18 +114,19 @@ const results = policies.map((policy) => {
         }
         if (!bought) skippedShops += 1;
         state = leaveShop(state);
-        if (state.status === 'playing') offers = makeOffers(state.floor, state.upgrades, false, rng, state.cabin);
+        if (state.status === 'playing') offers = makeOffers(state.floor, state.upgrades, false, rng, state.cabin, undefined, offerTuning);
         continue;
       }
       state = board(state, offers, policy);
       const pressure = stressForecast(state); const energy = energyForecast(state);
       if (state.stress >= agitationThreshold(state.stressCap)) highAgitationStations += 1;
       stations += 1;
+      assert.ok(state.cabin.some(Boolean),'policy must board at least one rider');
       const next = resolveFloor(state, rng);
       if (next.lastPressure.delta < pressure.lowDelta || next.lastPressure.delta > pressure.highDelta || next.lastEnergy.delta < energy.lowDelta || next.lastEnergy.delta > energy.highDelta) forecastMisses += 1;
       assert.ok(next.coins >= 0 && next.earned >= next.coins);
       state = next;
-      if (state.status === 'playing') offers = makeOffers(state.floor, state.upgrades, false, rng, state.cabin);
+      if (state.status === 'playing') offers = makeOffers(state.floor, state.upgrades, false, rng, state.cabin, undefined, offerTuning);
     }
     floors.push(state.floor); totalEarned += state.earned; totalSpent += state.earned - state.coins;
     if (state.status !== 'lost') deaths.censored += 1;
@@ -133,4 +143,4 @@ const results = policies.map((policy) => {
     highAgitationRate: round(highAgitationStations / stations * 100), averagePurchases: round(purchases / runs), averageEarned: round(totalEarned / runs), averageSpent: round(totalSpent / runs),
     shops: { visited: visitedShops, skipped: skippedShops, unaffordable: brokeShops, cannotBuyAll: budgetChoices }, upgradeMix, deaths, forecastMisses, stations };
 });
-console.log(JSON.stringify({ seedBase, priceScale, totalRuns: runs * policies.length, results }, null, 2));
+console.log(JSON.stringify({ seedBase, priceScale, initialEnergy, energyCap, chargePrice, agitationCap, highRiskStart, pressureStep, volatileSpan, totalRuns: runs * policies.length, results }, null, 2));
