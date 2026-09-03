@@ -62,16 +62,15 @@ export function passengerFace(rider: Rider, state: RunState) {
  return {energy,pressure,moneyNote,special,
   cooperative:`到站仍挨${names(profile.bond.likes)}`,
   conflict:`挨${names(profile.bond.avoids)}：偶数层 +${m}`,
-  conflictException:'有协作邻座免冲突',
+  conflictException:'同时有上述协作邻座则免冲突',
   actual:actual?`下站人物躁动 ${actual.low===actual.high?actual.low:actual.low+'～'+actual.high}`:null,
  };
 }
 
-const pressureText=(text:string,m:number)=>text.replace(/躁动 \+(\d+)/g,(_,n)=>'躁动 +'+Number(n)*m).replace(/\+(\d+) 躁动/g,(_,n)=>'+'+Number(n)*m+' 躁动');
-export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bonus=3, relief=0, multiplier=1): PassengerRuleBlock[] {
+export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bonus=3, relief=0): PassengerRuleBlock[] {
  const bond=bondSummary(rider,cabin,bonus),name=PASSENGERS[rider.kind].name;
  const partners=bond.partners.replaceAll(' / ','或'),opponents=bond.opponents.replaceAll(' / ','或');
- const short=pressureText(PASSENGERS[rider.kind].short,multiplier);
+ const short=PASSENGERS[rider.kind].short;
  const ability:PassengerRuleBlock={tone:'neutral',heading:'人物能力',lines:[short.endsWith('。')?short:short+'。']};
  const cooperation:PassengerRuleBlock={
   tone:'good',heading:`协作：旁边有${partners}`,
@@ -80,7 +79,7 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
  };
  if(rider.kind==='thief'){
   ability.heading='没人看管：旁边没有警察或律师';
-  ability.lines=['每上 1 层，赚 3 金币。',`每到偶数层，躁动 +${multiplier}。`];
+  ability.lines=['每上 1 层，赚 3 金币。','每到偶数层，躁动 +1。'];
   cooperation.lines=['途中：每层赚 1 金币，不再产生偷窃躁动。',`到站：受控奖励 +5 金币，协作奖励再 +${bonus} 金币。`];
  }
  if(rider.kind==='cop'){
@@ -98,12 +97,12 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
  }
  return [ability,cooperation,{
   tone:'risk',heading:`冲突：旁边有${opponents}`,
-  lines:[`每到偶数层，额外躁动 +${multiplier}。`],
+  lines:['每到偶数层，额外躁动 +1。'],
   note:`同时有${partners}相邻时，不触发这项冲突。`,
  }];
 }
 
-export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|null>=[], bonus=3, relief=0, multiplier=1) {
+export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|null>=[], bonus=3, relief=0) {
  const profile=riderProfile(rider,cabin);
  const bond=bondSummary(rider,cabin,bonus);
  const partnerNames=profile.bond.likes.map(kind=>(kind===rider.kind?'另一位':'')+PASSENGERS[kind].name);
@@ -115,8 +114,8 @@ export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|n
   relief:relief>0 ? `额外躁动 −${relief}` : null,
   limit:relief>0 ? '舒缓全车每层1次' : null,
  };
- const skillRules=PASSENGER_RULES[rider.kind].map(rule=>pressureText(rule,multiplier)),bondRules=bondLines(rider,cabin,bonus).map(rule=>pressureText(rule,multiplier));
+ const skillRules=PASSENGER_RULES[rider.kind],bondRules=bondLines(rider,cabin,bonus);
  const detailRules=[...(['thief','cop','lawyer'].includes(rider.kind)?[]:skillRules),bondRules[1],'协作免除的只是邻座冲突，其他角色技能仍按各自条件触发。',...bondRules.slice(3)];
  return {coins:profile.hidden?null:profile.fare, tip:rider.fareBonus, energy:profile.energy,agitation:profile.agitation,weight:0,hidden:profile.hidden,
-  distance:Math.max(0,rider.destination-floor),bond,cooperation,cardRules:passengerCardRules(rider,cabin,bonus,relief,multiplier),detailRules,skillRules,bondRules,rules:[...skillRules,...bondRules]};
+  distance:Math.max(0,rider.destination-floor),bond,cooperation,cardRules:passengerCardRules(rider,cabin,bonus,relief),detailRules,skillRules,bondRules,rules:[...skillRules,...bondRules]};
 }

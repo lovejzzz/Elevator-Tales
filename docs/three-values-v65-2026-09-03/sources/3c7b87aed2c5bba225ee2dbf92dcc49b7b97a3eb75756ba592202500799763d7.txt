@@ -94,14 +94,14 @@ export const readyPartner = (kind: PassengerKind, cabin: Array<Rider | null>, ex
   return null;
 };
 export const rand = (min: number, max: number, rng: () => number = Math.random) => Math.floor(rng() * (max - min + 1)) + min;
-export const travelEnergyCost = (_destinationFloor: number) => 1;
+export const travelEnergyCost = (_destinationFloor: number) => 2;
 export const energySavings = (state: RunState) => {
   const next=state.floor+1;let saved=state.upgrades.solar&&next%4===0?1:0;
   state.cabin.forEach((rider,slot)=>{
     if(rider?.kind==='mechanic'&&next%3===0)saved++;
     if(rider?.kind==='ghost'&&hasNeighbour(state.cabin,slot,['exorcist']))saved++;
     if(rider?.kind==='inspector'&&next%2===0&&passengerEnergy(state)===0)saved++;
-  });return Math.min(1,saved,Math.max(0,travelEnergyCost(next)+passengerEnergy(state)-stabilizedEnergy(state)-1));
+  });return Math.min(1,saved);
 };
 export const expressTrip = (baseTrip: number, installed: number) => installed > 0 && baseTrip >= 5 ? baseTrip - 1 : baseTrip;
 
@@ -234,7 +234,7 @@ export function failureLesson(state: RunState): string {
   if (state.status !== 'lost') return '';
   if (state.message.includes('引信')) return '引信归零 · 下一班让炸弹客与警察相邻以延缓；来不及送达就拒载。';
   if (state.energy <= 0 && state.stress >= state.stressCap) return '双重失控 · 下一班提前留好维修预算，关门前先处理更接近上限的一项。';
-  if (state.message.includes('电量')) return '电量耗尽 · 每站基础耗1电，再加人物额外耗电。下次少接高耗电长途客，并先留充电费再买升级。';
+  if (state.message.includes('电量')) return '电量耗尽 · 每站基础耗2电，再加人物额外耗电。下次少接高耗电长途客，并先留充电费再买升级。';
   if (state.message.includes('躁动')) {
     const source = state.lastPressure.sources.filter((line) => line.amount > 0).sort((a, b) => b.amount - a.amount)[0];
     return source ? `躁动失控 · 最后一层主要来源：${source.label} +${source.amount}。下一班减少满载等待，安排安抚或购买舒缓系统。` : '躁动失控 · 下一班减少拥挤、安排安抚，并留出舒缓系统的预算。';
@@ -243,7 +243,7 @@ export function failureLesson(state: RunState): string {
 }
 
 export function previewUpgrade(current: RunState, key: UpgradeKey): RunState {
-  const upgrades = { ...current.upgrades, [key]: current.upgrades[key] + 1 }; const energyCap = current.energyCap; const energy = current.energy; let stressCap = current.stressCap; let stress = current.stress; const weightCap = current.weightCap;
+  const upgrades = { ...current.upgrades, [key]: current.upgrades[key] + 1 }; const energyCap = current.energyCap; const energy = current.energy; let stressCap = current.stressCap; let stress = current.stress; let weightCap = current.weightCap;
   if (key === 'calm') { stressCap += 3; stress = Math.max(0, stress - 6); }
   return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap };
 }
@@ -263,11 +263,11 @@ export function leaveShop(current: RunState): RunState {
   return { ...current, shop: [], status: failed ? 'lost' : 'playing', message: current.energy <= 0 ? '金币或维修不足，电量未能恢复。' : current.stress >= current.stressCap ? '维修后躁动仍然失控，班次结束。' : '维修层已离开，继续挑战更高楼层。' };
 }
 
-export const CHARGE_PRICE = 3;
+export const CHARGE_PRICE = 2;
 export function chargingPlan(state: RunState) {
   const target = Math.min(state.energyCap, (nextShopFloor(state.floor) - state.floor) * 2 + 2);
   const units = Math.max(0, target - state.energy);
-  return {target,units,cost:units*CHARGE_PRICE,baseline:(nextShopFloor(state.floor)-state.floor)*travelEnergyCost(state.floor+1)};
+  return {target,units,cost:units*CHARGE_PRICE,baseline:(nextShopFloor(state.floor)-state.floor)*2};
 }
 export function chargeBattery(state: RunState, units: number): RunState {
   if(state.status!=='upgrade'||!Number.isSafeInteger(units)||units<=0||state.energy+units>state.energyCap||state.coins<units*CHARGE_PRICE)return state;

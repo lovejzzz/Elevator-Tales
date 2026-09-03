@@ -15,11 +15,12 @@ export function metricChanges(before: RunState, after: RunState, reason: string)
     const delta = to - from;
     if (!delta && !capDelta && !sources.length) return [];
     const tone = key === 'stress' ? delta > 0 ? 'danger' : delta < 0 || capDelta > 0 ? 'gain' : 'neutral'
+      : key === 'weight' ? capDelta > 0 ? 'gain' : to > 8 && delta > 0 ? 'cost' : 'neutral'
       : delta > 0 || capDelta > 0 ? 'gain' : delta < 0 ? 'cost' : 'neutral';
     const lines = sources.length ? [...sources] : delta ? [{ label: reason, amount: delta }] : [];
     if (sources.length) {
       const adjustment = delta - sources.reduce((sum, line) => sum + line.amount, 0);
-      if (adjustment) lines.push({ label: key === 'energy' ? '电量上限截取' : '躁动下限修正', amount: adjustment });
+      if (adjustment) lines.push({ label: key === 'energy' ? '电量上限截取' : key === 'weight' ? '联动载重变化' : '躁动下限修正', amount: adjustment });
     }
     return [{ key, label, before: from, after: to, delta, capDelta, tone, sources: lines }];
   });

@@ -1,5 +1,5 @@
 import { bondStatus } from './rider-profile';
-import { cooperationRelief, energySavings, passengerEnergy, stabilizedEnergy, riderAgitation, eventPressureMultiplier, crowdAgitation, hasNeighbour, neighbours, shiftAgitation, travelEnergyCost, type RunState } from './game-engine';
+import { cooperationRelief, energySavings, loadEnergyCost, efficientWeightLimit, riderAgitation, eventPressureMultiplier, crowdAgitation, hasNeighbour, neighbours, shiftAgitation, totalWeight, travelEnergyCost, type RunState } from './game-engine';
 
 export type StressForecast = {
   range: string;
@@ -32,7 +32,7 @@ function projectedDestinationVariants(state: RunState): Array<Array<number | nul
   return variants;
 }
 
-export function stressForecast(state: RunState, _legacyWeight?: number): StressForecast {
+export function stressForecast(state: RunState, weight = totalWeight(state.cabin)): StressForecast {
   const nextFloor = state.floor + 1;
   const occupied = state.cabin.filter(Boolean).length;
   const effects = state.cabin.map((_, slot) => riderAgitation(state, slot));
@@ -54,7 +54,8 @@ export function stressForecast(state: RunState, _legacyWeight?: number): StressF
   const minArrivals = Math.min(...variants.map((variant) => variant.arrivals)); const maxArrivals = Math.max(...variants.map((variant) => variant.arrivals));
   const arrivalReason = !maxArrivals ? '' : minArrivals === maxArrivals ? `到站舒缓 −${maxArrivals}` : minArrivals === 0 ? `到站舒缓最多 −${maxArrivals}` : `到站舒缓 −${minArrivals}～−${maxArrivals}`;
   const crowd = crowdAgitation(occupied); const fatigue = shiftAgitation(nextFloor, occupied, state.restStops);
-  const fixedRise = passengerFixed + crowd + fatigue;
+  const overload = weight > state.weightCap ? 2 : 0;
+  const fixedRise = passengerFixed + crowd + fatigue + overload;
   const lows = variants.map((variant) => Math.max(0, state.stress + fixedRise - variant.arrivals - variant.contractHigh));
   const highs = variants.map((variant) => Math.max(0, state.stress + fixedRise + passengerRandom - variant.arrivals - variant.contractLow));
   const minContract = Math.min(...variants.map(v => v.contractLow)), maxContract = Math.max(...variants.map(v => v.contractHigh));
@@ -64,6 +65,7 @@ export function stressForecast(state: RunState, _legacyWeight?: number): StressF
   const range = lowDelta === highDelta ? signedDelta(lowDelta) : `${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
   const reasons = [
     ...effects.flatMap(effect => effect.fixed.map(line => `${line.label} ${signedDelta(line.amount)}`)),
+    overload ? '载重超限 +2' : '',
     crowd ? crowd > 0 ? `拥挤 +${crowd}` : '宽松 −1' : '',
     fatigue ? `班次压力 +${fatigue}` : '',
     occupied === 0 ? state.restStops > 0 ? `休整 ${state.restStops}→${state.restStops - 1}，免疲劳` : '休整用尽，空驶不免疲劳' : '',
@@ -78,7 +80,7 @@ export function stressForecast(state: RunState, _legacyWeight?: number): StressF
   return { range, details, summary, tone, lowDelta, highDelta };
 }
 
-export function energyForecast(state: RunState, _legacyWeight?: number): EnergyForecast {
- const drain=travelEnergyCost(state.floor+1),extra=passengerEnergy(state),stabilized=stabilizedEnergy(state),saved=energySavings(state),delta=-drain-extra+stabilized+saved;
- return {range:signedDelta(delta),summary:`下一层电量 ${signedDelta(delta)} · 基础 −${drain}${extra ? ` · 人物额外 −${extra}` : ''}${stabilized ? ' · 稳压抵消1' : ''}${saved ? ' · 节能少耗1' : ''}`,danger:state.energy+delta<=0,lowDelta:delta,highDelta:delta};
+export function energyForecast(state: RunState, _weight = totalWeight(state.cabin)): EnergyForecast {
+ const drain=travelEnergyCost(state.floor+1), heavy=loadEnergyCost(state), saved=energySavings(state), delta=-drain-heavy+saved;
+ return {range:signedDelta(delta),summary:`下一层电量 ${signedDelta(delta)} · 行驶 −${drain}${heavy ? ` · 重载 −${heavy}（载重超过${efficientWeightLimit(state)}）` : ''}${saved ? ' · 节能少耗1' : ''}`,danger:state.energy+delta<=0,lowDelta:delta,highDelta:delta};
 }

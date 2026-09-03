@@ -243,7 +243,7 @@ export function failureLesson(state: RunState): string {
 }
 
 export function previewUpgrade(current: RunState, key: UpgradeKey): RunState {
-  const upgrades = { ...current.upgrades, [key]: current.upgrades[key] + 1 }; const energyCap = current.energyCap; const energy = current.energy; let stressCap = current.stressCap; let stress = current.stress; const weightCap = current.weightCap;
+  const upgrades = { ...current.upgrades, [key]: current.upgrades[key] + 1 }; const energyCap = current.energyCap; const energy = current.energy; let stressCap = current.stressCap; let stress = current.stress; let weightCap = current.weightCap;
   if (key === 'calm') { stressCap += 3; stress = Math.max(0, stress - 6); }
   return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap };
 }

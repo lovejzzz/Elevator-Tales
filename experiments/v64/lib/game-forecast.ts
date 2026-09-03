@@ -1,5 +1,5 @@
 import { bondStatus } from './rider-profile';
-import { cooperationRelief, energySavings, passengerEnergy, stabilizedEnergy, riderAgitation, eventPressureMultiplier, crowdAgitation, hasNeighbour, neighbours, shiftAgitation, travelEnergyCost, type RunState } from './game-engine';
+import { cooperationRelief, energySavings, crowdAgitation, hasNeighbour, neighbourCount, neighbours, patienceCost, shiftAgitation, totalWeight, travelEnergyCost, type RunState } from './game-engine';
 
 export type StressForecast = {
   range: string;
@@ -32,13 +32,26 @@ function projectedDestinationVariants(state: RunState): Array<Array<number | nul
   return variants;
 }
 
-export function stressForecast(state: RunState, _legacyWeight?: number): StressForecast {
+export function stressForecast(state: RunState, weight = totalWeight(state.cabin)): StressForecast {
   const nextFloor = state.floor + 1;
   const occupied = state.cabin.filter(Boolean).length;
-  const effects = state.cabin.map((_, slot) => riderAgitation(state, slot));
-  const drunks = effects.filter(effect => effect.random > 0).length;
-  const passengerFixed = effects.reduce((sum, effect) => sum + effect.low, 0);
-  const passengerRandom = effects.reduce((sum, effect) => sum + effect.random, 0);
+  let thieves = 0; let drunks = 0; let celebrities = 0; let inspectors = 0; let relief = 0;
+  const patience = state.cabin.map((rider, slot) => {
+    if (!rider) return null;
+    const unattendedChild = rider.kind === 'child' && !hasNeighbour(state.cabin, slot, ['lover', 'musician', 'nurse']);
+    return rider.patience - patienceCost(state) - (nextFloor % 2 === 0 && unattendedChild ? 1 : 0);
+  });
+  state.cabin.forEach((rider, slot) => {
+    if (!rider) return;
+    switch (rider.kind) {
+      case 'thief': if (!hasNeighbour(state.cabin, slot, ['cop', 'lawyer']) && nextFloor % 2 === 0) thieves += 1; break;
+      case 'drunk': if (!hasNeighbour(state.cabin, slot, ['musician', 'nurse'])) drunks += 1; break;
+      case 'musician': if (occupied >= 4) relief += 1; break;
+      case 'nurse': if (nextFloor % 2 === 0) relief += 1; break;
+      case 'celebrity': if (nextFloor % 2 === 0 && neighbourCount(state.cabin, slot) > 1) celebrities += 1; break;
+      case 'inspector': if (nextFloor % 2 === 0 && weight > 8) inspectors += 1; break;
+    }
+  });
   const contract = cooperationRelief(state);
   const variants = projectedDestinationVariants(state).map((destinations) => {
     const arriving = state.cabin.flatMap((rider, slot) => rider && destinations[slot] !== null && nextFloor >= destinations[slot]! ? [slot] : []);
@@ -49,28 +62,41 @@ export function stressForecast(state: RunState, _legacyWeight?: number): StressF
     const contractHigh = (drunks ? arriving.length > 0 : supported) ? contract : 0;
     return {
     contractLow, contractHigh,
+    impatient: state.cabin.reduce((count, rider, index) => count + (rider && destinations[index] !== null && nextFloor < destinations[index]! && patience[index] !== null && patience[index]! <= 0 ? 1 : 0), 0),
     arrivals: state.cabin.reduce((count, rider, index) => count + (rider && destinations[index] !== null && nextFloor >= destinations[index]! ? 1 : 0), 0),
   }; });
+  const minImpatient = Math.min(...variants.map((variant) => variant.impatient)); const maxImpatient = Math.max(...variants.map((variant) => variant.impatient));
   const minArrivals = Math.min(...variants.map((variant) => variant.arrivals)); const maxArrivals = Math.max(...variants.map((variant) => variant.arrivals));
   const arrivalReason = !maxArrivals ? '' : minArrivals === maxArrivals ? `到站舒缓 −${maxArrivals}` : minArrivals === 0 ? `到站舒缓最多 −${maxArrivals}` : `到站舒缓 −${minArrivals}～−${maxArrivals}`;
   const crowd = crowdAgitation(occupied); const fatigue = shiftAgitation(nextFloor, occupied, state.restStops);
-  const fixedRise = passengerFixed + crowd + fatigue;
-  const lows = variants.map((variant) => Math.max(0, state.stress + fixedRise - variant.arrivals - variant.contractHigh));
-  const highs = variants.map((variant) => Math.max(0, state.stress + fixedRise + passengerRandom - variant.arrivals - variant.contractLow));
+  const conflicts = nextFloor % 2 === 0 ? state.cabin.reduce((sum,rider,slot)=>sum+(rider && bondStatus(rider,state.cabin,slot).conflict ? 1 : 0),0) : 0;
+  const overload = weight > state.weightCap ? 2 : 0;
+  const fixedRise = thieves + celebrities + inspectors + crowd + fatigue + conflicts + overload;
+  const lows = variants.map((variant) => Math.max(0, state.stress + fixedRise + variant.impatient * 2 - relief - variant.arrivals - variant.contractHigh));
+  const highs = variants.map((variant) => Math.max(0, state.stress + fixedRise + variant.impatient * 2 + drunks * 2 - relief - variant.arrivals - variant.contractLow));
   const minContract = Math.min(...variants.map(v => v.contractLow)), maxContract = Math.max(...variants.map(v => v.contractHigh));
   const contractReason = maxContract ? minContract === maxContract ? `契约舒缓 −${maxContract}（本层一次）` : `契约舒缓可能 −${maxContract}（本层一次）` : '';
   const low = Math.min(...lows); const high = Math.max(...highs);
   const lowDelta = low - state.stress; const highDelta = high - state.stress;
   const range = lowDelta === highDelta ? signedDelta(lowDelta) : `${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
+  const impatienceReason = !maxImpatient ? '' : minImpatient === maxImpatient
+    ? `${maxImpatient} 人耐心归零 +${maxImpatient * 2}`
+    : minImpatient === 0 ? `最多 ${maxImpatient} 人可能耐心归零 +${maxImpatient * 2}` : `${minImpatient}～${maxImpatient} 人可能耐心归零 +${minImpatient * 2}～${maxImpatient * 2}`;
   const reasons = [
-    ...effects.flatMap(effect => effect.fixed.map(line => `${line.label} ${signedDelta(line.amount)}`)),
+    conflicts ? `邻座冲突 +${conflicts}` : '',
+    overload ? '载重超限 +2' : '',
     crowd ? crowd > 0 ? `拥挤 +${crowd}` : '宽松 −1' : '',
     fatigue ? `班次压力 +${fatigue}` : '',
     occupied === 0 ? state.restStops > 0 ? `休整 ${state.restStops}→${state.restStops - 1}，免疲劳` : '休整用尽，空驶不免疲劳' : '',
     arrivalReason,
     contractReason,
-    eventPressureMultiplier(state) > 1 ? '人物正向躁动已按 ×2 计算' : '',
-    drunks ? `每位醉汉各25%概率躁动 +${2 * eventPressureMultiplier(state)}` : '',
+    patienceCost(state) > 1 ? '高躁动：耐心每站 −2' : '',
+    impatienceReason,
+    thieves ? `小偷 +${thieves}` : '',
+    celebrities ? `名人 +${celebrities}` : '',
+    inspectors ? `超载检查 +${inspectors}` : '',
+    drunks ? `醉汉 ${Math.round((1 - .75 ** drunks) * 100)}% 概率闹事` : '',
+    relief ? `安抚 −${relief}` : '',
   ].filter(Boolean);
   const details = reasons.join(' · ');
   const summary = details ? `下一层 ${range} · ${details}` : '下一层躁动不变 · 没有已知来源';
@@ -78,7 +104,7 @@ export function stressForecast(state: RunState, _legacyWeight?: number): StressF
   return { range, details, summary, tone, lowDelta, highDelta };
 }
 
-export function energyForecast(state: RunState, _legacyWeight?: number): EnergyForecast {
- const drain=travelEnergyCost(state.floor+1),extra=passengerEnergy(state),stabilized=stabilizedEnergy(state),saved=energySavings(state),delta=-drain-extra+stabilized+saved;
- return {range:signedDelta(delta),summary:`下一层电量 ${signedDelta(delta)} · 基础 −${drain}${extra ? ` · 人物额外 −${extra}` : ''}${stabilized ? ' · 稳压抵消1' : ''}${saved ? ' · 节能少耗1' : ''}`,danger:state.energy+delta<=0,lowDelta:delta,highDelta:delta};
+export function energyForecast(state: RunState, _weight = totalWeight(state.cabin)): EnergyForecast {
+ const drain=travelEnergyCost(state.floor+1), saved=energySavings(state), delta=-drain+saved;
+ return {range:signedDelta(delta),summary:`下一层电量 ${signedDelta(delta)} · 行驶 −${drain}${saved ? ' · 节能少耗1' : ''}；乘客不赠电`,danger:state.energy+delta<=0,lowDelta:delta,highDelta:delta};
 }

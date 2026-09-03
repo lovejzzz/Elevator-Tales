@@ -1,6 +1,6 @@
 import { bondStatus, riderProfile } from './rider-profile';
 import { ADJACENT, PASSENGERS, type PassengerKind } from './game-data';
-import { hasNeighbour, isFreeReseat, neighbourCount, type Rider, type RunState } from './game-engine';
+import { hasNeighbour, isFreeReseat, neighbourCount, totalWeight, type Rider, type RunState } from './game-engine';
 
 export function activeConnection(cabin: Array<Rider | null>, first: number, second: number): boolean {
   const a = cabin[first]; const b = cabin[second];
@@ -43,6 +43,7 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
     if (cabin[target]) return reject('这里已经有人 · 请选空位');
     cabin[target] = rider;
   }
+  if(totalWeight(cabin)>state.weightCap && totalWeight(cabin)>=totalWeight(state.cabin))return reject(`安排后载重 ${totalWeight(cabin)} / ${state.weightCap} · 含复制效果`);
   const linkIds = (seats: Array<Rider | null>) => new Set(ADJACENT.filter(([a, b]) => activeConnection(seats, a, b)).map(([a, b]) => [seats[a]!.id, seats[b]!.id].sort().join(':')));
   const before = linkIds(state.cabin); const after = linkIds(cabin);
   const combo = [...after].some((id) => !before.has(id));

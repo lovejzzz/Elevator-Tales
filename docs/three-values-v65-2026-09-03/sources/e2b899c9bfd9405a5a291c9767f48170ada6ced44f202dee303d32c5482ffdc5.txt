@@ -62,7 +62,7 @@ export function passengerFace(rider: Rider, state: RunState) {
  return {energy,pressure,moneyNote,special,
   cooperative:`到站仍挨${names(profile.bond.likes)}`,
   conflict:`挨${names(profile.bond.avoids)}：偶数层 +${m}`,
-  conflictException:'有协作邻座免冲突',
+  conflictException:'同时有上述协作邻座则免冲突',
   actual:actual?`下站人物躁动 ${actual.low===actual.high?actual.low:actual.low+'～'+actual.high}`:null,
  };
 }

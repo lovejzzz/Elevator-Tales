@@ -2,11 +2,10 @@ import { ADJACENT, PASSENGERS, type PassengerKind } from './game-data';
 import type { Rider } from './game-engine';
 
 export type Bond = { likes: PassengerKind[]; avoids: PassengerKind[] };
-// weight is a retired compatibility field for archived simulations, not a rule.
-export type VariableTraits = { weight: number; energy?: number; agitation?: number; fare: number; bond: Bond; revision: number };
-export type CopyField = 'energy' | 'fare' | 'agitation' | 'weight' | 'bond';
+export type VariableTraits = { weight: number; fare: number; bond: Bond; revision: number };
+export type CopyField = 'weight' | 'fare' | 'bond';
 export type CopiedTrait = { sourceId: string; sourceKind: PassengerKind; field: CopyField };
-export const COPY_LABELS: Record<CopyField,string> = {energy:'额外耗电',fare:'车费',agitation:'躁动与联动偏好',weight:'旧属性（已停用）',bond:'联动偏好'};
+export const COPY_LABELS: Record<CopyField,string> = {weight:'载重',fare:'车费',bond:'联动偏好'};
 export const BONDS: Record<PassengerKind,Bond> = {
  commuter:{likes:['courier'],avoids:['drunk']},
  tourist:{likes:['celebrity'],avoids:['thief']},
@@ -38,26 +37,26 @@ export function randomTraits(kind:'mystery'|'shifter', available:PassengerKind[]
  const liked=pool[randomInt(0,pool.length-1,rng)]??'commuter';
  const rest=pool.filter(k=>k!==liked);
  const avoided=rest[randomInt(0,rest.length-1,rng)]??'drunk';
- return {weight:0,energy:randomInt(0,1,rng),agitation:randomInt(0,1,rng),fare:randomInt(kind==='shifter'?28:8,kind==='shifter'?48:40,rng),bond:{likes:[liked],avoids:[avoided]},revision};
+ return {weight:randomInt(1,kind==='shifter'?4:3,rng),fare:randomInt(kind==='shifter'?28:8,kind==='shifter'?48:40,rng),bond:{likes:[liked],avoids:[avoided]},revision};
 }
 function ownProfile(rider:Rider){
  const spec=PASSENGERS[rider.kind];
- return {weight:0,energy:rider.traits?.energy??spec.energy,agitation:rider.traits?.agitation??0,fare:rider.traits?.fare??spec.fare,bond:rider.traits?.bond??BONDS[rider.kind],hidden:rider.kind==='mystery'};
+ return {weight:rider.traits?.weight??spec.weight,fare:rider.traits?.fare??spec.fare,bond:rider.traits?.bond??BONDS[rider.kind],hidden:rider.kind==='mystery'};
 }
 export function riderProfile(rider:Rider,cabin:Array<Rider|null>=[],slot=cabin.findIndex(r=>r?.id===rider.id)) {
  const result={...ownProfile(rider),copies:[] as CopiedTrait[]};
  if(rider.kind!=='mimic'||slot<0)return result;
  const sources=nearby(slot).flatMap(i=>cabin[i]?[cabin[i]!]:[]).sort((a,b)=>a.id.localeCompare(b.id));
- const fields:CopyField[]=['energy','fare','agitation'];
+ const fields:CopyField[]=['weight','fare','bond'];
  // Stable for a given neighbor set: reconnecting cannot reroll. No recursive
  // calls: a neighboring mimic contributes its own baseline attributes.
  const signature=sources.map(r=>r.id).join('|');
  for(const source of sources){
    const field=fields.splice(hash(String(rider.copySeed??rider.id)+signature+source.id)%fields.length,1)[0];
    const profile=ownProfile(source);
-   if(field==='energy')result.energy=profile.energy;
+   if(field==='weight')result.weight=profile.weight;
    if(field==='fare'){result.fare=profile.fare;result.hidden=profile.hidden;}
-   if(field==='agitation'){result.agitation=profile.agitation;result.bond=profile.bond;}
+   if(field==='bond')result.bond=profile.bond;
    result.copies.push({sourceId:source.id,sourceKind:source.kind,field});
  }
  return result;

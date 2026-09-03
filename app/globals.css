@@ -639,3 +639,75 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .passenger-rules { font-size:12px; line-height:1.5; gap:3px; }
  .passenger-action { padding-top:5px; }
 }
+.failure-dialog { border-color:#eaa282!important; background:linear-gradient(145deg,#291d18,#101612 70%)!important; box-shadow:0 0 0 6px #d7775020,0 30px 140px #000!important; }
+.failure-dialog [data-slot='dialog-title'] { color:#ffc4a5!important; font-size:clamp(40px,5vw,64px)!important; line-height:1.12; letter-spacing:.06em; }
+.failure-dialog .failure-cause { margin-top:15px; padding:16px 18px; border-left:4px solid #f0a280; background:#f3a27812; color:#fff0df; font-size:26px; font-weight:650; line-height:1.35; }
+.failure-cause>span { display:block; color:#d4bba7; font:400 15px/1.6 var(--font-sans); margin-top:7px; }
+.result-record { color:#dec388; font-size:14px; margin:0; }
+.rider-direct-pressure { position:absolute; z-index:4; bottom:7%; left:50%; transform:translateX(-50%); white-space:nowrap; color:#eac49f; font-size:11px; text-shadow:0 1px 5px #000; }
+.mobile-resource,.mobile-conflict,.mobile-special,.mobile-money-note { display:none; }
+@media (max-width:700px) {
+ .game-grid,.has-contract .game-grid { grid-template-rows:minmax(324px,40dvh) minmax(0,1fr) 68px; }
+ .mobile-passenger-summary { gap:2px; }
+ .mobile-passenger-summary .portrait-window { width:40px; height:40px; }
+ .mobile-resource { display:grid; width:100%; gap:0; color:#d4dcca; font:500 11px/14px var(--font-sans); text-align:center; }
+ .mobile-resource>b { display:none; }.pressure-resource { color:#edc8a5; }
+ .mobile-money-note,.mobile-special { display:block; color:#c4c8b9; font:400 10px/13px var(--font-sans); overflow-wrap:anywhere; }
+ .mobile-cooperation { font-size:11px; line-height:14px; padding:2px 0; }
+ .mobile-cooperation>span:first-child { display:none; }
+ .mobile-cooperation>span:nth-child(2)::before { content:'本人到站时，'; }
+ .mobile-contract-limit { font-size:9px!important; line-height:12px; }
+ .mobile-conflict { display:block; color:#e6b096; font:400 10px/13px var(--font-sans); width:100%; }
+ .mobile-conflict small { display:block; color:#9fb19e; font-size:9px; line-height:12px; }
+ .mobile-card-state { min-height:14px; font-size:10px; line-height:14px; }
+ .status-rail { display:flex; gap:5px; }.status-rail .meter-card,.status-rail .score-card { flex:1; }
+ .status-rail .meter-card.pressure { flex:1.5; }.status-rail .receipt-button { flex:none; min-height:28px; }
+ .rider-direct-pressure { bottom:1px; font-size:9px; }
+ .failure-dialog { max-height:calc(100dvh - 20px); overflow-y:auto; }
+ .failure-dialog .failure-cause { font-size:23px; padding:12px; margin-top:9px; }
+ .failure-cause>span { font-size:13px; }
+}
+@media (max-width:700px) and (max-height:700px) {
+ .game-grid,.has-contract .game-grid { grid-template-rows:264px minmax(0,1fr) 62px; }
+ .mobile-passenger-summary .portrait-window { display:none; }
+ .mobile-passenger-summary { gap:1px; }
+ .mobile-cooperation { padding:1px 0; }
+ .mobile-trip,.mobile-reward { font-size:11px; line-height:14px; }
+ .mobile-resource { font-size:10px; line-height:12px; }
+ .mobile-money-note,.mobile-special,.mobile-conflict { font-size:9px; line-height:11px; }
+ .mobile-conflict small { font-size:8px; line-height:10px; }
+ .mobile-cooperation { font-size:10px; line-height:12px; }
+ .status-rail .meter-card.pressure { min-height:78px; }
+ .status-rail .meter-card,.status-rail .score-card { padding:2px 5px; }
+ .status-rail .receipt-button { font-size:9px; min-height:25px; }
+ .status-rail .mobile-agitation-state { font-size:9px; }
+ .standing-grid,.has-contract .standing-grid { top:54px; bottom:28px; gap:4px; }
+ .standing-slot .portrait-large,.has-contract .standing-slot .portrait-large { width:min(74cqw,max(24px,calc(100cqh - 20px)),80px); bottom:10px; }
+ .failure-dialog { padding:16px!important; gap:9px; }
+ .failure-dialog [data-slot='dialog-title'] { font-size:36px!important; }
+ .failure-dialog .dialog-kicker { margin:0; }
+ .failure-dialog .failure-cause { margin-top:5px; padding:9px; font-size:22px; }
+ .failure-dialog .result-score { margin:5px 0; }
+ .failure-dialog .result-score span { padding:8px; font-size:10px; }
+ .failure-dialog .result-score b { font-size:23px; }
+ .failure-dialog .result-challenge { padding:9px; font-size:11px; line-height:1.5; margin:0; }
+ .failure-dialog .result-investment,.failure-dialog .result-record { font-size:10px; margin:0; }
+ .failure-dialog .story-primary { min-height:42px; height:42px; margin:0; font-size:12px; }
+ .failure-dialog .story-link { margin:0; }
+ .upgrade-dialog { padding:12px!important; gap:5px!important; }
+ .upgrade-dialog [data-slot='dialog-description'],.upgrade-dialog .shop-receipt { display:none; }
+ .upgrade-dialog [data-slot='dialog-title'] { font-size:23px; }
+ .upgrade-dialog .shop-wallet { padding:4px 8px; }.upgrade-dialog .shop-wallet b { font-size:21px; }
+ .upgrade-dialog .recharge-panel { padding:7px; }
+ .upgrade-dialog .recharge-panel>div:first-child { gap:2px; }
+ .upgrade-dialog .recharge-panel b { font-size:12px; }
+ .upgrade-dialog .recharge-panel p { font-size:10px; line-height:13px; margin-top:5px; }
+ .upgrade-dialog .recharge-actions { margin-top:5px; }
+ .upgrade-dialog .recharge-actions button { min-height:36px; font-size:10px; }
+ .upgrade-dialog .upgrade-grid { gap:5px; }
+ .upgrade-dialog .upgrade-grid button { min-height:60px; padding:6px 8px; gap:2px 5px; }
+ .upgrade-dialog .upgrade-grid button>b { font-size:16px; }
+ .upgrade-dialog .upgrade-grid button>em { font-size:10px; line-height:12px; }
+ .upgrade-dialog .shop-price strong { font-size:20px; }.upgrade-dialog .shop-price>span { font-size:10px; }
+ .upgrade-dialog .story-primary { position:sticky; bottom:0; min-height:42px; height:42px; margin:0; font-size:12px; z-index:2; }
+}

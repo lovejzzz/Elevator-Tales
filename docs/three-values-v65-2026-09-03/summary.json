@@ -1,0 +1,659 @@
+{
+  "fullGames": 19680,
+  "conditionalGames": 360,
+  "transitions": 970787,
+  "forecastErrors": 0,
+  "censored": 0,
+  "final": [
+    {
+      "id": "balanced-3",
+      "mean": 36.39,
+      "median": 29,
+      "p10": 19,
+      "p90": 59,
+      "deaths": {
+        "power": 53,
+        "agitation": 147,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 192,
+      "three": {
+        "extraEnergy": 5343,
+        "extraSteps": 4305,
+        "earlyPowerDeaths": 2,
+        "recoveries": 180,
+        "agitatedSteps": 1404
+      }
+    },
+    {
+      "id": "cautious-6",
+      "mean": 54.14,
+      "median": 58,
+      "p10": 17,
+      "p90": 99,
+      "deaths": {
+        "power": 61,
+        "agitation": 139,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 185,
+      "three": {
+        "extraEnergy": 10386,
+        "extraSteps": 7008,
+        "earlyPowerDeaths": 6,
+        "recoveries": 350,
+        "agitatedSteps": 1743
+      }
+    },
+    {
+      "id": "greedy-6",
+      "mean": 18.62,
+      "median": 18,
+      "p10": 10,
+      "p90": 27,
+      "deaths": {
+        "power": 48,
+        "agitation": 152,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 177,
+      "three": {
+        "extraEnergy": 3894,
+        "extraSteps": 2670,
+        "earlyPowerDeaths": 13,
+        "recoveries": 23,
+        "agitatedSteps": 584
+      }
+    },
+    {
+      "id": "police-thief-4",
+      "mean": 35.63,
+      "median": 29,
+      "p10": 18,
+      "p90": 59,
+      "deaths": {
+        "power": 55,
+        "agitation": 145,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 189,
+      "three": {
+        "extraEnergy": 6081,
+        "extraSteps": 4577,
+        "earlyPowerDeaths": 2,
+        "recoveries": 208,
+        "agitatedSteps": 1303
+      }
+    },
+    {
+      "id": "rogue-thief-3",
+      "mean": 32.13,
+      "median": 28,
+      "p10": 19,
+      "p90": 57,
+      "deaths": {
+        "power": 39,
+        "agitation": 161,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 190,
+      "three": {
+        "extraEnergy": 4576,
+        "extraSteps": 3738,
+        "earlyPowerDeaths": 2,
+        "recoveries": 136,
+        "agitatedSteps": 1224
+      }
+    },
+    {
+      "id": "mimic-4",
+      "mean": 35.9,
+      "median": 29,
+      "p10": 18,
+      "p90": 59,
+      "deaths": {
+        "power": 70,
+        "agitation": 130,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 192,
+      "three": {
+        "extraEnergy": 6553,
+        "extraSteps": 4804,
+        "earlyPowerDeaths": 3,
+        "recoveries": 227,
+        "agitatedSteps": 1231
+      }
+    },
+    {
+      "id": "coach-4",
+      "mean": 34.46,
+      "median": 29,
+      "p10": 18,
+      "p90": 59,
+      "deaths": {
+        "power": 73,
+        "agitation": 127,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 192,
+      "three": {
+        "extraEnergy": 6369,
+        "extraSteps": 4635,
+        "earlyPowerDeaths": 3,
+        "recoveries": 205,
+        "agitatedSteps": 1116
+      }
+    },
+    {
+      "id": "safe-only-3",
+      "mean": 37.15,
+      "median": 38,
+      "p10": 19,
+      "p90": 59,
+      "deaths": {
+        "power": 51,
+        "agitation": 149,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 192,
+      "three": {
+        "extraEnergy": 5414,
+        "extraSteps": 4417,
+        "earlyPowerDeaths": 2,
+        "recoveries": 197,
+        "agitatedSteps": 1374
+      }
+    },
+    {
+      "id": "no-upgrades",
+      "mean": 31.46,
+      "median": 29,
+      "p10": 17,
+      "p90": 58,
+      "deaths": {
+        "power": 112,
+        "agitation": 88,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 185,
+      "three": {
+        "extraEnergy": 5632,
+        "extraSteps": 4124,
+        "earlyPowerDeaths": 6,
+        "recoveries": 147,
+        "agitatedSteps": 715
+      }
+    },
+    {
+      "id": "without-reinforced",
+      "mean": 40.58,
+      "median": 30,
+      "p10": 17,
+      "p90": 79,
+      "deaths": {
+        "power": 127,
+        "agitation": 73,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 185,
+      "three": {
+        "extraEnergy": 7572,
+        "extraSteps": 5346,
+        "earlyPowerDeaths": 6,
+        "recoveries": 208,
+        "agitatedSteps": 934
+      }
+    },
+    {
+      "id": "pair-occult",
+      "mean": 34.41,
+      "median": 29,
+      "p10": 19,
+      "p90": 58,
+      "deaths": {
+        "power": 49,
+        "agitation": 151,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 192,
+      "three": {
+        "extraEnergy": 5122,
+        "extraSteps": 4149,
+        "earlyPowerDeaths": 2,
+        "recoveries": 167,
+        "agitatedSteps": 1437
+      }
+    },
+    {
+      "id": "pair-calming",
+      "mean": 39.49,
+      "median": 30,
+      "p10": 18,
+      "p90": 69,
+      "deaths": {
+        "power": 116,
+        "agitation": 84,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 190,
+      "three": {
+        "extraEnergy": 6520,
+        "extraSteps": 4960,
+        "earlyPowerDeaths": 3,
+        "recoveries": 212,
+        "agitatedSteps": 1026
+      }
+    },
+    {
+      "id": "contract-no-calm-4",
+      "mean": 45.11,
+      "median": 39,
+      "p10": 19,
+      "p90": 79,
+      "deaths": {
+        "power": 66,
+        "agitation": 134,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 191,
+      "three": {
+        "extraEnergy": 7228,
+        "extraSteps": 5420,
+        "earlyPowerDeaths": 4,
+        "recoveries": 242,
+        "agitatedSteps": 1122
+      }
+    },
+    {
+      "id": "contract-mixed-6",
+      "mean": 58.87,
+      "median": 47,
+      "p10": 17,
+      "p90": 109,
+      "deaths": {
+        "power": 85,
+        "agitation": 115,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 185,
+      "three": {
+        "extraEnergy": 11993,
+        "extraSteps": 7948,
+        "earlyPowerDeaths": 6,
+        "recoveries": 268,
+        "agitatedSteps": 1485
+      }
+    },
+    {
+      "id": "contract-lovers-mixed",
+      "mean": 55.48,
+      "median": 58,
+      "p10": 19,
+      "p90": 107,
+      "deaths": {
+        "power": 66,
+        "agitation": 134,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 190,
+      "three": {
+        "extraEnergy": 8820,
+        "extraSteps": 6614,
+        "earlyPowerDeaths": 4,
+        "recoveries": 334,
+        "agitatedSteps": 1542
+      }
+    },
+    {
+      "id": "contract-lookahead",
+      "mean": 103.12,
+      "median": 108,
+      "p10": 68,
+      "p90": 137,
+      "deaths": {
+        "power": 4,
+        "agitation": 196,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 200,
+      "three": {
+        "extraEnergy": 12493,
+        "extraSteps": 9808,
+        "earlyPowerDeaths": 0,
+        "recoveries": 423,
+        "agitatedSteps": 2606
+      }
+    },
+    {
+      "id": "zero-extra-4",
+      "mean": 100.79,
+      "median": 99,
+      "p10": 68,
+      "p90": 129,
+      "deaths": {
+        "power": 0,
+        "agitation": 200,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 200,
+      "three": {
+        "extraEnergy": 146,
+        "extraSteps": 115,
+        "earlyPowerDeaths": 0,
+        "recoveries": 260,
+        "agitatedSteps": 1845
+      }
+    },
+    {
+      "id": "zero-extra-6",
+      "mean": 113.32,
+      "median": 118,
+      "p10": 79,
+      "p90": 137,
+      "deaths": {
+        "power": 0,
+        "agitation": 199,
+        "fuse": 1,
+        "censored": 0
+      },
+      "firstShopPassed": 200,
+      "three": {
+        "extraEnergy": 188,
+        "extraSteps": 124,
+        "earlyPowerDeaths": 0,
+        "recoveries": 323,
+        "agitatedSteps": 2374
+      }
+    },
+    {
+      "id": "planning-pairs-6",
+      "mean": 110.93,
+      "median": 117,
+      "p10": 89,
+      "p90": 137,
+      "deaths": {
+        "power": 3,
+        "agitation": 197,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 200,
+      "three": {
+        "extraEnergy": 19754,
+        "extraSteps": 13771,
+        "earlyPowerDeaths": 0,
+        "recoveries": 584,
+        "agitatedSteps": 3866
+      }
+    },
+    {
+      "id": "rest-relay-calm",
+      "mean": 38.9,
+      "median": 37,
+      "p10": 18,
+      "p90": 69,
+      "deaths": {
+        "power": 111,
+        "agitation": 89,
+        "fuse": 0,
+        "censored": 0
+      },
+      "firstShopPassed": 189,
+      "three": {
+        "extraEnergy": 6196,
+        "extraSteps": 4760,
+        "earlyPowerDeaths": 5,
+        "recoveries": 195,
+        "agitatedSteps": 976
+      }
+    }
+  ],
+  "reports": [
+    {
+      "path": "screen/base1-plan.json",
+      "games": 960,
+      "seed": 984681317,
+      "context": "normal",
+      "hashes": {
+        "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+        "game-data.ts": "27a88051ac8bbebc67bd83c0e730d6c7277d3f9fd4df44745d4ff34189e992b8",
+        "game-engine.ts": "d43c16bd9459934dccf3a4dc1b56c17c730b1f11b12a743da8f4e5a8fd8d8462",
+        "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+        "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+        "metric-feedback.ts": "e574a65e89254b1aa6dfe58981aca8f8673943d43af30efed713f8234e70add2",
+        "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+        "passenger-presentation.ts": "d4d0753331649f70dcd75813a7ed6f4e52d9dc2bee3674f53781e403d01bbe7d",
+        "rider-profile.ts": "1212b112c978cac99a17b80991e711c16f79f4dbaec585250b47c357e652ed03",
+        "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+      },
+      "runnerHash": "ea178c622c86253b6e0bf9bd9b2b520de375ee7e8ccea7dabcfe56e49c5ffe97"
+    },
+    {
+      "path": "screen/base1.json",
+      "games": 960,
+      "seed": 984681317,
+      "context": "normal",
+      "hashes": {
+        "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+        "game-data.ts": "27a88051ac8bbebc67bd83c0e730d6c7277d3f9fd4df44745d4ff34189e992b8",
+        "game-engine.ts": "059fba094f1fe8c8227ff67ff214b4fe0d02db8ff86ecbe9650a3d99e99f5c0c",
+        "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+        "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+        "metric-feedback.ts": "e574a65e89254b1aa6dfe58981aca8f8673943d43af30efed713f8234e70add2",
+        "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+        "passenger-presentation.ts": "d4d0753331649f70dcd75813a7ed6f4e52d9dc2bee3674f53781e403d01bbe7d",
+        "rider-profile.ts": "1212b112c978cac99a17b80991e711c16f79f4dbaec585250b47c357e652ed03",
+        "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+      },
+      "runnerHash": "ea178c622c86253b6e0bf9bd9b2b520de375ee7e8ccea7dabcfe56e49c5ffe97"
+    },
+    {
+      "path": "screen/baseline.json",
+      "games": 960,
+      "seed": 984681317,
+      "context": "normal",
+      "hashes": {
+        "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+        "game-data.ts": "6e904bd90d08e34b182ea006580f13c31a5ec08476971c6aae363fe653e2f1ad",
+        "game-engine.ts": "a69a1ded8e3f26ae80100799cd4309d4bde555cec037e9628eed762c645edbb8",
+        "game-forecast.ts": "ca641423767f3adf6c9ef5d6d7fecff40f152575e8aa62fcd9f61807a1df4a22",
+        "game-interaction.ts": "43bb724e67da08a202775549f32a193d7ae8c116f7d43c2375265bc909bd4953",
+        "metric-feedback.ts": "693b698c0814d793875b583e93c4a9b421e3c18fd6bcf0b568b5bff4e3c9a6ef",
+        "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+        "passenger-presentation.ts": "ad6f104094caad1b41e6b18dba9b8cef0bf98386c369debffc2de1f497f0b47e",
+        "rider-profile.ts": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+        "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+      },
+      "runnerHash": "b71fcc62ce68b117ea60a5a06473e423e488f70098614265fa0abcacd6604779"
+    },
+    {
+      "path": "screen/charge2.json",
+      "games": 960,
+      "seed": 984681317,
+      "context": "normal",
+      "hashes": {
+        "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+        "game-data.ts": "27a88051ac8bbebc67bd83c0e730d6c7277d3f9fd4df44745d4ff34189e992b8",
+        "game-engine.ts": "3c7b87aed2c5bba225ee2dbf92dcc49b7b97a3eb75756ba592202500799763d7",
+        "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+        "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+        "metric-feedback.ts": "e574a65e89254b1aa6dfe58981aca8f8673943d43af30efed713f8234e70add2",
+        "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+        "passenger-presentation.ts": "d4d0753331649f70dcd75813a7ed6f4e52d9dc2bee3674f53781e403d01bbe7d",
+        "rider-profile.ts": "1212b112c978cac99a17b80991e711c16f79f4dbaec585250b47c357e652ed03",
+        "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+      },
+      "runnerHash": "ea178c622c86253b6e0bf9bd9b2b520de375ee7e8ccea7dabcfe56e49c5ffe97"
+    },
+    {
+      "path": "screen/release.json",
+      "games": 960,
+      "seed": 984681317,
+      "context": "normal",
+      "hashes": {
+        "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+        "game-data.ts": "27a88051ac8bbebc67bd83c0e730d6c7277d3f9fd4df44745d4ff34189e992b8",
+        "game-engine.ts": "827922d6b5988605056af5af297c9f9a998a1e2d83d7672faa7ca4dfffa9de18",
+        "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+        "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+        "metric-feedback.ts": "e574a65e89254b1aa6dfe58981aca8f8673943d43af30efed713f8234e70add2",
+        "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+        "passenger-presentation.ts": "d4d0753331649f70dcd75813a7ed6f4e52d9dc2bee3674f53781e403d01bbe7d",
+        "rider-profile.ts": "1212b112c978cac99a17b80991e711c16f79f4dbaec585250b47c357e652ed03",
+        "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+      },
+      "runnerHash": "ea178c622c86253b6e0bf9bd9b2b520de375ee7e8ccea7dabcfe56e49c5ffe97"
+    },
+    {
+      "path": "screen/tourist-free.json",
+      "games": 960,
+      "seed": 984681317,
+      "context": "normal",
+      "hashes": {
+        "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+        "game-data.ts": "3433c45e5fa761a10b8c9c2ce64dd5ddbda61c3157fe03336d725e2c883a0dbd",
+        "game-engine.ts": "827922d6b5988605056af5af297c9f9a998a1e2d83d7672faa7ca4dfffa9de18",
+        "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+        "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+        "metric-feedback.ts": "e574a65e89254b1aa6dfe58981aca8f8673943d43af30efed713f8234e70add2",
+        "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+        "passenger-presentation.ts": "d4d0753331649f70dcd75813a7ed6f4e52d9dc2bee3674f53781e403d01bbe7d",
+        "rider-profile.ts": "1212b112c978cac99a17b80991e711c16f79f4dbaec585250b47c357e652ed03",
+        "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+      },
+      "runnerHash": "ea178c622c86253b6e0bf9bd9b2b520de375ee7e8ccea7dabcfe56e49c5ffe97"
+    },
+    {
+      "path": "holdout/baseline.json",
+      "games": 4000,
+      "seed": 985327199,
+      "context": "normal",
+      "hashes": {
+        "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+        "game-data.ts": "6e904bd90d08e34b182ea006580f13c31a5ec08476971c6aae363fe653e2f1ad",
+        "game-engine.ts": "a69a1ded8e3f26ae80100799cd4309d4bde555cec037e9628eed762c645edbb8",
+        "game-forecast.ts": "ca641423767f3adf6c9ef5d6d7fecff40f152575e8aa62fcd9f61807a1df4a22",
+        "game-interaction.ts": "43bb724e67da08a202775549f32a193d7ae8c116f7d43c2375265bc909bd4953",
+        "metric-feedback.ts": "693b698c0814d793875b583e93c4a9b421e3c18fd6bcf0b568b5bff4e3c9a6ef",
+        "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+        "passenger-presentation.ts": "ad6f104094caad1b41e6b18dba9b8cef0bf98386c369debffc2de1f497f0b47e",
+        "rider-profile.ts": "2847a8412aa7b8a434dda28c466c570e38fb274ecebbdb48a489a86535dea885",
+        "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+      },
+      "runnerHash": "2480c12fc377eb96aa3c56901a1332567df623dcd7bd84a908699ea152323730"
+    },
+    {
+      "path": "holdout/release.json",
+      "games": 4000,
+      "seed": 985327199,
+      "context": "normal",
+      "hashes": {
+        "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+        "game-data.ts": "27a88051ac8bbebc67bd83c0e730d6c7277d3f9fd4df44745d4ff34189e992b8",
+        "game-engine.ts": "85ed544013b5ae074538c5824428fcae0107329c3ccca98466c8e7aa1f940219",
+        "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+        "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+        "metric-feedback.ts": "1d293005af9bc2d4ebebd2caa01f68f2cb61a59a020d4457822436d2191f0958",
+        "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+        "passenger-presentation.ts": "e2b899c9bfd9405a5a291c9767f48170ada6ced44f202dee303d32c5482ffdc5",
+        "rider-profile.ts": "1212b112c978cac99a17b80991e711c16f79f4dbaec585250b47c357e652ed03",
+        "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+      },
+      "runnerHash": "2e3a9054f1c21915192d04597a3c951b8ce9e522f9852f8fabae7500dcf484a1"
+    },
+    {
+      "path": "countercheck/premium.json",
+      "games": 960,
+      "seed": 984681317,
+      "context": "normal",
+      "hashes": {
+        "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+        "game-data.ts": "48556a7f6b5880cf1a1eebadc0f945525d7d63ef0d1b826091db2947620435ba",
+        "game-engine.ts": "85ed544013b5ae074538c5824428fcae0107329c3ccca98466c8e7aa1f940219",
+        "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+        "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+        "metric-feedback.ts": "1d293005af9bc2d4ebebd2caa01f68f2cb61a59a020d4457822436d2191f0958",
+        "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+        "passenger-presentation.ts": "e2b899c9bfd9405a5a291c9767f48170ada6ced44f202dee303d32c5482ffdc5",
+        "rider-profile.ts": "1212b112c978cac99a17b80991e711c16f79f4dbaec585250b47c357e652ed03",
+        "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+      },
+      "runnerHash": "96759ad839208ca71e1eb87ac4ccc355a2e04ecc2f5f66403b86f439576121e8"
+    },
+    {
+      "path": "countercheck/release.json",
+      "games": 960,
+      "seed": 984681317,
+      "context": "normal",
+      "hashes": {
+        "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+        "game-data.ts": "27a88051ac8bbebc67bd83c0e730d6c7277d3f9fd4df44745d4ff34189e992b8",
+        "game-engine.ts": "85ed544013b5ae074538c5824428fcae0107329c3ccca98466c8e7aa1f940219",
+        "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+        "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+        "metric-feedback.ts": "1d293005af9bc2d4ebebd2caa01f68f2cb61a59a020d4457822436d2191f0958",
+        "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+        "passenger-presentation.ts": "e2b899c9bfd9405a5a291c9767f48170ada6ced44f202dee303d32c5482ffdc5",
+        "rider-profile.ts": "1212b112c978cac99a17b80991e711c16f79f4dbaec585250b47c357e652ed03",
+        "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+      },
+      "runnerHash": "96759ad839208ca71e1eb87ac4ccc355a2e04ecc2f5f66403b86f439576121e8"
+    },
+    {
+      "path": "final/release.json",
+      "games": 4000,
+      "seed": 986564729,
+      "context": "normal",
+      "hashes": {
+        "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+        "game-data.ts": "27a88051ac8bbebc67bd83c0e730d6c7277d3f9fd4df44745d4ff34189e992b8",
+        "game-engine.ts": "218e28d864f3e2a47e02e5f999edd069e6fb15b8d8e01ebe14110a38da8cd201",
+        "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+        "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+        "metric-feedback.ts": "1d293005af9bc2d4ebebd2caa01f68f2cb61a59a020d4457822436d2191f0958",
+        "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+        "passenger-presentation.ts": "e2b899c9bfd9405a5a291c9767f48170ada6ced44f202dee303d32c5482ffdc5",
+        "rider-profile.ts": "1212b112c978cac99a17b80991e711c16f79f4dbaec585250b47c357e652ed03",
+        "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+      },
+      "runnerHash": "6f354d0a936682d9a9f4f3495fb1a7b032db4f15c64a62705e19522f03f09a49"
+    },
+    {
+      "path": "crises/release-agitated.json",
+      "games": 360,
+      "seed": 984681317,
+      "context": "agitated",
+      "hashes": {
+        "game-audio.ts": "9ee1727f01c2a3612dfe0aeaacd93a218718c59f8848ff876b6e27f53c679291",
+        "game-data.ts": "27a88051ac8bbebc67bd83c0e730d6c7277d3f9fd4df44745d4ff34189e992b8",
+        "game-engine.ts": "218e28d864f3e2a47e02e5f999edd069e6fb15b8d8e01ebe14110a38da8cd201",
+        "game-forecast.ts": "8f6940e6edfe999af96544838ad149180b791cd6a75572f2b4f6f2a3104e7fbf",
+        "game-interaction.ts": "7b803ab959f1c63b9ecae1d9b0601a97a22c1d472433439b1295f7a5965b4b7e",
+        "metric-feedback.ts": "1d293005af9bc2d4ebebd2caa01f68f2cb61a59a020d4457822436d2191f0958",
+        "passenger-assets.ts": "3f88c430fb88649665fa7d1f0d7d9757e2a4057b02498ddeca2d809a237a4356",
+        "passenger-presentation.ts": "1a1178c850904071b0940806ea0b0448c6db0c2d39d3df919fe99774c1d2b56e",
+        "rider-profile.ts": "1212b112c978cac99a17b80991e711c16f79f4dbaec585250b47c357e652ed03",
+        "utils.ts": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05"
+      },
+      "runnerHash": "96759ad839208ca71e1eb87ac4ccc355a2e04ecc2f5f66403b86f439576121e8"
+    }
+  ]
+}
