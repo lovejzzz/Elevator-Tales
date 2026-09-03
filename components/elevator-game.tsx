@@ -307,7 +307,12 @@ export default function ElevatorGame() {
               <span className="mobile-passenger-summary">
                 <Portrait kind={offer.kind} /><strong>{spec.name}</strong><span className="mobile-trip">还剩 {brief.distance} 站</span>
                 <span className="mobile-facts">载重 {brief.weight} · 耐心 {offer.patience}</span>
-                <span className="mobile-reward"><span>到站金币 +{brief.coins === null ? '？' : brief.coins + brief.tip}</span><span title={brief.bondRules[0]}>协作送达另 +{brief.bond.bonus}</span></span>
+                <span className="mobile-reward">{brief.coins === null ? '车费到站揭晓' : `到站金币 +${brief.coins + brief.tip}`}</span>
+                <span className="mobile-cooperation">
+                  <span>{brief.cooperation.arrival}</span>
+                  <span>旁边仍有{brief.cooperation.partners.map((name,index)=><span className="mobile-partner" key={name}>{index>0?'或':''}{name}</span>)}</span>
+                  <b>{brief.cooperation.reward}</b>
+                </span>
                 <span className={`mobile-card-state ${offer.fuse !== undefined ? 'fact-danger' : ''}`}>{boarded ? '已上车 · 撤回' : pending ? '已选 · 点空位' : full ? '车厢已满' : tooHeavy ? '载重不足' : offer.fuse !== undefined ? `引信 ${offer.fuse} · 危险` : partner ? `联动 · ${PASSENGERS[partner].name}` : '点选上车'}</span>
               </span>
               <span className="passenger-heading"><Portrait kind={offer.kind} /><span className="passenger-identity"><strong>{spec.name}</strong><span className="passenger-destination"><b>还剩 {brief.distance} 站</b><span> · 送达后领取奖励</span></span></span></span>

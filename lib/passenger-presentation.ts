@@ -2,7 +2,7 @@ import { PASSENGERS, type PassengerKind } from './game-data';
 import { bondLines, bondSummary, riderProfile } from './rider-profile';
 import type { Rider } from './game-engine';
 
-// Full rules are inline on desktop and available in a tap-open dialog on phones.
+// Cooperation conditions stay on the card face, including on phones.
 export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
   commuter: ['短途稳定，送达领取车费。'],
   tourist: ['旅途较长，送达车费较高。'],
@@ -64,8 +64,16 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
 
 export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|null>=[], bonus=3) {
  const profile=riderProfile(rider,cabin);
+ const bond=bondSummary(rider,cabin,bonus);
+ const partnerNames=profile.bond.likes.map(kind=>(kind===rider.kind?'另一位':'')+PASSENGERS[kind].name);
+ const cooperation={
+  arrival:`${PASSENGERS[rider.kind].name}到站时`,
+  partners:partnerNames,
+  neighbor:`旁边仍有${partnerNames.join('或')}`,
+  reward:`额外 +${bonus} 金币`,
+ };
  const skillRules=PASSENGER_RULES[rider.kind],bondRules=bondLines(rider,cabin,bonus);
  const detailRules=[...(['thief','cop','lawyer'].includes(rider.kind)?[]:skillRules),bondRules[1],'协作免除的只是邻座冲突，其他角色技能仍按各自条件触发。',...bondRules.slice(3)];
  return {coins:profile.hidden?null:profile.fare, tip:rider.fareBonus, energy:0,weight:profile.weight,hidden:profile.hidden,
-  distance:Math.max(0,rider.destination-floor),bond:bondSummary(rider,cabin,bonus),cardRules:passengerCardRules(rider,cabin,bonus),detailRules,skillRules,bondRules,rules:[...skillRules,...bondRules]};
+  distance:Math.max(0,rider.destination-floor),bond,cooperation,cardRules:passengerCardRules(rider,cabin,bonus),detailRules,skillRules,bondRules,rules:[...skillRules,...bondRules]};
 }

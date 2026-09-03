@@ -64,6 +64,10 @@ assert.match(installedUpgradeSummary(contractRun,'battery'),/共 \+7/);
 for(const kind of PASSENGER_ORDER)for(const bonus of [3,5,7]){
  const brief=passengerBrief(rider(kind),1,[],bonus);
  assert.equal(brief.bond.bonus,bonus);
+ assert.equal(brief.cooperation.arrival,PASSENGERS[kind].name+'到站时');
+ assert.deepEqual(brief.cooperation.partners,BONDS[kind].likes.map(partner=>(partner===kind?'另一位':'')+PASSENGERS[partner].name));
+ assert.equal(brief.cooperation.neighbor,'旁边仍有'+BONDS[kind].likes.map(partner=>(partner===kind?'另一位':'')+PASSENGERS[partner].name).join('或'));
+ assert.equal(brief.cooperation.reward,`额外 +${bonus} 金币`);
  assert.equal(brief.bond.partners,BONDS[kind].likes.map(k=>PASSENGERS[k].name).join(' / '));
  assert.match(brief.bond.benefit,new RegExp('本人到站额外 \\+'+bonus+' 金币'));
  assert.match(brief.bondRules[0],/到站时.*仍.*相邻/);
@@ -96,6 +100,14 @@ const presentationSource=readFileSync(new URL('../components/elevator-game.tsx',
 const stylesheet=readFileSync(new URL('../app/globals.css',import.meta.url),'utf8');
 assert.match(presentationSource,/<span key={line}><br \/>{line}<\/span>/);
 assert.match(stylesheet,/\.passenger-rule-blocks>\.passenger-rule-block\s*{\s*display:block/);
+// Mobile conditions are visible text, never only a title or a details dialog.
+assert.match(presentationSource,/<span className="mobile-cooperation">\s*<span>{brief.cooperation.arrival}<\/span>\s*<span>旁边仍有{brief.cooperation.partners.map/);
+assert.match(presentationSource,/<b>{brief.cooperation.reward}<\/b>/);
+assert.ok(!presentationSource.includes('协作送达另'));
+assert.match(stylesheet,/\.mobile-cooperation\s*{[^}]*white-space:normal/);
+assert.equal(passengerBrief(rider('courier'),1).cooperation.neighbor,'旁边仍有维修工');
+assert.equal(passengerBrief(rider('lover'),1).cooperation.neighbor,'旁边仍有另一位恋人');
+assert.equal(passengerBrief(rider('child'),1).cooperation.neighbor,'旁边仍有恋人或音乐家或护士');
 const unupgraded={...initialRun(),cabin:cabin(collaborating,rider('courier'))};
 assert.equal(resolveFloor(unupgraded,rng).coins,10,'base fare7 + advertised cooperation3');
 const twoPartners=[collaborating,rider('courier','partner1'),null,rider('courier','partner2'),null,null];
@@ -107,6 +119,7 @@ assert.equal(resolveFloor(loverPair,rng).coins,32,'two en-route coins + doubled 
 const randomBond={...mystery,traits:{...mystery.traits!,bond:BONDS.coach}};
 const dynamicBrief=passengerBrief(randomBond,3,[],7);
 assert.equal(dynamicBrief.bond.partners,'通勤者 / 快递员');
+assert.equal(dynamicBrief.cooperation.neighbor,'旁边仍有通勤者或快递员');
 assert.equal(dynamicBrief.coins,null);
 assert.ok(!JSON.stringify(dynamicBrief).includes('37'),'known bonus must not expose the sealed fare');
 let inheritedCopies=0;
@@ -114,6 +127,8 @@ for(let n=0;n<100;n++){
  const copy=rider('mimic','copy-label',{copySeed:n}),arr=cabin(copy,randomBond);
  if(riderProfile(copy,arr).copies[0]?.field==='bond'){
   assert.equal(passengerBrief(copy,3,arr,5).bond.partners,'通勤者 / 快递员');
+  assert.equal(passengerBrief(copy,3,arr,5).cooperation.neighbor,'旁边仍有通勤者或快递员');
+  assert.equal(passengerBrief(copy,3,arr,5).cooperation.arrival,'复制人到站时');
   inheritedCopies++;
  }
 }

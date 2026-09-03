@@ -397,21 +397,25 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .brand-actions { gap:4px; }
   .brand-actions .icon-button { width:40px; height:40px; }
   .brand-actions .icon-button svg { width:17px; height:17px; }
-  .game-grid { flex:1; width:100%; height:auto; min-height:0; margin:0; display:grid; grid-template-columns:minmax(0,1fr) 84px; grid-template-rows:clamp(184px,26dvh,214px) minmax(0,1fr) 68px; gap:7px; }
+  .game-grid { flex:1; width:100%; height:auto; min-height:0; margin:0; display:grid; grid-template-columns:minmax(0,1fr) 84px; grid-template-rows:clamp(232px,30dvh,244px) minmax(0,1fr) 68px; gap:7px; }
   .arrival-panel { display:contents; }
   .arrival-heading,.arrival-explainer { display:none; }
   .passenger-list { grid-column:1/-1; grid-row:1; height:100%; min-height:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:minmax(0,1fr); align-items:stretch; gap:6px; margin:0; padding:0; overflow:visible; }
   .passenger-item { display:block; position:relative; min-width:0; min-height:0; }
-  .passenger-card { width:100%; height:100%; min-height:0; padding:7px 5px; gap:0; overflow:hidden; justify-content:center; }
+  .passenger-card { width:100%; height:100%; min-height:0; padding:6px 5px; gap:0; overflow:visible; justify-content:center; }
   .passenger-card>span:not(.mobile-passenger-summary) { display:none; }
-  .mobile-passenger-summary { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; width:100%; height:100%; }
-  .mobile-passenger-summary .portrait-window { width:56px; height:56px; flex:none; border-color:#b7944e55; }
+  .mobile-passenger-summary { display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:3px; width:100%; height:100%; }
+  .mobile-passenger-summary>* { flex-shrink:0; }
+  .mobile-passenger-summary .portrait-window { width:36px; height:36px; flex:none; border-color:#b7944e55; }
   .mobile-passenger-summary>strong { color:#f1e4c7; font:600 18px/1.2 var(--font-display); }
   .mobile-trip { color:#efd19a; font:600 13px/1.4 var(--font-sans); white-space:nowrap; }
   .mobile-facts { color:#b5c1b1; font:400 11px/1.4 var(--font-sans); white-space:nowrap; }
-  .mobile-reward { display:flex; flex-direction:column; align-items:center; color:#e4c389; font:500 12px/1.4 var(--font-sans); }
-  .mobile-reward>span { white-space:nowrap; }.mobile-reward>span:last-child { color:#afd3b7; }
-  .mobile-card-state { color:#aab7a3; font:500 11px/1.4 var(--font-sans); min-height:16px; white-space:nowrap; }
+  .mobile-reward { color:#e4c389; font:500 12px/1.4 var(--font-sans); white-space:nowrap; }
+  .mobile-cooperation { display:grid; gap:0; width:100%; padding:3px 0; border-block:1px solid #8fb99a30; background:#8fb99a09; color:#b5d3bc; text-align:center; font:400 12px/16px var(--font-sans); white-space:normal; overflow-wrap:anywhere; }
+  .mobile-cooperation>span,.mobile-cooperation>b { display:block; }
+  .mobile-cooperation .mobile-partner { display:inline-block; white-space:nowrap; }
+  .mobile-cooperation>b { color:#d0e7bd; font-weight:600; }
+  .mobile-card-state { margin-top:auto; color:#aab7a3; font:500 11px/1.4 var(--font-sans); min-height:16px; white-space:nowrap; }
   .boarded .mobile-card-state,.pending .mobile-card-state { color:#f1cf8a; }
   .mobile-card-state.fact-danger { color:#efac88; }
   .mobile-rule-button { display:grid; place-items:center; position:absolute; z-index:4; top:0; right:0; width:40px; height:40px; border:0; background:transparent; color:#c7bb9c; cursor:pointer; }
@@ -508,10 +512,11 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .upgrade-dialog .story-primary { min-height:44px; height:44px; margin:0; }
 }
 @media (max-width:700px) and (max-height:700px) {
-  .game-grid { grid-template-rows:160px minmax(0,1fr) 65px; gap:5px; }
+  .game-grid { grid-template-rows:204px minmax(0,1fr) 65px; gap:5px; }
   .brand-bar { flex-basis:34px; height:34px; }.brand-bar h1 { font-size:24px; }
   .brand-actions .icon-button { width:36px; height:34px; }
-  .mobile-passenger-summary { gap:3px; }.mobile-passenger-summary .portrait-window { width:36px; height:36px; }
+  .passenger-card { padding:5px 4px; }
+  .mobile-passenger-summary { gap:2px; }.mobile-passenger-summary .portrait-window { width:24px; height:24px; }
   .mobile-passenger-summary>strong { font-size:17px; }
   .standing-grid { top:64px; bottom:35px; gap:5px; }.adjacency-key { top:47px; font-size:9px; }
   .status-rail { display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(48px,1fr) minmax(88px,1.4fr) minmax(38px,.8fr) minmax(54px,1fr) 32px; gap:4px; }
@@ -527,6 +532,14 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .mobile-passenger-summary>strong { font-size:16px; }.mobile-facts { font-size:10px; }.mobile-card-state { font-size:10px; }
   .mobile-reward { column-gap:4px; font-size:11px; }.mobile-rule-button { width:36px; height:36px; }
   .standing-slot .slot-destination { font-size:10px; }.mobile-departure-note { font-size:11px; }
+}
+/* Keep the smallest cockpit readable: move receipts beside the floor display,
+   leaving the side rail's height for the four live metrics. */
+@media (max-width:700px) and (max-height:600px) {
+  .status-rail { position:relative; grid-template-rows:minmax(44px,1fr) minmax(88px,1.4fr) minmax(36px,.8fr) minmax(54px,1fr); }
+  .status-rail .meter-card,.status-rail .score-card { padding-block:1px; }
+  .status-rail .receipt-button { position:absolute; right:calc(100% + 11px); top:8px; width:48px; min-height:30px; padding:3px; z-index:9; background:#122019; font-size:10px; line-height:1.25; }
+  .cabin-title { display:none; }
 }
 @media (prefers-reduced-motion:reduce) {
   .game-shell *,.game-shell *::before,.game-shell *::after,.story-dialog,.story-dialog * { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
