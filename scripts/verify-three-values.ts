@@ -48,4 +48,4 @@ for(let i=0;i<4000;i++){
 }
 const ui=readFileSync(new URL('../components/elevator-game.tsx',import.meta.url),'utf8');
 assert.ok(ui.includes('本班失败'));assert.ok(ui.includes('至少接1人'));assert.ok(!ui.includes('人物躁动 ×2'));assert.ok(!ui.includes('空驶休整'));
-console.log(JSON.stringify({version:'v8.12',transitions,threeValues:true,deterministicAgitation:true,mandatoryRider:true}));
+console.log(JSON.stringify({version:'v8.13',transitions,threeValues:true,deterministicAgitation:true,mandatoryRider:true}));

@@ -1,6 +1,17 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.12**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.13**.
+
+## v8.13 — 2026-09-03 — This-floor decisions read at a glance
+
+- Boarded candidate cards turn grey and translucent; riders boarded on the current floor receive a bright gold cabin ring. Existing riders are not marked as new.
+- A next-floor power delta shakes in red when the current arrangement would reduce power to zero or below. The agitation delta does the same when it would reach the cap.
+- Every floor immediately before a ten-floor shop clearly shows “Next: Shop” in a highlighted notice.
+- Player-facing supply-stop wording is now simply “Shop”; shop instructions and departure copy are shorter.
+- The current coin total now sits at the very top of the shop with a substantially larger number.
+- Reduced-motion settings disable the shake and pulse while preserving the warning color and borders.
+- Added shop-warning regressions for floors 9 and 39 and retained exact next-floor power/agitation forecast checks. No balance values changed.
+- Watch items: danger-shake salience without distraction, and grey boarded-card legibility on dim displays.
 
 ## v8.12 — 2026-09-03 — Two-resource squeeze
 

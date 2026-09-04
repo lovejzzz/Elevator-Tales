@@ -8,9 +8,24 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.12';
+export const GAME_VERSION = '8.13';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.13', date: '2026-09-03', title: '本层决策一眼可见',
+    summary: '候客、车内风险与十层商店获得更明确的即时反馈；本次只改善信息层级，不改变人物或生存数值。',
+    changes: [
+      '右侧已上车的候客卡改为灰色半透明；本层新上车人物在车厢内显示高亮金圈，旧乘客不会被误标。',
+      '若按当前站位上行会让电量耗尽或躁动达到上限，左栏对应的下一站变化数字会变红并抖动；减少动态效果的系统设置下保留静态警示色。',
+      '每个9、19、29层等商店前一层都会明确显示“下一站：商店”，并用高亮提示取代普通班次预告。',
+      '玩家界面统一称为“商店”，商店说明与离开操作进一步精简。金币总额移到商店最上方并显著放大。',
+    ],
+    experiments: [
+      '新增楼层9与39的商店预告回归，并继续验证下一站电量、躁动预测与实际结算一致。',
+      '完整规则验证继续覆盖定向人物配对、随机状态跳转、堆叠、连接、双语与版本记录约束；本次未调整平衡参数。',
+    ],
+    watch: ['观察持续抖动是否足够醒目但不过度干扰，以及灰色候客卡在不同屏幕亮度下是否仍清楚可撤回。'],
+  },
   {
     version: '8.12', date: '2026-09-03', title: '双资源夹击',
     summary: '躁动改成完全可追踪的人物风险，能源重新成为必须规划的生存资源；玩家要在充电、升级和高危高回报乘客之间持续取舍。',
@@ -246,6 +261,21 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.13', date: '2026-09-03', title: 'This-floor decisions read at a glance',
+    summary: 'Candidates, cabin danger, and ten-floor shops now give clearer immediate feedback. This release changes information hierarchy only, not rider or survival values.',
+    changes: [
+      'A candidate card turns grey and translucent after boarding. Its cabin rider gains a bright gold ring for the current floor; existing riders are never marked as new.',
+      'If the current arrangement would exhaust power or reach the agitation cap on the next ascent, the matching forecast number turns red and shakes. Reduced-motion settings keep the static warning color.',
+      'Floors 9, 19, 29, and every later pre-shop floor clearly show “Next: Shop” with a highlighted notice instead of an ordinary shift forecast.',
+      'Player-facing supply-stop labels are now simply “Shop.” Shop instructions and departure copy are shorter, and the total coin balance is larger at the very top.',
+    ],
+    experiments: [
+      'Added shop-warning regressions for floors 9 and 39 while retaining exact next-floor power and agitation forecast checks.',
+      'Full verification still covers targeted rider pairs, random transitions, stacks, links, localization, and release invariants. No balance parameter changed.',
+    ],
+    watch: ['Watch whether the continuous danger shake is salient without becoming distracting, and whether a dimmed candidate remains clearly undoable across display brightness levels.'],
+  },
   {
     version: '8.12', date: '2026-09-03', title: 'Two-resource squeeze',
     summary: 'Agitation is now a fully traceable rider risk, while power again demands active survival planning. Every shift asks how much money to spend on charge, upgrades, and visibly dangerous high-reward riders.',

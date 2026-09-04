@@ -37,7 +37,7 @@ export const REST_STOP_CAP = 0;
 export const shiftAgitation = (_floor: number, _occupied: number, _restStops = 0) => 0;
 export function shiftOutlook(floor: number, _occupied = 1, _restStops = 0) {
   const next = floor + 1;
-  if (next % 10 === 0) return '下一站到补给站';
+  if (next % 10 === 0) return '下一站：商店';
   return floor >= OFFER_PRESSURE_STEP && floor % OFFER_PRESSURE_STEP === 0 ? '本层起，高危候客增加' : '';
 }
 
@@ -291,7 +291,7 @@ export function chargingPlan(state: RunState) {
 export function chargeBattery(state: RunState, units: number): RunState {
   if(state.status!=='upgrade'||!Number.isSafeInteger(units)||units<=0||state.energy+units>state.energyCap||state.coins<units*CHARGE_PRICE)return state;
   const cost=units*CHARGE_PRICE;
-  return {...state,energy:state.energy+units,coins:state.coins-cost,message:`充电 +${units}，支付 ${cost} 金币。`,lastEarnings:{total:0,sources:[]},lastEnergy:{delta:units,sources:[{label:'补给站充电',amount:units}]},log:[`${state.floor}F · 充电 −${cost} 金币`,...state.log].slice(0,4)};
+  return {...state,energy:state.energy+units,coins:state.coins-cost,message:`充电 +${units}，支付 ${cost} 金币。`,lastEarnings:{total:0,sources:[]},lastEnergy:{delta:units,sources:[{label:'商店充电',amount:units}]},log:[`${state.floor}F · 充电 −${cost} 金币`,...state.log].slice(0,4)};
 }
 export const dismissalCost=(state: RunState,rider:Rider)=>4+Math.max(0,rider.destination-state.floor)*2;
 export function dismissRider(state: RunState, id: string): RunState {
