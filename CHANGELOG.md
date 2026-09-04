@@ -1,6 +1,15 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.13**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.14**.
+
+## v8.14 — 2026-09-03 — Card headers stop competing for space
+
+- The top agitation value is now always a compact “Self +0/+1”; long cancellation or conditional rules appear only in the ability area below.
+- Desktop cards use a shrinkable identity column and fixed-content value column, with a safer English-name size.
+- Mobile rarity and value areas gain minimum-width constraints to prevent horizontal overflow.
+- Browser verification at 1280×720 covers three Chinese candidate sets and one English set with long conditions and material badges; desktop, short-screen, phone, and landscape media rules were also reviewed line by line.
+- Full rules, localization, build, and release-history regressions pass. No gameplay values changed.
+- Watch item: unusually narrow desktop windows and enlarged system text settings.
 
 ## v8.13 — 2026-09-03 — This-floor decisions read at a glance
 

@@ -32,4 +32,4 @@ assert.equal(shiftOutlook(9),'下一站：商店');
 assert.equal(shiftOutlook(38,2,0),'');
 assert.equal(shiftOutlook(39,0,1),'下一站：商店');
 assert.equal(shiftOutlook(40,2,0),'本层起，高危候客增加');
-console.log(JSON.stringify({version:'v8.13',inspectionInteractions:cases,generatedChildren:children,childRange:[2,5],fare:7}));
+console.log(JSON.stringify({version:'v8.14',inspectionInteractions:cases,generatedChildren:children,childRange:[2,5],fare:7}));

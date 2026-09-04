@@ -8,9 +8,23 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.13';
+export const GAME_VERSION = '8.14';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.14', date: '2026-09-03', title: '人物卡头部不再互相抢位',
+    summary: '人物卡最上方重新严格区分“数值”和“能力”：三项数值保持短而稳定，完整条件留在下方规则区。',
+    changes: [
+      '躁动总览统一显示为简短的“自身 +0/+1”；音乐家、护士等较长的抵消规则只在能力区显示一次，不再侵入稀有度与路程标签。',
+      '桌面卡头改用可收缩身份列和固定宽度数值列；英文长姓名使用更稳妥的字号，避免数值、姓名、材质标签和帮助按钮互相覆盖。',
+      '手机卡的材质与数值区补充最小宽度约束，保持完整规则且不出现横向溢出。',
+    ],
+    experiments: [
+      '在1280×720浏览器中检查三批中文候客卡和一批英文候客卡，覆盖长条件、材质标签与紧凑桌面栏；目视确认身份、数值、标签和规则区不再相叠。',
+      '逐段审查桌面、短屏、手机与横屏媒体规则；完整规则、双语、构建与版本记录回归继续通过。本次未调整任何人物或资源数值。',
+    ],
+    watch: ['继续收集极窄桌面窗口与系统大字体设置下的卡面截图。'],
+  },
   {
     version: '8.13', date: '2026-09-03', title: '本层决策一眼可见',
     summary: '候客、车内风险与十层商店获得更明确的即时反馈；本次只改善信息层级，不改变人物或生存数值。',
@@ -261,6 +275,20 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.14', date: '2026-09-03', title: 'Card headers stop competing for space',
+    summary: 'The top of every rider card now strictly separates values from abilities: three short values stay stable while complete conditions remain in the rule area below.',
+    changes: [
+      'The agitation overview is always a compact “Self +0/+1.” Long cancellation rules for Musician, Nurse, and similar riders appear once in the ability area instead of invading trip and rarity badges.',
+      'Desktop headers use a shrinkable identity column and a fixed-content value column. Long English names use a safer size so names, values, material badges, and help controls cannot overlap.',
+      'Mobile rarity and value areas gain minimum-width constraints to prevent horizontal overflow while keeping full rules.',
+    ],
+    experiments: [
+      'At 1280×720, browser-checked three Chinese candidate sets and one English set covering long conditions, material badges, and the compact desktop rail. Identity, values, badges, and rule rows no longer overlap visually.',
+      'Reviewed desktop, short-screen, phone, and landscape media rules line by line. Full rules, localization, build, and release-history regressions pass. No rider or resource values changed.',
+    ],
+    watch: ['Keep collecting card screenshots from unusually narrow desktop windows and enlarged system text settings.'],
+  },
   {
     version: '8.13', date: '2026-09-03', title: 'This-floor decisions read at a glance',
     summary: 'Candidates, cabin danger, and ten-floor shops now give clearer immediate feedback. This release changes information hierarchy only, not rider or survival values.',

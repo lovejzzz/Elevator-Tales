@@ -74,7 +74,9 @@ function PassengerCardFace({ rider, run, action, locale }: { rider: Rider; run: 
   const face=passengerFace(rider,run);
   const grade=passengerCardGrade(rider.kind);
   const links=bondStatus(rider,run.cabin).supportCount;
-  const agitationText=face.pressure[0].replace('自身躁动','自身');
+  // The overview is a value row, not a second ability description. Conditional
+  // agitation remains directly below in the skill copy.
+  const agitationText=`自身 +${brief.agitation}`;
   const conflictText=`${face.conflict.replace('挨','邻')} 躁动`;
   return localizeTree(<span className="unified-passenger-summary">
     <span className="card-overview">
