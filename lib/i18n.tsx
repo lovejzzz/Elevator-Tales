@@ -10,6 +10,45 @@ const exactPairs: Array<[string, string]> = [
   ['幽灵', 'Ghost'], ['驱魔师', 'Exorcist'], ['教练', 'Coach'], ['名人', 'Celebrity'],
   ['检查员', 'Inspector'], ['炸弹客', 'Bomb Carrier'], ['神秘人', 'Mystery'], ['百变人', 'Shifter'], ['复制人', 'Mimic'],
 
+  // Compact candidate-card grammar.
+  ['绿色邻座', 'GREEN NEIGHBORS'], ['红色邻座', 'RED NEIGHBORS'],
+  ['任意人物', 'Any rider'], ['任意非教练', 'Any non-Coach'],
+  ['到站 +2', 'Arrival +2'], ['节能 2/层', 'Save 2/floor'],
+  ['单独时：25% 呼唤恋人', 'Alone: 25% chance to call a Lover'],
+  ['每人 +1/层 · 基础车费 +100%', 'Each +1/floor · base fare +100%'],
+  ['每人 +1/层', 'Each +1/floor'], ['每人 −2/层', 'Each −2/floor'], ['每人 −1/层', 'Each −1/floor'],
+  ['未受控 +4/层', 'Uncontrolled +4/floor'], ['未受控 +1/层', 'Uncontrolled +1/floor'],
+  ['途中 +1/层 · 到站 +5', 'Ride +1/floor · arrival +5'], ['收益 +1/层', 'Income +1/floor'],
+  ['倒计时锁定', 'Timer locked'], ['不加躁动', 'No agitation'], ['未安抚 +1/层', 'Uncalmed +1/floor'], ['途中 +1/层', 'Ride +1/floor'],
+  ['无人照顾 +1/层', 'Unattended +1/floor'], ['3的倍数层：随机邻座 +1站', 'Floors 3, 6, 9…: random neighbor +1 floor'],
+  ['不再延误', 'No delay'], ['到站 +6', 'Arrival +6'], ['幽灵到站 +6', 'Ghost arrival +6'],
+  ['基础车费 +50%/教练', 'Base fare +50%/Coach'], ['教练到站 +3/人', 'Coach arrival +3/person'],
+  ['1位邻座 +3/层', '1 neighbor +3/floor'], ['2+邻座 +1/层', '2+ neighbors +1/floor'],
+  ['总耗电≤4：+1/层', 'Total power ≤4: +1/floor'], ['总耗电>4：+1/层', 'Total power >4: +1/floor'],
+  ['参数与邻座关系随机 · 车费到站揭晓', 'Random values and neighbors · fare revealed on arrival'],
+  ['每层重抽三值与邻座关系', 'Reroll three values and neighbors each floor'],
+  ['每位邻座复制1项 · 最多3项', 'Copy 1 field per neighbor · max 3'],
+  ['/层', '/floor'], ['+1/层', '+1/floor'], ['额外 +1/层', 'Extra +1/floor'], ['−2/层', '−2/floor'],
+  ['两人耗电 ×2', 'Both use ×2 power'], ['两人到站车费 ×2', 'Both arrival fares ×2'],
+  ['每位邻座 −2躁动/层', 'Each neighbor −2 agitation/floor'], ['每位邻座 −1躁动/层', 'Each neighbor −1 agitation/floor'],
+  ['可连绿线 · ', 'Green link · '],
+  ['绿色有收益 · 红色有损失 · 每位邻座分别叠加', 'Green rewards · red costs · each neighbor stacks'],
+  ['下一层：商店', 'Next floor: Shop'], ['邻座与叠加', 'Neighbors and stacking'],
+  ['绿色收益 · 红色损失', 'Green rewards · red costs'],
+  ['每层＝上行后立即结算 · 到站＝下车时结算 · 邻座逐人叠加', 'Per floor = paid after each ascent · Arrival = paid on exit · neighbors stack'],
+  ['每上1层 +1躁动', 'Each ascent +1 agitation'], ['每上1层额外耗1电', 'Each ascent costs 1 extra power'],
+  ['每上1层立即 −2', 'Each ascent immediately −2'], ['两人每层耗电 ×2', 'Both use ×2 power per floor'],
+  ['每上1层立即 +1/人', 'Each ascent immediately +1/person'], ['到站基价 +100%/人', 'Arrival base fare +100%/person'],
+  ['未受控：每上1层立即 +4', 'Uncontrolled: each ascent immediately +4'],
+  ['未受控：每上1层 +1躁动', 'Uncontrolled: each ascent +1 agitation'],
+  ['每上1层立即 +1', 'Each ascent immediately +1'], ['到站 +5', 'Arrival +5'],
+  ['1位邻座：每上1层立即 +3', '1 neighbor: each ascent immediately +3'],
+  ['2+邻座：每上1层 +1躁动', '2+ neighbors: each ascent +1 agitation'],
+  ['总耗电≤4：每上1层立即 +1', 'Total power ≤4: each ascent immediately +1'],
+  ['总耗电>4：每上1层 +1躁动', 'Total power >4: each ascent +1 agitation'],
+  ['安排六个站位，连接绿色邻座，避开红色邻座。没有终点，越往上越难。送客赚取金币，每十层购买升级，挑战自己的最高楼层。', 'Arrange six positions, connect green neighbors, and avoid red neighbors. There is no final floor; the challenge keeps rising. Deliver riders for coins, buy upgrades every ten floors, and chase your highest floor.'],
+  ['绿色邻座给收益，红色邻座给损失。每位邻座分别结算；本人到站时，每条仍连接的绿线额外 +', 'Green neighbors give rewards; red neighbors impose costs. Each neighbor resolves separately. On arrival, every green link still connected adds +'],
+
   // Passenger summaries and rules.
   ['所有相邻乘客：每层各抵消2躁动', 'All adjacent riders: each cancels 2 agitation per floor'],
   ['所有相邻乘客：每层各抵消1躁动', 'All adjacent riders: each cancels 1 agitation per floor'],
@@ -417,6 +456,15 @@ export function translateGameText(value: string, locale: GameLocale): string {
   const direct = exact.get(core);
   if (direct) return `${leading}${direct}${trailing}`;
   let translated = value
+    .replace(/倒计时 (\d+) · 归零失败/gu, 'Timer $1 · zero ends the run')
+    .replace(/已复制 (\d+) 项/gu, 'Copied $1 fields')
+    .replace(/到站 \+(\d+)\/邻座/gu, 'Arrival +$1/neighbor')
+    .replace(/到站 −(\d+)躁动/gu, 'Arrival −$1 agitation')
+    .replace(/本人到站时 \+(\d+)\/邻座/gu, 'Own arrival +$1/neighbor')
+    .replace(/本人到站时 −(\d+)躁动/gu, 'Own arrival −$1 agitation')
+    .replace(/本人到站 \+(\d+)\/人/gu, 'Own arrival +$1/person')
+    .replace(/本人到站 −(\d+)\/人/gu, 'Own arrival −$1/person')
+    .replace(/距商店 (\d+) 层/gu, 'Shop in $1 floors')
     .replace(/查看已装升级，共 (\d+) 次/gu, 'View installed upgrades: $1')
     .replace(/旅伴 (\d+) · 每站 \+(\d+)币/gu, 'Companions $1 · +$2 coins/floor')
     .replace(/每邻(.+?)：每层 \+(\d+) 躁动/gu, 'Each adjacent $1: +$2 agitation/floor')

@@ -8,9 +8,28 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.22';
+export const GAME_VERSION = '8.23';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.23', date: '2026-09-04', title: '人物卡只说三件事',
+    summary: '候客卡统一成“自身、绿色邻座、红色邻座”三段；同一种摆位操作不再混用“相邻、协作、阻止”等多套说法，状态栏也改成更直接的当前值/上限。',
+    changes: [
+      '21种人物全部改用同一信息结构：卡头只放到站金币、每层耗电和非零躁动；自身能力、绿色邻座收益、红色邻座损失各自只出现一次。',
+      '删除“Prevented by…”等条件复述。通用绿色到站奖励提到绿色标题旁只显示一次；绿色列表只列对象与特殊后果，相同红色后果的多个人物合并成同一行。',
+      '金币结算时点统一写明：“每上1层立即”会在每次上行后直接改变余额；“本人到站时”只在该人物离开电梯时结算，不再用含混的“收益 +1/层”。',
+      '隐藏“躁动 +0”；需要表达控制结果时改写成“不加躁动”。候客提示、开场和手册统一使用“绿色收益 / 红色损失 / 邻座叠加”。',
+      '手机候客区改成一次显示一张完整卡，并提供三个人名标签切换；不再把三张完整规则卡压进三列。',
+      '电量与躁动改为50/60、0/6式当前值/上限；余额下方删除班次累计，只保留距商店层数。',
+      '本版没有改动人物数值、掉落权重、结算顺序或叠加公式；这是一次纯信息架构与响应式布局更新。',
+    ],
+    experiments: [
+      '为21种人物逐张生成三段式卡面并做自动审计：每张都保留绿色决策，红色对象没有重复，同一卡面不再出现“协作/冲突/相邻/挨/旁边”等竞争术语。',
+      '对警察、小偷和音乐家做定向回归：警察的小偷控制与炸弹倒计时各一行；相同的小偷金币损失对象合并；音乐家仍明确对每位邻座−2躁动。',
+      '在1440×900桌面和390×844手机浏览器实测中英文、三段结构、零值隐藏和仪表栏；卡面正文没有横向或纵向截断，手机页面没有横向溢出。',
+    ],
+    watch: ['观察真人是否能只凭三段卡面完成第一次站位；若仍需频繁打开详情，优先继续缩短个别人物的自身能力，不再增加第四个卡面区块。'],
+  },
   {
     version: '8.22', date: '2026-09-04', title: '每个邻座都是构筑的一部分',
     summary: '相邻能力现在明确面向所有相邻人物并线性叠加；音乐家、护士、教练与小偷重新定位后，少载客不再是远远领先的唯一理性路线。',
@@ -415,6 +434,25 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.23', date: '2026-09-04', title: 'Rider cards say only three things',
+    summary: 'Candidate cards now share three sections: Self, Green Neighbors, and Red Neighbors. One placement action no longer uses competing terms such as adjacent, cooperate, and prevent, while the instrument rail now shows direct current/cap values.',
+    changes: [
+      'All 21 riders use one information structure. The header holds arrival coins, power per floor, and non-zero agitation only; self abilities, green-neighbor rewards, and red-neighbor costs each appear once.',
+      'Removed conditional restatements such as “Prevented by…”. The universal green arrival bonus appears once beside the green heading; rows below show only targets and special outcomes, while red targets with identical costs share one row.',
+      'Coin timing is now explicit: “Each ascent immediately” changes Balance after every floor, while “Own arrival” resolves only when that rider exits. The ambiguous “Income +1/floor” is gone.',
+      'Hidden “Agitation +0”. A controlled outcome now says “No agitation”. Candidate guidance, the intro, and the manual consistently use green rewards, red costs, and neighbor stacking.',
+      'Phones now show one complete candidate card at a time with three named tabs instead of compressing three full rule cards into narrow columns.',
+      'Power and Agitation now use current/cap notation such as 50/60 and 0/6. The Balance card removes shift-total copy and shows only the number of floors to the Shop.',
+      'No rider values, offer weights, resolution order, or stacking formulas changed in this release; it is strictly an information-architecture and responsive-layout update.',
+    ],
+    experiments: [
+      'Generated and audited the three-part card for all 21 riders: every card retains a green decision, red targets do not repeat, and compact card data no longer uses competing cooperation/conflict/adjacency wording.',
+      'Added focused Officer, Thief, and Musician regressions: Officer control and timer lock occupy one row each, identical Thief coin-loss targets merge, and Musician still states −2 agitation for every neighbor.',
+      'Browser-tested English and Chinese at 1440×900 desktop and 390×844 phone sizes. Card bodies had no horizontal or vertical clipping, and the phone page had no horizontal overflow.',
+    ],
+    watch: ['Watch whether first-time players can place riders using only the three card sections. If details are still opened too often, shorten individual self abilities before adding any fourth card section.'],
+  },
   {
     version: '8.22', date: '2026-09-04', title: 'Every neighbor becomes part of the build',
     summary: 'Adjacency abilities now explicitly affect every adjacent rider and stack linearly. After redefining Musician, Nurse, Coach, and Thief, low-occupancy play is no longer the overwhelmingly dominant rational route.',

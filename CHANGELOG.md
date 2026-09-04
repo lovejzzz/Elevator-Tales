@@ -1,6 +1,21 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.22**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.23**.
+
+## v8.23 — 2026-09-04 — Rider cards say only three things
+
+- Rebuilt all 21 candidate cards around three sections only: Self, Green Neighbors, and Red Neighbors.
+- The header now shows arrival fare, power per floor, and non-zero agitation only. `+0` agitation is hidden.
+- Removed restated conditions such as “Prevented by…” and competing placement terms such as “Cooperates with…”.
+- The universal green arrival reward appears once beside the Green Neighbors heading. Identical red-cost targets share one row.
+- Money timing is explicit everywhere: “Each ascent immediately…” means the Balance changes after every floor; “Own arrival…” resolves only when that rider exits.
+- A controlled rider now says “No agitation” instead of showing a context-free zero.
+- Phones show one full candidate card at a time with named tabs instead of squeezing three cards into narrow columns.
+- Power and Agitation now use current/cap notation such as `50/60` and `0/6`. Balance shows only floors remaining to the Shop, not shift-total income.
+- No rider values, offer weights, resolution order, or stacking formulas changed.
+- Generated and audited all 21 compact cards, with focused Officer, Thief, and Musician regressions. Red targets do not repeat and the compact data contains no competing cooperation/conflict/adjacency wording.
+- Browser-tested English and Chinese at 1440×900 desktop and 390×844 phone sizes. Card bodies had no horizontal or vertical clipping, and the phone page had no horizontal overflow.
+- Watch item: whether first-time players can distinguish per-floor money from arrival money without opening details; if not, shorten individual self abilities before adding another card section.
 
 ## v8.22 — 2026-09-04 — Every neighbor becomes part of the build
 

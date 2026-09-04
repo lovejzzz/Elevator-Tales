@@ -1,5 +1,5 @@
 import { MECHANIC_SAVING, PASSENGERS, type PassengerKind } from './game-data';
-import { bondLines, bondSummary, riderConflictRules, riderProfile } from './rider-profile';
+import { bondLines, bondSummary, riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
 import { HIGH_RISK_BONUS, INSPECTOR_COMPLIANCE_REWARD, INSPECTOR_ENERGY_LIMIT, riderAgitation, type Rider, type RunState } from './game-engine';
 
 export const SHARED_SAVING_RULE = '维修工、受控幽灵和节能线路逐项相加；节能最多抵完人物耗电，不能抵运转1电。';
@@ -70,6 +70,114 @@ export function passengerFace(rider: Rider, state: RunState) {
   conflicts,
   actual:actual?`下站人物躁动 ${actual.low===actual.high?actual.low:actual.low+'～'+actual.high}`:null,
  };
+}
+
+export type PassengerCardEffect = {
+ tone: 'coins' | 'energy' | 'agitation' | 'timer' | 'neutral';
+ text: string;
+};
+
+export type PassengerCardRelation = {
+ targets?: PassengerKind[];
+ targetLabel?: '任意人物' | '任意非教练';
+ effects: PassengerCardEffect[];
+};
+
+export type PassengerCardSections = {
+ self: PassengerCardEffect[];
+ greenBonus: PassengerCardEffect[];
+ green: PassengerCardRelation[];
+ red: PassengerCardRelation[];
+};
+
+const effect = (tone: PassengerCardEffect['tone'], text: string): PassengerCardEffect => ({tone,text});
+const conflictEffects = (kind: ConflictEffect): PassengerCardEffect[] => ({
+ agitation: [effect('agitation','每上1层 +1躁动')],
+ energy: [effect('energy','每上1层额外耗1电')],
+ coins: [effect('coins','每上1层立即 −2')],
+ overload: [effect('energy','两人每层耗电 ×2')],
+ gamble: [effect('energy','两人每层耗电 ×2'),effect('coins','两人到站车费 ×2')],
+}[kind]);
+
+// Candidate cards deliberately expose only three information groups: the rider,
+// green neighbors, and red neighbors. Detailed rules remain available on demand.
+export function passengerCardSections(
+ rider: Rider,
+ state: RunState,
+ bonus = 3,
+ relief = 0,
+): PassengerCardSections {
+ const profile=riderProfile(rider,state.cabin);
+ const self:PassengerCardEffect[]=[];
+ const green:PassengerCardRelation[]=[];
+ const addGreen=(targets:PassengerKind[]|null,effects:PassengerCardEffect[],targetLabel?:PassengerCardRelation['targetLabel'])=>green.push({targets:targets??undefined,targetLabel,effects});
+ switch(rider.kind){
+  case 'courier':self.push(effect('energy','到站 +2'));break;
+  case 'mechanic':self.push(effect('energy',`节能 ${MECHANIC_SAVING}/层`));break;
+  case 'lover':
+   self.push(effect('neutral','单独时：25% 呼唤恋人'));
+   addGreen(['lover'],[effect('coins','每上1层立即 +1/人'),effect('coins','到站基价 +100%/人')]);
+   break;
+  case 'tourist':addGreen(null,[effect('coins','每上1层立即 +1/人')],'任意人物');break;
+  case 'musician':addGreen(null,[effect('agitation','每人 −2/层')],'任意人物');break;
+  case 'thief':
+   self.push(effect('coins','未受控：每上1层立即 +4'),effect('agitation','未受控：每上1层 +1躁动'));
+   addGreen(['cop','lawyer'],[effect('coins','每上1层立即 +1'),effect('coins','到站 +5'),effect('agitation','不加躁动')]);
+   break;
+  case 'cop':
+   addGreen(['thief'],[effect('coins','每上1层立即 +1'),effect('agitation','不加躁动')]);
+   addGreen(['bomb'],[effect('timer','倒计时锁定')]);
+   break;
+  case 'lawyer':addGreen(['thief'],[effect('coins','每上1层立即 +1'),effect('agitation','不加躁动')]);break;
+  case 'drunk':
+   self.push(effect('agitation','未安抚 +1/层'));
+   addGreen(['musician','nurse'],[effect('coins','每上1层立即 +1'),effect('agitation','不加躁动')]);
+   break;
+  case 'nurse':addGreen(null,[effect('agitation','每人 −1/层')],'任意人物');break;
+  case 'child':
+   self.push(effect('agitation','无人照顾 +1/层'));
+   addGreen(['lover','musician','nurse'],[effect('agitation','不加躁动')]);
+   break;
+  case 'ghost':
+   self.push(effect('neutral','3的倍数层：随机邻座 +1站'));
+   addGreen(['exorcist'],[effect('neutral','不再延误'),effect('energy','节能 2/层'),effect('coins','到站 +6')]);
+   break;
+  case 'exorcist':addGreen(['ghost'],[effect('neutral','不再延误'),effect('energy','节能 2/层'),effect('coins','幽灵到站 +6')]);break;
+  case 'coach':
+   addGreen(null,[effect('coins','基础车费 +50%/教练')],'任意非教练');
+   addGreen(null,[effect('coins','教练到站 +3/人')],'任意人物');
+   break;
+  case 'celebrity':
+   self.push(effect('coins','1位邻座：每上1层立即 +3'),effect('agitation','2+邻座：每上1层 +1躁动'));
+   break;
+  case 'inspector':
+   self.push(effect('coins',`总耗电≤${INSPECTOR_ENERGY_LIMIT}：每上1层立即 +${INSPECTOR_COMPLIANCE_REWARD}`),effect('agitation',`总耗电>${INSPECTOR_ENERGY_LIMIT}：每上1层 +1躁动`));
+   break;
+  case 'bomb':
+   self.push(effect('timer',`倒计时 ${rider.fuse??0} · 归零失败`));
+   addGreen(['cop'],[effect('timer','倒计时锁定')]);
+   break;
+  case 'mystery':self.push(effect('neutral','参数与邻座关系随机 · 车费到站揭晓'));break;
+  case 'shifter':self.push(effect('neutral','每层重抽三值与邻座关系'));break;
+  case 'mimic':self.push(effect('neutral',profile.copies.length?`已复制 ${profile.copies.length} 项`:'每位邻座复制1项 · 最多3项'));break;
+ }
+
+ const greenBonus=[
+  effect('coins',`本人到站时 +${bonus}/邻座`),
+  ...(relief>0?[effect('agitation',`本人到站时 −${relief}躁动`)]:[]),
+ ];
+ const linked=new Set<PassengerKind>();
+ green.forEach(row=>{
+  if(!row.targets?.length||!row.targets.every(target=>profile.bond.likes.includes(target)))return;
+  row.targets.forEach(target=>linked.add(target));
+ });
+ const unlisted=profile.bond.likes.filter(target=>!linked.has(target));
+ if(unlisted.length)addGreen(unlisted,[]);
+
+ const redGroups=new Map<ConflictEffect,PassengerKind[]>();
+ riderConflictRules(rider,state.cabin).forEach(rule=>redGroups.set(rule.effect,[...(redGroups.get(rule.effect)??[]),rule.target]));
+ const red=[...redGroups.entries()].map(([kind,targets])=>({targets,effects:conflictEffects(kind)}));
+ return {self,greenBonus,green,red};
 }
 
 const pressureText=(text:string,m:number)=>text.replace(/躁动 \+(\d+)/g,(_,n)=>'躁动 +'+Number(n)*m).replace(/\+(\d+) 躁动/g,(_,n)=>'+'+Number(n)*m+' 躁动');

@@ -13,10 +13,10 @@ import { disposeGameMusic, setGameMusic, unlockGameMusic, type MusicScene } from
 import { bondStatus, conflictLinks, type ConflictEffect } from '@/lib/rider-profile';
 import { portraitAsset } from '@/lib/passenger-assets';
 import { addDiscoveredPassengers, sanitizeDiscoveredPassengers } from '@/lib/passenger-discovery';
-import { passengerBrief, passengerFace, SHARED_SAVING_RULE, type PassengerRuleBlock } from '@/lib/passenger-presentation';
+import { passengerBrief, passengerCardSections, SHARED_SAVING_RULE, type PassengerCardEffect, type PassengerCardRelation, type PassengerRuleBlock } from '@/lib/passenger-presentation';
 import { metricChanges, type MetricChange, type MetricKey } from '@/lib/metric-feedback';
 import { CHANGELOG, CHANGELOG_EN, GAME_VERSION } from '@/lib/changelog';
-import { localizeTree, type GameLocale } from '@/lib/i18n';
+import { localizeTree, translateGameText, type GameLocale } from '@/lib/i18n';
 
 type DragPayload = { type: 'offer'; id: string } | { type: 'slot'; slot: number };
 type Feedback = { id: number; tone: 'place' | 'combo' | 'error' | 'arrival'; label: string; slots: number[]; coins?: number; energy?: number; pressure?: number };
@@ -71,33 +71,33 @@ const CARD_GRADE_LABELS: Record<PassengerCardGrade,string> = {
   standard: '常规', fine: '精良', rare: '稀有', legendary: '传奇',
 };
 
+function CardEffect({ effect, locale }: { effect: PassengerCardEffect; locale: GameLocale }) {
+  const Icon=effect.tone==='coins'?Coins:effect.tone==='energy'?BatteryCharging:effect.tone==='agitation'?Flame:effect.tone==='timer'?LockKeyhole:Sparkles;
+  return <span className={`card-effect effect-${effect.tone}`}><Icon aria-hidden="true" />{translateGameText(effect.text,locale)}</span>;
+}
+
+function RelationRow({ relation, locale }: { relation: PassengerCardRelation; locale: GameLocale }) {
+  return <span className={`relation-row ${relation.effects.length?'':'relation-target-only'}`}><b>{relation.targetLabel?translateGameText(relation.targetLabel,locale):relation.targets?.map((kind,index)=><span key={kind}>{index>0&&' / '}{translateGameText(PASSENGERS[kind].name,locale)}</span>)}</b>{relation.effects.length>0&&<span className="relation-effects">{relation.effects.map((item,index)=><CardEffect effect={item} locale={locale} key={`${item.tone}-${item.text}-${index}`}/>)}</span>}</span>;
+}
+
 // One card face at every breakpoint: no separate mobile rulebook to drift.
 function PassengerCardFace({ rider, run, action, locale }: { rider: Rider; run: RunState; action?: string; locale: GameLocale }) {
   const brief=passengerBrief(rider,run.floor,run.cabin,cooperationBonus(run),cooperationRelief(run),eventPressureMultiplier(run));
-  const face=passengerFace(rider,run);
+  const sections=passengerCardSections(rider,run,cooperationBonus(run),cooperationRelief(run));
   const grade=passengerCardGrade(rider.kind);
-  const links=bondStatus(rider,run.cabin).supportCount;
-  // The overview is a value row, not a second ability description. Conditional
-  // agitation remains directly below in the skill copy.
-  const agitationText=`自身 +${brief.agitation}`;
+  const agitationText=`+${brief.agitation}/层`;
   return localizeTree(<span className="unified-passenger-summary">
-    <span className="card-overview">
+    <span className="card-self">
       <span className="card-head"><Portrait kind={rider.kind}/><span><strong>{PASSENGERS[rider.kind].name}</strong><span className="card-meta"><span className="card-trip">还剩 {brief.distance} 站</span><span className={`card-grade grade-${grade}`} title="卡牌稀有度">{CARD_GRADE_LABELS[grade]}</span>{rider.kind==='tourist'&&<span className="tourist-stamp">旅伴加成</span>}{rider.volatile&&<span className="high-risk-tag"><Flame aria-hidden="true" />高危 +{HIGH_RISK_BONUS}</span>}</span></span></span>
       <span className="card-values">
-        <b className="card-fare" aria-label={brief.coins===null?'到站金币待揭晓':`到站金币 ${brief.coins}`} title="到站金币"><Coins aria-hidden="true" />{brief.coins===null?'?':brief.coins}</b>
-        <span className="card-energy" aria-label={`每站耗电 ${brief.energy}`} title="每站耗电"><BatteryCharging aria-hidden="true" />{brief.energy}/站</span>
-        <span className="card-agitation" aria-label={`躁动 ${agitationText}`} title="躁动"><Flame aria-hidden="true" />{agitationText}</span>
+        <b className="card-fare" aria-label={brief.coins===null?'到站金币待揭晓':`到站金币 ${brief.coins}${brief.tip?`，另有小费 ${brief.tip}`:''}`} title="到站金币"><Coins aria-hidden="true" />{brief.coins===null?'?':brief.coins}{brief.tip>0&&<small>+{brief.tip}</small>}<small>到站</small></b>
+        <span className="card-energy" aria-label={`每层耗电 ${brief.energy}`} title="每层耗电"><BatteryCharging aria-hidden="true" />{brief.energy}/层</span>
+        {brief.agitation>0&&<span className="card-agitation" aria-label={`每层自身躁动 ${brief.agitation}`} title="每层自身躁动"><Flame aria-hidden="true" />{agitationText}</span>}
       </span>
+      {sections.self.length>0&&<span className="card-self-effects">{sections.self.map((item,index)=><CardEffect effect={item} locale={locale} key={`${item.tone}-${item.text}-${index}`}/>)}</span>}
     </span>
-    {brief.tip>0&&<span className="card-tip" aria-label={`另有小费 ${brief.tip} 金币，不翻倍`}><Coins aria-hidden="true" />+{brief.tip} 小费（不翻倍）</span>}
-    <span className="card-skills">
-      {face.energy.slice(1).map(line=><span className="skill-energy" key={line}><BatteryCharging aria-hidden="true" />{line}</span>)}
-      {face.pressure.slice(1).map(line=><span className="skill-agitation" key={line}><Flame aria-hidden="true" />{line}</span>)}
-      {face.moneyNote&&<span className="skill-money"><Coins aria-hidden="true" />{face.moneyNote}</span>}
-      {face.special&&<span>{face.special}</span>}
-    </span>
-    <span className="card-cooperation"><span>到站每邻{brief.cooperation.partners.join('或')}</span><b aria-label={`每条协作连接奖励 ${cooperationBonus(run)} 金币${links?`，当前 ${links} 条生效`:''}${cooperationRelief(run)>0?`；送达减少 ${cooperationRelief(run)} 躁动`:''}`}><span><Coins aria-hidden="true" />{links?`+${cooperationBonus(run)}×${links}`:`+${cooperationBonus(run)}/条`}</span>{cooperationRelief(run)>0&&<span><Flame aria-hidden="true" />−{cooperationRelief(run)}</span>}</b></span>
-    <span className="card-conflict">{face.conflicts.map(line=><span key={line}>{line}</span>)}</span>
+    <span className="card-relations relation-green"><span className="relation-heading"><span className="relation-title">绿色邻座</span><span className="relation-bonus">{sections.greenBonus.map((item,index)=><CardEffect effect={item} locale={locale} key={`${item.tone}-${item.text}-${index}`}/>)}</span></span>{sections.green.map((relation,index)=><RelationRow relation={relation} locale={locale} key={`green-${index}`}/>)}</span>
+    <span className="card-relations relation-red"><span className="relation-title">红色邻座</span>{sections.red.length?sections.red.map((relation,index)=><RelationRow relation={relation} locale={locale} key={`red-${index}`}/>):<span className="relation-empty">—</span>}</span>
     {action&&<span className="card-action">{action}</span>}
   </span>, locale);
 }
@@ -125,8 +125,8 @@ function riderState(cabin: Array<Rider | null>, slot: number, totalEnergy: numbe
     case 'coach': { const count = neighbourCount(cabin, slot); return count ? { label: `激励 ${count} 人`, tone: 'active' } : { label: '等待邻座', tone: 'neutral' }; }
     case 'celebrity': { const count = neighbourCount(cabin, slot); return count === 1 ? { label: '状态最佳', tone: 'active' } : count > 1 ? { label: '被围住', tone: 'warn' } : { label: '缺少关注', tone: 'neutral' }; }
     case 'inspector': return totalEnergy <= INSPECTOR_ENERGY_LIMIT ? { label: `耗电${totalEnergy}≤${INSPECTOR_ENERGY_LIMIT} · 奖1币`, tone: 'active' } : { label: `耗电${totalEnergy}>${INSPECTOR_ENERGY_LIMIT} · +1躁动`, tone: 'warn' };
-    case 'musician': return neighbourCount(cabin, slot) ? { label: '每层抵消邻座1躁动', tone: 'active' } : { label: '等待邻座', tone: 'neutral' };
-    case 'nurse': return neighbourCount(cabin, slot) ? { label: '每层抵消邻座1躁动', tone: 'active' } : { label: '等待邻座', tone: 'neutral' };
+    case 'musician': return neighbourCount(cabin, slot) ? { label: '每位邻座 −2躁动/层', tone: 'active' } : { label: '等待邻座', tone: 'neutral' };
+    case 'nurse': return neighbourCount(cabin, slot) ? { label: '每位邻座 −1躁动/层', tone: 'active' } : { label: '等待邻座', tone: 'neutral' };
     default: return bond.supported ? {label:`协作到站 +${bonus}`,tone:'active'} : null;
   }
 }
@@ -344,13 +344,13 @@ export default function ElevatorGame() {
     <section className="game-grid">
       <aside className="status-rail">
         <div className="floor-plaque"><span>当前楼层 · BEST {bestFloor}</span><strong>{String(run.floor).padStart(2, '0')}</strong><small>{phase}</small><progress className="floor-progress" aria-label={`距离 ${nextShop} 层商店还有 ${nextShop - run.floor} 站`} max={10} value={run.floor % 10} /></div>
-        <div data-metric="energy" className={`meter-card energy ${energyFatal ? 'meter-danger' : ''}`} title={energyPreview.summary}><div><BatteryCharging aria-hidden="true" /><span className="rail-metric-name">电量</span><b><AnimatedNumber value={run.energy} /></b></div><MetricResponse metric="energy" event={metricEvent} locale={language} /><div className="meter-track"><i style={{ width: `${Math.max(0, Math.min(100, run.energy / run.energyCap * 100))}%` }} /></div><span className="mobile-meter-cap">上限 {run.energyCap}</span><small className="rail-forecast"><span>下一站 <b className={energyFatal ? 'forecast-fatal' : ''}>{energyPreview.range}</b></span><span>上限 {run.energyCap}</span></small>{run.lastEnergy.sources.length > 0 && <div className={`energy-receipt ${run.lastEnergy.delta > 0 ? 'gained' : run.lastEnergy.delta < 0 ? 'spent' : 'balanced'}`} key={run.floor} aria-live="polite" title={energySummary}><b>{run.lastEnergy.delta === 0 ? '本层持平' : `本层 ${signedDelta(run.lastEnergy.delta)}`}</b><span>{energySummary}</span></div>}</div>
+        <div data-metric="energy" className={`meter-card energy ${energyFatal ? 'meter-danger' : ''}`} title={energyPreview.summary}><div><BatteryCharging aria-hidden="true" /><span className="rail-metric-name">电量</span><b><AnimatedNumber value={run.energy} /><span className="metric-cap">/{run.energyCap}</span></b></div><MetricResponse metric="energy" event={metricEvent} locale={language} /><div className="meter-track"><i style={{ width: `${Math.max(0, Math.min(100, run.energy / run.energyCap * 100))}%` }} /></div><small className="rail-forecast"><span>下一站 <b className={energyFatal ? 'forecast-fatal' : ''}>{energyPreview.range}</b></span></small>{run.lastEnergy.sources.length > 0 && <div className={`energy-receipt ${run.lastEnergy.delta > 0 ? 'gained' : run.lastEnergy.delta < 0 ? 'spent' : 'balanced'}`} key={run.floor} aria-live="polite" title={energySummary}><b>{run.lastEnergy.delta === 0 ? '本层持平' : `本层 ${signedDelta(run.lastEnergy.delta)}`}</b><span>{energySummary}</span></div>}</div>
         <div data-metric="stress" className={`meter-card pressure ${agitated || pressurePreview.tone === 'danger' ? 'meter-danger' : ''}`} title={pressurePreview.summary}>
-          <div><Flame aria-hidden="true" /><span className="meter-label"><span className="rail-metric-name">躁动</span><button className="meter-help" onClick={() => setPressureHelp(true)} aria-label="查看躁动规则"><HelpCircle /></button></span><b><AnimatedNumber value={run.stress} /></b></div>
+          <div><Flame aria-hidden="true" /><span className="meter-label"><span className="rail-metric-name">躁动</span><button className="meter-help" onClick={() => setPressureHelp(true)} aria-label="查看躁动规则"><HelpCircle /></button></span><b><AnimatedNumber value={run.stress} /><span className="metric-cap">/{run.stressCap}</span></b></div>
           <MetricResponse metric="stress" event={metricEvent} locale={language} /><div className="meter-track pressure-track"><i style={{ width: `${Math.min(100, run.stress / run.stressCap * 100)}%` }} /></div>
-          <span className="mobile-meter-cap">上限 {run.stressCap}</span><span className="mobile-agitation-state">再 +{Math.max(0,run.stressCap-run.stress)} 失控</span><small className="rail-forecast"><span>下一站 <b className={stressFatal ? 'forecast-fatal' : ''}>{pressurePreview.range}</b></span><span>上限 {run.stressCap}</span></small><div className="agitation-state"><b>只计算人物</b><span>每位到站 −1 · 本层最多 −2</span></div>
+          <span className="mobile-agitation-state">再 +{Math.max(0,run.stressCap-run.stress)} 失控</span><small className="rail-forecast"><span>下一站 <b className={stressFatal ? 'forecast-fatal' : ''}>{pressurePreview.range}</b></span></small><div className="agitation-state"><b>只计算人物</b><span>每位到站 −1 · 本层最多 −2</span></div>
         </div>
-        <div data-metric="coins" className="score-card wallet-card"><Coins aria-hidden="true" /><span className="rail-metric-name">余额</span><strong><AnimatedNumber value={run.coins} /></strong><MetricResponse metric="coins" event={metricEvent} locale={language} /><span className={`mobile-shop-note ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一站：商店' : `${nextShop - run.floor} 站到商店`}</span><small className="wallet-summary"><span>本班累计 {run.earned}</span><span className={nextIsShop ? 'shop-next' : ''}>{nextIsShop ? '下一站：商店' : `${nextShop - run.floor} 站后商店`}</span></small></div>
+        <div data-metric="coins" className="score-card wallet-card"><Coins aria-hidden="true" /><span className="rail-metric-name">余额</span><strong><AnimatedNumber value={run.coins} /></strong><MetricResponse metric="coins" event={metricEvent} locale={language} /><span className={`mobile-shop-note ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</span><small className={`wallet-summary ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</small></div>
 
         {metricEvent && <button className="receipt-button" onClick={() => setReceiptOpen(true)}><BookOpen /> 本次变化明细 <span>↗</span></button>}
         <div className="event-log">{run.log.slice(0, 3).map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}</div>
@@ -400,10 +400,10 @@ export default function ElevatorGame() {
             const grade=passengerCardGrade(offer.kind);
             return <div className="passenger-item" role="listitem" key={offer.id}><button className={`passenger-card kind-${offer.kind} grade-${grade} tone-${spec.tone} ${offer.volatile?'volatile':''} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
               {boarded && <span className="boarded-status" aria-hidden="true"><Check />已上车</span>}
-              <PassengerCardFace rider={offer} run={run} action={boarded?'点此撤回':pending?'已选中 · 点空位':full?'车厢已满':partner?`上车可联动 · ${PASSENGERS[partner].name}`:undefined} locale={language}/>
+              <PassengerCardFace rider={offer} run={run} action={boarded?'点此撤回':pending?'已选中 · 点空位':full?'车厢已满':partner?`可连绿线 · ${PASSENGERS[partner].name}`:undefined} locale={language}/>
             </button><button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(offer);}} aria-label={`查看${spec.name}规则`}><HelpCircle /></button></div>;
           })}
-        </div><div className="candidate-notes"><span>绿线发奖励；红线图标直接显示每层代价。两者分别结算，多条都可叠加。</span>{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
+        </div><div className="candidate-notes"><span>每层＝上行后立即结算 · 到站＝下车时结算 · 邻座逐人叠加</span>{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
         <div className="departure-controls">
           <button className="mobile-inspect-button" disabled={!activeRider || locked} onClick={() => {if(activeRider){setEjectArmed(false);setPassengerDetails(activeRider);}}} aria-label="查看选中人物规则"><BookOpen /><span>人物/请离</span></button>
           <button className="depart-button" onClick={depart} disabled={locked || occupied===0}><span>{doors === 'open' ? occupied===0?'至少接1人':'关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
@@ -442,13 +442,13 @@ export default function ElevatorGame() {
         {change.capDelta !== 0 && <p><span>{change.label}上限</span><b>{signedDelta(change.capDelta)}</b></p>}
       </section>)}</div>
     </DialogContent></Dialog>
-    <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">CAR № 07 · 00:17 AM</p><DialogHeader><DialogTitle>今晚，所有人<br />都想再上一层。</DialogTitle><DialogDescription>安排六个站位，促成协作，避开冲突。没有终点，越往上越难。送客赚取金币，每十层购买升级，挑战自己的最高楼层。</DialogDescription></DialogHeader><div className="intro-rules"><span><b>01</b> 选人安排站位</span><span><b>02</b> 绿线协作 · 红线冲突</span><span><b>03</b> 权衡代价后上行</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始午夜班次 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
+    <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">CAR № 07 · 00:17 AM</p><DialogHeader><DialogTitle>今晚，所有人<br />都想再上一层。</DialogTitle><DialogDescription>安排六个站位，连接绿色邻座，避开红色邻座。没有终点，越往上越难。送客赚取金币，每十层购买升级，挑战自己的最高楼层。</DialogDescription></DialogHeader><div className="intro-rules"><span><b>01</b> 选人安排站位</span><span><b>02</b> 绿色收益 · 红色损失</span><span><b>03</b> 权衡代价后上行</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始午夜班次 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
     <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">ENDLESS SHIFT MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>楼层就是成绩；金币是购买升级的预算。没有最后一层。</DialogDescription></DialogHeader><div className="manual-grid">
       <div><b>拖拽安排</b><p>把人物拖进站位，或先点乘客再点空位。连线两端互为邻座。旧乘客每层只能换位一次；新上客移到空位或与新上客互换不消耗次数。</p></div>
       <div><b>还剩几站</b><p>每次关门上行算一站，人物身上的剩余站数会递减；幽灵可能延误邻座。</p></div>
       <div><b>三个值，六个站位</b><p>人物只看金钱、耗电和躁动。每站耗电＝电梯运转1＋车内人物耗电＋红线耗电−节能；到站这一站也计费。电量或躁动任一触底，本班都会结束。</p></div><div><b>躁动只来自人物</b><p>卡片只显示 0、+1 或 +2；没有拥挤、楼层压力或隐藏倍率。只有标有 🔥 的红线每层 +1 躁动；每位正常到站乘客让本层总躁动最多 −1。</p></div>
       <div><b>安抚可以堆叠</b><p>护士让所有相邻乘客每人减 1 躁动；稀有音乐家每人减 2，但每层耗2电。多人效果分别叠加，不会降到 0 以下。</p></div>
-      <div><b>十层商店</b><p>初始{INITIAL_ENERGY}电、容量{ENERGY_CAPACITY}。抵达商店先补 {SHOP_ENTRY_CHARGE} 电，再用金币充电或买升级。高危乘客多赚 {HIGH_RISK_BONUS} 金币，但每层多 +1 躁动。</p></div><div><b>协作、冲突与堆叠</b><p>绿线表示协作：本人到站时，每条仍连接的绿线额外 +{cooperationBonus(run)} 金币。红线可能增加躁动、耗电或损失金币；图标直接显示结果。两者分别结算，多条逐项叠加。</p></div><div><b>到层请离</b><p>选中车内人物，打开人物详情后请离。赔偿4+剩余站数×2金币，不结算到站奖励。本层刚上车仍可免费撤回。</p></div>
+      <div><b>十层商店</b><p>初始{INITIAL_ENERGY}电、容量{ENERGY_CAPACITY}。抵达商店先补 {SHOP_ENTRY_CHARGE} 电，再用金币充电或买升级。高危乘客多赚 {HIGH_RISK_BONUS} 金币，但每层多 +1 躁动。</p></div><div><b>邻座与叠加</b><p>绿色邻座给收益，红色邻座给损失。每位邻座分别结算；本人到站时，每条仍连接的绿线额外 +{cooperationBonus(run)} 金币。</p></div><div><b>到层请离</b><p>选中车内人物，打开人物详情后请离。赔偿4+剩余站数×2金币，不结算到站奖励。本层刚上车仍可免费撤回。</p></div>
     </div></DialogContent></Dialog>
     <Dialog open={pressureHelp} onOpenChange={setPressureHelp}><DialogContent className="story-dialog pressure-dialog"><p className="dialog-kicker">CABIN AGITATION</p><DialogHeader><DialogTitle>每一点躁动，都能在人物身上找到。</DialogTitle><DialogDescription>关门前先看左栏的下一站预测；达到 {run.stressCap} 就会失控。没有拥挤惩罚、楼层压力或隐藏倍率。</DialogDescription></DialogHeader><div className="pressure-rule-grid">
       <section className="pressure-rise"><small>会增加躁动</small><b>人物自身</b><p>人物卡明确显示每层 0、+1 或 +2；高危乘客固定再 +1。</p><b>人物事件</b><p>未受控的小偷、儿童与醉汉，被围住的名人，以及高耗电时的检查员，会按卡片规则增加躁动。</p><b>🔥 红线</b><p>只有标有 🔥 的红线增加躁动；⚡ 和 🪙 分别影响电量与金币。绿色协作不会消除红线。</p></section>

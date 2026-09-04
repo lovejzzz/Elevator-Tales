@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { initialRun, resolveFloor, energySavings, riderAgitation, type Rider, type RunState } from '../lib/game-engine';
-import { PASSENGERS, passengerCardGrade } from '../lib/game-data';
-import { passengerBrief, passengerFace, SHARED_SAVING_RULE } from '../lib/passenger-presentation';
+import { PASSENGERS, PASSENGER_ORDER, passengerCardGrade } from '../lib/game-data';
+import { passengerBrief, passengerCardSections, passengerFace, SHARED_SAVING_RULE } from '../lib/passenger-presentation';
 import { addDiscoveredPassengers, sanitizeDiscoveredPassengers } from '../lib/passenger-discovery';
 const rider=(kind:Rider['kind'],id=kind as string,extra:Partial<Rider>={}):Rider=>({kind,id,destination:8,boardedAt:1,patience:0,fareBonus:0,...extra});
 const state=(extra:Partial<RunState>={}):RunState=>({...initialRun(),...extra});
@@ -61,4 +61,20 @@ assert.deepEqual(sanitizeDiscoveredPassengers(null),[],'an old save does not unl
 assert.deepEqual(sanitizeDiscoveredPassengers(['lover','bogus','lover']),['lover'],'saved discoveries are validated and deduplicated');
 assert.deepEqual(addDiscoveredPassengers([],['lover','lover','courier']),['courier','lover'],'only passengers actually seen are collected');
 assert.equal(addDiscoveredPassengers(['courier','lover'],['thief']).length,3,'new encounters extend the archive');
-console.log(JSON.stringify({version:'v8.22',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:5,savingsCopy:true,archiveDiscovery:true,distinctCalmers:true}));
+for(const kind of PASSENGER_ORDER){
+ const sections=passengerCardSections(rider(kind),state());
+ assert.ok(sections.green.length>0,`${kind} keeps at least one green-neighbor decision`);
+ const redTargets=sections.red.flatMap(section=>section.targets??[]);
+ assert.equal(redTargets.length,new Set(redTargets).size,`${kind} red-neighbor targets are grouped without repetition`);
+ assert.doesNotMatch(JSON.stringify(sections),/协作|冲突|相邻|挨|旁边|prevented|cooperates/i,`${kind} card uses only the three-part neighbor grammar`);
+}
+const officerSections=passengerCardSections(rider('cop'),state());
+assert.deepEqual(officerSections.green.map(section=>section.targets),[['thief'],['bomb']],'Officer shows one concise row per green-neighbor outcome');
+assert.equal(officerSections.green[0].effects.filter(item=>item.tone==='agitation').length,1,'Officer does not repeat the Thief agitation outcome');
+assert.equal(officerSections.greenBonus[0].text,'本人到站时 +3/邻座','the generic green reward names its owner and arrival timing once');
+assert.ok(officerSections.green[0].effects.some(item=>item.text==='每上1层立即 +1'),'per-floor income states that it settles immediately');
+assert.doesNotMatch(JSON.stringify(officerSections),/收益 \+1\/层/,'the ambiguous per-floor income label is gone');
+const thiefRed=passengerCardSections(rider('thief'),state()).red;
+assert.ok(thiefRed.some(section=>section.targets?.includes('inspector')&&section.targets.includes('ghost')),'identical Thief coin-loss neighbors share one row');
+assert.equal(passengerCardSections(rider('musician'),state()).green[0].effects[0].text,'每人 −2/层','Musician fan-out stays concise and exact');
+console.log(JSON.stringify({version:'v8.23',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:5,savingsCopy:true,archiveDiscovery:true,distinctCalmers:true,threePartCards:PASSENGER_ORDER.length}));
