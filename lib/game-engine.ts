@@ -56,7 +56,7 @@ function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
   add(`${PASSENGERS[rider.kind].name}自身躁动`, riderProfile(rider,state.cabin,slot).agitation);
   if (rider.volatile) add(`${PASSENGERS[rider.kind].name}高危`, 1);
   const bonds=bondStatus(rider,state.cabin,slot);
-  add('邻座冲突', bonds.conflictCount);
+  if ((state.floor + 1) % 2 === 0) add('邻座冲突', bonds.conflictCount);
   switch (rider.kind) {
     case 'thief': if (!hasNeighbour(state.cabin, slot, ['cop', 'lawyer'])) add('小偷未受控', 1); break;
     case 'child': if (!hasNeighbour(state.cabin, slot, ['lover', 'musician', 'nurse'])) add('儿童无人照顾', 1); break;

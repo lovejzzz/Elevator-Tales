@@ -8,9 +8,26 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.16';
+export const GAME_VERSION = '8.17';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.17', date: '2026-09-03', title: '叠加规则终于和卡面完全一致',
+    summary: '全面审计21个人物的重复上车、扇形控制、协作与冲突叠加；修复红色冲突在奇数层也暗中增加躁动的问题，不改动人物公开数值。',
+    changes: [
+      '每条红色邻座冲突现在严格只在即将抵达偶数层时增加1躁动，与人物卡一直显示的规则一致；奇数层不再暗中结算冲突躁动。',
+      '绿色协作仍按每条连接线性结算；一条绿色协作仍会免除该人物的红线冲突，但不会免除高危、自身躁动、未受控小偷等人物技能。',
+      '维修工仍每位节能2电；受控幽灵、快递回电、游客职业数、教练倍率、护士/警察扇形控制与复制人三项复制均保持原参数。',
+      '新增可重复运行的全人物叠加审计，记录同类共存率、协作覆盖率、三邻座穷举、随机属性分布和每种核心叠加曲线。',
+    ],
+    experiments: [
+      '运行55,604局完整程序实验，并检查306,663个受控叠加与随机属性样本；其中穷举21种中心人物与三名邻座的194,481种排列，所有电量和躁动预测误差为0。',
+      '每种人物分别做600局正常、偏爱与禁用对照。偏爱后同类共存最高的是恋人25.2%，但平均生存−0.67层；没有任何人物堆叠带来超过+1.09层优势，因此不存在单一叠加必胜路线。',
+      '六恋人满舱在同层全部到站时为176币，每级默契契约再线性增加28币；三名教练让游客基础车费18→45，礼宾小费仍只逐级+3，不参与倍率。',
+      '维修工节能降为1的9,800局对照被否决：均衡打法到40层从约69%降至56.5%，激进打法中位只剩10层，但完全禁用维修工仍损失11.43层，没有真正解决续航依赖。',
+    ],
+    watch: ['维修工仍是通用续航核心，但额外偏爱只+1.09层，暂不复杂化其叠加规则。小偷只有与警察/律师一起堆叠才成立；盲目偏爱小偷会−4.50层，应继续观察卡面是否足够提醒这个条件。'],
+  },
   {
     version: '8.16', date: '2026-09-03', title: '每个人物都要面对双资源选择',
     summary: '游客、快递员与教练不再因耗电机会成本沦为华丽陷阱；能源现在有持续节能和短途回电两条路线，同时保留躁动与断电的夹击。',
@@ -309,6 +326,23 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.17', date: '2026-09-03', title: 'Stacking rules now match every card',
+    summary: 'Audited duplicate riders, fan-out control, cooperation, and conflict across all 21 riders. Red conflicts no longer add hidden agitation on odd floors; public rider values are unchanged.',
+    changes: [
+      'Each red adjacency conflict now adds 1 agitation only when the next destination floor is even, exactly as the cards state. Odd floors no longer settle hidden conflict agitation.',
+      'Green cooperation remains linear per link. Any green link still suppresses that rider’s red-link conflict layer, but never suppresses volatile, intrinsic, uncontrolled-Thief, or other rider-specific agitation.',
+      'Mechanics still save 2 power each. Controlled Apparitions, Courier recharge, Tourist profession cap, Coach multipliers, Nurse/Officer fan-out, and Mimic’s three distinct copied fields keep their existing values.',
+      'Added a repeatable full-roster stacking audit that records duplicate occupancy, cooperation coverage, exhaustive three-neighbor formations, random-trait distributions, and every core stacking curve.',
+    ],
+    experiments: [
+      'Ran 55,604 complete games and 306,663 controlled stacking and random-trait cases, including all 194,481 combinations of 21 center riders with three neighbors. Power and agitation forecast misses: zero.',
+      'For every rider, ran 600 normal, 600 favor, and 600 ban comparisons. Lover reached the highest favored duplicate-cabin rate at 25.2% but changed survival by −0.67 floors. No favored rider stack gained more than +1.09 floors, so no single duplicate strategy dominates.',
+      'A six-Lover cabin pays 176 coins when all arrive on the same floor; each Cooperation Contract level adds a linear 28 coins. Three Coaches move Tourist base fare 18→45, while Concierge tips still add only 3 per level and are never multiplied.',
+      'Rejected a 9,800-game Mechanic-save-1 variant: balanced floor-40 reach fell from about 69% to 56.5% and aggressive median to floor 10, while banning Mechanic still cost 11.43 floors. It increased power pressure without solving sustain dependence.',
+    ],
+    watch: ['Mechanic remains the universal sustain anchor, but favoring more copies adds only +1.09 floors, so its simple stack stays. Thief stacking works only with Officer/Counsel support; blind Thief favoring costs −4.50 floors, so keep watching whether the card communicates that condition strongly enough.'],
+  },
   {
     version: '8.16', date: '2026-09-03', title: 'Every rider now competes across two resources',
     summary: 'Tourist, Courier, and Coach no longer become ornate traps through power opportunity cost. Sustained savings and short-haul recharge now form two energy routes while agitation and power still squeeze different builds.',

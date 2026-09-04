@@ -38,4 +38,4 @@ for(let a=0;a<kinds.length;a++)for(let b=0;b<kinds.length;b++)for(let c=0;c<kind
  totalBonus+=actual;cases++;
 }
 
-console.log(JSON.stringify({version:'v8.16',cases,averageCompanionBonus:Math.round(totalBonus/cases*100)/100,hardStops:['游客不互刷','同职业不重复','每位游客最多+2/站','教练只翻倍基础车费'] }));
+console.log(JSON.stringify({version:'v8.17',cases,averageCompanionBonus:Math.round(totalBonus/cases*100)/100,hardStops:['游客不互刷','同职业不重复','每位游客最多+2/站','教练只翻倍基础车费'] }));

@@ -174,6 +174,9 @@ function simulate(style: Style, variant: Variant, runs: number, seedOffset = 0) 
   const boarded = makeCounter();
   const delivered = makeCounter();
   const riderFloors = makeCounter();
+  const multiCopyFloors = makeCounter();
+  const linkedRiderFloors = makeCounter();
+  const maxConcurrent = makeCounter();
   const floors: number[] = [];
   const deaths = { energy: 0, agitation: 0, fuse: 0, censored: 0 };
   let forcedTarget = 0;
@@ -213,7 +216,16 @@ function simulate(style: Style, variant: Variant, runs: number, seedOffset = 0) 
       for (const rider of choice.boarded) boarded[rider.kind] += 1;
       assert.ok(state.cabin.some(Boolean), 'policy must board at least one rider');
       const beforeById = new Map(state.cabin.flatMap(rider => rider ? [[rider.id, rider] as const] : []));
-      for (const rider of state.cabin) if (rider) riderFloors[rider.kind] += 1;
+      for (const kind of PASSENGER_ORDER) {
+        const copies = state.cabin.filter(rider => rider?.kind === kind).length;
+        if (copies >= 2) multiCopyFloors[kind] += 1;
+        maxConcurrent[kind] = Math.max(maxConcurrent[kind], copies);
+      }
+      state.cabin.forEach((rider, slot) => {
+        if (!rider) return;
+        riderFloors[rider.kind] += 1;
+        if (bondStatus(rider, state.cabin, slot).supportCount > 0) linkedRiderFloors[rider.kind] += 1;
+      });
       const pressure = stressForecast(state);
       const energy = energyForecast(state);
       const next = resolveFloor(state, rng);
@@ -256,6 +268,9 @@ function simulate(style: Style, variant: Variant, runs: number, seedOffset = 0) 
     boarded,
     delivered,
     riderFloors,
+    multiCopyFloors,
+    linkedRiderFloors,
+    maxConcurrent,
     forcedTarget,
     deaths,
     transitions,
@@ -278,6 +293,11 @@ const comparisons = selectedKinds.map((kind, index) => {
     offers: normal.offersSeen[kind],
     acceptPct: Math.round(accept * 1000) / 10,
     favoredAcceptPct: Math.round(favoredAccept * 1000) / 10,
+    normalMultiCopyPct: Math.round(normal.multiCopyFloors[kind] / normal.transitions * 1000) / 10,
+    favoredMultiCopyPct: Math.round(favor.multiCopyFloors[kind] / favor.transitions * 1000) / 10,
+    normalLinkedRiderPct: normal.riderFloors[kind] ? Math.round(normal.linkedRiderFloors[kind] / normal.riderFloors[kind] * 1000) / 10 : 0,
+    favoredLinkedRiderPct: favor.riderFloors[kind] ? Math.round(favor.linkedRiderFloors[kind] / favor.riderFloors[kind] * 1000) / 10 : 0,
+    maxFavoredConcurrent: favor.maxConcurrent[kind],
     completionPct: normal.boarded[kind] ? Math.round(normal.delivered[kind] / normal.boarded[kind] * 1000) / 10 : 0,
     meanNormal: normal.meanFloor,
     meanFavor: favor.meanFloor,
@@ -302,7 +322,7 @@ const alerts = comparisons.flatMap(row => {
 const totalForecastMisses=baselines.reduce((sum, row) => sum + row.forecastMisses, 0) + comparisons.reduce((sum, row) => sum + row.forecastMisses, 0);
 assert.equal(totalForecastMisses, 0, 'visible forecasts must contain every simulated outcome');
 console.log(JSON.stringify({
-  version: 'v8.16', seedBase, horizon, baselineRuns, variantRuns, totalGames, totalForecastMisses,
+  version: 'v8.17', seedBase, horizon, baselineRuns, variantRuns, totalGames, totalForecastMisses,
   forecastExamples: baselines.flatMap(row=>row.forecastExamples).slice(0,6),
   baselines: baselines.map(row => ({
     style: row.style, meanFloor: row.meanFloor, median: row.median, p10: row.p10, p90: row.p90,

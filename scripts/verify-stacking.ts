@@ -18,6 +18,8 @@ for(const kind of PASSENGER_ORDER){
   assert.equal(bondStatus(twoGreen[1]!,twoGreen,1).supportCount,2,`${kind}: every green neighbor must count`);
   assert.equal(bondStatus(twoRed[1]!,twoRed,1).conflictCount,2,`${kind}: every red neighbor must count`);
   assert.equal(bondStatus(protectedCabin[1]!,protectedCabin,1).conflictCount,0,`${kind}: a green link protects only the neighbor-conflict layer`);
+  assert.equal(riderAgitation(state({floor:1,cabin:twoRed}),1).fixed.find(line=>line.label==='邻座冲突')?.amount,2,`${kind}: red links stack on even destination floors`);
+  assert.equal(riderAgitation(state({floor:2,cabin:twoRed}),1).fixed.find(line=>line.label==='邻座冲突'),undefined,`${kind}: red links stay dormant on odd destination floors`);
   directedLinkChecks+=3;
 }
 
@@ -49,4 +51,4 @@ assert.equal(resolveFloor(controlledDrunks,()=>.9).lastEarnings.sources.find(lin
 const copied=[rider('commuter','a'),rider('mimic','copy'),rider('tourist','b'),null,rider('nurse','c'),null];
 assert.equal(riderProfile(copied[1]!,copied,1).copies.length,3,'mimic stacks one distinct copied field from every neighbor');
 
-console.log(JSON.stringify({version:'v8.16',passengers:PASSENGER_ORDER.length,directedLinkChecks,stackFamilies:8,hardStops:['节能不抵运转','控制状态不重复','同一复制字段不重复']}));
+console.log(JSON.stringify({version:'v8.17',passengers:PASSENGER_ORDER.length,directedLinkChecks,stackFamilies:8,hardStops:['节能不抵运转','控制状态不重复','同一复制字段不重复']}));

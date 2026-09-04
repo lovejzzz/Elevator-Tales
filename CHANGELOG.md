@@ -1,6 +1,17 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.16**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.17**.
+
+## v8.17 — 2026-09-03 — Stacking rules now match every card
+
+- Red adjacency conflicts now add 1 agitation only when the next floor is even. Odd floors no longer apply a hidden conflict penalty.
+- Public rider values are unchanged. Green links remain linear and suppress only that rider's generic red-link conflict layer, never intrinsic or volatile agitation.
+- Ran 55,604 complete games and 306,663 controlled stacking/trait cases, including all 194,481 center-rider plus three-neighbor formations. Forecast misses: zero.
+- For each of all 21 riders, ran 600 normal, 600 favor, and 600 ban comparisons. The highest duplicate rate was Lover at 25.2%, yet favoring it changed survival by −0.67 floors. No favored stack gained more than +1.09 floors.
+- Six Lovers arriving together pay 176 coins; each Cooperation Contract level adds exactly 28. Three Coaches scale Tourist fare 18→45, while Concierge tips remain unmultiplied at +3 per level.
+- One Nurse/Officer can affect up to three adjacent valid targets, but the benefit remains linear and is bounded by position and cabin capacity. Mimic copied fields remained distinct and evenly distributed across 12,000 samples.
+- Rejected Mechanic saving 1 after 9,800 games: balanced floor-40 reach fell from about 69% to 56.5%, aggressive median fell to floor 10, and sustain dependence remained.
+- Watch items: Mechanic remains the sustain anchor without a duplicate exploit; blind Thief stacking costs −4.50 floors unless Officer/Counsel support is built with it.
 
 ## v8.16 — 2026-09-03 — Every rider competes across two resources
 
