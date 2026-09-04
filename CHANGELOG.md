@@ -1,6 +1,16 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.26**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.27**.
+
+## v8.27 — 2026-09-04 — Wistful Static enters floors 01–10
+
+- Replaced the complete floors 01–10 track with the player-supplied Wistful Static. Theme, Shop, death, and every track from floor 11 onward remain unchanged.
+- Preserved the supplied 48 kHz stereo lossless WAV master. The web version is a 128 kbps MP3 calibrated to −18.0 LUFS with a −5.65 dBTP true peak.
+- Gave the replacement a new asset URL so returning browsers cannot keep serving the previous track from cache.
+- Floors 1–10 still share one loop and switch at floor 11; the post-120 shuffle automatically uses Wistful Static too.
+- Confirmed identical SHA-256 hashes for the supplied source and project master, then verified the 183.912-second web encode and all 15 music assets.
+- Added a routing regression that pins floors 1 and 10 to Wistful Static and floor 11 to the next track.
+- Watch item: perceived loudness and mood continuity between the replacement, the theme, and floors 11–20; tune transitions instead of shortening the track if needed.
 
 ## v8.26 — 2026-09-04 — Drag previews show only real links
 

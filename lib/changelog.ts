@@ -8,9 +8,23 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.26';
+export const GAME_VERSION = '8.27';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.27', date: '2026-09-04', title: '01–10层换成 Wistful Static',
+    summary: '玩家提供的 Wistful Static 现在是第1至10层的背景音乐，并使用新资源地址，避免浏览器缓存继续播放旧曲。',
+    changes: [
+      '用 Wistful Static 完整替换原01–10层曲目；主题、商店、失败以及11层之后的音乐保持不变。',
+      '保留48 kHz双声道无损WAV母带；线上版本编码为128 kbps MP3，并校准到−18.0 LUFS、真峰值−5.65 dBTP。',
+      '01–10层仍共用同一首循环曲目，跨越到11层时按原规则切换；121层后的随机曲库也自动使用这首新曲。',
+    ],
+    experiments: [
+      '核对源文件与项目母带SHA-256完全一致，并验证线上编码时长183.912秒、48 kHz、双声道与128 kbps。',
+      '新增选曲回归，明确第1层和第10层都指向 Wistful Static，第11层切换到下一曲；全部15个线上音乐文件仍可用。',
+    ],
+    watch: ['试听新曲与主题曲、11–20层曲目之间的主观响度和跨段氛围衔接；必要时只调整淡入淡出，不压缩曲目长度。'],
+  },
   {
     version: '8.26', date: '2026-09-04', title: '拖拽只预览真实连线',
     summary: '拖拽人物时，连线预览现在逐条判断；只有这次站位真正新增或改变的关系会发光，空站位之间不会再像全部建立了连接。',
@@ -484,6 +498,20 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.27', date: '2026-09-04', title: 'Wistful Static enters floors 01–10',
+    summary: 'The player-supplied Wistful Static is now the background track for floors 1 through 10, using a new asset URL so returning browsers cannot keep serving the previous track from cache.',
+    changes: [
+      'Replaced the complete floors 01–10 track with Wistful Static. Theme, Shop, death, and every track from floor 11 onward remain unchanged.',
+      'Preserved the 48 kHz stereo lossless WAV master. The web version is a 128 kbps MP3 calibrated to −18.0 LUFS with a −5.65 dBTP true peak.',
+      'Floors 01–10 still share one looping track and switch at floor 11 under the existing rules. The post-120 shuffle also uses the replacement automatically.',
+    ],
+    experiments: [
+      'Confirmed that the supplied source and project master have identical SHA-256 hashes, then verified the web encode at 183.912 seconds, 48 kHz, stereo, and 128 kbps.',
+      'Added a routing regression that pins floors 1 and 10 to Wistful Static and floor 11 to the next track. All 15 web music files remain available.',
+    ],
+    watch: ['Listen for perceived loudness and mood continuity between the new track, the theme, and floors 11–20. If needed, adjust only the transition rather than shortening the music.'],
+  },
   {
     version: '8.26', date: '2026-09-04', title: 'Drag previews show only real links',
     summary: 'Connection previews are now evaluated edge by edge. Only relationships created or changed by the prospective placement light up; empty positions no longer look connected to the entire cabin.',

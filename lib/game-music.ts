@@ -27,7 +27,7 @@ const publicBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 const publicAudio = (path: string) => `${publicBasePath}${path}`;
 
 export const FLOOR_MUSIC_TRACKS = [
-  publicAudio('/audio/music/floors-001-010.mp3'),
+  publicAudio('/audio/music/floors-001-010-wistful-static.mp3'),
   publicAudio('/audio/music/floors-011-020.mp3'),
   publicAudio('/audio/music/floors-021-030.mp3'),
   publicAudio('/audio/music/floors-031-040.mp3'),

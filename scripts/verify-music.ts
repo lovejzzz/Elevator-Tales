@@ -18,6 +18,7 @@ assert.equal(clampMusicVolume(1.0000246154), 1, 'floating-point fade overshoot m
 assert.equal(clampMusicVolume(0.16), 0.16);
 
 assert.equal(FLOOR_MUSIC_TRACKS.length, 12);
+assert.ok(FLOOR_MUSIC_TRACKS[0].endsWith('/floors-001-010-wistful-static.mp3'),'floors 1–10 use Wistful Static');
 assert.equal(floorMusicTrack(1), FLOOR_MUSIC_TRACKS[0]);
 assert.equal(floorMusicTrack(10), FLOOR_MUSIC_TRACKS[0]);
 assert.equal(floorMusicTrack(11), FLOOR_MUSIC_TRACKS[1]);
