@@ -8,9 +8,26 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.18';
+export const GAME_VERSION = '8.19';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.19', date: '2026-09-03', title: '旅伴成为真正可叠加的多人路线',
+    summary: '游客现在会把每一位相邻乘客都当作旅伴，包括另一位游客；收益与绿色连线逐人叠加，不再有 2 人上限。',
+    changes: [
+      '旅伴收益改为“每位相邻乘客：每站+1金币”；同职业与其他游客都会分别计数。',
+      '删除 2 人规则上限和“x/2”显示；单个站位的最多3位旅伴只来自六格轿厢的几何关系。',
+      '任意两名相邻游客现在会显示绿色旅伴连线；每一条有效旅伴关系都和卡面即时收益一致。',
+      '旅伴绿线只表示游客途中收益，不会暗中发放卡面没有写的通用到站协作奖励；教练仍只倍增基础车费。',
+    ],
+    experiments: [
+      '穷举21种中心人物与三名邻座的194,481种组合，并定向验证216种游客三邻座排列；0/1/2/3位旅伴稳定对应0/1/2/3金币，游客互邻连线与收益一致。',
+      '新规则运行27,000局完整程序测试，预测误差为0。同种子前后对照中，均衡打法平均生存42.67→42.78层，平均收入683.86→699.35，提升收益而没有拉高生存。',
+      '独立种子17,000局留出测试中，游客正常选择率44.7%，偏爱后58.9%；强制偏爱反而少生存0.46层，禁用只改变+0.16层，没有必选、无法替代或堆叠必胜警报。',
+      '六游客满舱共7条相邻边，中途收益上限为14金币/层；与六恋人的中途连线收益同量级，但没有恋人的到站车费倍增。',
+    ],
+    watch: ['观察真人是否会因为绿线更直观而更愿意组成多游客团；如果满舱旅游在实际操作中过度稳定，优先调整游客的路程或基础车费，不破坏逐人叠加。'],
+  },
   {
     version: '8.18', date: '2026-09-03', title: '炸弹风险改成一眼能懂的倒计时',
     summary: '所有玩家可见的“引信”统一改为“炸弹倒计时”，直接说明每层如何变化、何时失败以及警察怎样暂停它；玩法数值不变。',
@@ -341,6 +358,23 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.19', date: '2026-09-03', title: 'Companions become a real stackable group route',
+    summary: 'Tourists now treat every adjacent rider as a companion, including another Tourist. Income and green links stack per rider with no two-companion rules cap.',
+    changes: [
+      'Companion income is now “each adjacent rider: +1 coin per floor.” Duplicate professions and other Tourists each count separately.',
+      'Removed the two-companion rules cap and x/2 display. A position can still have at most three companions because of the six-position cabin geometry.',
+      'Any two adjacent Tourists now draw a green companion link. Every visible companion link matches the live per-floor income on the card.',
+      'A companion link represents Tourist floor income only. It does not secretly award the generic arrival cooperation bonus, and Coaches still multiply base fare only.',
+    ],
+    experiments: [
+      'Exhausted all 194,481 combinations of 21 center riders with three neighbors, plus 216 targeted three-neighbor Tourist arrangements. Zero, one, two, and three companions reliably pay zero, one, two, and three coins; Tourist-to-Tourist links and income agree.',
+      'Ran 27,000 complete games under the new rule with zero forecast misses. Same-seed before/after tests moved balanced mean survival only from 42.67 to 42.78 floors while mean income rose from 683.86 to 699.35, improving reward without increasing survival.',
+      'In a 17,000-game unseen-seed holdout, normal Tourist acceptance was 44.7% and favored acceptance 58.9%. Favoring Tourist changed survival by −0.46 floors, while banning it changed +0.16; no auto-pick, indispensable, or forced-stack alert fired.',
+      'A six-Tourist cabin has seven adjacency edges and therefore tops out at 14 companion coins per floor. That matches the per-floor edge scale of six Lovers but lacks their arrival-fare multiplication.',
+    ],
+    watch: ['Watch whether clearer green links make human players assemble Tourist groups more consistently. If full travel parties become too reliable, tune trip length or base fare before weakening the per-rider stacking rule.'],
+  },
   {
     version: '8.18', date: '2026-09-03', title: 'Bomb risk is now a readable countdown',
     summary: 'Every player-facing “fuse” is now a “Bomb timer,” with direct wording for its per-floor change, failure condition, and Officer pause. Gameplay values are unchanged.',

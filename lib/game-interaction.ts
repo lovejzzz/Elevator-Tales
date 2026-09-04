@@ -6,6 +6,10 @@ export function activeConnection(cabin: Array<Rider | null>, first: number, seco
   const a = cabin[first]; const b = cabin[second];
   if (!a || !b || !ADJACENT.some(([x,y])=>(x===first&&y===second)||(y===first&&x===second))) return false;
   if(a.kind==='mimic'||b.kind==='mimic')return true;
+  // A Tourist earns companion income from every occupied neighboring position.
+  // This is a visible positive link, but the separate bond system remains the
+  // sole source of generic cooperation arrival rewards.
+  if(a.kind==='tourist'||b.kind==='tourist')return true;
   if(riderProfile(a,cabin,first).bond.likes.includes(b.kind)||riderProfile(b,cabin,second).bond.likes.includes(a.kind))return true;
   const supports = (source: PassengerKind, target: PassengerKind, slot: number) => {
     if (source === 'lover') return target === 'lover';

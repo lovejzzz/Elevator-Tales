@@ -123,9 +123,19 @@ const touristCurve = [0, 1, 2, 3].map(count => {
   const cabin: Array<Rider | null> = [null, rider('tourist', 'tourist-target'), null, null, null, null];
   const kinds: PassengerKind[] = ['commuter', 'courier', 'mechanic'];
   neighborSlots.slice(0, count).forEach((slot, index) => { cabin[slot] = rider(kinds[index], `tourist-neighbor-${index}`); });
-  return { count, distinctCompanions: touristCompanionCount(cabin, 1) };
+  return { count, companions: touristCompanionCount(cabin, 1) };
 });
-assert.deepEqual(touristCurve.map(row => row.distinctCompanions), [0, 1, 2, 2]);
+assert.deepEqual(touristCurve.map(row => row.companions), [0, 1, 2, 3]);
+
+const touristCabinCurve = [1, 2, 3, 4, 5, 6].map(count => {
+  const best = subsets(count).map(mask => {
+    const cabin = Array.from({ length: 6 }, (_, slot) => mask & (1 << slot) ? rider('tourist', `tourist-${slot}`) : null);
+    const result = resolveFloor(state(cabin));
+    return { mask, companionCoins: sourceAmount(result, '游客旅伴') };
+  }).sort((a, b) => b.companionCoins - a.companionCoins)[0];
+  return { count, companionCoins: best.companionCoins };
+});
+assert.deepEqual(touristCabinCurve.map(row => row.companionCoins), [0, 2, 4, 8, 10, 14]);
 
 const calmerCurve = [0, 1, 2, 3].map(count => {
   const target = rider('shifter', 'agitated', { volatile: true, traits: { weight: 0, energy: 1, agitation: 1, fare: 38, bond: { likes: ['lawyer'], avoids: ['commuter'] }, revision: 0 } });
@@ -222,10 +232,10 @@ for (const center of PASSENGER_ORDER) for (const first of PASSENGER_ORDER) for (
 }
 
 console.log(JSON.stringify({
-  version: 'v8.18-stack-audit', starFormations, genericSupportCases: genericLinks.length,
+  version: 'v8.19-stack-audit', starFormations, genericSupportCases: genericLinks.length,
   genericConflictCases: genericConflicts.length, mechanicCurve, ghostCurve, courierCurve,
-  loverCurve, contractLoverCurve, coachCurve, conciergeCoachCurve, touristCurve, calmerCurve, nurseFanout, thiefFanout, copFanout,
+  loverCurve, contractLoverCurve, coachCurve, conciergeCoachCurve, touristCurve, touristCabinCurve, calmerCurve, nurseFanout, thiefFanout, copFanout,
   ghostDelayCurve, inspectorCurve, celebrityCurve, mimicSamples: 12_000,
   mimicFields, variableTraits, bestByCenter, topFormations,
-  hardStops: ['green rewards stay linear', 'red conflicts trigger only on even destination floors', 'savings never erase motor cost', 'Tourist caps at two professions', 'Mimic copies three distinct fields', 'support suppresses only the generic conflict layer'],
+  hardStops: ['green rewards stay linear', 'red conflicts trigger only on even destination floors', 'savings never erase motor cost', 'Tourist companions stack per occupied neighbor with no rules cap', 'Tourist visual links do not add generic arrival rewards', 'Mimic copies three distinct fields', 'support suppresses only the generic conflict layer'],
 }, null, 2));

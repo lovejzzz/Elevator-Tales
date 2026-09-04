@@ -45,9 +45,8 @@ export function shiftOutlook(floor: number, _occupied = 1, _restStops = 0) {
 export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);
 export const hasNeighbour = (cabin: Array<Rider | null>, slot: number, kinds: PassengerKind[]) => neighbours(slot).some((i) => cabin[i] && kinds.includes(cabin[i]!.kind));
 export const neighbourCount = (cabin: Array<Rider | null>, slot: number) => neighbours(slot).filter((i) => cabin[i]).length;
-export const TOURIST_COMPANION_CAP = 2;
-/** Distinct non-Tourist professions beside this Tourist, capped for balance. */
-export const touristCompanionCount = (cabin: Array<Rider | null>, slot: number) => Math.min(TOURIST_COMPANION_CAP, new Set(neighbours(slot).map((i) => cabin[i]?.kind).filter((kind): kind is PassengerKind => Boolean(kind) && kind !== 'tourist')).size);
+/** Every occupied neighboring position is one companion, including another Tourist. */
+export const touristCompanionCount = (cabin: Array<Rider | null>, slot: number) => neighbourCount(cabin, slot);
 export const totalWeight = profileWeight;
 function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
   const rider = state.cabin[slot], fixed: ChangeLine[] = [];

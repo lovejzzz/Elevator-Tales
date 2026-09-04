@@ -1,6 +1,17 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.18**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.19**.
+
+## v8.19 — 2026-09-03 — Companions become a real stackable group route
+
+- Every adjacent rider now gives a Tourist +1 coin per floor. Duplicate professions and other Tourists each count separately.
+- Removed the two-companion rules cap and `x/2` display. Cabin geometry naturally limits one position to at most three adjacent companions.
+- Any two adjacent Tourists now draw a green companion link. These visual companion links do not secretly grant the separate generic arrival cooperation reward.
+- Ran 27,000 complete games under the new rule, all 194,481 center-plus-three-neighbor formations, and 216 targeted Tourist arrangements with zero forecast misses.
+- Same-seed before/after tests moved balanced mean survival only 42.67→42.78 floors while mean income rose 683.86→699.35. The change adds payoff without creating a survival advantage.
+- In a 17,000-game unseen-seed holdout, Tourist acceptance was 44.7% normally and 58.9% when favored. Favoring it changed survival by −0.46 floors; banning it changed +0.16. No dominance or indispensability alert fired.
+- A full six-Tourist cabin tops out at 14 companion coins per floor across seven adjacency edges, matching six Lovers' per-floor edge scale without their arrival-fare multiplier.
+- Watch item: if human players make full travel parties too reliable, tune trip length or base fare before weakening the simple per-rider stacking rule.
 
 ## v8.18 — 2026-09-03 — Bomb risk is now a readable countdown
 

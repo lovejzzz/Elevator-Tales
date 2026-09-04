@@ -7,7 +7,7 @@ export const SHARED_SAVING_RULE = '维修工、受控幽灵和节能线路逐项
 // Cooperation conditions stay on the card face, including on phones.
 export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
   commuter: ['短途稳定，送达领取车费。'],
-  tourist: ['每种不同职业的相邻乘客：每层 +1 金币，最多 +2。', '相邻游客不计；同职业不重复。邻座变化时立即重新计算。'],
+  tourist: ['每位相邻乘客：每层 +1 金币，逐人叠加。', '包括其他游客；不设人数上限，由站位决定最大旅伴数。邻座变化时立即重新计算。'],
   courier: ['到站时补充1电，不超过电量上限。', '短途周转，快速送达赚取金币并换取续航。'],
   mechanic: [`每位维修工每层节能${MECHANIC_SAVING}电，多位逐个叠加。`, SHARED_SAVING_RULE],
   lover: ['每位恋人邻座：本人每层 +1 金币，到站基础车费 +100%；多位逐个叠加。', '没有恋人邻座：每层有 25% 概率呼唤另一位恋人候客。'],
@@ -40,7 +40,7 @@ export function passengerFace(rider: Rider, state: RunState) {
  const pressure=[profile.agitation||rider.volatile?`每站躁动 +${profile.agitation+(rider.volatile?1:0)}`:'自身躁动 +0'];
  let moneyNote='',special='';
  switch(rider.kind){
-  case 'tourist':moneyNote='每种不同职业邻座：每站+1币，最多+2';special='游客邻座不计；同职业不重复';break;
+  case 'tourist':moneyNote='每位相邻乘客：每站+1币，逐人叠加';special='包括其他游客；邻座变化即重算';break;
   case 'courier':special='到站补充1电（不超过上限）';break;
   case 'lover':moneyNote='每位邻座恋人：每站+1币，到站基价+100%';special='无恋人邻座：每站25%呼唤恋人';break;
   case 'thief':moneyNote='无警察/律师：每站+3；有则+1，到站再+5';pressure.splice(0,1,`每层 +1`,'挨警察或律师免除');break;
