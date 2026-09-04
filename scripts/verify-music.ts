@@ -3,6 +3,7 @@ import { existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
   disposeGameMusic,
+  clampMusicVolume,
   floorMusicTrack,
   FLOOR_MUSIC_TRACKS,
   MUSIC_TRACKS,
@@ -10,6 +11,10 @@ import {
   musicTrackForScene,
   setGameMusic,
 } from '../lib/game-music';
+
+assert.equal(clampMusicVolume(-0.0000246154), 0, 'floating-point fade undershoot must clamp to zero');
+assert.equal(clampMusicVolume(1.0000246154), 1, 'floating-point fade overshoot must clamp to one');
+assert.equal(clampMusicVolume(0.16), 0.16);
 
 assert.equal(FLOOR_MUSIC_TRACKS.length, 12);
 assert.equal(floorMusicTrack(1), FLOOR_MUSIC_TRACKS[0]);
@@ -124,5 +129,5 @@ try {
 }
 
 console.log(
-  'Music verified: 15 assets, floor bands 1–120, endless shuffle, scene switching, no same-band restart, and independent mute.',
+  'Music verified: 15 assets, floor bands 1–120, endless shuffle, scene switching, safe fade bounds, no same-band restart, and independent mute.',
 );

@@ -28,7 +28,9 @@ const stacked=state({cabin:[rider('commuter','hotter',{volatile:true}),rider('nu
 assert.equal(riderAgitation(stacked,0).low,0,'two adjacent calmers may stack without creating negative agitation');
 
 const twoArrivals=state({stress:4,cabin:[rider('commuter','a',{destination:2,volatile:true}),rider('courier','b',{destination:2,volatile:true}),null,null,null,null]});
-assert.equal(resolveFloor(twoArrivals,()=>.9).lastPressure.delta,1,'two risk points minus one cabin-wide arrival relief');
+assert.equal(resolveFloor(twoArrivals,()=>.9).lastPressure.delta,0,'each arrival relieves one risk point, capped at two per floor');
+const threeArrivals=state({stress:2,cabin:[rider('commuter','a',{destination:2,volatile:true}),rider('courier','b',{destination:2,volatile:true}),rider('lawyer','c',{destination:2,volatile:true}),null,null,null]});
+assert.equal(resolveFloor(threeArrivals,()=>.9).lastPressure.delta,1,'three arrivals still use the two-point floor cap');
 
 const offers39=makeOffers(39,initialRun().upgrades,false,rngFor(12));
 assert.equal(offers39.filter(r=>r.volatile).length>=1,true);
@@ -53,4 +55,4 @@ const ui=readFileSync(new URL('../components/elevator-game.tsx',import.meta.url)
 assert.ok(ui.includes('本班失败'));assert.ok(ui.includes('至少接1人'));assert.ok(!ui.includes('人物躁动 ×2'));assert.ok(!ui.includes('空驶休整'));
 assert.ok(ui.includes('energyPreview.lowDelta <= 0'),'fatal energy warning must use the worst-case forecast');
 assert.ok(ui.includes('positiveEnergySummary'),'arrival feedback must preserve positive recharge sources');
-console.log(JSON.stringify({version:'v8.20',transitions,threeValues:true,deterministicAgitation:true,mandatoryRider:true,courierRecharge:true}));
+console.log(JSON.stringify({version:'v8.22',transitions,threeValues:true,deterministicAgitation:true,mandatoryRider:true,courierRecharge:true,arrivalReliefCap:2}));

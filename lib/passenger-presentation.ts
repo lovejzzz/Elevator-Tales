@@ -11,12 +11,12 @@ export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
   courier: ['到站时补充2电，不超过电量上限。', '短途周转，快速送达赚取金币并换取续航。'],
   mechanic: [`每层节能${MECHANIC_SAVING}电，多位维修工逐个叠加。`, '本人耗2电；节能不能抵消电梯运转，也不会倒充电。'],
   lover: ['每位恋人邻座：本人每层 +1 金币，到站基础车费 +100%；多位逐个叠加。', '没有恋人邻座：每层有 25% 概率呼唤另一位恋人候客。'],
-  musician: ['每层抵消一名相邻乘客的 1 点躁动；多人可叠加，不会降成负数。', '同时安抚相邻的醉汉和儿童，阻止其人物躁动。'],
+  musician: ['所有相邻乘客：每人每层各抵消 2 点躁动；多人可叠加，不会降成负数。', '自身每层耗2电；同时安抚相邻的醉汉和儿童，阻止其人物躁动。'],
   thief: ['没有警察或律师邻座：每层 +4 金币、躁动 +1。', '有警察或律师邻座：改为每层 +1 金币，不再加压，到站车费 +5。'],
   cop: ['控制相邻的小偷，消除其加压效果。', '与炸弹客相邻期间：锁住炸弹倒计时。'],
   lawyer: ['控制相邻的小偷，消除其加压效果。不能暂停炸弹倒计时。'],
   drunk: ['没有音乐家或护士邻座：每层躁动 +1。', '有音乐家或护士邻座：不再加压，每层 +1 金币。'],
-  nurse: ['每层抵消一名相邻乘客的 1 点躁动；多人可叠加，不会降成负数。', '同时安抚相邻的醉汉和儿童，阻止其人物躁动。'],
+  nurse: ['所有相邻乘客：每人每层各抵消 1 点躁动；多人可叠加，不会降成负数。', '自身每层耗1电；同时安抚相邻的醉汉和儿童，阻止其人物躁动。'],
   child: ['没有恋人、音乐家或护士邻座：每层躁动 +1。', '与其中任一角色相邻，即可阻止这项躁动。'],
   ghost: ['没有驱魔师邻座：抵达 3、6、9… 层时，随机让一名邻座的目的地延后 1 层。', '有驱魔师邻座：不再延误邻座；每位受控幽灵每层节能2电，到站车费 +6。',SHARED_SAVING_RULE],
   exorcist: ['每位相邻幽灵分别受控：阻止延误、每层节能2电，幽灵到站车费 +6。',SHARED_SAVING_RULE],
@@ -47,8 +47,8 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'drunk':moneyNote='挨护士或音乐家：每站+1';pressure.splice(0,1,`每层 +1`,'挨护士或音乐家免除');break;
   case 'child':pressure.splice(0,1,`每层 +1`,'挨恋人/护士/音乐家免除');break;
   case 'celebrity':moneyNote='恰好1邻座：每站+3';pressure.splice(0,1,`2+邻座：每层 +1`);break;
-  case 'musician':pressure.splice(0,1,'每层抵消1名相邻乘客的1躁动');special='可堆叠；安抚相邻醉汉、儿童';break;
-  case 'nurse':pressure.splice(0,1,'每层抵消1名相邻乘客的1躁动');special='可堆叠；安抚相邻醉汉、儿童';break;
+  case 'musician':pressure.push('所有相邻乘客：每层各抵消2躁动');special='每层耗2电；安抚相邻醉汉、儿童';break;
+  case 'nurse':pressure.push('所有相邻乘客：每层各抵消1躁动');special='每层耗1电；安抚相邻醉汉、儿童';break;
   case 'mechanic':energy.push(`每层节能${MECHANIC_SAVING} · 可堆叠`);break;
   case 'ghost':special='无驱魔师：3的倍数层随机延误邻座1站；邻驱魔师：不延误且每站节能2';moneyNote='邻驱魔师：到站再+6币';break;
   case 'exorcist':special='邻幽灵：阻止延误，每站节能2';moneyNote='受控幽灵到站再+6币';break;

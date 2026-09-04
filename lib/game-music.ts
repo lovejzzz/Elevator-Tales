@@ -31,6 +31,9 @@ export const MUSIC_TRACKS = {
 const MUSIC_VOLUME = 0.16;
 const FADE_MS = 650;
 
+export const clampMusicVolume = (volume: number) =>
+  Math.min(1, Math.max(0, volume));
+
 export function floorMusicTrack(
   floor: number,
   random: () => number = Math.random,
@@ -90,14 +93,14 @@ function fade(
 ) {
   cancelFade();
   if (typeof requestAnimationFrame === 'undefined') {
-    player.volume = to;
+    player.volume = clampMusicVolume(to);
     done?.();
     return;
   }
   const started = performance.now();
   const tick = (now: number) => {
     const progress = Math.min(1, (now - started) / FADE_MS);
-    player.volume = from + (to - from) * progress;
+    player.volume = clampMusicVolume(from + (to - from) * progress);
     if (progress < 1) fadeFrame = requestAnimationFrame(tick);
     else {
       fadeFrame = null;

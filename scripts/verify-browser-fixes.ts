@@ -26,6 +26,11 @@ assert.equal(face.coins,6);assert.equal(face.tip,3);
 assert.match(passengerFace(lovers.cabin[0]!,lovers).moneyNote,/基价\+100%/);
 const coaches=state({cabin:[rider('coach','a',{destination:2}),rider('coach','b',{destination:2}),null,null,null,null]});
 assert.deepEqual(PASSENGERS.coach.trip,[3,6],'Coach uses the tested shorter trip window');
+assert.equal(PASSENGERS.coach.energy,1,'Coach must not remain a two-power survival trap');
+assert.deepEqual([PASSENGERS.musician.fare,PASSENGERS.musician.energy,PASSENGERS.musician.trip[0],PASSENGERS.musician.trip[1],PASSENGERS.musician.rarity],[14,2,2,5,4],'Musician is a rare, high-fare, short-burst control card');
+assert.deepEqual([PASSENGERS.nurse.fare,PASSENGERS.nurse.energy,PASSENGERS.nurse.rarity],[8,1,8],'Nurse remains the common lightweight control card');
+assert.ok(passengerFace(rider('musician'),state()).pressure.slice(1).some(line=>line.includes('所有相邻乘客')&&line.includes('抵消2躁动')),'Musician fan-out value stays visible on the card face');
+assert.ok(passengerFace(rider('nurse'),state()).pressure.slice(1).some(line=>line.includes('所有相邻乘客')&&line.includes('抵消1躁动')),'Nurse fan-out value stays visible on the card face');
 assert.equal(resolveFloor(coaches,()=>.9).coins,46,'coaches do not multiply one another');
 const coachFace=passengerFace(coaches.cabin[0]!,coaches);
 assert.match(coachFace.moneyNote,/每位相邻教练/);assert.match(coachFace.moneyNote,/基础车费\+50%/);assert.match(coachFace.moneyNote,/每邻座\+3/);
@@ -56,4 +61,4 @@ assert.deepEqual(sanitizeDiscoveredPassengers(null),[],'an old save does not unl
 assert.deepEqual(sanitizeDiscoveredPassengers(['lover','bogus','lover']),['lover'],'saved discoveries are validated and deduplicated');
 assert.deepEqual(addDiscoveredPassengers([],['lover','lover','courier']),['courier','lover'],'only passengers actually seen are collected');
 assert.equal(addDiscoveredPassengers(['courier','lover'],['thief']).length,3,'new encounters extend the archive');
-console.log(JSON.stringify({version:'v8.20',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:5,savingsCopy:true,archiveDiscovery:true}));
+console.log(JSON.stringify({version:'v8.22',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:5,savingsCopy:true,archiveDiscovery:true,distinctCalmers:true}));

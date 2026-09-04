@@ -1,4 +1,4 @@
-import { COURIER_ARRIVAL_CHARGE, SHOP_ENTRY_CHARGE, energyBreakdown, riderAgitation, hasNeighbour, neighbours, type RunState } from './game-engine';
+import { COURIER_ARRIVAL_CHARGE, SHOP_ENTRY_CHARGE, arrivalRelief, energyBreakdown, riderAgitation, hasNeighbour, neighbours, type RunState } from './game-engine';
 import { conflictLinks } from './rider-profile';
 
 export type StressForecast = {
@@ -42,8 +42,9 @@ export function stressForecast(state: RunState, _legacyWeight?: number): StressF
     return { arrivals: arriving.length };
   });
   const minArrivals = Math.min(...variants.map((variant) => variant.arrivals)); const maxArrivals = Math.max(...variants.map((variant) => variant.arrivals));
-  const arrivalReason = !maxArrivals ? '' : minArrivals === maxArrivals ? '到站舒缓 −1' : '可能到站舒缓 −1';
-  const lows = variants.map((variant) => Math.max(0, state.stress + passengerRise + redRise - (variant.arrivals ? 1 : 0)));
+  const minRelief = arrivalRelief(minArrivals); const maxRelief = arrivalRelief(maxArrivals);
+  const arrivalReason = !maxRelief ? '' : minRelief === maxRelief ? `到站舒缓 −${maxRelief}` : `可能到站舒缓 −${minRelief}–${maxRelief}`;
+  const lows = variants.map((variant) => Math.max(0, state.stress + passengerRise + redRise - arrivalRelief(variant.arrivals)));
   const highs = lows;
   const low = Math.min(...lows); const high = Math.max(...highs);
   const lowDelta = low - state.stress; const highDelta = high - state.stress;

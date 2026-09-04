@@ -8,9 +8,30 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.21';
+export const GAME_VERSION = '8.22';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.22', date: '2026-09-04', title: '每个邻座都是构筑的一部分',
+    summary: '相邻能力现在明确面向所有相邻人物并线性叠加；音乐家、护士、教练与小偷重新定位后，少载客不再是远远领先的唯一理性路线。',
+    changes: [
+      '音乐家成为稀有的短期控场核心：出现权重7→4、到站车费8→14、路程4–8→2–5、每层耗电1→2；位于中间位时，所有相邻乘客每人各抵消2躁动，多位音乐家继续逐人叠加。',
+      '护士改为常见的轻量控场：到站车费9→8、出现权重7→8、每层耗1电；所有相邻乘客每人各抵消1躁动。两个职业都能照顾多个邻座，但在稀有度、强度和耗电上有明确取舍。',
+      '教练每层耗电2→1，保留车费20、3–6层路程、每位相邻教练使基础车费+50%与本人到站每邻座+3金币。高价卡不再因持续占用2电成为隐性陷阱。',
+      '小偷路程3–7→2–6层，保留未受控时每层+4金币与+1躁动；现在是更短、更可管理的高风险窗口。',
+      '每位正常到站乘客让当层躁动−1，同层最多−2；这让多人周转获得可预测的小额回报，但不能无限清空躁动。',
+      '警察卡面同步明确：会同时控制所有相邻小偷，并分别锁住所有相邻炸弹客的倒计时，不存在隐藏的单目标上限。',
+      '修复音乐淡出最后一帧可能因浮点误差写入负音量、触发浏览器运行时错误的问题；现在音量始终限制在0–1。',
+    ],
+    experiments: [
+      '迭代阶段累计运行481,055局，筛选了到站舒缓、1币充电、护士全邻座、教练短程/倍率/耗电、初始46电、音乐家长短周期与小偷路程。否决1币充电、教练+100%倍率、初始46电和长途高耗电音乐家。',
+      '最终独立留出测试50,950局：均衡打法平均45.60层、中位46，94.52%到20层、79.12%到40层；失败中11.64%断电、88.24%躁动、0.12%炸弹倒计时。高风险打法则74.88%断电，两项资源会约束不同构筑。',
+      '节俭三人打法平均50.65层，与均衡打法的差距从基线约10层缩小到5.05层；协作打法平均43.58层，高风险打法25.59层。它们仍有不同风险曲线，但少载客已不再领先整整一个商店周期。',
+      '21种人物全部做正常/偏爱/禁用同种子对照：正常选取率18.0%–62.2%，没有弃牌、自动拿、不可替代或陷阱警报。音乐家39.9%选取，偏爱−1.26层；教练62.2%，偏爱−0.02层；小偷35.8%，偏爱−1.52层。因此本版不删除或新增人物，先用重做定位解决重叠与无分量问题。',
+      '穷举21种中心人物×三个邻座的194,481种排列，并跑过4,000条随机状态预测回归；所有相邻效果、红绿线、到站舒缓、电量与躁动预测误差为0。',
+    ],
+    watch: ['程序策略不等于真人最优解。真人试玩重点观察：中间位音乐家影响三人是否足够爽快；高耗电是否让它仍需要规划；三人节俭路线的5层优势是安全风格差异还是仍需继续缩小。'],
+  },
   {
     version: '8.21', date: '2026-09-04', title: '午夜班次有了完整配乐',
     summary: '主题、楼层、商店与失败画面现在各有对应音乐；1–120层按十层一段推进，超过120层后随机轮播此前的楼层音乐。音乐和操作音效可以分别开关。',
@@ -394,6 +415,27 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.22', date: '2026-09-04', title: 'Every neighbor becomes part of the build',
+    summary: 'Adjacency abilities now explicitly affect every adjacent rider and stack linearly. After redefining Musician, Nurse, Coach, and Thief, low-occupancy play is no longer the overwhelmingly dominant rational route.',
+    changes: [
+      'Musician becomes a rare short-term control centerpiece: appearance weight 7→4, arrival fare 8→14, trip 4–8→2–5, and power 1→2 per floor. From a center position it cancels 2 agitation from every adjacent rider; multiple Musicians stack per rider.',
+      'Nurse becomes common lightweight control: fare 9→8, appearance weight 7→8, and 1 power per floor. It cancels 1 agitation from every adjacent rider. Both roles fan out, but their rarity, strength, and power cost create distinct choices.',
+      'Coach power changes 2→1 while fare 20, trip 3–6, +50% base-fare bonus per adjacent Coach, and +3 coins per neighbor on its own arrival remain. The premium income card is no longer a hidden power trap.',
+      'Thief trip changes 3–7→2–6 while retaining +4 coins and +1 agitation per uncontrolled floor. Its risk now sits inside a shorter, more manageable window.',
+      'Each normal rider arrival reduces agitation by 1 that floor, capped at 2. Multi-rider turnover gains a predictable reward without allowing unlimited agitation clearing.',
+      'Officer copy now explicitly states that it controls every adjacent Thief and locks every adjacent Bomb Carrier timer, with no hidden single-target cap.',
+      'Fixed a browser runtime error where floating-point fade undershoot could assign a tiny negative music volume; volume is now always clamped to 0–1.',
+    ],
+    experiments: [
+      'Ran 481,055 iterative games covering arrival relief, one-coin charging, Nurse fan-out, Coach trip/multiplier/power, 46 starting power, long and short Musician cycles, and Thief trip length. Rejected one-coin charging, +100% Coach multipliers, 46 starting power, and the long high-power Musician.',
+      'Final independent holdout: 50,950 games. Balanced play averaged floor 45.60 with median 46; 94.52% reached floor 20 and 79.12% reached floor 40. Failures were 11.64% power, 88.24% agitation, and 0.12% Bomb timer. The risk style failed to power 74.88% of the time, so the two resources constrain different builds.',
+      'Three-rider frugal play averaged floor 50.65. Its lead over balanced play shrank from roughly 10 floors at baseline to 5.05; synergy averaged 43.58 and risk 25.59. The routes retain different risk curves without low occupancy leading by an entire shop cycle.',
+      'All 21 riders received same-seed normal/favor/ban comparisons. Normal acceptance spans 18.0%–62.2%, with no dead-card, auto-pick, indispensability, or trap alert. Musician accepts at 39.9% with −1.26 favored floors; Coach 62.2% with −0.02; Thief 35.8% with −1.52. No rider is removed or added in this release because clearer roles solved the overlap first.',
+      'Exhausted all 194,481 center-rider plus three-neighbor formations and ran 4,000 random forecast regressions. Adjacency fan-out, red/green links, arrival relief, power, and agitation all resolved with zero forecast misses.',
+    ],
+    watch: ['Program policies are not proof of optimal human play. Human testing should check whether a center-position Musician affecting three riders feels sufficiently exciting, whether its power cost still demands planning, and whether the remaining five-floor frugal advantage is healthy safety-style identity or needs further narrowing.'],
+  },
   {
     version: '8.21', date: '2026-09-04', title: 'A complete soundtrack for the midnight shift',
     summary: 'The title, floor bands, shop, and failure screen now have dedicated music. Floors 1–120 advance in ten-floor bands; after floor 120, earlier floor tracks shuffle. Music and interaction effects have separate controls.',

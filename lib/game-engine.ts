@@ -22,6 +22,7 @@ export const SHOP_ENTRY_CHARGE = 5;
 export const INITIAL_ENERGY = 50;
 export const ENERGY_CAPACITY = 60;
 export const AGITATION_CAPACITY = 6;
+export const ARRIVAL_RELIEF_CAP = 2;
 export const HIGH_RISK_BONUS = 8;
 export const HIGH_RISK_START = 30;
 export const OFFER_PRESSURE_STEP = 40;
@@ -30,6 +31,7 @@ export const initialRun = (): RunState => ({ floor: 1, restStops: 0, energy: INI
 export const nextShopFloor = (floor: number) => (Math.floor(floor / 10) + 1) * 10;
 export const difficultyTier = (floor: number) => Math.floor(Math.max(0, floor - 1) / 30);
 export const agitationThreshold = (cap: number) => Math.max(1, cap - 2);
+export const arrivalRelief = (arrivals: number) => Math.min(ARRIVAL_RELIEF_CAP, Math.max(0, arrivals));
 // Retained only for archived experiment callers. Patience no longer affects play.
 export const patienceCost = (_state: RunState) => 0;
 export const eventPressureMultiplier = (_state: Pick<RunState, 'stress' | 'stressCap'>) => 1;
@@ -70,12 +72,18 @@ function agitationBySlot(state: RunState) {
   const lines = state.cabin.map((_, slot) => rawRiderAgitation(state, slot).map(line => ({...line})));
   state.cabin.forEach((rider, calmerSlot) => {
     if (!rider || !['musician','nurse'].includes(rider.kind)) return;
-    const target = neighbours(calmerSlot)
+    const targets = neighbours(calmerSlot)
       .filter(slot => lines[slot].some(line => line.amount > 0))
-      .sort((a,b) => lines[b].reduce((sum,line)=>sum+line.amount,0)-lines[a].reduce((sum,line)=>sum+line.amount,0) || a-b)[0];
-    if (target === undefined) return;
-    const source = lines[target].find(line => line.amount > 0);
-    if (source) source.amount -= 1;
+      .sort((a,b) => lines[b].reduce((sum,line)=>sum+line.amount,0)-lines[a].reduce((sum,line)=>sum+line.amount,0) || a-b);
+    const treated = targets;
+    treated.forEach(target => {
+      let remaining = rider.kind === 'musician' ? 2 : 1;
+      lines[target].forEach(source => {
+        const reduction = Math.min(remaining, source.amount);
+        source.amount -= reduction;
+        remaining -= reduction;
+      });
+    });
   });
   return lines.map(fixed => fixed.filter(line => line.amount > 0));
 }
@@ -249,7 +257,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   if(redCoinLoss)addCoins('红线金币损失',-redCoinLoss);
   // Arriving on the same floor as fuse expiry is still safe.
   const bombFailed = cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0);
-  if (arrivals) adjustPressure('乘客到站舒缓', -1);
+  const relieved = arrivalRelief(arrivals);
+  if (relieved) adjustPressure('乘客到站舒缓', -relieved);
   if(checkpoint&&energy<state.energyCap)adjustEnergy('抵达商店补电',Math.min(SHOP_ENTRY_CHARGE,state.energyCap-energy));
   if (energy > state.energyCap) adjustEnergy('超额回充未储存', state.energyCap - energy);
   energy = Math.min(state.energyCap, energy); stress = Math.max(0, stress);

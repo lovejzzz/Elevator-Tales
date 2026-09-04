@@ -73,7 +73,7 @@ const mechanicCurve = [0, 1, 2, 3].map(count => {
   const run = state(cabin); const energy = energyBreakdown(run);
   return { count, people: energy.people, saved: energy.saved, total: energy.total };
 });
-assert.deepEqual(mechanicCurve.map(row => row.total), [7, 7, 7, 7]);
+assert.deepEqual(mechanicCurve.map(row => row.total), [4, 4, 4, 4]);
 
 const ghostCurve = [0, 1, 2, 3].map(count => {
   const cabin: Array<Rider | null> = [null, rider('exorcist', 'warden'), null, rider('coach', 'load-a'), null, rider('coach', 'load-b')];
@@ -81,7 +81,7 @@ const ghostCurve = [0, 1, 2, 3].map(count => {
   const run = state(cabin); const energy = energyBreakdown(run);
   return { count, people: energy.people, saved: energy.saved, total: energy.total };
 });
-assert.deepEqual(ghostCurve.map(row => row.saved), [0, 2, 4, 5]);
+assert.deepEqual(ghostCurve.map(row => row.saved), [0, 2, 3, 3]);
 
 const courierCurve = [1, 2, 3].map(count => {
   const cabin: Array<Rider | null> = Array(6).fill(null);
@@ -233,10 +233,10 @@ for (const center of PASSENGER_ORDER) for (const first of PASSENGER_ORDER) for (
 }
 
 console.log(JSON.stringify({
-  version: 'v8.20-stack-audit', starFormations, genericSupportCases: genericLinks.length,
+  version: 'v8.22-stack-audit', starFormations, genericSupportCases: genericLinks.length,
   genericConflictCases: genericConflicts.length, mechanicCurve, ghostCurve, courierCurve,
   loverCurve, contractLoverCurve, coachCurve, conciergeCoachCurve, touristCurve, touristCabinCurve, calmerCurve, nurseFanout, thiefFanout, copFanout,
   ghostDelayCurve, inspectorCurve, celebrityCurve, mimicSamples: 12_000,
   mimicFields, variableTraits, bestByCenter, topFormations,
-  hardStops: ['green rewards stay linear', 'red conflicts resolve every floor', 'green and red links resolve independently', 'savings never erase motor cost', 'Officer locks every adjacent Bomb timer without an odd/even gate', 'Tourist companions stack per occupied neighbor with no rules cap', 'Tourist visual links do not add generic arrival rewards', 'Mimic copies three distinct fields'],
+  hardStops: ['green rewards stay linear', 'red conflicts resolve every floor', 'green and red links resolve independently', 'savings never erase motor cost', 'Musician and Nurse affect every adjacent rider', 'Officer locks every adjacent Bomb timer without an odd/even gate', 'Tourist companions stack per occupied neighbor with no rules cap', 'Tourist visual links do not add generic arrival rewards', 'Mimic copies three distinct fields'],
 }, null, 2));

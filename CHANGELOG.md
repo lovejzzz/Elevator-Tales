@@ -1,6 +1,21 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.21**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.22**.
+
+## v8.22 — 2026-09-04 — Every neighbor becomes part of the build
+
+- Adjacency abilities now explicitly affect every adjacent rider and stack linearly, with no hidden single-target cap.
+- Musician is now a rare short-term control centerpiece: appearance weight 7→4, fare 8→14, trip 4–8→2–5, power 1→2, and every adjacent rider cancels 2 agitation per floor.
+- Nurse is now common lightweight control: fare 9→8, appearance weight 7→8, power 1, and every adjacent rider cancels 1 agitation per floor.
+- Coach power changes 2→1 while fare 20, trip 3–6, and all linear neighbor bonuses remain. Thief trip changes 3–7→2–6 while its uncontrolled +4 coins/+1 agitation per floor remains.
+- Each normal arrival reduces agitation by 1 that floor, capped at 2, rewarding multi-rider turnover without unlimited clearing.
+- Officer copy now explicitly states that every adjacent Thief is controlled and every adjacent Bomb Carrier timer is locked.
+- Fixed a browser runtime error where a music fade could undershoot zero by a tiny floating-point amount; fade volume is now clamped to 0–1.
+- Ran 481,055 iterative games. Rejected one-coin charging, +100% Coach multipliers, 46 starting power, and a long high-power Musician.
+- Final unseen-seed holdout: 50,950 games. Balanced play averaged floor 45.60 (median 46), reached floor 20 in 94.52% and floor 40 in 79.12%; failures were 11.64% power, 88.24% agitation, and 0.12% Bomb timer. Risk play failed to power 74.88% of the time.
+- Frugal play's baseline lead shrank from roughly 10 floors to 5.05. All 21 riders passed normal/favor/ban checks; acceptance spans 18.0%–62.2%, with no dead-card, auto-pick, indispensability, or trap alert.
+- Exhausted 194,481 center-plus-three-neighbor formations and 4,000 random forecast transitions with zero prediction misses.
+- Watch items: whether center-position Musician fan-out feels exciting enough, whether its 2-power cost remains legible, and whether the remaining five-floor frugal advantage is healthy style identity.
 
 ## v8.21 — 2026-09-04 — A complete soundtrack for the midnight shift
 
