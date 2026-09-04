@@ -1,6 +1,16 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.27**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.28**.
+
+## v8.28 — 2026-09-04 — Tourists explicitly accept any neighbor
+
+- Changed the Tourist card’s green target from “Any rider” to “Any neighbor,” expressing the rule through the player’s placement action.
+- The in-cabin state now reads “Any neighbor ×count · +coins/floor”; with no neighbor it shows “Any neighbor · +1 coin/floor.”
+- Detail copy now says “Any adjacent rider,” consistently in English and Chinese.
+- This makes clear that the green line from a Lover is the Tourist’s one-way companion benefit; the Lover is still unpaired.
+- Tourist income, Lover pairing, green-link resolution, and all balance values are unchanged.
+- Added Tourist-card and dynamic-localization regressions, then reran the complete gameplay, music, localization, changelog, and production-build checks.
+- Watch item: if players still mistake the companion line for a Lover pairing, add a dedicated companion icon rather than more text.
 
 ## v8.27 — 2026-09-04 — Wistful Static enters floors 01–10
 

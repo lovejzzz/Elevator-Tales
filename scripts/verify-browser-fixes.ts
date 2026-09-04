@@ -79,6 +79,7 @@ assert.doesNotMatch(JSON.stringify(officerSections),/收益 \+1\/层/,'the ambig
 const thiefRed=passengerCardSections(rider('thief'),state()).red;
 assert.ok(thiefRed.some(section=>section.targets?.includes('inspector')&&section.targets.includes('ghost')),'identical Thief coin-loss neighbors share one row');
 assert.equal(passengerCardSections(rider('musician'),state()).green[0].effects[0].text,'每人 −2/层','Musician fan-out stays concise and exact');
+assert.equal(passengerCardSections(rider('tourist'),state()).green[0].targetLabel,'任何邻座','Tourist card explicitly says that any neighbor counts');
 const component=fs.readFileSync('components/elevator-game.tsx','utf8');
 const stylesheet=fs.readFileSync('app/globals.css','utf8');
 assert.match(component,/compactAgitationValue/,'cabin agitation uses a compact numeric value');

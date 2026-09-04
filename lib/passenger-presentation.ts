@@ -7,7 +7,7 @@ export const SHARED_SAVING_RULE = '维修工、受控幽灵和节能线路逐项
 // Cooperation conditions stay on the card face, including on phones.
 export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
   commuter: ['短途稳定，送达领取车费。'],
-  tourist: ['每位相邻乘客：每层 +1 金币，逐人叠加。', '包括其他游客；不设人数上限，由站位决定最大旅伴数。邻座变化时立即重新计算。'],
+  tourist: ['任何相邻乘客：每层 +1 金币，逐人叠加。', '包括其他游客；不设人数上限，由站位决定最大旅伴数。邻座变化时立即重新计算。'],
   courier: ['到站时补充2电，不超过电量上限。', '短途周转，快速送达赚取金币并换取续航。'],
   mechanic: [`每层节能${MECHANIC_SAVING}电，多位维修工逐个叠加。`, '本人耗2电；节能不能抵消电梯运转，也不会倒充电。'],
   lover: ['每位恋人邻座：本人每层 +1 金币，到站基础车费 +100%；多位逐个叠加。', '没有恋人邻座：每层有 25% 概率呼唤另一位恋人候客。'],
@@ -40,7 +40,7 @@ export function passengerFace(rider: Rider, state: RunState) {
  const pressure=[profile.agitation||rider.volatile?`每站躁动 +${profile.agitation+(rider.volatile?1:0)}`:'自身躁动 +0'];
  let moneyNote='',special='';
  switch(rider.kind){
-  case 'tourist':moneyNote='每位相邻乘客：每站+1币，逐人叠加';special='包括其他游客；邻座变化即重算';break;
+  case 'tourist':moneyNote='任何相邻乘客：每站+1币，逐人叠加';special='包括其他游客；邻座变化即重算';break;
   case 'courier':special='到站补充2电（不超过上限）';break;
   case 'lover':moneyNote='每位邻座恋人：每站+1币，到站基价+100%';special='无恋人邻座：每站25%呼唤恋人';break;
   case 'thief':moneyNote='无警察/律师：每站+4；有则+1，到站再+5';pressure.splice(0,1,`每层 +1`,'挨警察或律师免除');break;
@@ -79,7 +79,7 @@ export type PassengerCardEffect = {
 
 export type PassengerCardRelation = {
  targets?: PassengerKind[];
- targetLabel?: '任意人物' | '任意非教练';
+ targetLabel?: '任何邻座' | '任意人物' | '任意非教练';
  effects: PassengerCardEffect[];
 };
 
@@ -118,7 +118,7 @@ export function passengerCardSections(
    self.push(effect('neutral','单独时：25% 呼唤恋人'));
    addGreen(['lover'],[effect('coins','每上1层立即 +1/人'),effect('coins','到站基价 +100%/人')]);
    break;
-  case 'tourist':addGreen(null,[effect('coins','每上1层立即 +1/人')],'任意人物');break;
+  case 'tourist':addGreen(null,[effect('coins','每上1层立即 +1/人')],'任何邻座');break;
   case 'musician':addGreen(null,[effect('agitation','每人 −2/层')],'任意人物');break;
   case 'thief':
    self.push(effect('coins','未受控：每上1层立即 +4'),effect('agitation','未受控：每上1层 +1躁动'));

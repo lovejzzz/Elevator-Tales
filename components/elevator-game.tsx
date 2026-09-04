@@ -114,7 +114,7 @@ function riderState(cabin: Array<Rider | null>, slot: number, totalEnergy: numbe
   if(rider.kind==='shifter')return {label:`耗电 ${bond.energy} · 躁动 +${bond.agitation}`,tone:'warn'};
   if(rider.kind==='mimic')return {label:`复制 ${bond.copies.length} 项`,tone:bond.copies.length?'active':'neutral'};
   switch (rider.kind) {
-    case 'tourist': { const count=touristCompanionCount(cabin,slot); return count ? { label: `旅伴 ${count} · 每站 +${count}币`, tone: 'active' } : { label: '每位邻座 +1币/站', tone: 'neutral' }; }
+    case 'tourist': { const count=touristCompanionCount(cabin,slot); return count ? { label: `任何邻座 ×${count} · +${count}币/层`, tone: 'active' } : { label: '任何邻座 · +1币/层', tone: 'neutral' }; }
     case 'courier': return { label: '到站补充2电', tone: 'active' };
     case 'lover': return hasNeighbour(cabin, slot, ['lover']) ? { label: '已配对', tone: 'active' } : { label: '正在呼唤同伴', tone: 'neutral' };
     case 'thief': return hasNeighbour(cabin, slot, ['cop', 'lawyer']) ? { label: '已受控制', tone: 'active' } : { label: '未受控制', tone: 'warn' };

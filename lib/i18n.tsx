@@ -12,7 +12,7 @@ const exactPairs: Array<[string, string]> = [
 
   // Compact candidate-card grammar.
   ['绿色邻座', 'GREEN NEIGHBORS'], ['红色邻座', 'RED NEIGHBORS'],
-  ['任意人物', 'Any rider'], ['任意非教练', 'Any non-Coach'],
+  ['任何邻座', 'Any neighbor'], ['任意人物', 'Any rider'], ['任意非教练', 'Any non-Coach'],
   ['到站 +2', 'Arrival +2'], ['节能 2/层', 'Save 2/floor'],
   ['单独时：25% 呼唤恋人', 'Alone: 25% chance to call a Lover'],
   ['每人 +1/层 · 基础车费 +100%', 'Each +1/floor · base fare +100%'],
@@ -81,9 +81,9 @@ const exactPairs: Array<[string, string]> = [
   ['自身每层耗2电；同时安抚相邻的醉汉和儿童，阻止其人物躁动。', 'Costs 2 power per floor. Also calms adjacent Drunks and Children, preventing their rider agitation.'],
   ['所有相邻乘客：每人每层各抵消 1 点躁动；多人可叠加，不会降成负数。', 'All adjacent riders cancel 1 agitation each per floor. Multiple Nurses stack without reducing agitation below zero.'],
   ['自身每层耗1电；同时安抚相邻的醉汉和儿童，阻止其人物躁动。', 'Costs 1 power per floor. Also calms adjacent Drunks and Children, preventing their rider agitation.'],
-  ['每位相邻乘客：每站+1币，逐人叠加', 'Each adjacent rider: +1 coin/floor, stacking per rider'],
-  ['基础车费18。每位相邻乘客都让游客每层多赚1金币，包括其他游客；不设人数上限，由站位决定最大3位。邻座变化时立即重新计算。', 'Base fare: 18. Every adjacent rider earns the Tourist +1 coin per floor, including other Tourists. There is no rules cap; cabin positions naturally allow up to three companions. The bonus updates immediately when neighbors change.'],
-  ['每位相邻乘客：每层 +1 金币，逐人叠加。', 'Each adjacent rider: +1 coin per floor, stacking per rider.'],
+  ['任何相邻乘客：每站+1币，逐人叠加', 'Any adjacent rider: +1 coin/floor, stacking per rider'],
+  ['基础车费18。任何相邻乘客都让游客每层多赚1金币，包括其他游客；不设人数上限，由站位决定最大3位。邻座变化时立即重新计算。', 'Base fare: 18. Any adjacent rider earns the Tourist +1 coin per floor, including other Tourists. There is no rules cap; cabin positions naturally allow up to three companions. The bonus updates immediately when neighbors change.'],
+  ['任何相邻乘客：每层 +1 金币，逐人叠加。', 'Any adjacent rider: +1 coin per floor, stacking per rider.'],
   ['包括其他游客；不设人数上限，由站位决定最大旅伴数。邻座变化时立即重新计算。', 'Includes other Tourists. There is no rules cap; cabin positions determine the maximum companion count. The bonus updates immediately when neighbors change.'],
   ['包括其他游客；邻座变化即重算', 'Includes other Tourists; updates when neighbors change'],
   ['到站补充2电 · 短途周转', 'Recharge 2 power on arrival · quick turnover'],
@@ -353,7 +353,7 @@ const exactPairs: Array<[string, string]> = [
   ['自身躁动', 'personal agitation'], ['邻座冲突', 'neighbor conflict'], ['已配对', 'Paired'], ['正在呼唤同伴', 'Calling a partner'],
   ['已受控制', 'Controlled'], ['未受控制', 'Uncontrolled'], ['正在控制', 'Controlling'], ['已被安抚', 'Calmed'], ['不稳定', 'Unstable'],
   ['有人照顾', 'Cared for'], ['无人照顾', 'Unattended'], ['已被镇压', 'Suppressed'], ['正在作祟', 'Haunting'], ['正在驱魔', 'Exorcising'],
-  ['每位邻座 +1币/站', 'Each neighbor +1 coin/floor'], ['旅伴 ', 'Companions '],
+  ['任何邻座 · +1币/层', 'Any neighbor · +1 coin/floor'], ['旅伴 ', 'Companions '],
   ['旅伴加成', 'Companion bonus'],
   ['游客旅伴', 'Tourist companions'],
   ['等待邻座', 'Waiting for a neighbor'], ['状态最佳', 'Ideal position'], ['被围住', 'Surrounded'], ['缺少关注', 'Needs attention'], ['正在演奏', 'Performing'], ['正在安抚', 'Calming'],
@@ -491,7 +491,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/本人到站 −(\d+)\/人/gu, 'Own arrival −$1/person')
     .replace(/距商店 (\d+) 层/gu, 'Shop in $1 floors')
     .replace(/查看已装升级，共 (\d+) 次/gu, 'View installed upgrades: $1')
-    .replace(/旅伴 (\d+) · 每站 \+(\d+)币/gu, 'Companions $1 · +$2 coins/floor')
+    .replace(/任何邻座 ×(\d+) · \+(\d+)币\/层/gu, 'Any neighbor ×$1 · +$2 coins/floor')
     .replace(/每邻(.+?)：每层 \+(\d+) 躁动/gu, 'Each adjacent $1: +$2 agitation/floor')
     .replace(/(\d+)号位/gu, '$1 position')
     .replace(/每邻(.+?)：偶数层 \+(\d+) 躁动/gu, 'Each adjacent $1: +$2 agitation on even floors')

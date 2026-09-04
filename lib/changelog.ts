@@ -8,9 +8,24 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.27';
+export const GAME_VERSION = '8.28';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.28', date: '2026-09-04', title: '游客明确接受任何邻座',
+    summary: '游客卡现在直接写“任何邻座”，明确恋人、游客或其他人物都能成为旅伴；绿线来自游客的单向收益，并不代表恋人已经配对。',
+    changes: [
+      '游客候客卡的绿色对象从泛化的“任意人物”改为“任何邻座”，把触发条件直接写成玩家的唯一操作：摆在旁边。',
+      '车厢内游客状态改为“任何邻座 ×人数 · +金币/层”；没有邻座时也保留“任何邻座 · +1币/层”的规则提示。',
+      '详情说明同步改为“任何相邻乘客”，中英文候客卡、车厢状态与详情卡使用同一含义。',
+      '游客收益、恋人配对、绿色连线及所有平衡参数均未改变。',
+    ],
+    experiments: [
+      '新增游客卡回归，要求绿色对象必须明确为“任何邻座”；英文动态状态验证为“Any neighbor ×N”。',
+      '重新运行完整人物、叠加、红线、预测、音乐、更新记录、中英文与生产构建验证。',
+    ],
+    watch: ['观察玩家是否仍会把游客的单向旅伴绿线误认为恋人配对；若仍混淆，再为旅伴线增加专属小图标，而不是继续加长文字。'],
+  },
   {
     version: '8.27', date: '2026-09-04', title: '01–10层换成 Wistful Static',
     summary: '玩家提供的 Wistful Static 现在是第1至10层的背景音乐，并使用新资源地址，避免浏览器缓存继续播放旧曲。',
@@ -498,6 +513,21 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.28', date: '2026-09-04', title: 'Tourists explicitly accept any neighbor',
+    summary: 'Tourist cards now say “Any neighbor,” making it explicit that a Lover, Tourist, or any other rider can become a companion. The green line comes from the Tourist’s one-way benefit and does not mean that a Lover is paired.',
+    changes: [
+      'Changed the Tourist card’s green target from the generic “Any rider” to “Any neighbor,” stating the trigger through the player’s only action: placing someone beside the Tourist.',
+      'The in-cabin Tourist state now reads “Any neighbor ×count · +coins/floor.” With no neighbor, it retains the rule prompt “Any neighbor · +1 coin/floor.”',
+      'Detail copy now uses “Any adjacent rider,” keeping the same meaning across English and Chinese candidate cards, cabin states, and details.',
+      'Tourist income, Lover pairing, green-link resolution, and all balance values are unchanged.',
+    ],
+    experiments: [
+      'Added a Tourist-card regression requiring the green target to say “Any neighbor,” plus English coverage for the dynamic “Any neighbor ×N” cabin state.',
+      'Reran the complete rider, stacking, red-link, forecast, music, changelog, localization, and production-build checks.',
+    ],
+    watch: ['Watch whether players still mistake a Tourist’s one-way companion line for a Lover pairing. If so, add a dedicated companion icon instead of lengthening the copy again.'],
+  },
   {
     version: '8.27', date: '2026-09-04', title: 'Wistful Static enters floors 01–10',
     summary: 'The player-supplied Wistful Static is now the background track for floors 1 through 10, using a new asset URL so returning browsers cannot keep serving the previous track from cache.',
