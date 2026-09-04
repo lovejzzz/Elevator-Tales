@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { initialRun, resolveFloor, energySavings, riderAgitation, type Rider, type RunState } from '../lib/game-engine';
 import { PASSENGERS, PASSENGER_ORDER, passengerCardGrade } from '../lib/game-data';
 import { passengerBrief, passengerCardSections, passengerFace, SHARED_SAVING_RULE } from '../lib/passenger-presentation';
@@ -77,4 +78,10 @@ assert.doesNotMatch(JSON.stringify(officerSections),/收益 \+1\/层/,'the ambig
 const thiefRed=passengerCardSections(rider('thief'),state()).red;
 assert.ok(thiefRed.some(section=>section.targets?.includes('inspector')&&section.targets.includes('ghost')),'identical Thief coin-loss neighbors share one row');
 assert.equal(passengerCardSections(rider('musician'),state()).green[0].effects[0].text,'每人 −2/层','Musician fan-out stays concise and exact');
-console.log(JSON.stringify({version:'v8.24',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:5,savingsCopy:true,archiveDiscovery:true,distinctCalmers:true,threePartCards:PASSENGER_ORDER.length}));
+const component=fs.readFileSync('components/elevator-game.tsx','utf8');
+const stylesheet=fs.readFileSync('app/globals.css','utf8');
+assert.match(component,/compactAgitationValue/,'cabin agitation uses a compact numeric value');
+assert.doesNotMatch(component,/seat-energy[^\n]+seatBrief\.energy\}\/站/,'cabin power does not repeat a unit inside the narrow metric strip');
+assert.doesNotMatch(stylesheet,/new-rider-ring|newly-boarded \.seat-art::after/,'current-floor cards use their edge instead of a portrait ring');
+assert.match(stylesheet,/grid-template-rows:auto auto minmax\(0,1fr\) auto auto/,'cabin facts own separate layout rows');
+console.log(JSON.stringify({version:'v8.25',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:5,savingsCopy:true,archiveDiscovery:true,distinctCalmers:true,threePartCards:PASSENGER_ORDER.length,cabinCardRows:5,portraitRing:false}));

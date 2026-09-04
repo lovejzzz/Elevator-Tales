@@ -1,6 +1,17 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.24**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.25**.
+
+## v8.25 — 2026-09-04 — Cabin cards stop colliding
+
+- Rebuilt cabin rider cards as five bounded rows: name, floors remaining, portrait, current state, and the three-value strip.
+- Restricted the portrait to the card's remaining middle space so it cannot push status or values outside their rows.
+- Reduced the bottom strip to icons plus compact values such as `14`, `2`, and `0`; full coin, power, and agitation meanings remain in tooltips and accessible labels.
+- Removed the gold portrait circle from riders boarded on the current floor. The gold card border and subtle glow now communicate that state alone.
+- Long names and two-line states stay inside the card instead of colliding with the detail button or metric strip.
+- No rider values, resource resolution, offer weights, or difficulty curves changed.
+- Added layout-source regressions and reran the complete gameplay, localization, music, changelog, and production-build checks.
+- Watch item: the densest long-name, Bomb-timer, and High-Risk combination; shorten state copy before reducing portrait size again.
 
 ## v8.24 — 2026-09-04 — Temporary cover, no end in sight
 

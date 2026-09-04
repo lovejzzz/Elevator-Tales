@@ -8,9 +8,25 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.24';
+export const GAME_VERSION = '8.25';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.25', date: '2026-09-04', title: '车厢卡不再互相压住',
+    summary: '车厢人物卡重新划分姓名、站数、肖像、状态与数值的空间；窄卡只显示图标和数字，信息不会再跨栏重叠。',
+    changes: [
+      '车厢卡改成五段式布局：姓名、剩余站数、肖像、人物状态、三项数值各占自己的行，肖像只能使用中间剩余空间。',
+      '底部参数保留金币、电量、躁动三个图标，但移除“/层”“不变”等重复文字，改为14、2、0式紧凑数字；完整含义仍保留在悬停说明和辅助功能标签中。',
+      '本层刚上车不再在人物肖像上画金色圆圈，只用整张站位卡的金色边框和轻微光晕表达。',
+      '长英文姓名和两行状态会在卡片内部自适应字号与宽度，不再与详情按钮或底部参数重叠。',
+      '本版未改动任何人物数值、资源结算、掉落权重或难度曲线。',
+    ],
+    experiments: [
+      '新增车厢卡结构回归：三项参数必须保持纯数字紧凑格式，姓名和状态必须被限制在卡片内部，本层标记不能再生成肖像圆圈。',
+      '重新运行全部人物、叠加、红线、预测、音乐、更新记录和中英文本地化验证，并完成生产构建。',
+    ],
+    watch: ['继续观察最长英文姓名、炸弹倒计时和高危标记同时出现时的密度；如果仍显拥挤，优先缩短状态文案，不再缩小人物肖像。'],
+  },
   {
     version: '8.24', date: '2026-09-04', title: '临时顶班，没有尽头',
     summary: '玩家现在是被临时派往古怪大楼的电梯操作员。开场立即说清这是一场没有最后一层的生存夜班：守住两项资源，尽可能活久一点。',
@@ -454,6 +470,22 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.25', date: '2026-09-04', title: 'Cabin cards stop colliding',
+    summary: 'Cabin rider cards now reserve separate space for identity, trip, portrait, state, and values. Narrow cards use icons plus numbers so no value can spill into its neighbor.',
+    changes: [
+      'Rebuilt each cabin card as five rows: name, floors remaining, portrait, rider state, and the three-value strip. The portrait can use only the remaining middle space.',
+      'The bottom strip keeps the coin, power, and agitation icons but removes repeated “/floor” and “no change” copy. Compact values such as 14, 2, and 0 retain their complete meaning in tooltips and accessible labels.',
+      'A rider boarded on the current floor no longer receives a gold circle over the portrait. The gold card border and restrained glow now carry that state alone.',
+      'Long English names and two-line states scale and clip inside their own bounds instead of colliding with the detail button or the metric strip.',
+      'No rider values, resource resolution, offer weights, or difficulty curves changed in this release.',
+    ],
+    experiments: [
+      'Added cabin-card structure regressions: all three visible values must stay compact, names and states must be bounded by the card, and the current-floor marker must not generate a portrait ring.',
+      'Reran the full rider, stacking, red-link, forecast, music, release-history, and localization suite and completed a production build.',
+    ],
+    watch: ['Keep watching the densest combination of a long English name, Bomb timer, and High Risk badge. If it still feels crowded, shorten state copy before reducing portrait size again.'],
+  },
   {
     version: '8.24', date: '2026-09-04', title: 'Temporary cover, no end in sight',
     summary: 'The player is now the elevator operator sent to cover a shift in a strange building. The opening immediately frames an endless survival shift: protect two resources and stay alive for as long as possible.',
