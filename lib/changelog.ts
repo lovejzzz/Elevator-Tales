@@ -8,9 +8,26 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.15';
+export const GAME_VERSION = '8.16';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.16', date: '2026-09-03', title: '每个人物都要面对双资源选择',
+    summary: '游客、快递员与教练不再因耗电机会成本沦为华丽陷阱；能源现在有持续节能和短途回电两条路线，同时保留躁动与断电的夹击。',
+    changes: [
+      '初始电量从48调整为42，容量仍为60；用于抵消新增的短途回电，不改变每站运转1电、商店充电1币换1电与至少搭载1人的规则。',
+      '游客每站耗电从2降为1；基础车费18、4–7站路程与不同职业旅伴每站+1币（最多+2）保持不变。',
+      '快递员到站时补充1电，不超过电量上限；候客卡、车内状态、结算动画与下一站电量预测都会明确显示这次补电。',
+      '教练仍每站耗2电，路程从4–8站缩短为3–6站；+50%邻座基础车费倍率和本人到站每邻座+3币不变。',
+    ],
+    experiments: [
+      '本轮共运行221,126局完整程序实验，并用86,016条受控轨迹检查21个人物的协作、冲突、耗电、躁动与到站结算；弃用了神秘人隐藏车费按0估值、初始36电、快递补2电、教练耗1电及低电商店保底能源卡等方案。',
+      '最终独立随机种子留出测试33,200局：四种整体打法各2,000局，21个人物各做400局正常、400局偏爱、400局禁用；所有下一站电量与躁动预测误差为0。',
+      '均衡打法平均41.45层、中位44层；91.55%抵达20层、66.75%抵达40层。失败中26.95%断电、72.90%躁动、0.15%引信，双资源威胁会随打法改变。',
+      '21个人物正常选择率为17.7%–62.2%，没有绝对弃牌或必拿牌。游客偏爱只改变+0.20层，快递−0.38层，教练−0.68层；高风险小偷偏爱−3.34层，仍保留明确代价。',
+    ],
+    watch: ['维修工仍是最强续航支柱：正常选择率62.2%，额外偏爱只+0.27层，但完全禁用会少13.95层。继续用真人局观察它是健康的流派核心，还是需要第三条续航路线。'],
+  },
   {
     version: '8.15', date: '2026-09-03', title: '游客变成拼邻座的长线投资',
     summary: '游客不再是单纯高耗电白板：他的价值现在来自不同职业旅伴，玩家需要为长途收益设计站位。',
@@ -292,6 +309,23 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.16', date: '2026-09-03', title: 'Every rider now competes across two resources',
+    summary: 'Tourist, Courier, and Coach no longer become ornate traps through power opportunity cost. Sustained savings and short-haul recharge now form two energy routes while agitation and power still squeeze different builds.',
+    changes: [
+      'Initial power changes from 48 to 42; capacity remains 60. This offsets the new short-haul recharge without changing the 1-power motor, 1 coin per shop recharge, or mandatory-rider rule.',
+      'Tourist power changes from 2 to 1 per floor. Base fare 18, 4–7-floor trip, and +1 coin per distinct adjacent profession per floor (max +2) remain unchanged.',
+      'Courier recharges 1 power on arrival, capped by capacity. Candidate rules, cabin state, settlement feedback, and next-floor forecast all disclose the recharge.',
+      'Coach still costs 2 power per floor, but its trip changes from 4–8 to 3–6 floors. Its +50% adjacent base-fare multiplier and +3 coins per neighbor on its own arrival are unchanged.',
+    ],
+    experiments: [
+      'Ran 221,126 complete simulated games and 86,016 controlled trajectories across all 21 riders, covering cooperation, conflict, power, agitation, and arrival settlement. Rejected variants included valuing hidden Mystery fare at zero, start power 36, Courier recharge 2, Coach power 1, and guaranteed low-power shop cards.',
+      'Final unseen-seed holdout: 33,200 games—2,000 for each of four whole-run styles, plus 400 normal, 400 favor, and 400 ban runs for every rider. Next-floor power and agitation forecast misses: zero.',
+      'Balanced play averaged floor 41.45 with median 44; 91.55% reached floor 20 and 66.75% reached floor 40. Failures were 26.95% power, 72.90% agitation, and 0.15% fuse, with the dominant threat changing by play style.',
+      'Normal selection rates span 17.7%–62.2%, with no universal reject or auto-pick. Favoring Tourist changes +0.20 floors, Courier −0.38, and Coach −0.68. Favoring high-risk Thief costs −3.34 floors, preserving a real downside.',
+    ],
+    watch: ['Mechanic remains the strongest sustain anchor: 62.2% normal selection and only +0.27 floors when favored further, but −13.95 floors if banned completely. Human play should determine whether this is a healthy build anchor or needs a third sustain route.'],
+  },
   {
     version: '8.15', date: '2026-09-03', title: 'Tourist becomes a formation investment',
     summary: 'Tourist is no longer a high-power blank card. Its long-haul value now comes from arranging a diverse set of adjacent professions.',

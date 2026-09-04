@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { initialRun, resolveFloor, energySavings, riderAgitation, type Rider, type RunState } from '../lib/game-engine';
-import { passengerCardGrade } from '../lib/game-data';
+import { PASSENGERS, passengerCardGrade } from '../lib/game-data';
 import { passengerBrief, passengerFace, SHARED_SAVING_RULE } from '../lib/passenger-presentation';
 import { addDiscoveredPassengers, sanitizeDiscoveredPassengers } from '../lib/passenger-discovery';
 const rider=(kind:Rider['kind'],id=kind as string,extra:Partial<Rider>={}):Rider=>({kind,id,destination:8,boardedAt:1,patience:0,fareBonus:0,...extra});
@@ -10,7 +10,7 @@ for(const floor of [1,2,3,4])for(const extraEnergy of [0,1])for(const upgraded o
  const run=state({floor,stress,cabin:[rider('inspector'),null,extraEnergy?rider('tourist'):null,null,null,null]});
  if(upgraded)run.upgrades={...run.upgrades,reinforced:1,solar:1};
  const after=resolveFloor(run,()=>.9);
- const people=1+extraEnergy*2,stabilizer=upgraded?1:0,saving=upgraded&&(floor+1)%4===0&&people>stabilizer?1:0;
+ const people=1+extraEnergy,stabilizer=upgraded?1:0,saving=upgraded&&(floor+1)%4===0&&people>stabilizer?1:0;
  assert.equal(after.lastEarnings.sources.find(s=>s.label==='检查员合规奖励')?.amount??0,1);
  assert.equal(riderAgitation(run,0).low,0);
  assert.equal(energySavings(run),saving,'savings apply only after stabilizer');
@@ -25,6 +25,7 @@ const face=passengerBrief(lovers.cabin[0]!,4,lovers.cabin);
 assert.equal(face.coins,6);assert.equal(face.tip,3);
 assert.match(passengerFace(lovers.cabin[0]!,lovers).moneyNote,/基价\+100%/);
 const coaches=state({cabin:[rider('coach','a',{destination:2}),rider('coach','b',{destination:2}),null,null,null,null]});
+assert.deepEqual(PASSENGERS.coach.trip,[3,6],'Coach uses the tested shorter trip window');
 assert.equal(resolveFloor(coaches,()=>.9).coins,46,'coaches do not multiply one another');
 const coachFace=passengerFace(coaches.cabin[0]!,coaches);
 assert.match(coachFace.moneyNote,/每位相邻教练/);assert.match(coachFace.moneyNote,/基础车费\+50%/);assert.match(coachFace.moneyNote,/每邻座\+3/);
@@ -46,9 +47,9 @@ for(const kind of ['mechanic','ghost','exorcist'] as const){
 }
 const duplicate=state({cabin:[rider('inspector','a'),rider('inspector','b'),null,null,null,null]});
 assert.equal(resolveFloor(duplicate,()=>.9).coins,2,'each inspector grants one bounded reward');
-assert.equal(resolveFloor(duplicate,()=>.9).energy,45);
+assert.equal(resolveFloor(duplicate,()=>.9).energy,39);
 assert.deepEqual(sanitizeDiscoveredPassengers(null),[],'an old save does not unlock the archive');
 assert.deepEqual(sanitizeDiscoveredPassengers(['lover','bogus','lover']),['lover'],'saved discoveries are validated and deduplicated');
 assert.deepEqual(addDiscoveredPassengers([],['lover','lover','courier']),['courier','lover'],'only passengers actually seen are collected');
 assert.equal(addDiscoveredPassengers(['courier','lover'],['thief']).length,3,'new encounters extend the archive');
-console.log(JSON.stringify({version:'v8.14',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:4,savingsCopy:true,archiveDiscovery:true}));
+console.log(JSON.stringify({version:'v8.16',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:4,savingsCopy:true,archiveDiscovery:true}));

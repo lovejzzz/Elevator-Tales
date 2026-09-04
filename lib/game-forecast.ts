@@ -1,4 +1,4 @@
-import { energyBreakdown, riderAgitation, hasNeighbour, neighbours, type RunState } from './game-engine';
+import { COURIER_ARRIVAL_CHARGE, energyBreakdown, riderAgitation, hasNeighbour, neighbours, type RunState } from './game-engine';
 
 export type StressForecast = {
   range: string;
@@ -57,6 +57,13 @@ export function stressForecast(state: RunState, _legacyWeight?: number): StressF
 }
 
 export function energyForecast(state: RunState, _legacyWeight?: number): EnergyForecast {
- const {motor,people,saved,total}=energyBreakdown(state),delta=-total;
- return {range:signedDelta(delta),summary:`下一站耗 ${total} 电＝运转 ${motor}＋人物 ${people}−节能 ${saved}`,danger:state.energy+delta<=0,lowDelta:delta,highDelta:delta};
+ const {motor,people,saved,total}=energyBreakdown(state);
+ const nextFloor=state.floor+1;
+ const charges=projectedDestinationVariants(state).map(destinations=>state.cabin.reduce((sum,rider,slot)=>sum+(rider?.kind==='courier'&&destinations[slot]!==null&&destinations[slot]!<=nextFloor?COURIER_ARRIVAL_CHARGE:0),0));
+ const deltas=charges.map(charge=>Math.min(state.energyCap,state.energy-total+charge)-state.energy);
+ const lowDelta=Math.min(...deltas),highDelta=Math.max(...deltas);
+ const minCharge=Math.min(...charges),maxCharge=Math.max(...charges);
+ const chargeNote=maxCharge?minCharge===maxCharge?`＋快递补电 ${maxCharge}`:`＋可能快递补电 ${minCharge}–${maxCharge}`:'';
+ const range=lowDelta===highDelta?signedDelta(lowDelta):`${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
+ return {range,summary:`下一站耗 ${total} 电＝运转 ${motor}＋人物 ${people}−节能 ${saved}${chargeNote}`,danger:state.energy+lowDelta<=0,lowDelta,highDelta};
 }

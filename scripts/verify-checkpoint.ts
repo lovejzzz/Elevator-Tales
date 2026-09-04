@@ -13,7 +13,7 @@ for(let floor=1;floor<=12;floor++)for(const stress of [0,10])for(const stabilize
  for(let i=0;i<load;i++)run.cabin[5-i]=rider('tourist','t'+i);
  const next=floor+1,mechanicActive=mode==='mechanic';
  const rawSaved=mechanicActive?MECHANIC_SAVING:mode==='ghost'||mode==='solar'&&next%4===0?1:0;
- const people=1+(mode==='mechanic'||mode==='ghost'?1:0)+load*2;
+ const people=1+(mode==='mechanic'||mode==='ghost'?1:0)+load;
  const remainder=Math.max(0,people-stabilized-Math.min(rawSaved,people-stabilized));
  assert.equal(inspectionExtraEnergy(run),remainder);
  assert.equal(riderAgitation(run,0).low,remainder>3?1:0);
@@ -32,4 +32,4 @@ assert.equal(shiftOutlook(9),'下一站：商店');
 assert.equal(shiftOutlook(38,2,0),'');
 assert.equal(shiftOutlook(39,0,1),'下一站：商店');
 assert.equal(shiftOutlook(40,2,0),'本层起，高危候客增加');
-console.log(JSON.stringify({version:'v8.14',inspectionInteractions:cases,generatedChildren:children,childRange:[2,5],fare:7}));
+console.log(JSON.stringify({version:'v8.16',inspectionInteractions:cases,generatedChildren:children,childRange:[2,5],fare:7}));

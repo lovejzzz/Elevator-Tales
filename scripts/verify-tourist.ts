@@ -6,7 +6,7 @@ const rider=(kind:PassengerKind,id:string,extra:Partial<Rider>={}):Rider=>({kind
 const state=(cabin:Array<Rider|null>,extra:Partial<RunState>={}):RunState=>({...initialRun(),cabin,...extra});
 const income=(run:RunState,label:string)=>resolveFloor(run,()=>.9).lastEarnings.sources.find(line=>line.label===label)?.amount??0;
 
-assert.deepEqual({fare:PASSENGERS.tourist.fare,energy:PASSENGERS.tourist.energy,trip:PASSENGERS.tourist.trip},{fare:18,energy:2,trip:[4,7]});
+assert.deepEqual({fare:PASSENGERS.tourist.fare,energy:PASSENGERS.tourist.energy,trip:PASSENGERS.tourist.trip},{fare:18,energy:1,trip:[4,7]});
 
 const alone=[null,rider('tourist','t'),null,null,null,null];
 assert.equal(touristCompanionCount(alone,1),0);
@@ -38,4 +38,4 @@ for(let a=0;a<kinds.length;a++)for(let b=0;b<kinds.length;b++)for(let c=0;c<kind
  totalBonus+=actual;cases++;
 }
 
-console.log(JSON.stringify({version:'v8.15',cases,averageCompanionBonus:Math.round(totalBonus/cases*100)/100,hardStops:['游客不互刷','同职业不重复','每位游客最多+2/站','教练只翻倍基础车费'] }));
+console.log(JSON.stringify({version:'v8.16',cases,averageCompanionBonus:Math.round(totalBonus/cases*100)/100,hardStops:['游客不互刷','同职业不重复','每位游客最多+2/站','教练只翻倍基础车费'] }));

@@ -21,7 +21,7 @@ for(const kind of PASSENGER_ORDER){
   directedLinkChecks+=3;
 }
 
-const mechanics=state({cabin:[rider('mechanic','m1'),rider('mechanic','m2'),rider('tourist','t'),null,null,null]});
+const mechanics=state({cabin:[rider('mechanic','m1'),rider('mechanic','m2'),rider('coach','c'),null,null,null]});
 assert.equal(energySavings(mechanics),4,'two mechanics contribute two savings each');
 assert.equal(resolveFloor(mechanics,()=>.9).lastEnergy.delta,-1,'stacked savings stop at passenger demand and never erase motor cost');
 
@@ -49,4 +49,4 @@ assert.equal(resolveFloor(controlledDrunks,()=>.9).lastEarnings.sources.find(lin
 const copied=[rider('commuter','a'),rider('mimic','copy'),rider('tourist','b'),null,rider('nurse','c'),null];
 assert.equal(riderProfile(copied[1]!,copied,1).copies.length,3,'mimic stacks one distinct copied field from every neighbor');
 
-console.log(JSON.stringify({version:'v8.15',passengers:PASSENGER_ORDER.length,directedLinkChecks,stackFamilies:8,hardStops:['节能不抵运转','控制状态不重复','同一复制字段不重复']}));
+console.log(JSON.stringify({version:'v8.16',passengers:PASSENGER_ORDER.length,directedLinkChecks,stackFamilies:8,hardStops:['节能不抵运转','控制状态不重复','同一复制字段不重复']}));

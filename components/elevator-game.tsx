@@ -110,6 +110,7 @@ function riderState(cabin: Array<Rider | null>, slot: number, totalEnergy: numbe
   if(rider.kind==='mimic')return {label:`复制 ${bond.copies.length} 项`,tone:bond.copies.length?'active':'neutral'};
   switch (rider.kind) {
     case 'tourist': { const count=touristCompanionCount(cabin,slot); return count ? { label: `旅伴 ${count}/2 · 每站 +${count}币`, tone: 'active' } : { label: '需要不同职业旅伴', tone: 'neutral' }; }
+    case 'courier': return { label: '到站补充1电', tone: 'active' };
     case 'lover': return hasNeighbour(cabin, slot, ['lover']) ? { label: '已配对', tone: 'active' } : { label: '正在呼唤同伴', tone: 'neutral' };
     case 'thief': return hasNeighbour(cabin, slot, ['cop', 'lawyer']) ? { label: '已受控制', tone: 'active' } : { label: '未受控制', tone: 'warn' };
     case 'cop': return hasNeighbour(cabin, slot, ['thief', 'bomb']) ? { label: '正在控制', tone: 'active' } : null;
@@ -204,7 +205,7 @@ export default function ElevatorGame() {
   const power = energyBreakdown(run); const occupied = run.cabin.filter(Boolean).length; const cabinFull = occupied === run.cabin.length;
   const outlook = shiftOutlook(run.floor, occupied, run.restStops);
   const pressurePreview = useMemo(() => stressForecast(run), [run]); const energyPreview = useMemo(() => energyForecast(run), [run]);
-  const energyFatal = run.energy + energyPreview.highDelta <= 0;
+  const energyFatal = run.energy + energyPreview.lowDelta <= 0;
   const stressFatal = run.stress + pressurePreview.highDelta >= run.stressCap;
   const forecastTone = energyFatal || stressFatal ? 'danger' : pressurePreview.tone;
   const phase = shiftPhase(run.floor); const upgradeCount = Object.values(run.upgrades).reduce((sum, count) => sum + count, 0); const nextShop = nextShopFloor(run.floor); const nextIsShop = (run.floor + 1) % 10 === 0; const agitated = run.stress >= agitationThreshold(run.stressCap);
@@ -216,6 +217,7 @@ export default function ElevatorGame() {
   const earningSummary = run.lastEarnings.sources.slice(0, 2).map((line) => `${line.label} +${line.amount}`).join(' · ') + (run.lastEarnings.sources.length > 2 ? ` · 另 ${run.lastEarnings.sources.length - 2} 项` : '');
   const pressureSummary = run.lastPressure.sources.slice(0, 2).map((line) => `${line.label} ${signedDelta(line.amount)}`).join(' · ') + (run.lastPressure.sources.length > 2 ? ` · 另 ${run.lastPressure.sources.length - 2} 项` : '');
   const energySummary = run.lastEnergy.sources.slice(0, 2).map((line) => `${line.label} ${signedDelta(line.amount)}`).join(' · ') + (run.lastEnergy.sources.length > 2 ? ` · 另 ${run.lastEnergy.sources.length - 2} 项` : '');
+  const positiveEnergySummary = run.lastEnergy.sources.filter((line) => line.amount > 0).slice(0, 2).map((line) => `${line.label} +${line.amount}`).join(' · ');
   const activeOfferId = pendingOfferId ?? (dragged?.type === 'offer' ? dragged.id : null);
   const activeRider = dragged?.type === 'slot' ? run.cabin[dragged.slot] : selectedSlot !== null ? run.cabin[selectedSlot] : offers.find((offer) => offer.id === activeOfferId);
   const placementPlans = activeRider ? run.cabin.map((_, slot) => planPlacement(run, activeRider, slot)) : [];
@@ -342,7 +344,7 @@ export default function ElevatorGame() {
         {feedback && <output key={feedback.id} className={`cabin-feedback feedback-${feedback.tone}`}>
           <div className="feedback-label">{feedback.tone === 'error' ? <X /> : feedback.tone === 'combo' ? <Sparkles /> : <Check />}<b>{feedback.label}</b></div>
           {feedback.tone === 'arrival' && <div className="feedback-values">{Boolean(feedback.coins) && <span className="value-coins" aria-label={`金币增加 ${feedback.coins}`}><Coins aria-hidden="true" />+{feedback.coins}</span>}<span aria-label={`电量 ${signedDelta(feedback.energy ?? 0)}`} className={feedback.energy! > 0 ? 'value-gain' : feedback.energy! < 0 ? 'value-spent' : 'value-neutral'}><BatteryCharging aria-hidden="true" />{signedDelta(feedback.energy ?? 0)}</span><span aria-label={`躁动 ${signedDelta(feedback.pressure ?? 0)}`} className={feedback.pressure! > 0 ? 'value-danger' : feedback.pressure! < 0 ? 'value-gain' : 'value-neutral'}><Flame aria-hidden="true" />{signedDelta(feedback.pressure ?? 0)}</span></div>}
-          {feedback.tone === 'arrival' && <p className="feedback-cause">{earningSummary || energySummary}{pressureSummary ? ` · ${pressureSummary}` : ''}</p>}
+          {feedback.tone === 'arrival' && <p className="feedback-cause">{[earningSummary,positiveEnergySummary||(!earningSummary?energySummary:''),pressureSummary].filter(Boolean).join(' · ')}</p>}
         </output>}
         {doors === 'moving' && <div className="travel-caption"><ArrowUp />前往 {String(run.floor + 1).padStart(2, '0')}F</div>}
         <div className="standing-grid"><svg className="adjacency-map" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true">{ADJACENT.map(([first, second]) => {

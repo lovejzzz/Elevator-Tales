@@ -1,6 +1,18 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.15**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.16**.
+
+## v8.16 — 2026-09-03 — Every rider competes across two resources
+
+- Initial power changes from 48 to 42; capacity stays 60. The motor, recharge price, and mandatory-rider rules are unchanged.
+- Tourist power changes from 2 to 1 per floor. Its 18 base fare, 4–7-floor trip, and diverse-neighbor income remain unchanged.
+- Courier recharges 1 power on arrival, capped by capacity. The candidate card, cabin state, settlement feedback, and next-floor forecast all disclose it.
+- Coach remains a 2-power rider, but its trip changes from 4–8 to 3–6 floors. All fare multipliers remain unchanged.
+- Ran 221,126 complete simulated games and 86,016 controlled rider trajectories. Rejected variants included start power 36, Courier recharge 2, Coach power 1, and guaranteed low-power shop cards.
+- Final unseen-seed holdout: 33,200 games, with 2,000 runs for each of four whole-run styles and 1,200 paired normal/favor/ban runs for every rider. Forecast misses: zero.
+- Balanced play averaged floor 41.45 (median 44); 91.55% reached floor 20 and 66.75% reached floor 40. Failures were 26.95% power, 72.90% agitation, and 0.15% fuse.
+- All 21 riders were selected in 17.7%–62.2% of normal offers. No rider became a universal reject or auto-pick. Tourist, Courier, and Coach favor deltas were +0.20, −0.38, and −0.68 floors.
+- Mechanic remains the watch item: favoring it further adds only +0.27 floors, but banning it entirely costs −13.95 floors. Human play should determine whether it is a healthy sustain anchor or needs a third sustain route.
 
 ## v8.15 — 2026-09-03 — Tourist becomes a formation investment
 

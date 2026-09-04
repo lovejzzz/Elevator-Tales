@@ -14,6 +14,8 @@ const dynamicSamples = [
   '还剩 5 站',
   '到站金币 14',
   '每站耗电 2',
+  '到站补充1电（不超过上限）',
+  '快递员电池包 +1',
   '空驶休整剩余 2 次，查看规则',
   '已请离 · 赔偿 10 金币',
   '恋人的呼唤得到了回应。把两人安排在相邻站位。',
@@ -22,7 +24,7 @@ const dynamicSamples = [
 ];
 const runtimeFaceSamples=PASSENGER_ORDER.flatMap((kind)=>[0,10].flatMap((agitation)=>{
   const run=initialRun();
-  run.agitation=agitation;
+  run.stress=agitation;
   const rider:Rider={kind,id:`i18n-${kind}-${agitation}`,destination:5,boardedAt:1,patience:0,fareBonus:0,fuse:kind==='bomb'?4:undefined};
   run.cabin=[rider,null,null,null,null,null];
   const face=passengerFace(rider,run);

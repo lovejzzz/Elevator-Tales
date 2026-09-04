@@ -9,13 +9,13 @@ const runs = Math.max(1, Number(process.argv[2] || 2500));
 const horizon = 300; // Test censoring only, never a game endpoint.
 const seedBase = Number(process.env.ET_SEED || 91007);
 const priceScale = Number(process.env.ET_PRICE_SCALE || 1);
-const initialEnergy = Number(process.env.ET_INITIAL_ENERGY || 48);
+const initialEnergy = Number(process.env.ET_INITIAL_ENERGY || 42);
 const energyCap = Number(process.env.ET_ENERGY_CAP || 60);
 const chargePrice = Number(process.env.ET_CHARGE_PRICE || 1);
 const agitationCap = Number(process.env.ET_AGITATION_CAP || 6);
-const highRiskStart = Number(process.env.ET_HIGH_RISK_START || 15);
-const pressureStep = Number(process.env.ET_PRESSURE_STEP || 20);
-const volatileSpan = Number(process.env.ET_VOLATILE_SPAN || 35);
+const highRiskStart = Number(process.env.ET_HIGH_RISK_START || 30);
+const pressureStep = Number(process.env.ET_PRESSURE_STEP || 40);
+const volatileSpan = Number(process.env.ET_VOLATILE_SPAN || 55);
 const offerTuning={highRiskStart,pressureStep,volatileSpan};
 const rngFor = (seed: number) => () => { let t = seed += 0x6d2b79f5; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 const ignoresAgitation = (policy: Policy) => policy === 'ignore-agitation' || policy === 'greedy';

@@ -16,7 +16,8 @@ export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, solar: 0
 export const LOVER_CALL_CHANCE = .25;
 export const INSPECTOR_COMPLIANCE_REWARD = 1;
 export const INSPECTOR_ENERGY_LIMIT = 4;
-export const INITIAL_ENERGY = 48;
+export const COURIER_ARRIVAL_CHARGE = 1;
+export const INITIAL_ENERGY = 42;
 export const ENERGY_CAPACITY = 60;
 export const AGITATION_CAPACITY = 6;
 export const HIGH_RISK_BONUS = 8;
@@ -222,6 +223,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
     const supportCount=bondStatus(rider,cabin,slot).supportCount;
     if (supportCount) fare += cooperationBonus(state)*supportCount;
     if (profile.hidden) notes.push(`${spec.name}封存车费揭晓：${profile.fare} 金币`);
+    if (rider.kind === 'courier') adjustEnergy('快递员电池包', COURIER_ARRIVAL_CHARGE);
     addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare); arrivals += 1; return null;
   });
   // Arriving on the same floor as fuse expiry is still safe.
