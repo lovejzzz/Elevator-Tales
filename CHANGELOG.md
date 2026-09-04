@@ -1,6 +1,15 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.17**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.18**.
+
+## v8.18 — 2026-09-03 — Bomb risk is now a readable countdown
+
+- Replaced every player-facing “fuse” with “Bomb timer” and direct cause-and-effect wording.
+- Bomb Carrier cards now state: timer starts at 3–6, drops by 1 each floor, zero before arrival ends the run, and zero on the arrival floor is safe.
+- Officer cards now say an adjacent Bomb Carrier timer does not drop on even floors; Counsel cards explicitly say they cannot pause it.
+- Cabin labels, rider details, failure messaging, retry advice, the archive, and Mimic exclusions all use the same term in Chinese and English.
+- Verified the complete Bomb Carrier lifecycle and localization. No balance values changed: fare 26, power 1, trip 2–6, and starting timer 3–6 remain fixed.
+- Watch item: the clearer label is longer, so very narrow cabin labels may eventually use the compact form “Bomb 4.”
 
 ## v8.17 — 2026-09-03 — Stacking rules now match every card
 

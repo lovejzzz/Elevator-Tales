@@ -8,9 +8,24 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.17';
+export const GAME_VERSION = '8.18';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.18', date: '2026-09-03', title: '炸弹风险改成一眼能懂的倒计时',
+    summary: '所有玩家可见的“引信”统一改为“炸弹倒计时”，直接说明每层如何变化、何时失败以及警察怎样暂停它；玩法数值不变。',
+    changes: [
+      '炸弹客卡面现在写明“炸弹倒计时”：初始3–6层，每上升一层−1，到站前归零则本局失败，到站当层归零仍然安全。',
+      '警察卡面改为“邻炸弹：偶数层倒计时不减”；律师则明确写成不能暂停炸弹倒计时，不再使用“引信”或“延缓”。',
+      '车内标签、人物详情、失败标题、失败原因、下一局建议、乘客档案和复制人限制全部使用同一套说法。',
+      '英文同步改为“Bomb timer”，避免“Fuse”要求玩家先理解隐喻。',
+    ],
+    experiments: [
+      '逐项验证炸弹客候客卡、已上车标签、详情弹窗、警察/律师联动、失败原因与中英文翻译；所有可见状态都能从“倒计时数字”直接读出剩余安全层数。',
+      '规则回归继续验证倒计时每层−1、警察只在偶数层暂停、到站前归零失败、到站当层归零安全；未调整车费26、耗电1、路程2–6或初始倒计时3–6。',
+    ],
+    watch: ['“炸弹倒计时”更直白但字数更长；继续观察极窄手机屏幕上的车内短标签是否需要进一步压缩为“炸弹 4”。'],
+  },
   {
     version: '8.17', date: '2026-09-03', title: '叠加规则终于和卡面完全一致',
     summary: '全面审计21个人物的重复上车、扇形控制、协作与冲突叠加；修复红色冲突在奇数层也暗中增加躁动的问题，不改动人物公开数值。',
@@ -326,6 +341,21 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.18', date: '2026-09-03', title: 'Bomb risk is now a readable countdown',
+    summary: 'Every player-facing “fuse” is now a “Bomb timer,” with direct wording for its per-floor change, failure condition, and Officer pause. Gameplay values are unchanged.',
+    changes: [
+      'Bomb Carrier cards now state the full timer rule: it starts at 3–6, drops by 1 each floor, ends the run if it reaches zero before arrival, and remains safe when it reaches zero on the arrival floor.',
+      'Officer cards now say an adjacent Bomb Carrier timer does not drop on even floors. Counsel cards explicitly say they cannot pause a Bomb Carrier timer.',
+      'Cabin labels, rider details, failure headings, failure explanations, retry advice, the archive, and Mimic exclusions now use one consistent term.',
+      'The English interface uses “Bomb timer” instead of the more metaphorical “Fuse.”',
+    ],
+    experiments: [
+      'Checked candidate cards, cabin labels, the rider-details dialog, Officer/Counsel interactions, failure messaging, and both languages. Every visible state now connects the number directly to safe floors remaining.',
+      'Regression coverage still verifies −1 per floor, Officer pauses only on even floors, zero before arrival fails, and zero on the arrival floor is safe. Fare 26, power 1, trip 2–6, and starting timer 3–6 are unchanged.',
+    ],
+    watch: ['“Bomb timer” is clearer but longer; keep watching very narrow cabin labels to see whether the compact form should become “Bomb 4.”'],
+  },
   {
     version: '8.17', date: '2026-09-03', title: 'Stacking rules now match every card',
     summary: 'Audited duplicate riders, fan-out control, cooperation, and conflict across all 21 riders. Red conflicts no longer add hidden agitation on odd floors; public rider values are unchanged.',

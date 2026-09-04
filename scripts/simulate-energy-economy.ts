@@ -381,7 +381,7 @@ for (const economy of economies)
       earned.push(state.earned);
       if (state.status !== 'lost') deaths.censored++;
       else {
-        const reason = state.message.includes('引信')
+        const reason = state.message.includes('炸弹倒计时')
           ? 'fuse'
           : state.energy <= 0 && state.stress >= state.stressCap
             ? 'both'

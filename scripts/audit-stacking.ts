@@ -222,7 +222,7 @@ for (const center of PASSENGER_ORDER) for (const first of PASSENGER_ORDER) for (
 }
 
 console.log(JSON.stringify({
-  version: 'v8.17-stack-audit', starFormations, genericSupportCases: genericLinks.length,
+  version: 'v8.18-stack-audit', starFormations, genericSupportCases: genericLinks.length,
   genericConflictCases: genericConflicts.length, mechanicCurve, ghostCurve, courierCurve,
   loverCurve, contractLoverCurve, coachCurve, conciergeCoachCurve, touristCurve, calmerCurve, nurseFanout, thiefFanout, copFanout,
   ghostDelayCurve, inspectorCurve, celebrityCurve, mimicSamples: 12_000,

@@ -138,7 +138,7 @@ const solo = resolveFloor({ ...initialRun(), cabin: [rider('lover', 'solo'), nul
 assert.equal(solo.cabin[0]?.patience, 9);
 assert.equal(makeOffers(2, solo.upgrades, false, () => .1, solo.cabin)[0].calledByLover, true);
 const bombLoss = resolveFloor({ ...initialRun(), cabin: [rider('bomb', 'bomb', { fuse: 1 }), null, null, null, null, null] }, () => .9);
-assert.equal(bombLoss.status, 'lost'); assert.match(failureLesson(bombLoss), /引信/);
+assert.equal(bombLoss.status, 'lost'); assert.match(failureLesson(bombLoss), /炸弹倒计时/);
 const safeBomb = resolveFloor({ ...initialRun(), cabin: [rider('bomb', 'safe-bomb', { fuse: 1, destination: 2 }), null, null, null, null, null] }, () => .9);
 assert.equal(safeBomb.status, 'playing'); assert.equal(safeBomb.coins, 26);
 

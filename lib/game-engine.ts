@@ -234,7 +234,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
   const checkpoint = nextFloor % 10 === 0;
   let status: RunState['status'] = checkpoint ? 'upgrade' : 'playing';
   let message = arrivals ? `${arrivals} 位乘客抵达。门再次开启。` : '电梯继续向上，新的面孔正在等候。';
-  if (bombFailed) { status = 'lost'; message = '引信熄灭前没能抵达。午夜班次戛然而止。'; }
+  if (bombFailed) { status = 'lost'; message = '炸弹倒计时归零：乘客未能及时到站。午夜班次戛然而止。'; }
   else if (energy < 0 || (!checkpoint && energy === 0)) { status = 'lost'; message = '电量耗尽，轿厢停在了楼层之间。'; }
   else if (!checkpoint && stress >= state.stressCap) { status = 'lost'; message = '躁动突破上限，午夜班次失控。'; }
   if (stressReasons.length && status === 'playing') message = stressReasons.slice(0, 2).join(' · ');
@@ -257,7 +257,7 @@ export const upgradeChoices = (upgrades: Record<UpgradeKey, number> = EMPTY_UPGR
 
 export function failureLesson(state: RunState): string {
   if (state.status !== 'lost') return '';
-  if (state.message.includes('引信')) return '引信归零 · 下一班让炸弹客与警察相邻以延缓；来不及送达就拒载。';
+  if (state.message.includes('炸弹倒计时')) return '炸弹倒计时归零 · 下一班让炸弹客与警察相邻，使偶数层倒计时不减；来不及送达就拒载。';
   if (state.energy <= 0 && state.stress >= state.stressCap) return '双重失控 · 下一班提前留好维修预算，关门前先处理更接近上限的一项。';
   if (state.message.includes('电量')) return '电量耗尽 · 每站耗电＝运转1＋所有人物耗电−节能。下次少接高耗电长途客，并先留充电费再买升级。';
   if (state.message.includes('躁动')) {

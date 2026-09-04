@@ -13,8 +13,8 @@ export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
   lover: ['每位恋人邻座：本人每层 +1 金币，到站基础车费 +100%；多位逐个叠加。', '没有恋人邻座：每层有 25% 概率呼唤另一位恋人候客。'],
   musician: ['每层抵消一名相邻乘客的 1 点躁动；多人可叠加，不会降成负数。', '同时安抚相邻的醉汉和儿童，阻止其人物躁动。'],
   thief: ['没有警察或律师邻座：每层 +3 金币、躁动 +1。', '有警察或律师邻座：改为每层 +1 金币，不再加压，到站车费 +5。'],
-  cop: ['控制相邻的小偷，消除其加压效果。', '与炸弹客相邻：偶数层暂停引信倒计时。'],
-  lawyer: ['控制相邻的小偷，消除其加压效果。不能暂停炸弹引信。'],
+  cop: ['控制相邻的小偷，消除其加压效果。', '与炸弹客相邻：到达偶数层时，炸弹倒计时不减少。'],
+  lawyer: ['控制相邻的小偷，消除其加压效果。不能暂停炸弹倒计时。'],
   drunk: ['没有音乐家或护士邻座：每层躁动 +1。', '有音乐家或护士邻座：不再加压，每层 +1 金币。'],
   nurse: ['每层抵消一名相邻乘客的 1 点躁动；多人可叠加，不会降成负数。', '同时安抚相邻的醉汉和儿童，阻止其人物躁动。'],
   child: ['没有恋人、音乐家或护士邻座：每层躁动 +1。', '与其中任一角色相邻，即可阻止这项躁动。'],
@@ -23,10 +23,10 @@ export const PASSENGER_RULES: Record<PassengerKind, readonly string[]> = {
   coach: ['非教练邻座到站时：每位相邻教练使基础车费 +50%，线性叠加。', '本人到站时，每位仍在身旁的邻座使车费 +3。'],
   celebrity: ['恰好 1 位邻座：每层 +3 金币。', '至少 2 位邻座：每层躁动 +1。没有邻座则无额外效果。'],
   inspector: [`每层：本次总耗电不超过${INSPECTOR_ENERGY_LIMIT}，金币 +${INSPECTOR_COMPLIANCE_REWARD}；超过则躁动 +1。`,'总耗电＝电梯运转＋所有人物耗电−节能。包括检查员本人；稳压模块和节能可帮助通过检查。'],
-  bomb: ['引信每层减少 1 格；到站前归零，本局立即结束。到站当层归零则安全。', '有警察邻座：偶数层暂停倒计时。'],
+  bomb: ['炸弹倒计时每上升一层减少 1；如果到站前归零，本局立即失败。到站当层归零则安全。', '有警察邻座：到达偶数层时，倒计时不减少。'],
   mystery: ['耗电、自身躁动、路程及协作/冲突对象每次出现时随机。','车费已封存，到站才揭晓；请离不结算隐藏车费。'],
   shifter: ['每到一层重新抽取耗电（1–2）、自身躁动（0–1）、车费（28–48）和联动偏好。','目的地不延长。开门后先看新数值，再决定去留。'],
-  mimic: ['每位邻座复制一项：耗电、车费或躁动（含联动偏好），最多三项且不重复。','同一邻座组合不会重抽；邻座属性变化会同步。隐藏车费不会提前公开。','不复制技能、引信、路程；复制人互相连接时只取各自本体属性，避免递归。'],
+  mimic: ['每位邻座复制一项：耗电、车费或躁动（含联动偏好），最多三项且不重复。','同一邻座组合不会重抽；邻座属性变化会同步。隐藏车费不会提前公开。','不复制技能、炸弹倒计时、路程；复制人互相连接时只取各自本体属性，避免递归。'],
 };
 
 export type PassengerRuleBlock = {
@@ -54,9 +54,9 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'exorcist':special='邻幽灵：阻止延误，每站节能1';moneyNote='受控幽灵到站再+6币';break;
   case 'inspector':moneyNote=`总耗电≤${INSPECTOR_ENERGY_LIMIT}：每层+${INSPECTOR_COMPLIANCE_REWARD}币`;pressure.splice(0,1,`总耗电>${INSPECTOR_ENERGY_LIMIT}：每层 +1`);special='检查整趟耗电，含本人；扣除稳压和节能';break;
   case 'coach':moneyNote='每位相邻教练：基础车费+50%；本人到站每邻座+3币';break;
-  case 'cop':moneyNote='邻小偷：小偷每站改赚1币';special='邻小偷：免偷窃躁动；邻炸弹：偶数层暂停引信';break;
-  case 'lawyer':moneyNote='邻小偷：小偷每站改赚1币';special='邻小偷：免偷窃躁动；不能暂停炸弹引信';break;
-  case 'bomb':special=`引信 ${rider.fuse??0}：到站前归零即失败；挨警察偶数层不减`;break;
+  case 'cop':moneyNote='邻小偷：小偷每站改赚1币';special='邻小偷：免偷窃躁动；邻炸弹：偶数层倒计时不减';break;
+  case 'lawyer':moneyNote='邻小偷：小偷每站改赚1币';special='邻小偷：免偷窃躁动；不能暂停炸弹倒计时';break;
+  case 'bomb':special=`炸弹倒计时 ${rider.fuse??0} 层：每上升一层 −1；到站前归零则失败`;break;
   case 'mystery':special='本次参数已固定；车费到站揭晓';break;
   case 'shifter':special='每站重抽三值和关系；基价28–48币';break;
   case 'mimic':special=profile.copies.length?profile.copies.map(c=>`复制${PASSENGERS[c.sourceKind].name}的${c.field==='energy'?'耗电':c.field==='fare'?'金钱':'躁动/关系'}`).join('；'):'每位邻座复制一项，随邻座变化';break;
@@ -88,12 +88,12 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
  }
  if(rider.kind==='cop'){
   ability.heading='警察能帮谁？';
-  ability.lines=['旁边的小偷：每层收益从 3 降为 1 金币，不再产生偷窃躁动。','旁边的炸弹客：每到偶数层，引信不减。'];
+  ability.lines=['旁边的小偷：每层收益从 3 降为 1 金币，不再产生偷窃躁动。','旁边的炸弹客：到达偶数层时，炸弹倒计时不减。'];
  }
  if(rider.kind==='lawyer'){
   ability.heading='律师能帮谁？';
   ability.lines=['旁边的小偷：每层收益从 3 降为 1 金币，不再产生偷窃躁动。'];
-  ability.note='律师不能延缓炸弹引信。';
+  ability.note='律师不能暂停炸弹倒计时。';
  }
  if(relief>0){
   cooperation.lines.push(`契约生效：${name}协作到站，额外躁动 −${relief}。`);

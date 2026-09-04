@@ -245,7 +245,7 @@ function simulate(style: Style, variant: Variant, runs: number, seedOffset = 0) 
     floors.push(state.floor);
     totalEarned += state.earned;
     if (state.status !== 'lost') deaths.censored += 1;
-    else if (state.message.includes('引信')) deaths.fuse += 1;
+    else if (state.message.includes('炸弹倒计时')) deaths.fuse += 1;
     else if (state.energy <= 0) deaths.energy += 1;
     else deaths.agitation += 1;
   }
@@ -322,7 +322,7 @@ const alerts = comparisons.flatMap(row => {
 const totalForecastMisses=baselines.reduce((sum, row) => sum + row.forecastMisses, 0) + comparisons.reduce((sum, row) => sum + row.forecastMisses, 0);
 assert.equal(totalForecastMisses, 0, 'visible forecasts must contain every simulated outcome');
 console.log(JSON.stringify({
-  version: 'v8.17', seedBase, horizon, baselineRuns, variantRuns, totalGames, totalForecastMisses,
+  version: 'v8.18', seedBase, horizon, baselineRuns, variantRuns, totalGames, totalForecastMisses,
   forecastExamples: baselines.flatMap(row=>row.forecastExamples).slice(0,6),
   baselines: baselines.map(row => ({
     style: row.style, meanFloor: row.meanFloor, median: row.median, p10: row.p10, p90: row.p90,

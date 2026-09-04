@@ -53,4 +53,4 @@ const ui=readFileSync(new URL('../components/elevator-game.tsx',import.meta.url)
 assert.ok(ui.includes('本班失败'));assert.ok(ui.includes('至少接1人'));assert.ok(!ui.includes('人物躁动 ×2'));assert.ok(!ui.includes('空驶休整'));
 assert.ok(ui.includes('energyPreview.lowDelta <= 0'),'fatal energy warning must use the worst-case forecast');
 assert.ok(ui.includes('positiveEnergySummary'),'arrival feedback must preserve positive recharge sources');
-console.log(JSON.stringify({version:'v8.17',transitions,threeValues:true,deterministicAgitation:true,mandatoryRider:true,courierRecharge:true}));
+console.log(JSON.stringify({version:'v8.18',transitions,threeValues:true,deterministicAgitation:true,mandatoryRider:true,courierRecharge:true}));

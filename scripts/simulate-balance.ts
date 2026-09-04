@@ -131,7 +131,7 @@ const results = policies.map((policy) => {
     }
     floors.push(state.floor); totalEarned += state.earned; totalSpent += state.earned - state.coins;
     if (state.status !== 'lost') deaths.censored += 1;
-    else if (state.message.includes('引信')) deaths.fuse += 1;
+    else if (state.message.includes('炸弹倒计时')) deaths.fuse += 1;
     else if (state.energy <= 0 && state.stress >= state.stressCap) deaths.both += 1;
     else if (state.energy <= 0) deaths.energy += 1;
     else deaths.agitation += 1;
