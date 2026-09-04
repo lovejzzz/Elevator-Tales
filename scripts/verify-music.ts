@@ -7,6 +7,7 @@ import {
   floorMusicTrack,
   FLOOR_MUSIC_TRACKS,
   MUSIC_TRACKS,
+  musicSceneForView,
   musicSceneKey,
   musicTrackForScene,
   setGameMusic,
@@ -38,6 +39,12 @@ assert.notEqual(
 assert.equal(musicTrackForScene({ kind: 'theme' }), MUSIC_TRACKS.theme);
 assert.equal(musicTrackForScene({ kind: 'shop' }), MUSIC_TRACKS.shop);
 assert.equal(musicTrackForScene({ kind: 'death' }), MUSIC_TRACKS.death);
+assert.deepEqual(musicSceneForView({intro:true,pressureHelp:false,changelogOpen:false,status:'playing',floor:18}),{kind:'theme'});
+assert.deepEqual(musicSceneForView({intro:false,pressureHelp:true,changelogOpen:false,status:'playing',floor:18}),{kind:'theme'});
+assert.deepEqual(musicSceneForView({intro:false,pressureHelp:false,changelogOpen:true,status:'playing',floor:18}),{kind:'theme'});
+assert.deepEqual(musicSceneForView({intro:false,pressureHelp:false,changelogOpen:false,status:'playing',floor:18}),{kind:'floor',floor:18});
+assert.deepEqual(musicSceneForView({intro:false,pressureHelp:false,changelogOpen:false,status:'upgrade',floor:20}),{kind:'shop'});
+assert.deepEqual(musicSceneForView({intro:false,pressureHelp:false,changelogOpen:false,status:'lost',floor:18}),{kind:'death'});
 assert.equal(musicSceneKey({ kind: 'floor', floor: 120 }), 'floors-11');
 assert.equal(musicSceneKey({ kind: 'floor', floor: 121 }), 'endless');
 assert.equal(musicSceneKey({ kind: 'floor', floor: 300 }), 'endless');

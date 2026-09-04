@@ -1,6 +1,22 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.23**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.24**.
+
+## v8.24 — 2026-09-04 — Temporary cover, no end in sight
+
+- The player is now the temporary elevator operator sent to cover tonight's shift in a strange building with no final floor.
+- Rewrote the opening around one survival premise: keep power above zero, keep agitation below its limit, and survive for as long as possible.
+- Reduced the three-step briefing to “Board and place riders,” “Manage power and agitation,” and “Survive as long as you can.”
+- Updated the phase labels and manual summary to use the same Temporary Shift / Endless Shift framing in English and Chinese.
+- Opening Agitation help or the changelog now switches to `theme.mp3`; closing either restores the current floor track.
+- Added a prominent Start Game button beside the current-formation forecast, keeping the action visible without scrolling.
+- Fixed English leaks in the Shop manual copy, neighbor/arrival rules in rider details, Agitation help, and accessibility labels.
+- Kept one primary start action and introduced no additional pre-game step.
+- No rider values, resource resolution, offer weights, or difficulty curves changed.
+- Expanded localization regression coverage from 1,281 to 1,595 samples by rendering full detail-card rules for all 21 riders. Browser-audited the intro, main screen, manual, Agitation help, rider details, archive, upgrades, and changelog; only the intentional Chinese language-switch label remains Chinese.
+- Verified the narrative hierarchy, English and Chinese localization, and production build.
+- Added music-scene regressions for the intro, Agitation help, changelog, floor restoration, Shop, and failure tracks.
+- Watch item: whether the strange-building premise creates curiosity without implying a finite story ending; future narrative should emerge through riders and floor events rather than a longer opening.
 
 ## v8.23 — 2026-09-04 — Rider cards say only three things
 

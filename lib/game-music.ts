@@ -4,6 +4,25 @@ export type MusicScene =
   | { kind: 'shop' }
   | { kind: 'death' };
 
+export function musicSceneForView({
+  intro,
+  pressureHelp,
+  changelogOpen,
+  status,
+  floor,
+}: {
+  intro: boolean;
+  pressureHelp: boolean;
+  changelogOpen: boolean;
+  status: 'playing' | 'upgrade' | 'lost';
+  floor: number;
+}): MusicScene {
+  if (intro || pressureHelp || changelogOpen) return { kind: 'theme' };
+  if (status === 'lost') return { kind: 'death' };
+  if (status === 'upgrade') return { kind: 'shop' };
+  return { kind: 'floor', floor };
+}
+
 const publicBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 const publicAudio = (path: string) => `${publicBasePath}${path}`;
 

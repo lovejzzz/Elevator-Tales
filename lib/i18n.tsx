@@ -35,6 +35,23 @@ const exactPairs: Array<[string, string]> = [
   ['绿色有收益 · 红色有损失 · 每位邻座分别叠加', 'Green rewards · red costs · each neighbor stacks'],
   ['下一层：商店', 'Next floor: Shop'], ['邻座与叠加', 'Neighbors and stacking'],
   ['绿色收益 · 红色损失', 'Green rewards · red costs'],
+  ['每层耗电', 'Power per floor'], ['每层自身躁动', 'Personal agitation per floor'],
+  ['🔥 红线', '🔥 Red links'], ['红线', 'Red links'],
+  ['只有标有 🔥 的红线增加躁动；⚡ 和 🪙 分别影响电量与金币。绿色协作不会消除红线。', 'Only red links marked 🔥 add agitation. ⚡ and 🪙 affect power and coins. Green cooperation does not remove red links.'],
+  ['人物能力', 'Rider ability'],
+  ['每条绿色连接逐条叠加，到站那一刻仍相邻才算。', 'Every green link stacks; only links still adjacent at the moment of arrival count.'],
+  ['红线每层生效；多条逐条相加。同类倍率按基础值线性叠加。', 'Red links resolve every floor and stack individually. Multipliers of the same type add linearly from the base value.'],
+  ['多条绿色连接逐条叠加；恋人、教练、途中收入等人物技能另外计算。', 'Green links stack individually; rider abilities such as Lover, Coach, and ride income resolve separately.'],
+  ['绿色协作和红色冲突分别结算，互不抵消。', 'Green cooperation and red conflicts resolve separately; neither cancels the other.'],
+  ['初始50电、容量60。抵达商店先补 5 电，再用金币充电或买升级。高危乘客多赚 8 金币，但每层多 +1 躁动。', 'Start with 50 power and a capacity of 60. Entering the Shop restores 5 power; then spend coins on charging or upgrades. High Risk riders earn 8 extra coins but add +1 agitation per floor.'],
+  ['到站时仍相邻才生效；同层送达多位协作乘客，可分别舒缓。', 'Only riders still adjacent on arrival count. Multiple cooperative arrivals on the same floor each provide relief.'],
+  ['没人看管：旁边没有警察或律师', 'Unwatched: no adjacent Officer or Lawyer'],
+  ['每上 1 层，赚 4 金币。', 'Each ascent earns 4 coins.'], ['每上 1 层，躁动 +1。', 'Each ascent adds 1 agitation.'],
+  ['途中：每层赚 1 金币，不再产生偷窃躁动。', 'During the ride: earn 1 coin per floor with no theft agitation.'],
+  ['到站：受控奖励 +5 金币，协作奖励再 +3 金币。', 'On arrival: +5 controlled bonus and +3 cooperation bonus.'],
+  ['警察能帮谁？', 'Who can the Officer help?'], ['律师能帮谁？', 'Who can the Lawyer help?'],
+  ['旁边的小偷：每层收益从 4 降为 1 金币，不再产生偷窃躁动。', 'Adjacent Thief: income falls from 4 to 1 coin per floor, with no theft agitation.'],
+  ['律师不能暂停炸弹倒计时。', 'A Lawyer cannot lock a Bomb timer.'],
   ['每层＝上行后立即结算 · 到站＝下车时结算 · 邻座逐人叠加', 'Per floor = paid after each ascent · Arrival = paid on exit · neighbors stack'],
   ['每上1层 +1躁动', 'Each ascent +1 agitation'], ['每上1层额外耗1电', 'Each ascent costs 1 extra power'],
   ['每上1层立即 −2', 'Each ascent immediately −2'], ['两人每层耗电 ×2', 'Both use ×2 power per floor'],
@@ -265,7 +282,7 @@ const exactPairs: Array<[string, string]> = [
   ['请竖屏游玩', 'Please rotate to portrait'],
   ['这个横屏尺寸太矮，转回竖屏即可继续；本班进度保留。', 'This landscape viewport is too short. Rotate back to portrait to continue; your run is preserved.'],
   ['乘客档案', 'Passenger Archive'], ['玩法说明', 'How to Play'], ['关闭音乐', 'Mute music'], ['打开音乐', 'Enable music'], ['关闭音效', 'Mute effects'], ['打开音效', 'Enable effects'], ['关闭声音', 'Mute sound'], ['打开声音', 'Enable sound'],
-  ['午夜启程', 'Midnight Departure'], ['无尽班次', 'Endless Shift'], ['电量', 'Power'], ['躁动', 'Agitation'], ['余额', 'Balance'],
+  ['临时夜班', 'Temporary Shift'], ['无尽夜班', 'Endless Shift'], ['午夜启程', 'Midnight Departure'], ['无尽班次', 'Endless Shift'], ['电量', 'Power'], ['躁动', 'Agitation'], ['余额', 'Balance'],
   ['本次变化明细', 'Decision details'], ['电梯座舱', 'Elevator cabin'], ['绿实线协作 · 红虚线冲突', 'Solid green: cooperation · dashed red: conflict'],
   ['绿实线协作 · 红虚线显示代价', 'Solid green: cooperation · dashed red: cost'],
   ['绿线发奖励；红线图标直接显示每层代价。两者分别结算，多条都可叠加。', 'Green links pay rewards; red-link icons show their per-floor cost. They resolve independently, and multiple links stack.'],
@@ -286,6 +303,12 @@ const exactPairs: Array<[string, string]> = [
   ['选择发光站位 · ESC 取消', 'Choose a glowing position · ESC to cancel'], ['再选一个站位完成调整 · ESC 取消', 'Choose another position to complete the move · ESC to cancel'],
   ['已选中乘客 · 请点电梯里的目标空位', 'Rider selected · choose an open cabin position'],
   ['今晚，所有人', 'Tonight, everyone'], ['都想再上一层。', 'wants one more floor.'],
+  ['临时顶班。', 'A temporary assignment.'], ['这栋楼没有尽头。', 'This building has no end.'],
+  ['今晚，你被临时派来这座古怪大楼开电梯。守住电量和躁动，安排每位乘客的位置。这里没有最后一层——活得越久，成绩越高。', "Tonight, you were sent to operate the elevator in this strange building. Keep power above zero, keep agitation below its limit, and place every rider carefully. There is no final floor—the longer you survive, the higher your score."],
+  ['接客并安排站位', 'Board and place riders'], ['守住电量与躁动', 'Manage power and agitation'], ['尽可能生存下去', 'Survive as long as you can'],
+  ['开始临时夜班', 'Start the Temporary Shift'],
+  ['开始游戏', 'Start Game'],
+  ['这是一次没有终点的临时夜班。守住电量与躁动，活得越久，楼层成绩越高。', 'This temporary night shift has no end. Protect your power and agitation limits; the longer you survive, the higher your floor score.'],
   ['安排六个站位，促成协作，避开冲突。没有终点，越往上越难。送客赚取金币，每十层购买升级，挑战自己的最高楼层。', 'Arrange six positions, build cooperation, and avoid conflict. There is no final floor—the higher you go, the harder it gets. Deliver riders for coins, buy upgrades every ten floors, and chase your personal best.'],
   ['选人安排站位', 'Choose riders and positions'], ['绿线协作 · 红线冲突', 'Green cooperation · red conflict'], ['权衡代价后上行', 'Weigh the cost, then ascend'],
   ['开始午夜班次', 'Start the Midnight Shift'], ['先阅读值班手册', 'Read the shift manual first'], ['值班手册', 'Shift Manual'],
@@ -456,6 +479,8 @@ export function translateGameText(value: string, locale: GameLocale): string {
   const direct = exact.get(core);
   if (direct) return `${leading}${direct}${trailing}`;
   let translated = value
+    .replace(/(.+?)到站时，每位仍相邻的协作对象额外赚 (\d+) 金币。/gu, '$1 arrival: each cooperation partner still adjacent earns $2 extra coins.')
+    .replace(/契约生效：(.+?)协作到站，额外躁动 −(\d+)。/gu, 'Pact active: $1 cooperative arrival reduces agitation by $2.')
     .replace(/倒计时 (\d+) · 归零失败/gu, 'Timer $1 · zero ends the run')
     .replace(/已复制 (\d+) 项/gu, 'Copied $1 fields')
     .replace(/到站 \+(\d+)\/邻座/gu, 'Arrival +$1/neighbor')

@@ -8,9 +8,29 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.23';
+export const GAME_VERSION = '8.24';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.24', date: '2026-09-04', title: '临时顶班，没有尽头',
+    summary: '玩家现在是被临时派往古怪大楼的电梯操作员。开场立即说清这是一场没有最后一层的生存夜班：守住两项资源，尽可能活久一点。',
+    changes: [
+      '开场从乘客视角改为玩家视角：明确你是临时电梯操作员，地点是一座古怪且没有尽头的大楼。',
+      '三步引导改为“接客并安排站位→守住电量与躁动→尽可能生存下去”，不再把世界观、操作和细节规则挤进同一段文字。',
+      '值班手册摘要与班次标签同步为“临时夜班 / 无尽夜班”，中英文叙事保持一致。',
+      '打开“躁动说明”或“更新记录”时切换为 theme 主题曲；关闭后恢复当前楼层音乐，统一暂停阅读界面的听觉语法。',
+      '躁动说明底部新增“开始游戏”主按钮，与当前站位预测并排，无需滚动即可继续。',
+      '补齐英文版漏翻：手册的商店说明、人物详情的邻座/到站规则、躁动帮助和辅助功能标签现在全部是英文。',
+      '本版未改动任何人物数值、资源结算、掉落权重或难度曲线。',
+    ],
+    experiments: [
+      '对开场文案做信息层级检查：标题只建立身份与悬念，正文只解释生存条件，三步条只保留开始游玩前必需的决策。',
+      '英文回归样本从1,281条扩展到1,595条，新增21种人物的完整详情卡覆盖；浏览器逐页检查开场、主界面、手册、躁动说明、人物详情、档案、升级清单与更新记录，除语言切换键“中文”外没有中文残留。',
+      '验证中英文本地化与生产构建；开场保留单个主按钮，不增加进入游戏前的额外步骤。',
+      '增加音乐场景回归：开场、躁动说明与更新记录均选中 theme，关闭后重新选中当前楼层曲，商店与失败曲不受影响。',
+    ],
+    watch: ['观察“古怪大楼”是否能激起好奇、同时不让玩家误以为存在剧情终点；后续叙事应通过乘客与楼层事件展开，而不是继续加长开场文案。'],
+  },
   {
     version: '8.23', date: '2026-09-04', title: '人物卡只说三件事',
     summary: '候客卡统一成“自身、绿色邻座、红色邻座”三段；同一种摆位操作不再混用“相邻、协作、阻止”等多套说法，状态栏也改成更直接的当前值/上限。',
@@ -434,6 +454,26 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.24', date: '2026-09-04', title: 'Temporary cover, no end in sight',
+    summary: 'The player is now the elevator operator sent to cover a shift in a strange building. The opening immediately frames an endless survival shift: protect two resources and stay alive for as long as possible.',
+    changes: [
+      'Reframed the opening from the riders\' perspective to the player\'s: you are the temporary elevator operator, and the setting is a strange building with no final floor.',
+      'The three-step briefing is now “Board and place riders → Manage power and agitation → Survive as long as you can,” instead of mixing story, interaction, and secondary rules into one paragraph.',
+      'The manual summary and phase labels now share the Temporary Shift / Endless Shift language in both English and Chinese.',
+      'Opening Agitation help or the changelog now switches to the theme track. Closing either restores the current floor music, giving pause-and-read screens one consistent audio language.',
+      'Added a prominent Start Game button beside the current-formation forecast, so the Agitation screen has an explicit way into play without scrolling.',
+      'Completed missing English localization in the Shop manual copy, neighbor/arrival rules in rider details, Agitation help, and accessibility labels.',
+      'No rider values, resource resolution, offer weights, or difficulty curves changed in this release.',
+    ],
+    experiments: [
+      'Audited the opening hierarchy: the headline establishes identity and mystery, the paragraph states the survival conditions, and the three-step strip retains only decisions needed before play begins.',
+      'Expanded English regression coverage from 1,281 to 1,595 samples by rendering full detail-card rules for all 21 riders. Browser-audited the intro, main screen, manual, Agitation help, rider details, archive, upgrades, and changelog; only the intentional Chinese language-switch label remains Chinese.',
+      'Verified English and Chinese localization and the production build. The opening keeps one primary action and adds no extra step before play.',
+      'Added music-scene regressions: the intro, Agitation help, and changelog select the theme track; closing them selects the current floor track again, while Shop/death music remain unchanged.',
+    ],
+    watch: ['Watch whether “strange building” creates curiosity without implying a story ending. Future narrative should emerge through riders and floor events instead of making the opening longer.'],
+  },
   {
     version: '8.23', date: '2026-09-04', title: 'Rider cards say only three things',
     summary: 'Candidate cards now share three sections: Self, Green Neighbors, and Red Neighbors. One placement action no longer uses competing terms such as adjacent, cooperate, and prevent, while the instrument rail now shows direct current/cap values.',

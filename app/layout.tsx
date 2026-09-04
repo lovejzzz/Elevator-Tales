@@ -15,10 +15,10 @@ const publicOrigin = process.env.GITHUB_PAGES === 'true'
 export const metadata: Metadata = {
   metadataBase: new URL(publicOrigin),
   title: 'Elevator Tales — Midnight Shift',
-  description: 'Six positions. Endless floors. Earn, upgrade, and keep the midnight shift alive.',
+  description: "You are tonight's temporary elevator operator in a strange, endless building. Manage riders, power, and agitation—and survive.",
   openGraph: {
     title: 'Elevator Tales — Midnight Shift',
-    description: 'Six positions. Endless floors. Earn, upgrade, and keep the midnight shift alive.',
+    description: "You are tonight's temporary elevator operator in a strange, endless building. Manage riders, power, and agitation—and survive.",
     images: [elevatorImage],
   },
 };

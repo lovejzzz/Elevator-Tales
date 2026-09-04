@@ -77,4 +77,4 @@ assert.doesNotMatch(JSON.stringify(officerSections),/收益 \+1\/层/,'the ambig
 const thiefRed=passengerCardSections(rider('thief'),state()).red;
 assert.ok(thiefRed.some(section=>section.targets?.includes('inspector')&&section.targets.includes('ghost')),'identical Thief coin-loss neighbors share one row');
 assert.equal(passengerCardSections(rider('musician'),state()).green[0].effects[0].text,'每人 −2/层','Musician fan-out stays concise and exact');
-console.log(JSON.stringify({version:'v8.23',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:5,savingsCopy:true,archiveDiscovery:true,distinctCalmers:true,threePartCards:PASSENGER_ORDER.length}));
+console.log(JSON.stringify({version:'v8.24',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:5,savingsCopy:true,archiveDiscovery:true,distinctCalmers:true,threePartCards:PASSENGER_ORDER.length}));
