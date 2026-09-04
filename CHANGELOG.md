@@ -1,6 +1,15 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.25**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.26**.
+
+## v8.26 — 2026-09-04 — Drag previews show only real links
+
+- Fixed the drag state applying its preview style to the whole adjacency map. Empty edges no longer form a green dashed grid across all six positions.
+- Only green or red relationships newly created or changed by the prospective placement receive the animated preview style.
+- Existing unchanged relationships retain their normal settled style, making the result of the current move distinct from the cabin's prior links.
+- Neighbor detection, stacking, resource resolution, and all balance values are unchanged; this release corrects visual feedback only.
+- Added edge-level regressions for empty, new, changed, and unchanged green/red relationships, then reran the complete gameplay, localization, music, changelog, and production-build checks.
+- Watch item: multi-link reseats, where several relationships may change at once, should still make new and existing links immediately distinguishable.
 
 ## v8.25 — 2026-09-04 — Cabin cards stop colliding
 

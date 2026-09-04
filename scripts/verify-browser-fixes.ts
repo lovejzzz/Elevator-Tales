@@ -4,6 +4,7 @@ import { initialRun, resolveFloor, energySavings, riderAgitation, type Rider, ty
 import { PASSENGERS, PASSENGER_ORDER, passengerCardGrade } from '../lib/game-data';
 import { passengerBrief, passengerCardSections, passengerFace, SHARED_SAVING_RULE } from '../lib/passenger-presentation';
 import { addDiscoveredPassengers, sanitizeDiscoveredPassengers } from '../lib/passenger-discovery';
+import { shouldPreviewConnection } from '../lib/connection-preview';
 const rider=(kind:Rider['kind'],id=kind as string,extra:Partial<Rider>={}):Rider=>({kind,id,destination:8,boardedAt:1,patience:0,fareBonus:0,...extra});
 const state=(extra:Partial<RunState>={}):RunState=>({...initialRun(),...extra});
 let checks=0;
@@ -84,4 +85,11 @@ assert.match(component,/compactAgitationValue/,'cabin agitation uses a compact n
 assert.doesNotMatch(component,/seat-energy[^\n]+seatBrief\.energy\}\/站/,'cabin power does not repeat a unit inside the narrow metric strip');
 assert.doesNotMatch(stylesheet,/new-rider-ring|newly-boarded \.seat-art::after/,'current-floor cards use their edge instead of a portrait ring');
 assert.match(stylesheet,/grid-template-rows:auto auto minmax\(0,1fr\) auto auto/,'cabin facts own separate layout rows');
-console.log(JSON.stringify({version:'v8.25',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:5,savingsCopy:true,archiveDiscovery:true,distinctCalmers:true,threePartCards:PASSENGER_ORDER.length,cabinCardRows:5,portraitRing:false}));
+assert.equal(shouldPreviewConnection(true,false,false,null,null),false,'empty graph edges never inherit the global drag-preview style');
+assert.equal(shouldPreviewConnection(true,false,true,null,null),true,'a newly created green link is previewed');
+assert.equal(shouldPreviewConnection(true,true,true,null,null),false,'an unchanged green link keeps its settled style');
+assert.equal(shouldPreviewConnection(true,false,false,null,'energy'),true,'a newly created red link is previewed');
+assert.equal(shouldPreviewConnection(true,false,false,'energy','coin'),true,'a changed red-link effect is previewed');
+assert.equal(shouldPreviewConnection(true,false,false,'energy','energy'),false,'an unchanged red link keeps its settled style');
+assert.doesNotMatch(component,/\$\{previewing \? 'preview-link'/,'drag preview is never applied to the entire adjacency map');
+console.log(JSON.stringify({version:'v8.26',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:5,savingsCopy:true,archiveDiscovery:true,distinctCalmers:true,threePartCards:PASSENGER_ORDER.length,cabinCardRows:5,portraitRing:false,edgeScopedPreview:true}));

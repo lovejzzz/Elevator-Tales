@@ -8,9 +8,23 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.25';
+export const GAME_VERSION = '8.26';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.26', date: '2026-09-04', title: '拖拽只预览真实连线',
+    summary: '拖拽人物时，连线预览现在逐条判断；只有这次站位真正新增或改变的关系会发光，空站位之间不会再像全部建立了连接。',
+    changes: [
+      '修复拖拽期间把预览样式错误加到整张邻接图的问题。未产生关系的边保持隐去，不再出现覆盖六个站位的绿色虚线网格。',
+      '新增或改变的绿色/红色关系仍会即时预览；已经存在且未改变的关系保留普通实线或红线样式，避免把旧关系误认成本次新增。',
+      '人物邻座判定、叠加、资源结算和所有平衡参数均未改变；本次只修正预览视觉反馈。',
+    ],
+    experiments: [
+      '新增逐边预览回归，覆盖空边、新增绿线、未变绿线、新增红线、红线类型变化与未变红线六种状态；空边不会获得预览样式。',
+      '重新运行完整人物、叠加、红线、预测、音乐、更新记录与生产构建验证。',
+    ],
+    watch: ['观察多条关系同时因换位而改变时，新增连线与既有连线是否仍能被一眼区分。'],
+  },
   {
     version: '8.25', date: '2026-09-04', title: '车厢卡不再互相压住',
     summary: '车厢人物卡重新划分姓名、站数、肖像、状态与数值的空间；窄卡只显示图标和数字，信息不会再跨栏重叠。',
@@ -470,6 +484,20 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.26', date: '2026-09-04', title: 'Drag previews show only real links',
+    summary: 'Connection previews are now evaluated edge by edge. Only relationships created or changed by the prospective placement light up; empty positions no longer look connected to the entire cabin.',
+    changes: [
+      'Fixed the drag state applying its preview style to the whole adjacency map. Edges with no relationship remain hidden instead of forming a green dashed grid across all six positions.',
+      'New or changed green and red relationships still preview immediately. Existing unchanged relationships retain their regular settled style, separating old links from the result of this move.',
+      'Neighbor detection, stacking, resource resolution, and all balance values are unchanged. This release corrects visual feedback only.',
+    ],
+    experiments: [
+      'Added edge-level regressions for an empty edge, a new green link, an unchanged green link, a new red link, a changed red effect, and an unchanged red link. Empty edges never receive the preview class.',
+      'Reran the complete rider, stacking, red-link, forecast, music, changelog, and production-build checks.',
+    ],
+    watch: ['Watch whether new and existing links remain instantly distinguishable when a reseat changes several relationships at once.'],
+  },
   {
     version: '8.25', date: '2026-09-04', title: 'Cabin cards stop colliding',
     summary: 'Cabin rider cards now reserve separate space for identity, trip, portrait, state, and values. Narrow cards use icons plus numbers so no value can spill into its neighbor.',

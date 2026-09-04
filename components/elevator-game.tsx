@@ -17,6 +17,7 @@ import { passengerBrief, passengerCardSections, SHARED_SAVING_RULE, type Passeng
 import { metricChanges, type MetricChange, type MetricKey } from '@/lib/metric-feedback';
 import { CHANGELOG, CHANGELOG_EN, GAME_VERSION } from '@/lib/changelog';
 import { localizeTree, translateGameText, type GameLocale } from '@/lib/i18n';
+import { shouldPreviewConnection } from '@/lib/connection-preview';
 
 type DragPayload = { type: 'offer'; id: string } | { type: 'slot'; slot: number };
 type Feedback = { id: number; tone: 'place' | 'combo' | 'error' | 'arrival'; label: string; slots: number[]; coins?: number; energy?: number; pressure?: number };
@@ -372,8 +373,9 @@ export default function ElevatorGame() {
           const previewConflict=previewing?conflictLinks(hoveredPlan!.next.cabin).find(link=>link.first===first&&link.second===second):undefined;
           const shownActive=previewing?preview:active;
           const shownConflict=previewing?previewConflict:currentConflict;
+          const previewEdge=shouldPreviewConnection(previewing,active,preview,currentConflict?.effect??null,previewConflict?.effect??null);
           const [x1,y1]=CONNECTION_POINTS[first]; const [x2,y2]=CONNECTION_POINTS[second];
-          return <g key={`${first}-${second}`} className={`connection-path ${shownActive ? 'active' : ''} ${shownConflict?'conflict-link':''} ${previewing ? 'preview-link' : ''}`}><line className="connection-underlay" x1={x1} y1={y1} x2={x2} y2={y2}/><line className="connection-core" x1={x1} y1={y1} x2={x2} y2={y2}/>{(shownActive||shownConflict)&&<circle className="connection-node" cx={(x1+x2)/2} cy={(y1+y2)/2} r="3"/>}{shownConflict&&<text className="connection-effect" x={(x1+x2)/2} y={(y1+y2)/2-6} textAnchor="middle">{conflictGlyph(shownConflict.effect)}</text>}</g>;
+          return <g key={`${first}-${second}`} className={`connection-path ${shownActive ? 'active' : ''} ${shownConflict?'conflict-link':''} ${previewEdge ? 'preview-link' : ''}`}><line className="connection-underlay" x1={x1} y1={y1} x2={x2} y2={y2}/><line className="connection-core" x1={x1} y1={y1} x2={x2} y2={y2}/>{(shownActive||shownConflict)&&<circle className="connection-node" cx={(x1+x2)/2} cy={(y1+y2)/2} r="3"/>}{shownConflict&&<text className="connection-effect" x={(x1+x2)/2} y={(y1+y2)/2-6} textAnchor="middle">{conflictGlyph(shownConflict.effect)}</text>}</g>;
         })}</svg>{run.cabin.map((rider, index) => {
           const state = riderState(run.cabin, index, power.total, cooperationBonus(run)); const plan = placementPlans[index]; const synergy = plan?.ok && plan.changed && plan.tone === 'combo'; const agitation=riderAgitation(run,index); const seatBrief=rider?passengerBrief(rider,run.floor,run.cabin,cooperationBonus(run),cooperationRelief(run),eventPressureMultiplier(run)):null;
           const target = dragOverSlot === index && Boolean(activeRider); const reaction = feedback?.slots.includes(index) ? feedback : null;
