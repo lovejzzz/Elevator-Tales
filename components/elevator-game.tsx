@@ -5,7 +5,7 @@ import { ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Check, Coins, Fl
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, passengerCardGrade, type PassengerCardGrade, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
-import { CHARGE_PRICE, INITIAL_ENERGY, ENERGY_CAPACITY, INSPECTOR_ENERGY_LIMIT, HIGH_RISK_BONUS, energyBreakdown, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
+import { CHARGE_PRICE, INITIAL_ENERGY, ENERGY_CAPACITY, INSPECTOR_ENERGY_LIMIT, HIGH_RISK_BONUS, energyBreakdown, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, touristCompanionCount, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, stressForecast } from '@/lib/game-forecast';
 import { conflictingConnection, activeConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
@@ -80,7 +80,7 @@ function PassengerCardFace({ rider, run, action, locale }: { rider: Rider; run: 
   const conflictText=`${face.conflict.replace('挨','邻')} 躁动`;
   return localizeTree(<span className="unified-passenger-summary">
     <span className="card-overview">
-      <span className="card-head"><Portrait kind={rider.kind}/><span><strong>{PASSENGERS[rider.kind].name}</strong><span className="card-meta"><span className="card-trip">还剩 {brief.distance} 站</span><span className={`card-grade grade-${grade}`} title="卡牌稀有度">{CARD_GRADE_LABELS[grade]}</span>{rider.volatile&&<span className="high-risk-tag"><Flame aria-hidden="true" />高危 +{HIGH_RISK_BONUS}</span>}</span></span></span>
+      <span className="card-head"><Portrait kind={rider.kind}/><span><strong>{PASSENGERS[rider.kind].name}</strong><span className="card-meta"><span className="card-trip">还剩 {brief.distance} 站</span><span className={`card-grade grade-${grade}`} title="卡牌稀有度">{CARD_GRADE_LABELS[grade]}</span>{rider.kind==='tourist'&&<span className="tourist-stamp">旅伴加成</span>}{rider.volatile&&<span className="high-risk-tag"><Flame aria-hidden="true" />高危 +{HIGH_RISK_BONUS}</span>}</span></span></span>
       <span className="card-values">
         <b className="card-fare" aria-label={brief.coins===null?'到站金币待揭晓':`到站金币 ${brief.coins}`} title="到站金币"><Coins aria-hidden="true" />{brief.coins===null?'?':brief.coins}</b>
         <span className="card-energy" aria-label={`每站耗电 ${brief.energy}`} title="每站耗电"><BatteryCharging aria-hidden="true" />{brief.energy}/站</span>
@@ -109,6 +109,7 @@ function riderState(cabin: Array<Rider | null>, slot: number, totalEnergy: numbe
   if(rider.kind==='shifter')return {label:`耗电 ${bond.energy} · 躁动 +${bond.agitation}`,tone:'warn'};
   if(rider.kind==='mimic')return {label:`复制 ${bond.copies.length} 项`,tone:bond.copies.length?'active':'neutral'};
   switch (rider.kind) {
+    case 'tourist': { const count=touristCompanionCount(cabin,slot); return count ? { label: `旅伴 ${count}/2 · 每站 +${count}币`, tone: 'active' } : { label: '需要不同职业旅伴', tone: 'neutral' }; }
     case 'lover': return hasNeighbour(cabin, slot, ['lover']) ? { label: '已配对', tone: 'active' } : { label: '正在呼唤同伴', tone: 'neutral' };
     case 'thief': return hasNeighbour(cabin, slot, ['cop', 'lawyer']) ? { label: '已受控制', tone: 'active' } : { label: '未受控制', tone: 'warn' };
     case 'cop': return hasNeighbour(cabin, slot, ['thief', 'bomb']) ? { label: '正在控制', tone: 'active' } : null;
@@ -374,7 +375,7 @@ export default function ElevatorGame() {
             const unavailable = full; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id;
             const partner = unavailable ? null : readyPartner(offer.kind, run.cabin, offer.id, offer);
             const grade=passengerCardGrade(offer.kind);
-            return <div className="passenger-item" role="listitem" key={offer.id}><button className={`passenger-card grade-${grade} tone-${spec.tone} ${offer.volatile?'volatile':''} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
+            return <div className="passenger-item" role="listitem" key={offer.id}><button className={`passenger-card kind-${offer.kind} grade-${grade} tone-${spec.tone} ${offer.volatile?'volatile':''} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
               {boarded && <span className="boarded-status" aria-hidden="true"><Check />已上车</span>}
               <PassengerCardFace rider={offer} run={run} action={boarded?'点此撤回':pending?'已选中 · 点空位':full?'车厢已满':partner?`上车可联动 · ${PASSENGERS[partner].name}`:undefined} locale={language}/>
             </button><button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(offer);}} aria-label={`查看${spec.name}规则`}><HelpCircle /></button></div>;

@@ -11,6 +11,11 @@ const exactPairs: Array<[string, string]> = [
   ['检查员', 'Inspector'], ['炸弹客', 'Bomb Carrier'], ['神秘人', 'Mystery'], ['百变人', 'Shifter'], ['复制人', 'Mimic'],
 
   // Passenger summaries and rules.
+  ['每种不同职业邻座：每站+1币，最多+2', 'Each distinct adjacent profession: +1 coin/floor, max +2'],
+  ['基础车费18。每种不同职业的相邻乘客，让游客每层多赚1金币，最多+2。相邻游客不计，同职业不重复；邻座变化时立即重新计算。', 'Base fare: 18. Each distinct adjacent profession earns the Tourist +1 coin per floor, up to +2. Other Tourists do not count, duplicate professions count once, and the bonus updates immediately when neighbors change.'],
+  ['每种不同职业的相邻乘客：每层 +1 金币，最多 +2。', 'Each distinct adjacent profession: +1 coin per floor, up to +2.'],
+  ['相邻游客不计；同职业不重复。邻座变化时立即重新计算。', 'Other Tourists do not count; duplicate professions count once. The bonus updates immediately when neighbors change.'],
+  ['游客邻座不计；同职业不重复', 'Other Tourists do not count; duplicate professions count once'],
   ['每层抵消1名相邻乘客的1躁动', 'Cancels 1 agitation from one adjacent rider each floor'],
   ['可堆叠；安抚相邻醉汉、儿童', 'Stacks; also calms adjacent Drunks and Children'],
   ['每层 +1', '+1 each floor'],
@@ -236,6 +241,9 @@ const exactPairs: Array<[string, string]> = [
   ['自身躁动', 'personal agitation'], ['邻座冲突', 'neighbor conflict'], ['已配对', 'Paired'], ['正在呼唤同伴', 'Calling a partner'],
   ['已受控制', 'Controlled'], ['未受控制', 'Uncontrolled'], ['正在控制', 'Controlling'], ['已被安抚', 'Calmed'], ['不稳定', 'Unstable'],
   ['有人照顾', 'Cared for'], ['无人照顾', 'Unattended'], ['已被镇压', 'Suppressed'], ['正在作祟', 'Haunting'], ['正在驱魔', 'Exorcising'],
+  ['需要不同职业旅伴', 'Needs a different-profession companion'], ['旅伴 ', 'Companions '],
+  ['旅伴加成', 'Companion bonus'],
+  ['游客旅伴', 'Tourist companions'],
   ['等待邻座', 'Waiting for a neighbor'], ['状态最佳', 'Ideal position'], ['被围住', 'Surrounded'], ['缺少关注', 'Needs attention'], ['正在演奏', 'Performing'], ['正在安抚', 'Calming'],
   ['每层抵消邻座1躁动', 'Cancels 1 adjacent agitation/floor'], ['高危', 'High Risk'], ['高危 +', 'High Risk +'], ['高危 +1', 'High Risk +1'], ['高危到站 +8币', 'High Risk arrival +8'],
   ['卡牌稀有度', 'Card rarity'], ['本层起，高危候客增加', 'High-risk candidates increase from this floor'],
@@ -352,6 +360,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
   if (direct) return `${leading}${direct}${trailing}`;
   let translated = value
     .replace(/查看已装升级，共 (\d+) 次/gu, 'View installed upgrades: $1')
+    .replace(/旅伴 (\d+)\/2 · 每站 \+(\d+)币/gu, 'Companions $1/2 · +$2 coins/floor')
     .replace(/每邻(.+?)：每层 \+(\d+) 躁动/gu, 'Each adjacent $1: +$2 agitation/floor')
     .replace(/(\d+)号位/gu, '$1 position')
     .replace(/每邻(.+?)：偶数层 \+(\d+) 躁动/gu, 'Each adjacent $1: +$2 agitation on even floors')

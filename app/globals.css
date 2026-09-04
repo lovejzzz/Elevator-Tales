@@ -1416,6 +1416,12 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .seat-metrics svg { width:9px; height:9px; }
 }
 
+@container (min-width:151px) and (max-width:205px) {
+ .seat-metrics { width:100%; padding:4px 2px; gap:0; }
+ .seat-metrics>span { gap:2px; font-size:9px; }
+ .seat-metrics svg { width:10px; height:10px; }
+}
+
 @container (max-height:74px) {
  .seat-info-button { display:none; }
  .seat-metrics { padding-block:2px; }
@@ -1497,6 +1503,18 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  --card-sheen:linear-gradient(108deg,transparent 18%,rgba(255,223,134,.34) 36%,rgba(111,220,201,.22) 44%,rgba(203,130,205,.23) 51%,transparent 68%);
  --card-depth:inset 5px 0 var(--card-accent),inset 0 0 0 1px rgba(255,240,190,.2),0 8px 24px #0009,0 0 22px rgba(108,204,186,.14);
 }
+/* Tourist identity: a restrained midnight-postcard stock. It is visually
+   recognizable without pretending that the card is a higher rarity tier. */
+.game-shell .passenger-card.kind-tourist:not(.volatile) {
+ --card-edge:#7eaa9b;
+ --card-accent:#d0b56d;
+ --card-surface:radial-gradient(circle at 14% 6%,rgba(205,184,111,.18),transparent 31%),linear-gradient(rgba(121,174,154,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(121,174,154,.045) 1px,transparent 1px),linear-gradient(128deg,#253c34,#12251f 55%,#091512);
+ --card-sheen:linear-gradient(108deg,transparent 24%,rgba(195,224,206,.2) 43%,rgba(237,205,124,.13) 50%,transparent 66%);
+ --card-depth:inset 4px 0 var(--card-accent),inset 0 0 0 1px rgba(151,202,181,.13),0 7px 20px #0007,0 0 16px rgba(104,170,145,.1);
+ background-size:auto,18px 18px,18px 18px,auto;
+}
+.game-shell .passenger-card.kind-tourist:not(.volatile) .card-grade { color:#cfe7d9; background:#1b4035d9; border-color:#79ae99; }
+.tourist-stamp { min-height:18px; display:inline-flex; align-items:center; padding:1px 6px; border:1px dashed rgba(210,181,105,.72); border-radius:2px; color:#e2c77f; background:rgba(57,47,24,.7); font:750 10px/1 var(--font-mono); letter-spacing:.05em; white-space:nowrap; transform:rotate(-1deg); }
 .game-shell .passenger-card::before {
  content:'';
  position:absolute;
@@ -1546,6 +1564,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .card-meta { justify-content:center; gap:2px 5px; }
  .card-grade { min-height:16px; padding-inline:4px; font-size:9px; letter-spacing:.04em; }
  .high-risk-tag { min-height:16px; padding-inline:4px; font-size:9px; }
+ .tourist-stamp { min-height:16px; padding-inline:4px; font-size:8px; }
  .seat-risk-tag { padding:2px 3px; font-size:8px; }
 }
 

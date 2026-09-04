@@ -12,7 +12,7 @@
     "lint": "oxlint",
     "format": "oxfmt",
     "simulate": "tsx scripts/simulate-balance.ts",
-    "verify": "tsx scripts/verify-three-values.ts && tsx scripts/verify-stacking.ts && tsx scripts/verify-browser-fixes.ts && tsx scripts/verify-checkpoint.ts && tsx scripts/verify-audio.ts && tsx scripts/verify-changelog.ts && tsx scripts/verify-i18n.ts",
+    "verify": "tsx scripts/verify-three-values.ts && tsx scripts/verify-stacking.ts && tsx scripts/verify-tourist.ts && tsx scripts/verify-browser-fixes.ts && tsx scripts/verify-checkpoint.ts && tsx scripts/verify-audio.ts && tsx scripts/verify-changelog.ts && tsx scripts/verify-i18n.ts",
     "verify:legacy": "tsx scripts/verify-legacy-v64.ts"
   },
   "dependencies": {

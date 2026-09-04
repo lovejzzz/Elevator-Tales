@@ -1,6 +1,17 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.14**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.15**.
+
+## v8.15 — 2026-09-03 — Tourist becomes a formation investment
+
+- Tourist base fare changes from 22 to 18 and trip length from 3–7 to 4–7 floors; power remains 2 per floor.
+- Each distinct adjacent non-Tourist profession earns the Tourist +1 coin per floor, capped at +2. Other Tourists do not count and duplicate professions count once.
+- Cabin state shows `Companions 0/2–2/2` and the current bonus. Candidate cards receive a travel-grid postcard surface and Companion Bonus stamp while remaining Fine rarity.
+- Companion income is separate from base fare, so Coach multipliers never multiply it.
+- Verified 216 directed formations. A paired 10,000-game comparison kept balanced median at floor 25 and moved average income only from 322.79 to 324.06.
+- Independent holdout: 20,000 games and 367,691 floor settlements, with zero power or agitation forecast misses and balanced median still at floor 25.
+- Research only: 600,000 Storyteller trials showed the raw two-Child exit rule soft-locking a slot for a median 15–19 floors. A 20% per-floor Child-call chance reduced median release to 6 floors and >20-floor locks to 4.72%–5.92%. Storyteller is not yet live.
+- Watch items: whether players intentionally preserve diverse Tourist neighbors, and whether to approve the tested Storyteller parameters for a later release.
 
 ## v8.14 — 2026-09-03 — Card headers stop competing for space
 

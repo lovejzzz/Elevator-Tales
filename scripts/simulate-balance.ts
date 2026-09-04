@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { PASSENGERS, type UpgradeKey } from '../lib/game-data';
-import { HIGH_RISK_BONUS, agitationThreshold, chargingPlan, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, resolveFloor, totalEnergyCost, type Rider, type RunState } from '../lib/game-engine';
+import { HIGH_RISK_BONUS, agitationThreshold, chargingPlan, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, resolveFloor, touristCompanionCount, totalEnergyCost, type Rider, type RunState } from '../lib/game-engine';
 import { energyForecast, stressForecast } from '../lib/game-forecast';
 
 type Policy = 'balanced' | 'ignore-agitation' | 'hoard' | 'greedy';
@@ -32,6 +32,7 @@ function cabinValue(state: RunState, policy: Policy) {
     }
     let fare = spec.fare + rider.fareBonus + (rider.volatile ? HIGH_RISK_BONUS : 0);
     if (rider.kind === 'lover' && hasNeighbour(state.cabin, slot, ['lover'])) { income += 1; fare += spec.fare; }
+    if (rider.kind === 'tourist') income += touristCompanionCount(state.cabin,slot);
     if (rider.kind === 'thief') income += hasNeighbour(state.cabin, slot, ['cop', 'lawyer']) ? 1 : 3;
     if (rider.kind === 'drunk' && hasNeighbour(state.cabin, slot, ['musician', 'nurse'])) income += 1;
     if (rider.kind === 'celebrity' && neighbourCount(state.cabin, slot) === 1) income += 3;

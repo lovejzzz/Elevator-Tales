@@ -34,7 +34,7 @@ assert.equal(loverResult.lastEarnings.sources.find(line=>line.label==='恋人连
 assert.equal(loverResult.lastEarnings.sources.find(line=>line.label==='恋人到站')?.amount,24);
 
 const coaches=state({floor:1,cabin:[rider('coach','c1'),rider('tourist','t',{destination:2}),rider('coach','c2'),null,null,null]});
-assert.equal(resolveFloor(coaches,()=>.9).lastEarnings.sources.find(line=>line.label==='游客到站')?.amount,44,'two coaches linearly double a non-coach base fare');
+assert.equal(resolveFloor(coaches,()=>.9).lastEarnings.sources.find(line=>line.label==='游客到站')?.amount,36,'two coaches linearly double a non-coach base fare');
 
 const calmers=state({floor:1,cabin:[rider('nurse','n1'),rider('thief','hot',{volatile:true}),null,null,rider('musician','m1'),null]});
 assert.equal(riderAgitation(calmers,1).low,0,'two adjacent calmers cancel two visible points from one rider');
@@ -49,4 +49,4 @@ assert.equal(resolveFloor(controlledDrunks,()=>.9).lastEarnings.sources.find(lin
 const copied=[rider('commuter','a'),rider('mimic','copy'),rider('tourist','b'),null,rider('nurse','c'),null];
 assert.equal(riderProfile(copied[1]!,copied,1).copies.length,3,'mimic stacks one distinct copied field from every neighbor');
 
-console.log(JSON.stringify({version:'v8.14',passengers:PASSENGER_ORDER.length,directedLinkChecks,stackFamilies:8,hardStops:['节能不抵运转','控制状态不重复','同一复制字段不重复']}));
+console.log(JSON.stringify({version:'v8.15',passengers:PASSENGER_ORDER.length,directedLinkChecks,stackFamilies:8,hardStops:['节能不抵运转','控制状态不重复','同一复制字段不重复']}));

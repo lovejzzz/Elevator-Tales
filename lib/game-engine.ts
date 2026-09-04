@@ -44,6 +44,9 @@ export function shiftOutlook(floor: number, _occupied = 1, _restStops = 0) {
 export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);
 export const hasNeighbour = (cabin: Array<Rider | null>, slot: number, kinds: PassengerKind[]) => neighbours(slot).some((i) => cabin[i] && kinds.includes(cabin[i]!.kind));
 export const neighbourCount = (cabin: Array<Rider | null>, slot: number) => neighbours(slot).filter((i) => cabin[i]).length;
+export const TOURIST_COMPANION_CAP = 2;
+/** Distinct non-Tourist professions beside this Tourist, capped for balance. */
+export const touristCompanionCount = (cabin: Array<Rider | null>, slot: number) => Math.min(TOURIST_COMPANION_CAP, new Set(neighbours(slot).map((i) => cabin[i]?.kind).filter((kind): kind is PassengerKind => Boolean(kind) && kind !== 'tourist')).size);
 export const totalWeight = profileWeight;
 function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
   const rider = state.cabin[slot], fixed: ChangeLine[] = [];
@@ -193,6 +196,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random): 
     const loverLinks = neighbours(slot).filter(nearby=>effectCabin[nearby]?.kind==='lover').length; const controlledGhost = hasNeighbour(effectCabin, slot, ['exorcist']);
     switch (rider.kind) {
       case 'mechanic': break; // Shared savings are itemized in lastEnergy.
+      case 'tourist': { const companions=touristCompanionCount(effectCabin,slot); if(companions)addCoins('游客旅伴',companions); break; }
       case 'lover': if (loverLinks) addCoins('恋人连携', loverLinks); break;
       case 'thief': addCoins(controlledThief ? '受控小偷' : '小偷', controlledThief ? 1 : 3); break;
       case 'drunk': if (calmDrunk) addCoins('醉汉安抚', 1); break;

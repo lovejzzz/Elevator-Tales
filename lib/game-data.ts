@@ -28,7 +28,7 @@ export const MECHANIC_SAVING = 2;
 
 export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   commuter: { kind: 'commuter', name: '通勤者', title: 'The Commuter', weight: 1, fare: 7, energy: 1, trip: [2, 5], patience: 3, rarity: 18, sheet: '01', cell: 0, tone: 'steady', short: '安静、可靠、准时付费', detail: '没有特殊能力。平稳而可靠，是填补空位的可靠选择。' },
-  tourist: { kind: 'tourist', name: '游客', title: 'The Tourist', weight: 2, fare: 22, energy: 2, trip: [3, 7], patience: 3, rarity: 10, sheet: '01', cell: 1, tone: 'steady', short: '长途，但报酬丰厚', detail: '每站耗2电，抵达后提供较高车费。' },
+  tourist: { kind: 'tourist', name: '游客', title: 'The Tourist', weight: 2, fare: 18, energy: 2, trip: [4, 7], patience: 3, rarity: 10, sheet: '01', cell: 1, tone: 'steady', short: '每种不同职业邻座：每站+1币，最多+2', detail: '基础车费18。每种不同职业的相邻乘客，让游客每层多赚1金币，最多+2。相邻游客不计，同职业不重复；邻座变化时立即重新计算。' },
   courier: { kind: 'courier', name: '快递员', title: 'The Courier', weight: 1, fare: 6, energy: 1, trip: [1, 3], patience: 2, rarity: 9, sheet: '01', cell: 2, tone: 'support', short: '短途快速周转', detail: '目的地很近，适合迅速赚取车费并腾出座位。' },
   mechanic: { kind: 'mechanic', name: '维修工', title: 'The Mechanic', weight: 2, fare: 7, energy: 1, trip: [3, 7], patience: 3, rarity: 7, sheet: '01', cell: 3, tone: 'support', short: `每位每层节能${MECHANIC_SAVING}电 · 可叠加`, detail: `每位维修工每层抵消${MECHANIC_SAVING}点人物耗电，多位逐个叠加。维修工本人耗1电；节能总量最多抵完本层人物耗电，不能抵消电梯运转的1电，也不会倒充电。` },
   lover: { kind: 'lover', name: '恋人', title: 'The Lover', weight: 1, fare: 6, energy: 1, trip: [3, 7], patience: 4, rarity: 10, sheet: '01', cell: 4, tone: 'social', short: '每位邻座恋人：每站+1币，到站基价+100%', detail: '独处时，每层有25%概率让下一批候选出现另一位恋人。回应者会带有专属标记。每位相邻恋人都让本人每层多赚1金币、到站基础车费增加100%；多条恋人连接线性叠加，小费不参与倍率。' },

@@ -8,9 +8,26 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.14';
+export const GAME_VERSION = '8.15';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.15', date: '2026-09-03', title: '游客变成拼邻座的长线投资',
+    summary: '游客不再是单纯高耗电白板：他的价值现在来自不同职业旅伴，玩家需要为长途收益设计站位。',
+    changes: [
+      '游客基础车费从22调整为18，路程从3–7层调整为4–7层，每站耗电保持2。',
+      '每种不同职业的非游客邻座，让游客每层多赚1金币，最多+2；相邻游客不计，同职业不重复。',
+      '车内游客会实时显示“旅伴 0/2–2/2”和下站收益；候客卡增加旅行网格纸材质与“旅伴加成”纪念章，但仍诚实标为精良卡。',
+      '游客的途中收益与基础车费分开结算：教练只放大基础车费，旅伴金币不参与倍率。',
+    ],
+    experiments: [
+      '定向验证216种三邻座组合，覆盖空座、同职业、多职业、游客互邻、到站层与教练/绿线分开结算。',
+      '同随机种子的10,000局前后对照中，均衡策略中位数保持25层，平均收入从322.79微升到324.06，没有形成必选游客。',
+      '另用新随机种子留出测试20,000局、367,691次楼层结算，所有电量/躁动预测误差为0；均衡策略中位仍为25层。',
+      '同时对“说书人”概念进行600,000次隔离测试：原案中位解锁需15–19层，存在软锁；每层额外20%吸引儿童后中位降至6层，超过20层未解锁降至4.72%–5.92%。该人物本版尚未加入正式游戏。',
+    ],
+    watch: ['观察玩家是否会为游客主动保留多职业邻座；说书人建议参数需经玩家确认后再进入正式规则。'],
+  },
   {
     version: '8.14', date: '2026-09-03', title: '人物卡头部不再互相抢位',
     summary: '人物卡最上方重新严格区分“数值”和“能力”：三项数值保持短而稳定，完整条件留在下方规则区。',
@@ -275,6 +292,23 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.15', date: '2026-09-03', title: 'Tourist becomes a formation investment',
+    summary: 'Tourist is no longer a high-power blank card. Its long-haul value now comes from arranging a diverse set of adjacent professions.',
+    changes: [
+      'Tourist base fare changes from 22 to 18, trip length from 3–7 to 4–7 floors, while power remains 2 per floor.',
+      'Each distinct adjacent non-Tourist profession earns +1 coin per floor, capped at +2. Other Tourists do not count and duplicate professions count once.',
+      'Cabin Tourist cards show Companions 0/2–2/2 and current floor income live. Candidate cards receive a travel-grid postcard material and Companion Bonus stamp while honestly remaining Fine rarity.',
+      'Companion income settles separately from base fare: Coaches multiply only the base fare, never the banked floor income.',
+    ],
+    experiments: [
+      'Verified 216 directed three-neighbor formations covering empty, duplicate, diverse, Tourist-to-Tourist, arrival-floor, Coach, and green-link settlement boundaries.',
+      'A paired 10,000-game before/after run kept balanced median at floor 25 while average income moved only from 322.79 to 324.06, showing no automatic Tourist dominance.',
+      'A separate 20,000-game holdout used 367,691 floor settlements with zero power or agitation forecast misses; balanced median remained floor 25.',
+      'Also ran 600,000 isolated Storyteller concept trials. The raw two-Child exit condition took a median 15–19 floors and created a soft lock. Adding a 20% per-floor Child-call chance reduced median release to 6 floors and >20-floor locks to 4.72%–5.92%. Storyteller is research only and is not in this release.',
+    ],
+    watch: ['Observe whether players actively preserve diverse neighbors for Tourist. Storyteller parameters require player approval before entering the live ruleset.'],
+  },
   {
     version: '8.14', date: '2026-09-03', title: 'Card headers stop competing for space',
     summary: 'The top of every rider card now strictly separates values from abilities: three short values stay stable while complete conditions remain in the rule area below.',
