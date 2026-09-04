@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
-import { ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Check, Coins, Flame, HelpCircle, History, Info, LockKeyhole, RotateCcw, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
+import { ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Check, Coins, Flame, HelpCircle, History, Info, LockKeyhole, Music2, RotateCcw, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, passengerCardGrade, type PassengerCardGrade, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
@@ -9,6 +9,7 @@ import { CHARGE_PRICE, INITIAL_ENERGY, ENERGY_CAPACITY, INSPECTOR_ENERGY_LIMIT, 
 import { energyForecast, stressForecast } from '@/lib/game-forecast';
 import { activeConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
+import { disposeGameMusic, setGameMusic, unlockGameMusic, type MusicScene } from '@/lib/game-music';
 import { bondStatus, conflictLinks, type ConflictEffect } from '@/lib/rider-profile';
 import { portraitAsset } from '@/lib/passenger-assets';
 import { addDiscoveredPassengers, sanitizeDiscoveredPassengers } from '@/lib/passenger-discovery';
@@ -20,6 +21,7 @@ import { localizeTree, type GameLocale } from '@/lib/i18n';
 type DragPayload = { type: 'offer'; id: string } | { type: 'slot'; slot: number };
 type Feedback = { id: number; tone: 'place' | 'combo' | 'error' | 'arrival'; label: string; slots: number[]; coins?: number; energy?: number; pressure?: number };
 const DISCOVERED_PASSENGERS_KEY = 'elevator-tales-discovered-passengers-v1';
+const MUSIC_PREFERENCE_KEY = 'elevator-tales-music-enabled-v1';
 
 function AnimatedNumber({ value }: { value: number }) {
   const [shown, setShown] = useState(value); const current = useRef(value);
@@ -160,7 +162,7 @@ export default function ElevatorGame() {
   const [changelogOpen,setChangelogOpen]=useState(false);
   const [ejectArmed,setEjectArmed]=useState(false);
   const [leaveArmed,setLeaveArmed]=useState(false);
-  const [intro, setIntro] = useState(true); const [help, setHelp] = useState(false); const [pressureHelp, setPressureHelp] = useState(false); const [archive, setArchive] = useState(false); const [sound, setSound] = useState(true);
+  const [intro, setIntro] = useState(true); const [help, setHelp] = useState(false); const [pressureHelp, setPressureHelp] = useState(false); const [archive, setArchive] = useState(false); const [sound, setSound] = useState(true); const [music, setMusic] = useState(true);
   const [highest, setHighest] = useState(1); const [bestFloor, setBestFloor] = useState(1); const [runStartBest, setRunStartBest] = useState(1); const [discovered, setDiscovered] = useState<PassengerKind[]>([]); const busyRef = useRef(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [metricEvent, setMetricEvent] = useState<MetricEvent | null>(null);
@@ -169,6 +171,7 @@ export default function ElevatorGame() {
   const metricEventId = useRef(0);
   const feedbackId = useRef(0); const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null); const journeyTimers = useRef<Array<ReturnType<typeof setTimeout>>>([]);
   const locked = doors !== 'open' || run.status !== 'playing' || intro || help || pressureHelp || archive || receiptOpen || passengerDetails !== null || inventoryOpen || changelogOpen;
+  const musicScene = useMemo<MusicScene>(() => intro ? { kind: 'theme' } : run.status === 'lost' ? { kind: 'death' } : run.status === 'upgrade' ? { kind: 'shop' } : { kind: 'floor', floor: run.floor }, [intro, run.status, run.floor]);
   const flash = useCallback((event: Omit<Feedback, 'id'>) => {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
     setFeedback({ ...event, id: ++feedbackId.current });
@@ -180,7 +183,15 @@ export default function ElevatorGame() {
     setMetricEvent({ id: ++metricEventId.current, label, changes });
     playMetricSounds(soundEnabled.current, changes);
   }, []);
-  useEffect(() => () => { journeyTimers.current.forEach(clearTimeout); if (feedbackTimer.current) clearTimeout(feedbackTimer.current); disposeGameAudio(); }, []);
+  useEffect(() => () => { journeyTimers.current.forEach(clearTimeout); if (feedbackTimer.current) clearTimeout(feedbackTimer.current); disposeGameAudio(); disposeGameMusic(); }, []);
+
+  useEffect(() => { if (localStorage.getItem(MUSIC_PREFERENCE_KEY) === 'off') setMusic(false); }, []);
+  useEffect(() => { setGameMusic(music, musicScene); }, [music, musicScene]);
+  useEffect(() => {
+    const unlock = () => unlockGameMusic();
+    window.addEventListener('pointerdown', unlock, true); window.addEventListener('keydown', unlock, true);
+    return () => { window.removeEventListener('pointerdown', unlock, true); window.removeEventListener('keydown', unlock, true); };
+  }, []);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -197,6 +208,11 @@ export default function ElevatorGame() {
     const url = new URL(window.location.href);
     if (next === 'zh') url.searchParams.set('lang', 'zh'); else url.searchParams.delete('lang');
     window.history.replaceState({}, '', url);
+  };
+
+  const toggleMusic = () => {
+    const next = !music; setMusic(next); localStorage.setItem(MUSIC_PREFERENCE_KEY, next ? 'on' : 'off');
+    setGameMusic(next, musicScene); if (next) unlockGameMusic();
   };
 
   useEffect(() => { const frame=requestAnimationFrame(() => { const savedBest = Math.max(1, Number(localStorage.getItem('elevator-tales-endless-best-floor') || 1)); const savedHighest = Math.max(1, Number(localStorage.getItem('elevator-tales-highest') || 1)); const shouldGuide = savedBest <= 1 || new URLSearchParams(window.location.search).get('tutorial') === '1'; let savedDiscovered: PassengerKind[] = []; try { savedDiscovered=sanitizeDiscoveredPassengers(JSON.parse(localStorage.getItem(DISCOVERED_PASSENGERS_KEY) || '[]')); } catch {} setHighest(savedHighest); setBestFloor(savedBest); setRunStartBest(savedBest); setDiscovered(savedDiscovered); setGuidedShift(shouldGuide); setOffers(makeOffers(1, EMPTY_UPGRADES, shouldGuide)); });return()=>cancelAnimationFrame(frame); }, []);
@@ -324,7 +340,7 @@ export default function ElevatorGame() {
   const content = <main className={`game-shell ${cooperationRelief(run) ? 'has-contract' : ''} ${difficultyTier(run.floor) % 2 ? 'phase-dawn' : ''}`}>
     <div className="ambient-grain" />
     <div className="rotate-notice"><RotateCcw/><h2>请竖屏游玩</h2><p>这个横屏尺寸太矮，转回竖屏即可继续；本班进度保留。</p></div>
-    <header className="brand-bar"><div><p className="eyebrow">A MIDNIGHT MANAGEMENT TALE</p><h1>Elevator Tales</h1></div><div className="brand-actions"><button className="language-button" data-no-translate onClick={toggleLanguage} aria-label={language === 'en' ? 'Switch to Chinese' : '切换为英文'}>{language === 'en' ? '中文' : 'EN'}</button><button className="version-button" onClick={() => setChangelogOpen(true)} aria-label={`查看 v${GAME_VERSION} 更新记录`}><History /><span>v{GAME_VERSION}</span></button><button className="icon-button" onClick={() => setHelp(true)} aria-label="玩法说明"><HelpCircle /></button><button className="icon-button" onClick={() => { soundEnabled.current = !sound; if (sound) disposeGameAudio(); setSound(!sound); }} aria-label={sound ? '关闭声音' : '打开声音'}>{sound ? <Volume2 /> : <VolumeX />}</button><button className="icon-button inventory-button" onClick={() => setInventoryOpen(true)} aria-label={`查看已装升级，共 ${upgradeCount} 次`}><Layers /><span>{upgradeCount}</span></button><button className="text-button" onClick={() => setArchive(true)}>乘客档案 <span>{String(discovered.length).padStart(2, '0')} / {PASSENGER_ORDER.length}</span></button></div></header>
+    <header className="brand-bar"><div><p className="eyebrow">A MIDNIGHT MANAGEMENT TALE</p><h1>Elevator Tales</h1></div><div className="brand-actions"><button className="language-button" data-no-translate onClick={toggleLanguage} aria-label={language === 'en' ? 'Switch to Chinese' : '切换为英文'}>{language === 'en' ? '中文' : 'EN'}</button><button className="version-button" onClick={() => setChangelogOpen(true)} aria-label={`查看 v${GAME_VERSION} 更新记录`}><History /><span>v{GAME_VERSION}</span></button><button className="icon-button" onClick={() => setHelp(true)} aria-label="玩法说明"><HelpCircle /></button><button className={`icon-button music-button ${music ? '' : 'is-muted'}`} onClick={toggleMusic} aria-label={music ? '关闭音乐' : '打开音乐'} aria-pressed={!music} title={music ? '关闭音乐' : '打开音乐'}><Music2 /></button><button className="icon-button" onClick={() => { soundEnabled.current = !sound; if (sound) disposeGameAudio(); setSound(!sound); }} aria-label={sound ? '关闭音效' : '打开音效'} title={sound ? '关闭音效' : '打开音效'}>{sound ? <Volume2 /> : <VolumeX />}</button><button className="icon-button inventory-button" onClick={() => setInventoryOpen(true)} aria-label={`查看已装升级，共 ${upgradeCount} 次`}><Layers /><span>{upgradeCount}</span></button><button className="text-button" onClick={() => setArchive(true)}>乘客档案 <span>{String(discovered.length).padStart(2, '0')} / {PASSENGER_ORDER.length}</span></button></div></header>
     <section className="game-grid">
       <aside className="status-rail">
         <div className="floor-plaque"><span>当前楼层 · BEST {bestFloor}</span><strong>{String(run.floor).padStart(2, '0')}</strong><small>{phase}</small><progress className="floor-progress" aria-label={`距离 ${nextShop} 层商店还有 ${nextShop - run.floor} 站`} max={10} value={run.floor % 10} /></div>

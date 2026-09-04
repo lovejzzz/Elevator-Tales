@@ -30,6 +30,9 @@ button:focus-visible { outline:1px solid var(--brass-pale); outline-offset:3px; 
 .icon-button,.text-button,.version-button,.language-button { border:1px solid var(--border); color:#c7c1b4; background:rgba(8,15,13,.75); height:36px; transition:.2s ease; cursor:pointer; }
 .icon-button { width:36px; display:grid; place-items:center; }
 .icon-button svg { width:15px; }
+.music-button { position:relative; color:#d9bd7f; }
+.music-button.is-muted { color:#777e78; }
+.music-button.is-muted::after { content:''; position:absolute; width:19px; height:1.5px; background:#d58d6b; transform:rotate(-45deg); box-shadow:0 0 5px rgba(213,141,107,.25); }
 .version-button { min-width:62px; padding:0 9px; display:flex; align-items:center; justify-content:center; gap:6px; color:#d7bd82; font:600 10px var(--font-mono); letter-spacing:.06em; }
 .version-button svg { width:14px; height:14px; }
 .language-button { min-width:46px; padding:0 9px; color:#9fd6c2; font:700 10px var(--font-mono); letter-spacing:.08em; }

@@ -211,7 +211,7 @@ const exactPairs: Array<[string, string]> = [
   // Core UI and help.
   ['请竖屏游玩', 'Please rotate to portrait'],
   ['这个横屏尺寸太矮，转回竖屏即可继续；本班进度保留。', 'This landscape viewport is too short. Rotate back to portrait to continue; your run is preserved.'],
-  ['乘客档案', 'Passenger Archive'], ['玩法说明', 'How to Play'], ['关闭声音', 'Mute sound'], ['打开声音', 'Enable sound'],
+  ['乘客档案', 'Passenger Archive'], ['玩法说明', 'How to Play'], ['关闭音乐', 'Mute music'], ['打开音乐', 'Enable music'], ['关闭音效', 'Mute effects'], ['打开音效', 'Enable effects'], ['关闭声音', 'Mute sound'], ['打开声音', 'Enable sound'],
   ['午夜启程', 'Midnight Departure'], ['无尽班次', 'Endless Shift'], ['电量', 'Power'], ['躁动', 'Agitation'], ['余额', 'Balance'],
   ['本次变化明细', 'Decision details'], ['电梯座舱', 'Elevator cabin'], ['绿实线协作 · 红虚线冲突', 'Solid green: cooperation · dashed red: conflict'],
   ['绿实线协作 · 红虚线显示代价', 'Solid green: cooperation · dashed red: cost'],

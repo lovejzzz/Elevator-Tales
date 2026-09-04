@@ -1,6 +1,17 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.20**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.21**.
+
+## v8.21 — 2026-09-04 — A complete soundtrack for the midnight shift
+
+- Integrated 15 player-made tracks: a theme, 12 ten-floor tracks covering floors 1–120, shop music, and failure music.
+- Rider placement and ordinary ascents inside one ten-floor band do not restart the current track.
+- The shop and failure screen use dedicated music; leaving them restores the correct floor-band track.
+- After floor 120, completed tracks shuffle from all 12 earlier floor tracks without immediately repeating the last selection.
+- Added a persistent music-note toggle. It controls background music independently from the existing interaction-effect speaker button.
+- Kept lossless WAV masters locally under `source-audio`; deployment uses loudness-normalized 128 kbps MP3 files, reducing roughly 503 MB to about 48 MB.
+- Automated coverage verifies all 15 assets, floor boundaries, scene changes, no same-band restart, independent mute, and endless shuffle behavior.
+- Watch items: perceived loudness, loop seams, transition feel, and whether the 48 MB total needs selective bitrate reduction after real-network testing.
 
 ## v8.20 — 2026-09-04 — Red links become a real cost network
 

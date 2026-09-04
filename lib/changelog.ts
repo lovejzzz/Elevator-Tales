@@ -8,9 +8,25 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.20';
+export const GAME_VERSION = '8.21';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.21', date: '2026-09-04', title: '午夜班次有了完整配乐',
+    summary: '主题、楼层、商店与失败画面现在各有对应音乐；1–120层按十层一段推进，超过120层后随机轮播此前的楼层音乐。音乐和操作音效可以分别开关。',
+    changes: [
+      '接入15首玩家制作的音乐：主题曲、12段楼层曲、商店曲与失败曲。补齐51–60层后，1–120层没有音乐空档。',
+      '每十层自动换到对应曲目；同一十层区间内摆放人物或继续上行不会让音乐从头播放。进入商店和失败画面会切换专属曲目，离开后恢复当前楼层段落。',
+      '121层起进入无尽随机播放：每首播完后从12段楼层音乐中重抽，并避免立即重复刚播完的一首。',
+      '页首新增独立音符按钮。它只开关背景音乐并记住玩家选择；原扬声器按钮现在只控制操作音效。',
+      '无损WAV母带保留在本地项目的source-audio目录；线上使用统一响度的128 kbps MP3，将约503 MB母带压缩为约48 MB发布资源。',
+    ],
+    experiments: [
+      '自动验证15个线上音频文件存在且非空，覆盖1、10、11、51、120、121和超高楼层选曲边界。',
+      '验证主题→楼层→商店→失败的场景切换、同区间不重启、独立静音与121层后的随机防连播逻辑。',
+    ],
+    watch: ['真人试听重点观察各曲之间的主观响度、循环接缝和场景切换是否自然；如果48 MB仍影响首次加载，将进一步按曲目内容降低码率，而不是缩短音乐。'],
+  },
   {
     version: '8.20', date: '2026-09-04', title: '红线成为真正的代价网络',
     summary: '冲突不再只有躁动一种答案：35种红线会损失金币、额外耗电、增加躁动，或用双倍耗电换双倍车费；三条续航路线重新定价后，没有人物成为必拿或必禁。',
@@ -378,6 +394,22 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.21', date: '2026-09-04', title: 'A complete soundtrack for the midnight shift',
+    summary: 'The title, floor bands, shop, and failure screen now have dedicated music. Floors 1–120 advance in ten-floor bands; after floor 120, earlier floor tracks shuffle. Music and interaction effects have separate controls.',
+    changes: [
+      'Integrated 15 player-made tracks: a theme, 12 floor-band tracks, shop music, and failure music. With floors 51–60 supplied, there are no gaps from floor 1 through 120.',
+      'Music changes at each ten-floor boundary. Rider placement and ordinary ascents inside the same band never restart the track. The shop and failure screen switch to dedicated music, then restore the appropriate floor band when play resumes.',
+      'Floor 121 begins endless shuffle. Each completed track draws from all 12 earlier floor tracks and cannot immediately repeat the one that just ended.',
+      'A separate music-note button now toggles background music and remembers the choice. The existing speaker button controls interaction effects only.',
+      'Lossless WAV masters remain local under source-audio. Deployment uses loudness-normalized 128 kbps MP3 encodes, reducing roughly 503 MB of masters to about 48 MB of web audio.',
+    ],
+    experiments: [
+      'Automated checks require all 15 web tracks and cover selection boundaries at floors 1, 10, 11, 51, 120, 121, and far beyond 120.',
+      'Verified title-to-floor-to-shop-to-failure switching, no restart inside a floor band, independent mute behavior, and no immediate repeat in endless shuffle.',
+    ],
+    watch: ['Human listening should check perceived loudness, loop seams, and scene transitions. If 48 MB still affects first load, reduce bitrate selectively by track content instead of shortening the music.'],
+  },
   {
     version: '8.20', date: '2026-09-04', title: 'Red links become a real cost network',
     summary: 'Conflict is no longer synonymous with agitation. Thirty-five red relationships can drain coins, consume extra power, add agitation, or trade doubled power for doubled fare. After repricing three sustain routes, no rider is an auto-pick or indispensable.',
