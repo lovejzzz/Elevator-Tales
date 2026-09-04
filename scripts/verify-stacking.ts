@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { BONDS, bondStatus, riderProfile } from '../lib/rider-profile';
+import { BONDS, bondStatus, conflictLinks, riderProfile } from '../lib/rider-profile';
 import { PASSENGER_ORDER, type PassengerKind } from '../lib/game-data';
 import { initialRun, resolveFloor, riderAgitation, energySavings, type Rider, type RunState } from '../lib/game-engine';
 
@@ -17,18 +17,18 @@ for(const kind of PASSENGER_ORDER){
   const protectedCabin=[rider(liked,`${kind}-good`),rider(kind,`${kind}-self`),rider(avoided,`${kind}-bad`),null,null,null];
   assert.equal(bondStatus(twoGreen[1]!,twoGreen,1).supportCount,2,`${kind}: every green neighbor must count`);
   assert.equal(bondStatus(twoRed[1]!,twoRed,1).conflictCount,2,`${kind}: every red neighbor must count`);
-  assert.equal(bondStatus(protectedCabin[1]!,protectedCabin,1).conflictCount,0,`${kind}: a green link protects only the neighbor-conflict layer`);
-  assert.equal(riderAgitation(state({floor:1,cabin:twoRed}),1).fixed.find(line=>line.label==='邻座冲突')?.amount,2,`${kind}: red links stack on even destination floors`);
-  assert.equal(riderAgitation(state({floor:2,cabin:twoRed}),1).fixed.find(line=>line.label==='邻座冲突'),undefined,`${kind}: red links stay dormant on odd destination floors`);
+  assert.equal(bondStatus(protectedCabin[1]!,protectedCabin,1).conflictCount,1,`${kind}: green and red links resolve independently`);
+  assert.equal(conflictLinks(twoRed).length,2,`${kind}: every red edge is counted once`);
+  assert.deepEqual(conflictLinks(state({floor:1,cabin:twoRed}).cabin),conflictLinks(state({floor:2,cabin:twoRed}).cabin),`${kind}: red links do not depend on odd/even floors`);
   directedLinkChecks+=3;
 }
 
 const mechanics=state({cabin:[rider('mechanic','m1'),rider('mechanic','m2'),rider('coach','c'),null,null,null]});
-assert.equal(energySavings(mechanics),4,'two mechanics contribute two savings each');
-assert.equal(resolveFloor(mechanics,()=>.9).lastEnergy.delta,-1,'stacked savings stop at passenger demand and never erase motor cost');
+assert.equal(energySavings(mechanics),4,'two mechanics contribute two ordinary savings each');
+assert.equal(resolveFloor(mechanics,()=>.9).lastEnergy.delta,-3,'a mechanic offsets its own two power without erasing motor or other rider power');
 
-const occult=state({cabin:[rider('ghost','g1'),rider('exorcist','e'),rider('ghost','g2'),null,rider('tourist','t'),null]});
-assert.equal(energySavings(occult),2,'each controlled ghost contributes its own saving');
+const occult=state({cabin:[rider('ghost','g1'),rider('exorcist','e'),rider('ghost','g2'),rider('coach','load1'),rider('tourist','t'),rider('coach','load2')]});
+assert.equal(energySavings(occult),4,'each controlled ghost contributes its own two-point saving');
 
 const lovers=state({floor:1,cabin:[rider('lover','l1'),rider('lover','l2',{destination:2}),rider('lover','l3'),null,null,null]});
 const loverResult=resolveFloor(lovers,()=>.9);
@@ -51,4 +51,4 @@ assert.equal(resolveFloor(controlledDrunks,()=>.9).lastEarnings.sources.find(lin
 const copied=[rider('commuter','a'),rider('mimic','copy'),rider('tourist','b'),null,rider('nurse','c'),null];
 assert.equal(riderProfile(copied[1]!,copied,1).copies.length,3,'mimic stacks one distinct copied field from every neighbor');
 
-console.log(JSON.stringify({version:'v8.18',passengers:PASSENGER_ORDER.length,directedLinkChecks,stackFamilies:8,hardStops:['节能不抵运转','控制状态不重复','同一复制字段不重复']}));
+console.log(JSON.stringify({version:'v8.20',passengers:PASSENGER_ORDER.length,directedLinkChecks,stackFamilies:8,hardStops:['红绿线独立结算','红线不依赖楼层奇偶','节能不抵运转','控制状态不重复','同一复制字段不重复']}));

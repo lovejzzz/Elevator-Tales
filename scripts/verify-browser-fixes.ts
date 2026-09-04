@@ -37,19 +37,23 @@ const mysteryBetweenCoaches=state({floor:1,cabin:[
 const revealedMystery=resolveFloor(mysteryBetweenCoaches,()=>.9);
 assert.equal(revealedMystery.lastEarnings.sources.find(line=>line.label==='神秘人揭晓车费')?.amount,62,'two adjacent Coaches double the Mystery rider hidden base fare before reveal');
 assert.ok(revealedMystery.log.some(line=>line.includes('神秘人封存车费揭晓：31 金币')),'the log reveals the original hidden base fare only on arrival');
-assert.deepEqual(['standard','fine','rare','legendary'],[
+assert.deepEqual(['standard','legendary','rare','legendary','legendary'],[
  passengerCardGrade('commuter'),passengerCardGrade('mechanic'),passengerCardGrade('coach'),passengerCardGrade('shifter'),
+ passengerCardGrade('courier'),
 ]);
-for(const kind of ['mechanic','ghost','exorcist'] as const){
+for(const kind of ['ghost','exorcist'] as const){
  const brief=passengerBrief(rider(kind),1);
  assert.ok(brief.skillRules.includes(SHARED_SAVING_RULE));
  assert.ok(brief.cardRules[0].lines.includes(SHARED_SAVING_RULE));
 }
+const mechanicBrief=passengerBrief(rider('mechanic'),1);
+assert.ok(mechanicBrief.skillRules.some(rule=>rule.includes('每层节能2电')));
+assert.ok(mechanicBrief.skillRules.some(rule=>rule.includes('叠加')));
 const duplicate=state({cabin:[rider('inspector','a'),rider('inspector','b'),null,null,null,null]});
 assert.equal(resolveFloor(duplicate,()=>.9).coins,2,'each inspector grants one bounded reward');
-assert.equal(resolveFloor(duplicate,()=>.9).energy,39);
+assert.equal(resolveFloor(duplicate,()=>.9).energy,47);
 assert.deepEqual(sanitizeDiscoveredPassengers(null),[],'an old save does not unlock the archive');
 assert.deepEqual(sanitizeDiscoveredPassengers(['lover','bogus','lover']),['lover'],'saved discoveries are validated and deduplicated');
 assert.deepEqual(addDiscoveredPassengers([],['lover','lover','courier']),['courier','lover'],'only passengers actually seen are collected');
 assert.equal(addDiscoveredPassengers(['courier','lover'],['thief']).length,3,'new encounters extend the archive');
-console.log(JSON.stringify({version:'v8.18',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:4,savingsCopy:true,archiveDiscovery:true}));
+console.log(JSON.stringify({version:'v8.20',inspectorCases:checks,tipMultiplier:true,coachExceptions:true,mysteryCoachStack:62,cardGrades:5,savingsCopy:true,archiveDiscovery:true}));

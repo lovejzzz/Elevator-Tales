@@ -8,13 +8,13 @@ const rider=(kind:Rider['kind'],id=kind as string,extra:Partial<Rider>={}):Rider
 const state=(extra:Partial<RunState>={}):RunState=>({...initialRun(),...extra});
 const rngFor=(seed:number)=>()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
 
-assert.deepEqual([INITIAL_ENERGY,ENERGY_CAPACITY,AGITATION_CAPACITY,HIGH_RISK_START,OFFER_PRESSURE_STEP,HIGH_RISK_BONUS],[42,60,6,30,40,8]);
+assert.deepEqual([INITIAL_ENERGY,ENERGY_CAPACITY,AGITATION_CAPACITY,HIGH_RISK_START,OFFER_PRESSURE_STEP,HIGH_RISK_BONUS],[50,60,6,30,40,8]);
 const empty=state();assert.equal(resolveFloor(empty).floor,1);assert.match(resolveFloor(empty).message,/至少接一位/);
-assert.equal(resolveFloor(state({cabin:[rider('tourist'),null,null,null,null,null]}),()=>.9).energy,40);
+assert.equal(resolveFloor(state({energy:40,cabin:[rider('tourist'),null,null,null,null,null]}),()=>.9).energy,38);
 
-const courierArrival=resolveFloor(state({cabin:[rider('courier','battery',{destination:2}),null,null,null,null,null]}),()=>.9);
-assert.equal(courierArrival.energy,41,'Courier consumes 1 rider power and restores 1 on arrival; motor still costs 1');
-assert.equal(courierArrival.lastEnergy.sources.find(line=>line.label==='快递员电池包')?.amount,1);
+const courierArrival=resolveFloor(state({energy:40,cabin:[rider('courier','battery',{destination:2}),null,null,null,null,null]}),()=>.9);
+assert.equal(courierArrival.energy,40,'Courier consumes 1 rider power and restores 2 on arrival, covering self and motor');
+assert.equal(courierArrival.lastEnergy.sources.find(line=>line.label==='快递员电池包')?.amount,2);
 
 const hot=rider('commuter','hot',{volatile:true,destination:2});
 const hotState=state({cabin:[hot,null,null,null,null,null]});const hotResult=resolveFloor(hotState,()=>.9);
@@ -36,8 +36,8 @@ const offers40=makeOffers(40,initialRun().upgrades,false,rngFor(13));
 assert.equal(offers40[0].volatile,true,'floor 40 guarantees one visible high-risk offer');
 
 const shop=state({floor:10,status:'upgrade',coins:100,earned:100,energy:2});
-assert.equal(chargingPlan(shop).target,50);assert.equal(chargingPlan(shop).baseline,10);
-assert.equal(chargeBattery(shop,20).energy,22);assert.equal(chargeBattery(shop,20).coins,80);
+assert.equal(chargingPlan(shop).target,50);assert.equal(chargingPlan(shop).baseline,10);assert.equal(chargingPlan(shop).cost,96);
+assert.equal(chargeBattery(shop,20).energy,22);assert.equal(chargeBattery(shop,20).coins,60);
 
 const rng=rngFor(812091);let transitions=0;
 for(let i=0;i<4000;i++){
@@ -53,4 +53,4 @@ const ui=readFileSync(new URL('../components/elevator-game.tsx',import.meta.url)
 assert.ok(ui.includes('本班失败'));assert.ok(ui.includes('至少接1人'));assert.ok(!ui.includes('人物躁动 ×2'));assert.ok(!ui.includes('空驶休整'));
 assert.ok(ui.includes('energyPreview.lowDelta <= 0'),'fatal energy warning must use the worst-case forecast');
 assert.ok(ui.includes('positiveEnergySummary'),'arrival feedback must preserve positive recharge sources');
-console.log(JSON.stringify({version:'v8.18',transitions,threeValues:true,deterministicAgitation:true,mandatoryRider:true,courierRecharge:true}));
+console.log(JSON.stringify({version:'v8.20',transitions,threeValues:true,deterministicAgitation:true,mandatoryRider:true,courierRecharge:true}));

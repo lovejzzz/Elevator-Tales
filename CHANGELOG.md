@@ -1,6 +1,21 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.19**.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.20**.
+
+## v8.20 — 2026-09-04 — Red links become a real cost network
+
+- Expanded static red relationships from 19 to 35: 12 agitation, 12 coin-loss, 8 flat-power, 2 doubled-power, and 1 doubled-power/doubled-fare pair.
+- Red costs resolve every floor and independently from green cooperation. Multiple x2 links stack linearly from base: two links total x3, never exponential x4.
+- Red links now show fire, power, or coin icons, and cards state each conflict’s exact cost. Dynamic Mystery/Shifter/Mimic relationships use the same visible types.
+- Locked the power economy at 50 starting power, 60 capacity, +5 shop-entry power, and 2 coins per extra power.
+- Courier recharges 2 on arrival and appearance weight changes 9→4. Mechanic costs 2, saves 2 per floor, and weight changes 7→3. Controlled Ghost saving changes 1→2.
+- Uncontrolled Thief income changes 3→4 coins per floor while keeping +1 agitation; controlled income remains 1 per floor plus 5 on arrival.
+- Officer/Bomb cooperation no longer depends on even floors: adjacency locks the Bomb timer completely, and separating them resumes its −1-per-floor countdown.
+- Ran more than 285,000 complete games across candidate parameters, then repeated the final independent 35,200-game holdout after removing the last odd/even rider rule.
+- The final locked holdout averaged floor 39.60 (median 44), with 83.44% reaching 20 and 58.52% reaching 40. Balanced failures were 32.72% power, 67.16% agitation, and 0.12% Bomb timer.
+- Favoring Officer changed survival by +1.83 floors and banning it by +0.10; favoring Bomb changed 0.00 and banning it −0.07. All 21 normal/favor/ban comparisons passed with no dominance, indispensability, or trap alerts.
+- Exhausted 194,481 center-plus-three-neighbor formations and 4,000 random forecast transitions. All multiplier, stacking, and next-floor forecast checks passed with zero misses.
+- Watch items: human readability of multiplier icons, whether rare sustain cards feel exciting rather than mandatory, and whether Coach’s high-income/high-power route remains worth its cost.
 
 ## v8.19 — 2026-09-03 — Companions become a real stackable group route
 

@@ -3,6 +3,8 @@ import { PASSENGERS, PASSENGER_ORDER, type PassengerKind, type UpgradeKey } from
 import {
   HIGH_RISK_BONUS,
   agitationThreshold,
+  CHARGE_PRICE,
+  chargeBattery,
   chargingPlan,
   hasNeighbour,
   initialRun,
@@ -18,7 +20,7 @@ import {
   type RunState,
 } from '../lib/game-engine';
 import { energyForecast, stressForecast } from '../lib/game-forecast';
-import { bondStatus, riderProfile } from '../lib/rider-profile';
+import { bondStatus, conflictLinks, riderProfile } from '../lib/rider-profile';
 
 type Style = 'balanced' | 'synergy' | 'frugal' | 'risk';
 type Variant = { id: string; target?: PassengerKind; effect: 'normal' | 'favor' | 'ban' };
@@ -46,15 +48,14 @@ function cabinValue(state: RunState, style: Style) {
   let risk = 0;
   let links = 0;
   const occupied = state.cabin.filter(Boolean).length;
+  const redLinks=conflictLinks(state.cabin);
   state.cabin.forEach((rider, slot) => {
     if (!rider) return;
     const spec = PASSENGERS[rider.kind];
     const profile = riderProfile(rider, state.cabin, slot);
     const trip = Math.max(1, rider.destination - state.floor);
     if (rider.kind === 'bomb') {
-      const paused = hasNeighbour(state.cabin, slot, ['cop'])
-        ? Math.floor((state.floor + trip) / 2) - Math.floor(state.floor / 2)
-        : 0;
+      const paused = hasNeighbour(state.cabin, slot, ['cop']) ? trip : 0;
       if ((rider.fuse ?? 0) < trip - paused) risk += 800;
     }
     // The exact Mystery fare stays hidden, but a rational repeat player can
@@ -73,25 +74,27 @@ function cabinValue(state: RunState, style: Style) {
     if (rider.kind === 'courier') recovery += 1 / trip;
     if (rider.kind === 'thief') {
       const controlled = hasNeighbour(state.cabin, slot, ['cop', 'lawyer']);
-      income += controlled ? 1 : 3;
+      income += controlled ? 1 : 4;
       if (controlled) fare += 5;
     }
     if (rider.kind === 'drunk' && hasNeighbour(state.cabin, slot, ['musician', 'nurse'])) income += 1;
     if (rider.kind === 'celebrity' && neighbourCount(state.cabin, slot) === 1) income += 3;
     if (rider.kind === 'ghost') {
-      if (hasNeighbour(state.cabin, slot, ['exorcist'])) { recovery += 1; fare += 6; }
+      if (hasNeighbour(state.cabin, slot, ['exorcist'])) { recovery += 2; fare += 6; }
       else risk += .8;
     }
     if (rider.kind === 'mechanic') recovery += 2;
     if (rider.kind === 'inspector' && totalEnergyCost(state) <= 4) income += 1;
-    if (rider.kind === 'coach') fare += neighbourCount(state.cabin, slot) * 3;
-    else fare *= 1 + adjacentCoachCount * .5;
+    const gambleLinks=redLinks.filter(link=>link.effect==='gamble'&&(link.first===slot||link.second===slot)).length;
+    if (rider.kind === 'coach') fare= fare*(1+gambleLinks)+neighbourCount(state.cabin, slot) * 3;
+    else fare *= 1 + adjacentCoachCount * .5+gambleLinks;
     fare += supportCount * (3 + state.upgrades.battery * 2);
     const bond = bondStatus(rider, state.cabin, slot);
     links += bond.supportCount;
     risk += bond.conflictCount * 2;
     income += fare / trip;
   });
+  income-=redLinks.filter(link=>link.effect==='coins').length*2;
   const pressure = stressForecast(state);
   const energy = energyForecast(state);
   const averageRise = (pressure.lowDelta + pressure.highDelta) / 2;
@@ -186,6 +189,8 @@ function simulate(style: Style, variant: Variant, runs: number, seedOffset = 0) 
   let totalEarned = 0;
   let totalEnergySpent = 0;
   let totalAgitationAdded = 0;
+  const conflictFloors={agitation:0,energy:0,coins:0,overload:0,gamble:0};
+  const conflictImpact={agitation:0,energy:0,coins:0};
   for (let run = 0; run < runs; run += 1) {
     const rng = rngFor(seedBase + seedOffset + run * 97);
     let state = initialRun();
@@ -194,8 +199,8 @@ function simulate(style: Style, variant: Variant, runs: number, seedOffset = 0) 
       if (state.status === 'upgrade') {
         const plan = chargingPlan(state);
         const adaptiveTarget = Math.min(state.energyCap, Math.max(plan.target, totalEnergyCost(state) * 10));
-        const recharge = Math.min(Math.max(0, adaptiveTarget - state.energy), state.coins);
-        if (recharge > 0) state = { ...state, energy: state.energy + recharge, coins: state.coins - recharge };
+        const recharge = Math.min(Math.max(0, adaptiveTarget - state.energy), Math.floor(state.coins / CHARGE_PRICE));
+        if (recharge > 0) state = chargeBattery(state, recharge);
         for (;;) {
           const best = state.shop.filter(card => !card.purchased && card.price <= state.coins)
             .map(card => ({ ...card, ratio: shopValue(state, card.key, style) / card.price }))
@@ -228,6 +233,7 @@ function simulate(style: Style, variant: Variant, runs: number, seedOffset = 0) 
       });
       const pressure = stressForecast(state);
       const energy = energyForecast(state);
+      conflictLinks(state.cabin).forEach(link=>{conflictFloors[link.effect]+=1;});
       const next = resolveFloor(state, rng);
       transitions += 1;
       if (next.lastPressure.delta < pressure.lowDelta || next.lastPressure.delta > pressure.highDelta
@@ -237,6 +243,9 @@ function simulate(style: Style, variant: Variant, runs: number, seedOffset = 0) 
       }
       totalEnergySpent += Math.max(0, -next.lastEnergy.delta);
       totalAgitationAdded += next.lastPressure.sources.filter(line => line.amount > 0).reduce((sum, line) => sum + line.amount, 0);
+      conflictImpact.agitation+=next.lastPressure.sources.find(line=>line.label==='红线躁动')?.amount??0;
+      conflictImpact.energy-=next.lastEnergy.sources.find(line=>line.label==='红线额外耗电')?.amount??0;
+      conflictImpact.coins-=next.lastEarnings.sources.find(line=>line.label==='红线金币损失')?.amount??0;
       const afterIds = new Set(next.cabin.flatMap(rider => rider ? [rider.id] : []));
       for (const [id, rider] of beforeById) if (!afterIds.has(id)) delivered[rider.kind] += 1;
       state = next;
@@ -276,6 +285,8 @@ function simulate(style: Style, variant: Variant, runs: number, seedOffset = 0) 
     transitions,
     forecastMisses,
     forecastExamples,
+    conflictFloors,
+    conflictImpact,
   };
 }
 
@@ -322,12 +333,13 @@ const alerts = comparisons.flatMap(row => {
 const totalForecastMisses=baselines.reduce((sum, row) => sum + row.forecastMisses, 0) + comparisons.reduce((sum, row) => sum + row.forecastMisses, 0);
 assert.equal(totalForecastMisses, 0, 'visible forecasts must contain every simulated outcome');
 console.log(JSON.stringify({
-  version: 'v8.19', seedBase, horizon, baselineRuns, variantRuns, totalGames, totalForecastMisses,
+  version: 'v8.20', seedBase, horizon, baselineRuns, variantRuns, totalGames, totalForecastMisses,
   forecastExamples: baselines.flatMap(row=>row.forecastExamples).slice(0,6),
   baselines: baselines.map(row => ({
     style: row.style, meanFloor: row.meanFloor, median: row.median, p10: row.p10, p90: row.p90,
     reach20: row.reach20, reach40: row.reach40, avgEarned: row.avgEarned,
     energyPerFloor: row.energyPerFloor, agitationAddedPerFloor: row.agitationAddedPerFloor, deaths: row.deaths,
+    transitions: row.transitions, conflictFloors: row.conflictFloors, conflictImpact: row.conflictImpact,
   })),
   comparisons,
   alerts,

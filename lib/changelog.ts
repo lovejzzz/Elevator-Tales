@@ -8,9 +8,29 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.19';
+export const GAME_VERSION = '8.20';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '8.20', date: '2026-09-04', title: '红线成为真正的代价网络',
+    summary: '冲突不再只有躁动一种答案：35种红线会损失金币、额外耗电、增加躁动，或用双倍耗电换双倍车费；三条续航路线重新定价后，没有人物成为必拿或必禁。',
+    changes: [
+      '静态红色关系从19组扩展到35组：12组每层+1躁动、12组每层损失2金币、8组每层额外耗1电、2组使双方耗电×2、1组同时使双方耗电×2与到站车费×2。',
+      '红线不再依赖奇偶层，也不会被绿线消除；绿色协作与红色代价分别结算。多条同类倍率按基础值线性叠加：两条×2红线合计为×3，不会指数翻成×4。',
+      '红虚线中央直接显示🔥、⚡或🪙；候客卡写出每个冲突对象的具体代价。神秘人、百变人与复制关系也携带当前可见的红线类型。',
+      '能源经济锁定为初始50电、容量60、抵达商店先补5电、额外充电2金币换1电。快递员到站补2电，出现权重9→4；维修工耗2电、每层节能2电，出现权重7→3；每位受控幽灵每层节能1→2电。',
+      '无警察或律师的小偷途中收入从每层3提高到4金币，保留每层+1躁动与受控后改赚1金币、到站+5的取舍。',
+      '警察与炸弹客的联动不再依赖偶数层：两者相邻期间直接锁住炸弹倒计时。它是占用两个站位的稳定保命组合，分开后倒计时立即恢复每层−1。',
+    ],
+    experiments: [
+      '本轮迭代累计运行超过28.5万局完整程序实验，依次筛选初始电量、商店免费补电、充电价格、维修工净耗电、快递员与维修工供给权重、受控幽灵强度；否决了商店补6、补3以及维修工条件式红线抵消等方案。',
+      '最终独立留出测试35,200局：均衡打法平均39.60层、中位44层，83.44%抵达20层、58.52%抵达40层；失败中32.72%断电、67.16%躁动、0.12%炸弹倒计时，保持双资源夹击。',
+      '警察锁定倒计时加入后再做同种子对照：偏爱警察只增加1.83层，禁用警察改变+0.10层；炸弹客偏爱改变0.00层、禁用改变−0.07层，没有形成必拿保命组合。',
+      '21个人物分别做同种子正常、偏爱、禁用对照，没有必拿、必禁、强制堆叠或陷阱警报。最强偏爱变化为恋人+1.96层；禁用快递员−3.45层、维修工−3.76层，续航不再由单一人物垄断。',
+      '穷举21种中心人物与三名邻座的194,481种排列，并增加35组红线图谱、五种代价、双红线与红绿并存回归；倍率保持线性，所有完整实验及4,000条随机状态的下一层电量/躁动预测误差为0。',
+    ],
+    watch: ['真人试玩重点观察：红线图标是否能让乘法代价在关门前一眼读懂；稀有续航牌的出现频率是否形成“拿到很高兴、没拿到也能活”的体验；教练高收益高耗电路线是否仍值得主动承担。'],
+  },
   {
     version: '8.19', date: '2026-09-03', title: '旅伴成为真正可叠加的多人路线',
     summary: '游客现在会把每一位相邻乘客都当作旅伴，包括另一位游客；收益与绿色连线逐人叠加，不再有 2 人上限。',
@@ -358,6 +378,26 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  {
+    version: '8.20', date: '2026-09-04', title: 'Red links become a real cost network',
+    summary: 'Conflict is no longer synonymous with agitation. Thirty-five red relationships can drain coins, consume extra power, add agitation, or trade doubled power for doubled fare. After repricing three sustain routes, no rider is an auto-pick or indispensable.',
+    changes: [
+      'Static red relationships expand from 19 to 35: 12 add 1 agitation per floor, 12 lose 2 coins per floor, 8 consume 1 extra power per floor, 2 double both riders’ power, and 1 doubles both power and arrival fare.',
+      'Red links no longer depend on odd/even floors and green links never erase them. Cooperation and conflict resolve independently. Multiple multipliers stack linearly from base: two x2 red links total x3, never exponential x4.',
+      'Dashed red links show a fire, power, or coin icon at their midpoint, and candidate cards state the exact cost for each conflict target. Mystery, Shifter, and copied relationships also carry a visible current red-link type.',
+      'Power economy is now 50 starting power, 60 capacity, +5 power on shop entry, and 2 coins per additional power. Courier recharges 2 on arrival and appearance weight changes 9→4. Mechanic costs 2, saves 2 per floor, and weight changes 7→3. Each controlled Ghost saves 1→2 power per floor.',
+      'An uncontrolled Thief now earns 4 instead of 3 coins per floor, while retaining +1 agitation. Control still changes this to 1 coin per floor, no theft agitation, and +5 arrival fare.',
+      'Officer/Bomb cooperation no longer depends on even floors: the timer stays locked while they remain adjacent, then resumes dropping by 1 per floor when separated.',
+    ],
+    experiments: [
+      'Ran more than 285,000 complete simulated games across iterative candidates, screening starting power, free shop power, recharge price, Mechanic net cost, Courier/Mechanic appearance weights, controlled-Ghost strength, and the final Officer timer lock. Rejected shop +6, shop +3, and conditional Mechanic red-line protection.',
+      'Final independent holdout: 35,200 games. Balanced play averaged floor 39.60 with median 44; 83.44% reached floor 20 and 58.52% reached floor 40. Failures were 32.72% power, 67.16% agitation, and 0.12% Bomb timer, preserving the two-resource squeeze.',
+      'After adding the timer lock, same-seed checks found that favoring Officer added only 1.83 floors and banning it changed +0.10; favoring Bomb changed 0.00 and banning it changed −0.07. The protection pair did not become mandatory.',
+      'Normal/favor/ban same-seed comparisons covered all 21 riders with no auto-pick, indispensable, forced-stack, or trap alert. The largest favor gain was Lover at +1.96 floors. Banning Courier cost 3.45 floors and banning Mechanic 3.76, so neither owns sustain alone.',
+      'Exhausted all 194,481 center-plus-three-neighbor formations and added regressions for all 35 red pairs, five cost types, doubled red links, and simultaneous green/red links. Multipliers stayed linear; all full games and 4,000 random state transitions had zero next-floor power or agitation forecast misses.',
+    ],
+    watch: ['Human play should test whether midpoint icons make multiplier costs readable before departure, whether rare sustain cards feel exciting without feeling mandatory, and whether Coach’s high-income, high-power route remains worth choosing.'],
+  },
   {
     version: '8.19', date: '2026-09-03', title: 'Companions become a real stackable group route',
     summary: 'Tourists now treat every adjacent rider as a companion, including another Tourist. Income and green links stack per rider with no two-companion rules cap.',

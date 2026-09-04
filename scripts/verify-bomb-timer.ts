@@ -19,6 +19,7 @@ const exposed = [
   passengerFace(rider('bomb', 'face', { fuse: 4 }), { ...initialRun(), cabin: [rider('bomb', 'face', { fuse: 4 }), null, null, null, null, null] }).special,
 ];
 assert.ok(exposed.every((line) => !/引信|延缓/u.test(line)), 'player-facing Bomb Timer copy must avoid metaphorical wording');
+assert.ok(exposed.every((line) => !/偶数|奇数/u.test(line)), 'current Bomb Timer rules must not depend on odd/even floors');
 assert.ok(exposed.every((line) => !/[\u3400-\u9fff]/u.test(translateGameText(line, 'en'))), 'Bomb Timer copy must translate completely');
 assert.ok(exposed.every((line) => !/\bfuse\b/iu.test(translateGameText(line, 'en'))), 'English copy must use Bomb timer instead of fuse');
 
@@ -26,10 +27,11 @@ const unprotected = { ...initialRun(), floor: 1, cabin: [rider('bomb', 'unsafe',
 const failed = resolveFloor(unprotected, () => .9);
 assert.equal(failed.status, 'lost');
 assert.match(failed.message, /炸弹倒计时归零/u);
-assert.match(failureLesson(failed), /偶数层倒计时不减/u);
+assert.match(failureLesson(failed), /相邻期间锁住倒计时/u);
 
 const protectedRun = { ...initialRun(), floor: 1, cabin: [rider('cop', 'officer'), rider('bomb', 'protected', { fuse: 2 }), null, null, null, null] };
-assert.equal(resolveFloor(protectedRun, () => .9).cabin[1]?.fuse, 2, 'Officer must pause the timer on even destination floors');
+assert.equal(resolveFloor(protectedRun, () => .9).cabin[1]?.fuse, 2, 'Officer must lock the timer while adjacent');
+assert.equal(resolveFloor({ ...protectedRun, floor: 2 }, () => .9).cabin[1]?.fuse, 2, 'Officer protection must not depend on odd/even floors');
 
 const arrivalRun = { ...initialRun(), floor: 1, cabin: [rider('bomb', 'arriving', { fuse: 1, destination: 2 }), null, null, null, null, null] };
 assert.notEqual(resolveFloor(arrivalRun, () => .9).status, 'lost', 'zero on the arrival floor must remain safe');
@@ -37,4 +39,4 @@ assert.notEqual(resolveFloor(arrivalRun, () => .9).status, 'lost', 'zero on the 
 const component = readFileSync(new URL('../components/elevator-game.tsx', import.meta.url), 'utf8');
 assert.doesNotMatch(component, /引信/u, 'cabin, detail, and failure UI must use the new term');
 
-console.log(JSON.stringify({ version: 'v8.18', visibleCopyChecks: exposed.length + 3, timerLifecycleChecks: 3, noFuseMetaphor: true }));
+console.log(JSON.stringify({ version: 'v8.20', visibleCopyChecks: exposed.length + 3, timerLifecycleChecks: 3, noFuseMetaphor: true }));

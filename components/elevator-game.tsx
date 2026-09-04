@@ -5,11 +5,11 @@ import { ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Check, Coins, Fl
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, passengerCardGrade, type PassengerCardGrade, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
-import { CHARGE_PRICE, INITIAL_ENERGY, ENERGY_CAPACITY, INSPECTOR_ENERGY_LIMIT, HIGH_RISK_BONUS, energyBreakdown, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, touristCompanionCount, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
+import { CHARGE_PRICE, INITIAL_ENERGY, ENERGY_CAPACITY, INSPECTOR_ENERGY_LIMIT, HIGH_RISK_BONUS, SHOP_ENTRY_CHARGE, energyBreakdown, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, touristCompanionCount, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, stressForecast } from '@/lib/game-forecast';
-import { conflictingConnection, activeConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
+import { activeConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
-import { bondStatus } from '@/lib/rider-profile';
+import { bondStatus, conflictLinks, type ConflictEffect } from '@/lib/rider-profile';
 import { portraitAsset } from '@/lib/passenger-assets';
 import { addDiscoveredPassengers, sanitizeDiscoveredPassengers } from '@/lib/passenger-discovery';
 import { passengerBrief, passengerFace, SHARED_SAVING_RULE, type PassengerRuleBlock } from '@/lib/passenger-presentation';
@@ -46,6 +46,7 @@ function PassengerRuleBlocks({ rules, locale }: { rules: PassengerRuleBlock[]; l
 }
 
 const signedDelta = (value: number) => value > 0 ? `+${value}` : value < 0 ? `−${Math.abs(value)}` : '不变';
+const conflictGlyph=(effect:ConflictEffect)=>({agitation:'🔥 +1',energy:'⚡ +1',coins:'🪙 −2',overload:'⚡ ×2',gamble:'⚡×2 · 🪙×2'}[effect]);
 type MetricEvent = { id: number; label: string; changes: MetricChange[] };
 
 function MetricResponse({ metric, event, locale }: { metric: MetricKey; event: MetricEvent | null; locale: GameLocale }) {
@@ -77,7 +78,6 @@ function PassengerCardFace({ rider, run, action, locale }: { rider: Rider; run: 
   // The overview is a value row, not a second ability description. Conditional
   // agitation remains directly below in the skill copy.
   const agitationText=`自身 +${brief.agitation}`;
-  const conflictText=`${face.conflict.replace('挨','邻')} 躁动`;
   return localizeTree(<span className="unified-passenger-summary">
     <span className="card-overview">
       <span className="card-head"><Portrait kind={rider.kind}/><span><strong>{PASSENGERS[rider.kind].name}</strong><span className="card-meta"><span className="card-trip">还剩 {brief.distance} 站</span><span className={`card-grade grade-${grade}`} title="卡牌稀有度">{CARD_GRADE_LABELS[grade]}</span>{rider.kind==='tourist'&&<span className="tourist-stamp">旅伴加成</span>}{rider.volatile&&<span className="high-risk-tag"><Flame aria-hidden="true" />高危 +{HIGH_RISK_BONUS}</span>}</span></span></span>
@@ -95,7 +95,7 @@ function PassengerCardFace({ rider, run, action, locale }: { rider: Rider; run: 
       {face.special&&<span>{face.special}</span>}
     </span>
     <span className="card-cooperation"><span>到站每邻{brief.cooperation.partners.join('或')}</span><b aria-label={`每条协作连接奖励 ${cooperationBonus(run)} 金币${links?`，当前 ${links} 条生效`:''}${cooperationRelief(run)>0?`；送达减少 ${cooperationRelief(run)} 躁动`:''}`}><span><Coins aria-hidden="true" />{links?`+${cooperationBonus(run)}×${links}`:`+${cooperationBonus(run)}/条`}</span>{cooperationRelief(run)>0&&<span><Flame aria-hidden="true" />−{cooperationRelief(run)}</span>}</b></span>
-    <span className="card-conflict"><Flame aria-hidden="true" />{conflictText}</span>
+    <span className="card-conflict">{face.conflicts.map(line=><span key={line}>{line}</span>)}</span>
     {action&&<span className="card-action">{action}</span>}
   </span>, locale);
 }
@@ -104,13 +104,14 @@ function riderState(cabin: Array<Rider | null>, slot: number, totalEnergy: numbe
   const rider = cabin[slot];
   if (!rider) return null;
   const bond = bondStatus(rider,cabin,slot);
-  if (bond.conflict) return {label:'邻座冲突',tone:'warn'};
+  const conflicts=conflictLinks(cabin).filter(link=>link.first===slot||link.second===slot);
+  if (conflicts.length) return {label:conflicts.length===1?`红线 ${conflictGlyph(conflicts[0].effect)}`:`${conflicts.length} 条红线`,tone:'warn'};
   if(rider.kind==='mystery')return {label:bond.supported?`协作到站 +${bonus}`:'车费待揭晓',tone:bond.supported?'active':'neutral'};
   if(rider.kind==='shifter')return {label:`耗电 ${bond.energy} · 躁动 +${bond.agitation}`,tone:'warn'};
   if(rider.kind==='mimic')return {label:`复制 ${bond.copies.length} 项`,tone:bond.copies.length?'active':'neutral'};
   switch (rider.kind) {
     case 'tourist': { const count=touristCompanionCount(cabin,slot); return count ? { label: `旅伴 ${count} · 每站 +${count}币`, tone: 'active' } : { label: '每位邻座 +1币/站', tone: 'neutral' }; }
-    case 'courier': return { label: '到站补充1电', tone: 'active' };
+    case 'courier': return { label: '到站补充2电', tone: 'active' };
     case 'lover': return hasNeighbour(cabin, slot, ['lover']) ? { label: '已配对', tone: 'active' } : { label: '正在呼唤同伴', tone: 'neutral' };
     case 'thief': return hasNeighbour(cabin, slot, ['cop', 'lawyer']) ? { label: '已受控制', tone: 'active' } : { label: '未受控制', tone: 'warn' };
     case 'cop': return hasNeighbour(cabin, slot, ['thief', 'bomb']) ? { label: '正在控制', tone: 'active' } : null;
@@ -340,7 +341,7 @@ export default function ElevatorGame() {
       </aside>
       <section className={`elevator-stage doors-${doors} ${activeRider ? 'is-placing' : ''} ${agitated ? 'cabin-agitated' : ''}`} aria-label="电梯座舱" aria-busy={doors !== 'open'}>
         <div className="elevator-image" /><div className="motion-lines" /><div className="floor-indicator"><ArrowUp /><b key={run.floor}>{String(run.floor).padStart(2, '0')}</b></div><div className="cabin-title"><span>CAR № 07</span><i /><span>{occupied} / 6 OCCUPIED</span></div>
-        {outlook && <div className={`adjacency-key shift-outlook ${nextIsShop ? 'shop-next-outlook' : 'peak-outlook'}`}><span>{outlook}</span><span className="connection-legend">绿实线协作 · 红虚线冲突</span></div>}
+        {outlook && <div className={`adjacency-key shift-outlook ${nextIsShop ? 'shop-next-outlook' : 'peak-outlook'}`}><span>{outlook}</span><span className="connection-legend">绿实线协作 · 红虚线显示代价</span></div>}
         {feedback && <output key={feedback.id} className={`cabin-feedback feedback-${feedback.tone}`}>
           <div className="feedback-label">{feedback.tone === 'error' ? <X /> : feedback.tone === 'combo' ? <Sparkles /> : <Check />}<b>{feedback.label}</b></div>
           {feedback.tone === 'arrival' && <div className="feedback-values">{Boolean(feedback.coins) && <span className="value-coins" aria-label={`金币增加 ${feedback.coins}`}><Coins aria-hidden="true" />+{feedback.coins}</span>}<span aria-label={`电量 ${signedDelta(feedback.energy ?? 0)}`} className={feedback.energy! > 0 ? 'value-gain' : feedback.energy! < 0 ? 'value-spent' : 'value-neutral'}><BatteryCharging aria-hidden="true" />{signedDelta(feedback.energy ?? 0)}</span><span aria-label={`躁动 ${signedDelta(feedback.pressure ?? 0)}`} className={feedback.pressure! > 0 ? 'value-danger' : feedback.pressure! < 0 ? 'value-gain' : 'value-neutral'}><Flame aria-hidden="true" />{signedDelta(feedback.pressure ?? 0)}</span></div>}
@@ -348,10 +349,14 @@ export default function ElevatorGame() {
         </output>}
         {doors === 'moving' && <div className="travel-caption"><ArrowUp />前往 {String(run.floor + 1).padStart(2, '0')}F</div>}
         <div className="standing-grid"><svg className="adjacency-map" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true">{ADJACENT.map(([first, second]) => {
-          const active = activeConnection(run.cabin, first, second); const conflict = conflictingConnection(run.cabin,first,second);
-          const preview = hoveredPlan?.ok && hoveredPlan.changed && activeConnection(hoveredPlan.next.cabin, first, second);
+          const previewing=Boolean(hoveredPlan?.ok&&hoveredPlan.changed);
+          const active = activeConnection(run.cabin, first, second); const currentConflict=conflictLinks(run.cabin).find(link=>link.first===first&&link.second===second);
+          const preview = previewing && activeConnection(hoveredPlan!.next.cabin, first, second);
+          const previewConflict=previewing?conflictLinks(hoveredPlan!.next.cabin).find(link=>link.first===first&&link.second===second):undefined;
+          const shownActive=previewing?preview:active;
+          const shownConflict=previewing?previewConflict:currentConflict;
           const [x1,y1]=CONNECTION_POINTS[first]; const [x2,y2]=CONNECTION_POINTS[second];
-          return <g key={`${first}-${second}`} className={`connection-path ${active ? 'active' : ''} ${conflict?'conflict-link':''} ${preview ? 'preview-link' : ''}`}><line className="connection-underlay" x1={x1} y1={y1} x2={x2} y2={y2}/><line className="connection-core" x1={x1} y1={y1} x2={x2} y2={y2}/>{(active||conflict||preview)&&<circle className="connection-node" cx={(x1+x2)/2} cy={(y1+y2)/2} r="3"/>}</g>;
+          return <g key={`${first}-${second}`} className={`connection-path ${shownActive ? 'active' : ''} ${shownConflict?'conflict-link':''} ${previewing ? 'preview-link' : ''}`}><line className="connection-underlay" x1={x1} y1={y1} x2={x2} y2={y2}/><line className="connection-core" x1={x1} y1={y1} x2={x2} y2={y2}/>{(shownActive||shownConflict)&&<circle className="connection-node" cx={(x1+x2)/2} cy={(y1+y2)/2} r="3"/>}{shownConflict&&<text className="connection-effect" x={(x1+x2)/2} y={(y1+y2)/2-6} textAnchor="middle">{conflictGlyph(shownConflict.effect)}</text>}</g>;
         })}</svg>{run.cabin.map((rider, index) => {
           const state = riderState(run.cabin, index, power.total, cooperationBonus(run)); const plan = placementPlans[index]; const synergy = plan?.ok && plan.changed && plan.tone === 'combo'; const agitation=riderAgitation(run,index); const seatBrief=rider?passengerBrief(rider,run.floor,run.cabin,cooperationBonus(run),cooperationRelief(run),eventPressureMultiplier(run)):null;
           const target = dragOverSlot === index && Boolean(activeRider); const reaction = feedback?.slots.includes(index) ? feedback : null;
@@ -382,7 +387,7 @@ export default function ElevatorGame() {
               <PassengerCardFace rider={offer} run={run} action={boarded?'点此撤回':pending?'已选中 · 点空位':full?'车厢已满':partner?`上车可联动 · ${PASSENGERS[partner].name}`:undefined} locale={language}/>
             </button><button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(offer);}} aria-label={`查看${spec.name}规则`}><HelpCircle /></button></div>;
           })}
-        </div><div className="candidate-notes"><span>绿线奖励逐条叠加并免除冲突；护士、音乐家各抵消一名相邻乘客的 1 躁动。</span>{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
+        </div><div className="candidate-notes"><span>绿线发奖励；红线图标直接显示每层代价。两者分别结算，多条都可叠加。</span>{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
         <div className="departure-controls">
           <button className="mobile-inspect-button" disabled={!activeRider || locked} onClick={() => {if(activeRider){setEjectArmed(false);setPassengerDetails(activeRider);}}} aria-label="查看选中人物规则"><BookOpen /><span>人物/请离</span></button>
           <button className="depart-button" onClick={depart} disabled={locked || occupied===0}><span>{doors === 'open' ? occupied===0?'至少接1人':'关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
@@ -425,12 +430,12 @@ export default function ElevatorGame() {
     <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">ENDLESS SHIFT MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>楼层就是成绩；金币是购买升级的预算。没有最后一层。</DialogDescription></DialogHeader><div className="manual-grid">
       <div><b>拖拽安排</b><p>把人物拖进站位，或先点乘客再点空位。连线两端互为邻座。旧乘客每层只能换位一次；新上客移到空位或与新上客互换不消耗次数。</p></div>
       <div><b>还剩几站</b><p>每次关门上行算一站，人物身上的剩余站数会递减；幽灵可能延误邻座。</p></div>
-      <div><b>三个值，六个站位</b><p>人物只看金钱、耗电和躁动。每站耗电＝电梯运转1＋车内人物耗电−节能；到站这一站也计费。电量或躁动任一触底，本班都会结束。</p></div><div><b>躁动只来自人物</b><p>卡片只显示 0、+1 或 +2；没有拥挤、楼层压力或隐藏倍率。每条未被协作保护的红线每层 +1；每位正常到站乘客让本层总躁动最多 −1。</p></div>
+      <div><b>三个值，六个站位</b><p>人物只看金钱、耗电和躁动。每站耗电＝电梯运转1＋车内人物耗电＋红线耗电−节能；到站这一站也计费。电量或躁动任一触底，本班都会结束。</p></div><div><b>躁动只来自人物</b><p>卡片只显示 0、+1 或 +2；没有拥挤、楼层压力或隐藏倍率。只有标有 🔥 的红线每层 +1 躁动；每位正常到站乘客让本层总躁动最多 −1。</p></div>
       <div><b>安抚可以堆叠</b><p>每位护士或音乐家每层抵消一名相邻乘客的 1 躁动。多人效果会分别结算，但不会把躁动降到 0 以下。</p></div>
-      <div><b>十层商店</b><p>初始{INITIAL_ENERGY}电、容量{ENERGY_CAPACITY}。每十层进入商店，用同一笔金币充电或买升级。高危乘客多赚 {HIGH_RISK_BONUS} 金币，但每层多 +1 躁动。</p></div><div><b>协作、冲突与堆叠</b><p>绿线表示协作：本人到站时，每条仍连接的绿线额外 +{cooperationBonus(run)} 金币，多条逐条叠加；有任意绿线时免除该人物全部邻座冲突。红线每层 +1 躁动。</p></div><div><b>到层请离</b><p>选中车内人物，打开人物详情后请离。赔偿4+剩余站数×2金币，不结算到站奖励。本层刚上车仍可免费撤回。</p></div>
+      <div><b>十层商店</b><p>初始{INITIAL_ENERGY}电、容量{ENERGY_CAPACITY}。抵达商店先补 {SHOP_ENTRY_CHARGE} 电，再用金币充电或买升级。高危乘客多赚 {HIGH_RISK_BONUS} 金币，但每层多 +1 躁动。</p></div><div><b>协作、冲突与堆叠</b><p>绿线表示协作：本人到站时，每条仍连接的绿线额外 +{cooperationBonus(run)} 金币。红线可能增加躁动、耗电或损失金币；图标直接显示结果。两者分别结算，多条逐项叠加。</p></div><div><b>到层请离</b><p>选中车内人物，打开人物详情后请离。赔偿4+剩余站数×2金币，不结算到站奖励。本层刚上车仍可免费撤回。</p></div>
     </div></DialogContent></Dialog>
     <Dialog open={pressureHelp} onOpenChange={setPressureHelp}><DialogContent className="story-dialog pressure-dialog"><p className="dialog-kicker">CABIN AGITATION</p><DialogHeader><DialogTitle>每一点躁动，都能在人物身上找到。</DialogTitle><DialogDescription>关门前先看左栏的下一站预测；达到 {run.stressCap} 就会失控。没有拥挤惩罚、楼层压力或隐藏倍率。</DialogDescription></DialogHeader><div className="pressure-rule-grid">
-      <section className="pressure-rise"><small>会增加躁动</small><b>人物自身</b><p>人物卡明确显示每层 0、+1 或 +2；高危乘客固定再 +1。</p><b>人物事件</b><p>未受控的小偷、儿童与醉汉，被围住的名人，以及高耗电时的检查员，会按卡片规则增加躁动。</p><b>红色冲突线</b><p>每条红线每层 +1。若该人物同时拥有任意绿色协作线，其邻座冲突被免除。</p></section>
+      <section className="pressure-rise"><small>会增加躁动</small><b>人物自身</b><p>人物卡明确显示每层 0、+1 或 +2；高危乘客固定再 +1。</p><b>人物事件</b><p>未受控的小偷、儿童与醉汉，被围住的名人，以及高耗电时的检查员，会按卡片规则增加躁动。</p><b>🔥 红线</b><p>只有标有 🔥 的红线增加躁动；⚡ 和 🪙 分别影响电量与金币。绿色协作不会消除红线。</p></section>
       <section className="pressure-relief"><small>可以主动缓解</small><b>安抚邻座</b><p>每位护士或音乐家抵消一名相邻乘客的 1 躁动。多人可堆叠，但不会产生负数。</p><b>完成短程</b><p>只要本层有人正常到站，本层总躁动最多 −1；同层多人到站也只减 1。</p><b>购买舒缓系统</b><p>购买时立即 −2 躁动，并将上限 +1。</p></section>
     </div><div className={`pressure-now forecast-${pressurePreview.tone}`}><small>按现在的站位</small><b>{pressurePreview.summary}</b></div></DialogContent></Dialog>
     <Dialog open={archive} onOpenChange={setArchive}><DialogContent className="story-dialog archive-dialog"><p className="dialog-kicker">PASSENGER ARCHIVE</p><DialogHeader><DialogTitle>午夜乘客档案</DialogTitle><DialogDescription>遇见过的乘客会录入档案。最高抵达 {highest}F。</DialogDescription></DialogHeader><div className="archive-grid">{PASSENGER_ORDER.map((kind) => { const open = discovered.includes(kind); const spec = PASSENGERS[kind]; return <div className={`archive-item ${open ? '' : 'locked'}`} key={kind}>{open ? <Portrait kind={kind} /> : <LockKeyhole />}<span><b>{open ? spec.name : '尚未遇见'}</b><small>{open ? spec.short : '继续向上，等待相遇'}</small></span></div>; })}</div></DialogContent></Dialog>
@@ -439,7 +444,7 @@ export default function ElevatorGame() {
       <div className="shop-wallet"><span aria-label={`可用金币 ${run.coins}`}><Coins aria-hidden="true" /><span className="shop-balance-label">金币</span><b key={run.coins}>{run.coins}</b></span><span>收入 {run.earned} · 支出 {run.earned - run.coins}</span></div>
       <p className="dialog-kicker">FLOOR {run.floor} · SHOP</p><DialogHeader><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle><DialogDescription>充电或购买升级。每张卡限购一次。</DialogDescription></DialogHeader>
       {upgradeCrisis && <p className="shop-warning">{upgradeCrisis === 'both' ? '电量与躁动同时失控：需要充电并购买舒缓系统，两项都修复才能继续。' : upgradeCrisis === 'energy' ? '电量已耗尽：使用下方充电服务，将电量恢复到 0 以上才能继续。' : '躁动已超限：购买舒缓系统，将躁动降到上限以下才能继续。'} 若无力修复，本班将在这里结束。</p>}
-      <section className="recharge-panel"><div><b>充电 · {CHARGE_PRICE}币 = 1电</b><span>{run.energy}/{run.energyCap} · 到下个商店至少需 {chargePlan.baseline} 电，人物另计</span></div><div className="recharge-actions"><button disabled={chargePlan.units===0||run.coins<chargePlan.cost} onClick={()=>recharge(chargePlan.units)}>{chargePlan.units ? `补至 ${chargePlan.target} 电 · ${chargePlan.cost} 金币` : `已达到${chargePlan.target}电参考线`}</button><button disabled={run.energy>=run.energyCap||run.coins<(run.energyCap-run.energy)*CHARGE_PRICE} onClick={()=>recharge(run.energyCap-run.energy)}>{run.energy>=run.energyCap?`已充满 ${run.energyCap} 电`:`充满 ${run.energyCap} · ${(run.energyCap-run.energy)*CHARGE_PRICE} 金币`}</button><button disabled={run.energy+10>run.energyCap||run.coins<10*CHARGE_PRICE} onClick={()=>recharge(10)}>+10 电 · {10*CHARGE_PRICE} 金币</button><button disabled={run.energy>=run.energyCap||run.coins<CHARGE_PRICE} onClick={()=>recharge(1)}>+1 电 · {CHARGE_PRICE} 金币</button></div><p>补至{chargePlan.target}需 {chargePlan.cost} 金币，余 {Math.max(0,run.coins-chargePlan.cost)}。</p></section>
+      <section className="recharge-panel"><div><b>已补 {SHOP_ENTRY_CHARGE} 电 · 继续充电 {CHARGE_PRICE}币 = 1电</b><span>{run.energy}/{run.energyCap} · 到下个商店至少需 {chargePlan.baseline} 电，人物另计</span></div><div className="recharge-actions"><button disabled={chargePlan.units===0||run.coins<chargePlan.cost} onClick={()=>recharge(chargePlan.units)}>{chargePlan.units ? `补至 ${chargePlan.target} 电 · ${chargePlan.cost} 金币` : `已达到${chargePlan.target}电参考线`}</button><button disabled={run.energy>=run.energyCap||run.coins<(run.energyCap-run.energy)*CHARGE_PRICE} onClick={()=>recharge(run.energyCap-run.energy)}>{run.energy>=run.energyCap?`已充满 ${run.energyCap} 电`:`充满 ${run.energyCap} · ${(run.energyCap-run.energy)*CHARGE_PRICE} 金币`}</button><button disabled={run.energy+10>run.energyCap||run.coins<10*CHARGE_PRICE} onClick={()=>recharge(10)}>+10 电 · {10*CHARGE_PRICE} 金币</button><button disabled={run.energy>=run.energyCap||run.coins<CHARGE_PRICE} onClick={()=>recharge(1)}>+1 电 · {CHARGE_PRICE} 金币</button></div><p>补至{chargePlan.target}需 {chargePlan.cost} 金币，余 {Math.max(0,run.coins-chargePlan.cost)}。</p></section>
       <button className="shop-inventory-link" onClick={()=>setInventoryOpen(true)}><Layers />查看已装升级 · {upgradeCount} 次</button>
       <div className="upgrade-grid">{run.shop.map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = !card.purchased && rescuesCrisis(key, run); const eatsReserve = affordable && run.coins - card.price < chargingPlan(previewUpgrade(run,key)).cost; return <button key={key} className={`${rescue ? 'crisis-rescue' : ''} ${card.purchased ? 'shop-purchased' : ''}`} disabled={card.purchased || !affordable} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price} 金币${card.purchased ? '，已购入' : !affordable ? '，金币不足' : ''}`}>
         <span className="upgrade-card-head"><small>{UPGRADES[key].label}</small><i className={`upgrade-strategy strategy-${UPGRADES[key].tone}`}>{UPGRADES[key].strategy}</i></span><b>{UPGRADES[key].name}</b><p>{UPGRADES[key].description}</p><em>{card.purchased ? '已安装，可在升级清单中查看' : upgradeImpact(key, run)}</em>{!card.purchased && eatsReserve && <span className="reserve-warning">购买后不足以预留完整充电费</span>}<span className="shop-price"><Coins aria-hidden="true" /><strong>{card.price}</strong><span>{card.purchased ? '✓ 已购入' : affordable ? '购买并安装' : `还差 ${card.price - run.coins}`}</span></span>

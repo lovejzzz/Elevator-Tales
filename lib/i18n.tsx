@@ -16,6 +16,11 @@ const exactPairs: Array<[string, string]> = [
   ['每位相邻乘客：每层 +1 金币，逐人叠加。', 'Each adjacent rider: +1 coin per floor, stacking per rider.'],
   ['包括其他游客；不设人数上限，由站位决定最大旅伴数。邻座变化时立即重新计算。', 'Includes other Tourists. There is no rules cap; cabin positions determine the maximum companion count. The bonus updates immediately when neighbors change.'],
   ['包括其他游客；邻座变化即重算', 'Includes other Tourists; updates when neighbors change'],
+  ['到站补充2电 · 短途周转', 'Recharge 2 power on arrival · quick turnover'],
+  ['目的地很近；到站时为电梯补充2电（不超过电量上限），适合用短途周转换取续航。', 'A nearby destination. On arrival, recharge 2 power up to the cap, turning quick turnover into extra range.'],
+  ['到站时补充2电，不超过电量上限。', 'Recharge 2 power on arrival, up to the power cap.'],
+  ['到站补充2电（不超过上限）', 'Recharge 2 power on arrival (up to cap)'],
+  ['到站补充2电', 'Recharge 2 power on arrival'],
   ['到站补充1电 · 短途周转', 'Recharge 1 power on arrival · quick turnover'],
   ['目的地很近；到站时为电梯补充1电（不超过电量上限），适合用短途周转换取续航。', 'A nearby destination. On arrival, recharge 1 power up to the cap, turning quick turnover into extra range.'],
   ['到站时补充1电，不超过电量上限。', 'Recharge 1 power on arrival, up to the power cap.'],
@@ -64,6 +69,12 @@ const exactPairs: Array<[string, string]> = [
   ['短途周转，快速送达赚取金币。', 'A short trip that pays quickly and frees a position.'],
   ['每位每层节能2电 · 可叠加', 'Each saves 2 power/floor · stacks'],
   ['每位每层：节能2 · 可叠加', 'Each saves 2 power/floor · stacks'],
+  ['每层节能2电 · 可堆叠', 'Saves 2 power/floor · stacks'],
+  ['每层节能2 · 可堆叠', 'Saves 2 power/floor · stacks'],
+  ['每位维修工每层抵消2点人物耗电，多位逐个叠加。维修工本人耗2电；节能最多抵完人物耗电，不能抵消电梯运转的1电，也不会倒充电。', 'Each Mechanic cancels 2 rider power per floor, stacking per Mechanic. A Mechanic costs 2 power. Savings can cancel rider power only, never the 1-power motor, and cannot generate power.'],
+  ['每层节能2电，多位维修工逐个叠加。', 'Saves 2 power per floor; multiple Mechanics stack.'],
+  ['本人耗2电；节能不能抵消电梯运转，也不会倒充电。', 'Costs 2 power. Savings cannot cancel the motor or generate power.'],
+  ['维修工、受控幽灵和节能线路逐项相加；节能最多抵完人物耗电，不能抵运转1电。', 'Mechanics, controlled Ghosts, and Eco Circuit stack. Savings can cancel rider power only, never the 1-power motor.'],
   ['每位维修工每层抵消2点人物耗电，多位逐个叠加。维修工本人耗1电；节能总量最多抵完本层人物耗电，不能抵消电梯运转的1电，也不会倒充电。', 'Each Mechanic cancels 2 passenger power per floor, and multiple Mechanics stack. A Mechanic consumes 1 power. Savings can cancel passenger use only, never the elevator’s 1-power motor cost, and cannot generate power.'],
   ['每位维修工每层节能2电，多位逐个叠加。', 'Each Mechanic saves 2 passenger power per floor. Multiple Mechanics stack.'],
   ['维修工、受控幽灵和节能线路逐项相加；总节能最多抵完人物耗电，不能抵运转1电。', 'Mechanics, controlled Ghosts, and Eco Circuit stack. Savings can cancel passenger use, but never the 1-power motor cost.'],
@@ -78,15 +89,21 @@ const exactPairs: Array<[string, string]> = [
   ['安抚相邻的醉汉和儿童，阻止其负面效果。', 'Calms adjacent Drunks and Children, preventing their negative effects.'],
   ['未控制 +3 金币/层 · 偶数层 +1 躁动', 'Uncontrolled: +3 coins/floor · +1 agitation on even floors'],
   ['无警察/律师：每站+3；有则+1，到站再+5', 'No Officer/Lawyer: +3 coins/floor; with one: +1 and +5 on arrival'],
+  ['未控制 +4 金币/层 · 每层 +1 躁动', 'Uncontrolled: +4 coins/floor · +1 agitation/floor'],
+  ['未受控制时每层赚4金币并增加1躁动。相邻警察或律师后每层赚1金币且不再制造躁动，抵达再奖励5金币。', 'Uncontrolled: earns 4 coins and adds 1 agitation each floor. Next to an Officer or Lawyer: earns 1 coin per floor, adds no agitation, and gains 5 coins on arrival.'],
+  ['无警察/律师：每站+4；有则+1，到站再+5', 'No Officer/Lawyer: +4 coins/floor; with one: +1 and +5 on arrival'],
+  ['没有警察或律师邻座：每层 +4 金币、躁动 +1。', 'Without an adjacent Officer or Lawyer: +4 coins and +1 agitation each floor.'],
   ['挨警察或律师免除', 'Prevented by an adjacent Officer or Lawyer'],
   ['没有警察或律师邻座：每层 +3 金币，偶数层躁动 +1。', 'Without an adjacent Officer or Lawyer: +3 coins per floor and +1 agitation on even floors.'],
   ['有警察或律师邻座：改为每层 +1 金币，不再加压，到站车费 +5。', 'With an adjacent Officer or Lawyer: +1 coin per floor, no theft agitation, and +5 arrival fare.'],
   ['控制小偷，延缓炸弹', 'Controls Thieves and slows bombs'],
   ['邻小偷：小偷每站改赚1币', 'Adjacent Thief: earns 1 coin/floor'],
   ['邻小偷：免偷窃躁动；邻炸弹：偶数层倒计时不减', 'Adjacent Thief: prevents theft agitation; adjacent Bomb Carrier: timer does not drop on even floors'],
+  ['邻小偷：免偷窃躁动；邻炸弹：锁住倒计时', 'Adjacent Thief: prevents theft agitation; adjacent Bomb Carrier: locks its timer'],
   ['邻小偷：免偷窃躁动；不能暂停炸弹倒计时', 'Adjacent Thief: prevents theft agitation; cannot pause a Bomb Carrier timer'],
   ['控制相邻的小偷，消除其加压效果。', 'Controls adjacent Thieves and removes their agitation effect.'],
   ['与炸弹客相邻：到达偶数层时，炸弹倒计时不减少。', 'Adjacent Bomb Carrier: its timer does not drop on even floors.'],
+  ['与炸弹客相邻期间：锁住炸弹倒计时。', 'While adjacent to a Bomb Carrier: lock its timer.'],
   ['控制小偷，每站耗1电', 'Controls Thieves; consumes 1 power/floor'],
   ['控制相邻的小偷，消除其加压效果。不能暂停炸弹倒计时。', 'Controls adjacent Thieves and removes their agitation. Cannot pause a Bomb Carrier timer.'],
   ['未安抚每层 25% 闹事 · 躁动 +2', 'Uncalmed: 25% chance/floor to cause +2 agitation'],
@@ -106,6 +123,13 @@ const exactPairs: Array<[string, string]> = [
   ['不耗电，但会延误邻座', 'Uses no power, but delays neighbors'],
   ['没有驱魔师邻座：抵达 3、6、9… 层时，随机让一名邻座的目的地延后 1 层。', 'Without an adjacent Exorcist: on floors 3, 6, 9… delay one random neighbor by 1 floor.'],
   ['有驱魔师邻座：不再延误邻座；每位受控幽灵每层节能1电，到站车费 +6。', 'With an adjacent Exorcist: no delays; each controlled Ghost saves 1 power per floor and gains +6 arrival fare.'],
+  ['相邻驱魔师时，不再延误邻座，每位受控幽灵每层抵消2点人物耗电且到站多得6金币；否则到3的倍数层时随机延误一位邻座1站。所有节能逐项相加，但电梯运转仍至少耗1电。', 'Next to an Exorcist, stops delaying neighbors; each controlled Ghost saves 2 rider power per floor and gains 6 arrival coins. Otherwise, on floors divisible by 3, delays one random neighbor by 1 floor. Savings stack, but the motor still costs at least 1 power.'],
+  ['有驱魔师邻座：不再延误邻座；每位受控幽灵每层节能2电，到站车费 +6。', 'With an adjacent Exorcist: no delays; each controlled Ghost saves 2 power per floor and gains +6 arrival fare.'],
+  ['每位受控幽灵每站节能2电', 'Each controlled Ghost saves 2 power/floor'],
+  ['无驱魔师：3的倍数层随机延误邻座1站；邻驱魔师：不延误且每站节能2', 'No Exorcist: every third floor delays a random neighbor by 1; adjacent Exorcist: no delay and saves 2 power/floor'],
+  ['邻幽灵：阻止延误，每站节能2', 'Adjacent Ghost: prevents delays and saves 2 power/floor'],
+  ['控制每位相邻幽灵，分别阻止延误并使其每层抵消2点人物耗电、到站多得6金币。多位幽灵的效果逐个叠加；电梯运转仍至少耗1电。', 'Controls each adjacent Ghost, preventing its delay, saving 2 rider power per floor, and adding 6 arrival coins. Multiple Ghosts stack; the motor still costs at least 1 power.'],
+  ['每位相邻幽灵分别受控：阻止延误、每层节能2电，幽灵到站车费 +6。', 'Each adjacent Ghost is controlled: no delay, saves 2 power per floor, and gains +6 arrival fare.'],
   ['每位受控幽灵每站节能1电', 'Each controlled Ghost saves 1 power/floor'],
   ['邻驱魔师：到站再+6币', 'Adjacent Exorcist: +6 coins on arrival'],
   ['无驱魔师：3的倍数层随机延误邻座1站；邻驱魔师：不延误且每站节能1', 'No Exorcist: every third floor delays a random neighbor by 1; adjacent Exorcist: no delay and saves 1 power/floor'],
@@ -127,6 +151,7 @@ const exactPairs: Array<[string, string]> = [
   ['炸弹倒计时归零：本局立即失败', 'Bomb timer reaches zero: the run ends immediately'],
   ['炸弹倒计时每上升一层减少 1；如果到站前归零，本局立即失败。到站当层归零则安全。', 'The bomb timer drops by 1 each floor. If it reaches zero before arrival, the run ends; reaching zero on the arrival floor is safe.'],
   ['有警察邻座：到达偶数层时，倒计时不减少。', 'With an adjacent Officer, the timer does not drop on even floors.'],
+  ['有警察邻座：相邻期间倒计时锁定不减。', 'With an adjacent Officer, the timer stays locked while they remain adjacent.'],
   ['参数与关系随机 · 到站才揭晓车费', 'Random stats and links · fare revealed on arrival'],
   ['本次参数已固定；车费到站揭晓', 'Current stats are sealed; fare is revealed on arrival'],
   ['耗电、自身躁动、路程及协作/冲突对象每次出现时随机。', 'Power, personal agitation, trip length, and cooperation/conflict targets are randomized each appearance.'],
@@ -170,6 +195,8 @@ const exactPairs: Array<[string, string]> = [
   ['恰好一名邻座时每层赚3金币；两名以上邻座时只在偶数层增加1躁动。', 'With exactly one neighbor, earns 3 coins each floor. With two or more, adds 1 agitation on even floors instead.'],
   ['偶数层检查整趟耗电：运转＋所有人物耗电−节能，总计不超过4电时奖励1金币，否则躁动+1。检查员本人也耗1电；稳压和节能能帮助通过检查。', 'On even floors, checks total power: motor + all riders − savings. At 4 or less, earn 1 coin; otherwise add 1 agitation. The Inspector consumes 1 power and savings can help pass.'],
   ['高额悬赏补偿整局失败风险。上车时获得3–6层倒计时；每上升一层减1，到站前归零会结束本局。与警察相邻时，偶数层暂停倒计时。', 'A high reward offsets run-ending risk. The bomb timer starts at 3–6 and drops by 1 each floor; zero before arrival ends the run. Next to an Officer, it does not drop on even floors.'],
+  ['高额悬赏补偿整局失败风险。上车时获得3–6层倒计时；每上升一层减1，到站前归零会结束本局。与警察相邻期间，倒计时锁定不减。', 'A high reward offsets run-ending risk. The Bomb timer starts at 3–6 and drops by 1 each floor; zero before arrival ends the run. While adjacent to an Officer, the timer stays locked.'],
+  ['炸弹倒计时归零 · 下一班让炸弹客与警察相邻，警察会在相邻期间锁住倒计时；来不及送达就拒载。', 'Bomb timer reached zero · Next shift, keep the Bomb Carrier beside an Officer to lock the timer; refuse the ride if delivery is impossible.'],
   ['每次出现随机人物耗电、自身躁动、路程与协作/冲突对象。车费在生成时封存，到站才揭晓；请离赔偿不透露隐藏车费。', 'Each appearance randomizes power, personal agitation, trip length, and cooperation/conflict targets. Fare is sealed until arrival; dismissal does not reveal it.'],
   ['每到一层重新抽取人物耗电、自身躁动、车费与协作/冲突关系；开门后先看新状态再决定去留。目的地不延长；耗电和躁动会随新属性立即变化。', 'Every floor rerolls power, personal agitation, fare, and cooperation/conflict targets. Review the new state before deciding whether to keep the rider. The destination never extends.'],
   ['随机分配人物耗电、车费、躁动（含联动偏好）三类属性，每位邻座复制一项，最多三项且不重复。相同邻座组合不会重新抽签；复制人的来源取本体，避免递归。隐藏车费仍然隐藏。不复制技能、炸弹倒计时或路程。', 'Randomly copies power, fare, or agitation/link preference from each neighbor, up to three unique fields. The same neighbor set does not reroll; Mimics use base values to avoid recursion. Hidden fares stay hidden. Abilities, Bomb Carrier timers, and trip length are never copied.'],
@@ -177,6 +204,7 @@ const exactPairs: Array<[string, string]> = [
   ['警察 / 律师邻座可控', 'Control with an adjacent Officer / Lawyer'], ['音乐家 / 护士邻座可安抚', 'Calm with an adjacent Musician / Nurse'],
   ['保持恰好 1 名邻座', 'Keep exactly 1 neighbor'], ['偶数层总耗电尽量不超过4', 'Keep total power at 4 or less on even floors'],
   ['与警察相邻：偶数层倒计时不减', 'Adjacent Officer: timer does not drop on even floors'], ['查看这一次的协作与冲突对象', 'Check this appearance’s cooperation and conflict targets'],
+  ['与警察相邻：锁住倒计时', 'Adjacent Officer: locks the timer'], ['旁边的炸弹客：相邻期间锁住炸弹倒计时。', 'Adjacent Bomb Carrier: its timer stays locked while adjacent.'],
   ['每层查看新状态，留好请离赔偿', 'Review the new state each floor and reserve dismissal compensation'],
   ['每逢偶数层：本次总耗电不超过4，金币 +1；超过则躁动 +1。', 'On even floors: total power at 4 or less grants +1 coin; above 4 adds +1 agitation.'],
 
@@ -186,6 +214,8 @@ const exactPairs: Array<[string, string]> = [
   ['乘客档案', 'Passenger Archive'], ['玩法说明', 'How to Play'], ['关闭声音', 'Mute sound'], ['打开声音', 'Enable sound'],
   ['午夜启程', 'Midnight Departure'], ['无尽班次', 'Endless Shift'], ['电量', 'Power'], ['躁动', 'Agitation'], ['余额', 'Balance'],
   ['本次变化明细', 'Decision details'], ['电梯座舱', 'Elevator cabin'], ['绿实线协作 · 红虚线冲突', 'Solid green: cooperation · dashed red: conflict'],
+  ['绿实线协作 · 红虚线显示代价', 'Solid green: cooperation · dashed red: cost'],
+  ['绿线发奖励；红线图标直接显示每层代价。两者分别结算，多条都可叠加。', 'Green links pay rewards; red-link icons show their per-floor cost. They resolve independently, and multiple links stack.'],
   ['卡牌稀有度', 'Card rarity'], ['常规', 'Standard'], ['精良', 'Fine'], ['稀有', 'Rare'], ['传奇', 'Legendary'],
   ['门已开启。把候选人物直接拖进指定站位。', 'Doors open. Drag a candidate directly into a position.'],
   ['拖拽人物安排站位 · 有效组合会亮起', 'Drag riders into position · valid links will glow'],
@@ -268,6 +298,7 @@ const exactPairs: Array<[string, string]> = [
   ['高躁动：人物引起的正向躁动 ×2', 'High agitation: positive rider agitation ×2'], ['人物正向躁动已按 ×2 计算', 'Positive rider agitation already calculated at ×2'],
   ['电梯运转', 'Elevator motor'], ['稳压模块抵消', 'Stabilizer'], ['节能少耗', 'Power savings'], ['宽松轿厢', 'Uncrowded cabin'], ['班次压力', 'Shift pressure'],
   ['快递员电池包', 'Courier battery pack'], ['快递补电', 'Courier recharge'], ['可能快递补电', 'possible Courier recharge'],
+  ['红线躁动', 'Red-link agitation'], ['红线额外耗电', 'Red-link extra power'], ['红线金币损失', 'Red-link coin loss'], ['抵达商店补电', 'Shop-entry recharge'],
   ['乘客到站舒缓', 'Arrival relief'], ['商店充电', 'Shop charge'], ['补给站充电', 'Supply-station charge'], ['请离赔偿', 'Dismissal compensation'], ['电量上限截取', 'Power capped'], ['躁动下限修正', 'Agitation floor adjustment'],
   ['恋人连携', 'Lover link'], ['受控小偷', 'Controlled Thief'], ['小偷', 'Thief'], ['醉汉安抚', 'Calmed Drunk'],
   ['名人关注', 'Celebrity attention'], ['检查员合规奖励', 'Inspector compliance'], ['揭晓车费', ' revealed fare'],
@@ -287,6 +318,8 @@ const exactPairs: Array<[string, string]> = [
   ['只要本层有人正常到站，本层总躁动最多 −1；同层多人到站也只减 1。', 'If any rider arrives normally, total agitation falls by at most 1 that floor. Multiple arrivals still reduce only 1.'],
   ['购买时立即 −2 躁动，并将上限 +1。', 'Immediately reduce agitation by 2 and increase its cap by 1.'],
   ['人物只看金钱、耗电和躁动。每站耗电＝电梯运转1＋车内人物耗电−节能；到站这一站也计费。电量或躁动任一触底，本班都会结束。', 'Riders have only coins, power, and agitation. Power per floor = motor 1 + rider power − savings; the arrival floor also costs power. Running out of power or reaching the agitation cap ends the shift.'],
+  ['人物只看金钱、耗电和躁动。每站耗电＝电梯运转1＋车内人物耗电＋红线耗电−节能；到站这一站也计费。电量或躁动任一触底，本班都会结束。', 'Riders have only coins, power, and agitation. Power per floor = motor 1 + rider power + red-link power − savings; the arrival floor also costs power. Running out of power or reaching the agitation cap ends the shift.'],
+  ['卡片只显示 0、+1 或 +2；没有拥挤、楼层压力或隐藏倍率。只有标有 🔥 的红线每层 +1 躁动；每位正常到站乘客让本层总躁动最多 −1。', 'Cards show only 0, +1, or +2. There is no crowding, floor pressure, or hidden multiplier. Only red links marked 🔥 add 1 agitation per floor; any normal arrival reduces total agitation by at most 1 that floor.'],
   ['卡片只显示 0、+1 或 +2；没有拥挤、楼层压力或隐藏倍率。每条未被协作保护的红线每层 +1；每位正常到站乘客让本层总躁动最多 −1。', 'Cards show only 0, +1, or +2. There is no crowding, floor pressure, or hidden multiplier. Each unprotected red link adds +1 per floor; any normal arrival reduces total agitation by at most 1 that floor.'],
   ['每位护士或音乐家每层抵消一名相邻乘客的 1 躁动。多人效果会分别结算，但不会把躁动降到 0 以下。', 'Each Nurse or Musician cancels 1 agitation from one adjacent rider per floor. Multiple calmers resolve separately but never reduce agitation below zero.'],
   ['关门前先看左栏的下一站预测；达到 ', 'Before closing the doors, check the next-floor forecast on the left. At '],
@@ -374,6 +407,16 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/2\+邻座：偶数层 \+(\d+)/gu, '2+ neighbors: +$1 agitation on even floors')
     .replace(/总耗电>(\d+)：偶数层 \+(\d+)/gu, 'Total power >$1: +$2 agitation on even floors')
     .replace(/每站25%概率 \+(\d+)/gu, '25% chance/floor: +$1 agitation')
+    .replace(/邻(.+?)：🔥 每层 \+1 躁动/gu, 'Adjacent $1: 🔥 +1 agitation/floor')
+    .replace(/邻(.+?)：⚡ 每层额外耗 1 电/gu, 'Adjacent $1: ⚡ +1 extra power/floor')
+    .replace(/邻(.+?)：🪙 每层损失 2 金币/gu, 'Adjacent $1: 🪙 lose 2 coins/floor')
+    .replace(/邻(.+?)：⚡ 两人耗电 ×2；🪙 两人到站车费 ×2/gu, 'Adjacent $1: ⚡ both riders power x2; 🪙 both arrival fares x2')
+    .replace(/邻(.+?)：⚡ 两人耗电 ×2/gu, 'Adjacent $1: ⚡ both riders power x2')
+    .replace(/旁边有(.+?)：🔥 每层 \+1 躁动/gu, 'Adjacent $1: 🔥 +1 agitation/floor')
+    .replace(/旁边有(.+?)：⚡ 每层额外耗 1 电/gu, 'Adjacent $1: ⚡ +1 extra power/floor')
+    .replace(/旁边有(.+?)：🪙 每层损失 2 金币/gu, 'Adjacent $1: 🪙 lose 2 coins/floor')
+    .replace(/旁边有(.+?)：⚡ 两人耗电 ×2；🪙 两人到站车费 ×2/gu, 'Adjacent $1: ⚡ both riders power x2; 🪙 both arrival fares x2')
+    .replace(/旁边有(.+?)：⚡ 两人耗电 ×2/gu, 'Adjacent $1: ⚡ both riders power x2')
     .replace(/偶数层 \+(\d+)/gu, 'Even floors: +$1 agitation')
     .replace(/炸弹倒计时 (\d+) 层：每上升一层 −1；到站前归零则失败/gu, 'Bomb timer $1 floors: −1 each floor; reaching zero before arrival ends the run')
     .replace(/复制(.+?)的耗电/gu, 'Copies $1 power')

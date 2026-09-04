@@ -633,6 +633,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .connection-path.conflict-link .connection-underlay { stroke:rgba(19,5,3,.92); }
 .connection-path.conflict-link .connection-core { stroke:#ff9a76; stroke-width:4; stroke-dasharray:8 6; animation:link-flow 900ms linear infinite; filter:drop-shadow(0 0 4px #df6446) drop-shadow(0 0 9px rgba(229,91,59,.7)); }
 .connection-path.conflict-link .connection-node { fill:#ffd0bd; stroke:#a43f2d; filter:drop-shadow(0 0 5px #ff8a67) drop-shadow(0 0 10px rgba(236,92,59,.86)); }
+.connection-effect { fill:#ffe0c9; stroke:rgba(13,5,3,.92); stroke-width:3px; paint-order:stroke fill; font:700 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:-.4px; filter:drop-shadow(0 0 4px rgba(255,122,83,.9)); }
 .inventory-dialog { max-width:660px!important; max-height:90dvh; overflow:auto; }
 .inventory-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
 .inventory-summary span { padding:12px; border:1px solid #bfa16640; color:#a5b6aa; font-size:12px; }
@@ -800,7 +801,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .card-skills .skill-money { color:#e2cc9d; }
 .card-cooperation { display:grid; padding-block:4px; border-block:1px solid #8eb99538; color:#bfdcc2; }
 .card-cooperation b { color:#c9e3b9; }
-.card-conflict { display:flex; align-items:center; gap:5px; color:#f0b696; }
+.card-conflict { display:flex; flex-direction:column; align-items:flex-start; gap:2px; color:#f0b696; }
 .card-conflict svg { width:13px; height:13px; flex:none; }
 .unified-passenger-summary>.card-action { margin-top:auto; padding-top:3px; color:#a8b5a6; font-size:12px; }
 .boarded .card-action,.pending .card-action { color:#f1d08e; }
@@ -1550,6 +1551,45 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .passenger-item { flex:0 0 auto; min-height:0; }
  .game-shell .passenger-card { height:auto; min-height:0; }
  .game-shell .passenger-card>.unified-passenger-summary { height:auto; min-height:100%; overflow-wrap:normal; }
+}
+
+/* A 720px-tall desktop is still a desktop cockpit, not a clipped card rail.
+   Preserve every rule while tightening the three offers enough to keep the
+   controls and the complete final card visible together. */
+@media (min-width:1101px) and (min-height:501px) and (max-height:750px) {
+ .game-shell .game-grid { grid-template-columns:184px minmax(0,1fr) minmax(410px,440px); }
+ .game-shell .passenger-list { gap:5px; padding-right:2px; }
+ .game-shell .passenger-card { padding:7px 9px; }
+ .game-shell .passenger-card>.unified-passenger-summary {
+  display:grid;
+  grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);
+  grid-template-areas:'overview overview' 'tip tip' 'skills coop' 'skills conflict' 'action action';
+  align-content:start;
+  gap:2px 10px;
+  font-size:12px;
+  line-height:1.25;
+ }
+ .game-shell .card-overview { grid-area:overview; }
+ .game-shell .card-tip { grid-area:tip; }
+ .game-shell .card-skills { grid-area:skills; align-content:start; }
+ .game-shell .card-cooperation { grid-area:coop; align-self:start; display:grid; justify-content:stretch; }
+ .game-shell .card-conflict { grid-area:conflict; align-self:start; }
+ .game-shell .unified-passenger-summary>.card-action { grid-area:action; }
+ .game-shell .card-head { min-height:34px; gap:6px; }
+ .game-shell .card-head .portrait-window { width:33px; height:33px; }
+ .game-shell .card-head strong,
+ html[lang='en'] .game-shell .card-head strong { font-size:18px; }
+ .game-shell .card-trip,
+ .game-shell .unified-passenger-summary>.card-action { font-size:11px; line-height:1.2; }
+ .game-shell .card-grade,.game-shell .tourist-stamp,.game-shell .high-risk-tag { min-height:14px; padding:1px 4px; font-size:8px; }
+ .game-shell .card-values { gap:1px 7px; }
+ .game-shell .card-values>* { gap:3px; font-size:12px; }
+ .game-shell .card-values svg,.game-shell .card-skills svg,.game-shell .card-conflict svg,.game-shell .card-cooperation svg { width:12px; height:12px; }
+ .game-shell .card-fare { font-size:13px; }
+ .game-shell .card-skills,.game-shell .card-conflict { gap:0; }
+ .game-shell .card-cooperation { padding:1px 0 2px; }
+ .game-shell .candidate-notes { display:none; }
+ .game-shell .mobile-rule-button { width:29px; height:29px; }
 }
 
 @media (prefers-reduced-motion:no-preference) {

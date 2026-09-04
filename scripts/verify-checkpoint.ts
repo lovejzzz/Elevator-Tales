@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {initialRun,resolveFloor,makeOffers,riderAgitation,inspectionExtraEnergy,shiftOutlook,type Rider} from '../lib/game-engine';
+import {initialRun,resolveFloor,makeOffers,riderAgitation,inspectionExtraEnergy,shiftOutlook,totalEnergyCost,type Rider} from '../lib/game-engine';
 import {MECHANIC_SAVING,PASSENGERS} from '../lib/game-data';
 import {PASSENGER_RULES,passengerFace} from '../lib/passenger-presentation';
 const rider=(kind:Rider['kind'],id:string):Rider=>({kind,id,boardedAt:1,destination:80,patience:0,fareBonus:0});
@@ -12,14 +12,15 @@ for(let floor=1;floor<=12;floor++)for(const stress of [0,10])for(const stabilize
  if(mode==='solar')run.upgrades.solar=1;
  for(let i=0;i<load;i++)run.cabin[5-i]=rider('tourist','t'+i);
  const next=floor+1,mechanicActive=mode==='mechanic';
- const rawSaved=mechanicActive?MECHANIC_SAVING:mode==='ghost'||mode==='solar'&&next%4===0?1:0;
- const people=1+(mode==='mechanic'||mode==='ghost'?1:0)+load;
+ const rawSaved=mechanicActive?MECHANIC_SAVING:mode==='ghost'?2:mode==='solar'&&next%4===0?1:0;
+ const people=1+(mode==='mechanic'?2:mode==='ghost'?1:0)+load;
  const remainder=Math.max(0,people-stabilized-Math.min(rawSaved,people-stabilized));
  assert.equal(inspectionExtraEnergy(run),remainder);
- assert.equal(riderAgitation(run,0).low,remainder>3?1:0);
+ assert.equal(riderAgitation(run,0).low,totalEnergyCost(run)>4?1:0);
  const result=resolveFloor(run,()=>.9);
- assert.equal(result.lastEarnings.sources.find(s=>s.label==='检查员合规奖励')?.amount??0,remainder<=3?1:0);
- assert.equal(result.lastEnergy.delta,-1-remainder);cases++;
+ assert.equal(result.lastEarnings.sources.find(s=>s.label==='检查员合规奖励')?.amount??0,totalEnergyCost(run)<=4?1:0);
+ const shopCharge=next%10===0?5:0;
+ assert.equal(result.lastEnergy.delta,-totalEnergyCost(run)+shopCharge);cases++;
 }
 assert.equal(PASSENGERS.child.fare,7);assert.deepEqual(PASSENGERS.child.trip,[2,5]);
 let seed=1996723,children=0;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
@@ -32,4 +33,4 @@ assert.equal(shiftOutlook(9),'下一站：商店');
 assert.equal(shiftOutlook(38,2,0),'');
 assert.equal(shiftOutlook(39,0,1),'下一站：商店');
 assert.equal(shiftOutlook(40,2,0),'本层起，高危候客增加');
-console.log(JSON.stringify({version:'v8.18',inspectionInteractions:cases,generatedChildren:children,childRange:[2,5],fare:7}));
+console.log(JSON.stringify({version:'v8.20',inspectionInteractions:cases,generatedChildren:children,childRange:[2,5],fare:7}));

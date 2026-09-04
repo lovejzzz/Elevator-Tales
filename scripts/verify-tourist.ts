@@ -51,4 +51,4 @@ for(let a=0;a<kinds.length;a++)for(let b=0;b<kinds.length;b++)for(let c=0;c<kind
  totalBonus+=actual;cases++;
 }
 
-console.log(JSON.stringify({version:'v8.19',cases,cabinEdgeMaximum:7,fullTouristCabinBonus:14,averageCompanionBonus:Math.round(totalBonus/cases*100)/100,hardStops:['每位邻座逐人叠加','游客互相成为旅伴','站位几何自然限制单人最多3位旅伴','旅伴绿线不额外发放通用到站协作奖励','教练只翻倍基础车费'] }));
+console.log(JSON.stringify({version:'v8.20',cases,cabinEdgeMaximum:7,fullTouristCabinBonus:14,averageCompanionBonus:Math.round(totalBonus/cases*100)/100,hardStops:['每位邻座逐人叠加','游客互相成为旅伴','站位几何自然限制单人最多3位旅伴','旅伴绿线不额外发放通用到站协作奖励','教练只翻倍基础车费'] }));

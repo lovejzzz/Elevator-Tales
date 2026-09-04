@@ -11,10 +11,9 @@ import {
   type Rider,
   type RunState,
 } from '../lib/game-engine';
-import { BONDS, bondStatus, randomTraits, riderProfile, type VariableTraits } from '../lib/rider-profile';
+import { BONDS, bondStatus, conflictLinks, randomTraits, riderProfile, type VariableTraits } from '../lib/rider-profile';
 
 const neighborSlots = [0, 2, 4];
-const round = (value: number) => Math.round(value * 100) / 100;
 const rngFor = (seed: number) => () => {
   let value = seed += 0x6d2b79f5;
   value = Math.imul(value ^ value >>> 15, value | 1);
@@ -59,9 +58,11 @@ const genericConflicts = PASSENGER_ORDER.flatMap(kind => {
     const avoided = BONDS[kind].avoids[0];
     const cabin: Array<Rider | null> = [null, target, null, null, null, null];
     neighborSlots.slice(0, count).forEach((slot, index) => { cabin[slot] = rider(avoided, `${kind}-avoid-${index}`); });
-    assert.equal(riderAgitation(state(cabin, { floor: 1 }), 1).fixed.find(line => line.label === '邻座冲突')?.amount, count);
-    assert.equal(riderAgitation(state(cabin, { floor: 2 }), 1).fixed.find(line => line.label === '邻座冲突'), undefined);
-    return { kind, count, evenFloorAgitation: count, oddFloorAgitation: 0 };
+    const firstFloor = conflictLinks(cabin);
+    const secondFloor = conflictLinks(state(cabin, { floor: 2 }).cabin);
+    assert.equal(firstFloor.length, count);
+    assert.deepEqual(secondFloor, firstFloor);
+    return { kind, count, effects: firstFloor.map(link => link.effect) };
   });
 });
 
@@ -72,7 +73,7 @@ const mechanicCurve = [0, 1, 2, 3].map(count => {
   const run = state(cabin); const energy = energyBreakdown(run);
   return { count, people: energy.people, saved: energy.saved, total: energy.total };
 });
-assert.deepEqual(mechanicCurve.map(row => row.total), [7, 6, 5, 4]);
+assert.deepEqual(mechanicCurve.map(row => row.total), [7, 7, 7, 7]);
 
 const ghostCurve = [0, 1, 2, 3].map(count => {
   const cabin: Array<Rider | null> = [null, rider('exorcist', 'warden'), null, rider('coach', 'load-a'), null, rider('coach', 'load-b')];
@@ -80,15 +81,15 @@ const ghostCurve = [0, 1, 2, 3].map(count => {
   const run = state(cabin); const energy = energyBreakdown(run);
   return { count, people: energy.people, saved: energy.saved, total: energy.total };
 });
-assert.deepEqual(ghostCurve.map(row => row.saved), [0, 1, 2, 3]);
+assert.deepEqual(ghostCurve.map(row => row.saved), [0, 2, 4, 5]);
 
 const courierCurve = [1, 2, 3].map(count => {
   const cabin: Array<Rider | null> = Array(6).fill(null);
   for (let index = 0; index < count; index += 1) cabin[index] = rider('courier', `courier-${index}`, { destination: 2 });
-  const result = resolveFloor(state(cabin));
+  const result = resolveFloor(state(cabin, { energy: 50 }));
   return { count, netPower: result.lastEnergy.delta, recharge: result.lastEnergy.sources.find(line => line.label === '快递员电池包')?.amount ?? 0 };
 });
-assert.deepEqual(courierCurve.map(row => row.netPower), [-1, -1, -1]);
+assert.deepEqual(courierCurve.map(row => row.netPower), [0, 1, 2]);
 
 const subsets = (count: number) => Array.from({ length: 1 << 6 }, (_, mask) => mask).filter(mask => mask.toString(2).split('1').length - 1 === count);
 const loverCurve = [1, 2, 3, 4, 5, 6].map(count => {
@@ -143,7 +144,7 @@ const calmerCurve = [0, 1, 2, 3].map(count => {
   neighborSlots.forEach((slot, index) => { cabin[slot] = index < count ? rider(index % 2 ? 'musician' : 'nurse', `calmer-${index}`) : rider('commuter', `conflict-${index}`); });
   return { count, targetAgitation: riderAgitation(state(cabin, { floor: 1 }), 1).low };
 });
-assert.deepEqual(calmerCurve.map(row => row.targetAgitation), [5, 3, 1, 0]);
+assert.deepEqual(calmerCurve.map(row => row.targetAgitation), [2, 1, 0, 0]);
 
 const nurseFanout = [1, 2, 3].map(count => {
   const cabin: Array<Rider | null> = [null, rider('nurse', 'nurse'), null, null, null, null];
@@ -166,6 +167,7 @@ const copFanout = [1, 2, 3].map(count => {
   const result = resolveFloor(state(cabin, { floor: 1 }));
   return { count, pausedBombs: result.cabin.filter(r => r?.kind === 'bomb' && r.fuse === 4).length };
 });
+assert.deepEqual(copFanout.map(row => row.pausedBombs), [1, 2, 3], 'one Officer must lock every adjacent Bomb timer without an odd/even gate');
 
 const ghostDelayCurve = [1, 2, 3].map(count => {
   const target = rider('commuter', 'delay-target');
@@ -227,15 +229,14 @@ for (const center of PASSENGER_ORDER) for (const first of PASSENGER_ORDER) for (
   if (!bestByCenter[center] || score(row) > score(bestByCenter[center])) bestByCenter[center] = row;
   topFormations.push(row); topFormations.sort((a, b) => (b.coins - b.agitation * 8 - b.power * 2) - (a.coins - a.agitation * 8 - a.power * 2)); if (topFormations.length > 12) topFormations.pop();
   assert.ok(energy.saved <= passengerEnergy(run));
-  assert.ok(!(bond.supportCount && bond.conflictCount));
   starFormations += 1;
 }
 
 console.log(JSON.stringify({
-  version: 'v8.19-stack-audit', starFormations, genericSupportCases: genericLinks.length,
+  version: 'v8.20-stack-audit', starFormations, genericSupportCases: genericLinks.length,
   genericConflictCases: genericConflicts.length, mechanicCurve, ghostCurve, courierCurve,
   loverCurve, contractLoverCurve, coachCurve, conciergeCoachCurve, touristCurve, touristCabinCurve, calmerCurve, nurseFanout, thiefFanout, copFanout,
   ghostDelayCurve, inspectorCurve, celebrityCurve, mimicSamples: 12_000,
   mimicFields, variableTraits, bestByCenter, topFormations,
-  hardStops: ['green rewards stay linear', 'red conflicts trigger only on even destination floors', 'savings never erase motor cost', 'Tourist companions stack per occupied neighbor with no rules cap', 'Tourist visual links do not add generic arrival rewards', 'Mimic copies three distinct fields', 'support suppresses only the generic conflict layer'],
+  hardStops: ['green rewards stay linear', 'red conflicts resolve every floor', 'green and red links resolve independently', 'savings never erase motor cost', 'Officer locks every adjacent Bomb timer without an odd/even gate', 'Tourist companions stack per occupied neighbor with no rules cap', 'Tourist visual links do not add generic arrival rewards', 'Mimic copies three distinct fields'],
 }, null, 2));
