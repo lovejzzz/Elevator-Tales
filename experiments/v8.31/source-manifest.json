@@ -1,0 +1,92 @@
+{
+  "version": "8.31",
+  "archiveSha256": "6bae18bca2ac70add20cac753834851f313f701d6beeb599636f3b63a4028760",
+  "provenance": "Byte identity of these 17 files was verified against frozen v8.31-overhaul-20260905/source.tar.gz. This is not an original v6 or v8.29 engine.",
+  "files": [
+    {
+      "file": "app/globals.css",
+      "source": "app/globals.css",
+      "sha256": "a4abba46a2cfd464b5c6761e5e35d00d3161ef2673ad109baa63311e87af0079"
+    },
+    {
+      "file": "components/elevator-game.tsx.txt",
+      "source": "components/elevator-game.tsx",
+      "sha256": "46ea027facaf455010505633854753db9b4b2d11d5b998d7153fe3642ec218a2"
+    },
+    {
+      "file": "lib/connection-preview.ts",
+      "source": "lib/connection-preview.ts",
+      "sha256": "3845470181a8786cf2049e7e12b1c50ea9fed420a412c5a51679a4b52b3c0a64"
+    },
+    {
+      "file": "lib/game-audio.ts",
+      "source": "lib/game-audio.ts",
+      "sha256": "396df37a7a85c445f534aea91c5878b9759400c3e94de2bab9d55a0571c00f7a"
+    },
+    {
+      "file": "lib/game-data.ts",
+      "source": "lib/game-data.ts",
+      "sha256": "94c15cf74486144db06366ef5ce78d266f1c19705710c6e2efcbdf2a4c361e33"
+    },
+    {
+      "file": "lib/game-engine.ts",
+      "source": "lib/game-engine.ts",
+      "sha256": "52e25826e019d12ad637d6ec2db1f7686617fe749482bd8c5d7063a79c86f71a"
+    },
+    {
+      "file": "lib/game-forecast.ts",
+      "source": "lib/game-forecast.ts",
+      "sha256": "73903fb02f50596dc5e01009b17dc17269d243d3d4c993fd75230cd633247e16"
+    },
+    {
+      "file": "lib/game-interaction.ts",
+      "source": "lib/game-interaction.ts",
+      "sha256": "175d391fbb7f4d958c01ac00494d7cb3fb12c3dc062e5b1fd5c8fa2013a25530"
+    },
+    {
+      "file": "lib/metric-feedback.ts",
+      "source": "lib/metric-feedback.ts",
+      "sha256": "1d293005af9bc2d4ebebd2caa01f68f2cb61a59a020d4457822436d2191f0958"
+    },
+    {
+      "file": "lib/offer-reveal.ts",
+      "source": "lib/offer-reveal.ts",
+      "sha256": "247826acb2e8615bfbf447d868f7a2f7c37abdb7f89784fe81293feab64124e5"
+    },
+    {
+      "file": "lib/passenger-assets.ts",
+      "source": "lib/passenger-assets.ts",
+      "sha256": "e0a4e638e30eb2783354be83cbb6132998714a78120e09613c2494440c82d732"
+    },
+    {
+      "file": "lib/passenger-discovery.ts",
+      "source": "lib/passenger-discovery.ts",
+      "sha256": "c1a047c3df67b2b76809b305239a8b4470ff9772a2942bc6f30616345597a0f3"
+    },
+    {
+      "file": "lib/passenger-presentation.ts",
+      "source": "lib/passenger-presentation.ts",
+      "sha256": "d9fea421d7abb86a263d97f7182fb4df7d348dd17734389f2343b20575bbb07c"
+    },
+    {
+      "file": "lib/rider-profile.ts",
+      "source": "lib/rider-profile.ts",
+      "sha256": "85e86e3d269bb6d24ed24806148ede1f27098cd23f8d56a7b9b8ef365751af08"
+    },
+    {
+      "file": "lib/risk-link-experiment.ts",
+      "source": "lib/risk-link-experiment.ts",
+      "sha256": "0563c2c52435670a5be98e4c83133d81ce2e3650ffc0e3eda6a4eacb9e8663b7"
+    },
+    {
+      "file": "lib/shift-rules.ts",
+      "source": "lib/shift-rules.ts",
+      "sha256": "c61278b3688bfaee14135b335b495627c28ba9cf0eabe4fd8d8e766f540421e8"
+    },
+    {
+      "file": "lib/shop-effects.ts",
+      "source": "lib/shop-effects.ts",
+      "sha256": "d2a98dd515b52a19815f82023955af404d3b19610af12deaf07d832e63453fa1"
+    }
+  ]
+}

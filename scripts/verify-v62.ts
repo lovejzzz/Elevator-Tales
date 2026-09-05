@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { crowdAgitation, shiftAgitation, initialRun, resolveFloor, type Rider, type RunState } from '../lib/game-engine';
+import { crowdAgitation, shiftAgitation, initialRun, resolveFloor, type Rider, type RunState } from '../experiments/v62/lib/game-engine';
 import { resolveFloor as resolveBaseline } from '../experiments/v61/lib/game-engine';
-import { stressForecast, energyForecast } from '../lib/game-forecast';
-import { metricChanges } from '../lib/metric-feedback';
+import { stressForecast, energyForecast } from '../experiments/v62/lib/game-forecast';
+import { metricChanges } from '../experiments/v62/lib/metric-feedback';
 
 // Keep behavioral v6.2 regression coverage as later upgrades are introduced.
 // Exact published-source parity is checked by each release's audit manifest.
@@ -23,7 +23,7 @@ for (const floor of floors) for (const event of ['travel','arrive','impatient'])
       return kind ? {kind,id:`${slot}`,destination:floor+(event==='arrive'?1:5),patience:event==='impatient'?1:20,boardedAt:floor-1,fareBonus:0} : null;
     });
     const state: RunState = {...initialRun(),floor,stress:7,cabin};
-    const next = resolveFloor(state, () => .9), old = resolveBaseline(state, () => .9);
+    const next = resolveFloor(state, () => .9), old = resolveBaseline({...state, shop: []}, () => .9);
     const occupied = cabin.filter(Boolean).length;
     const pressure = stressForecast(state), energy = energyForecast(state);
     assert.equal(next.lastPressure.delta, pressure.lowDelta);

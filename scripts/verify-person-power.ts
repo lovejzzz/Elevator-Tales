@@ -4,8 +4,8 @@ import {readFileSync,writeFileSync,mkdirSync,mkdtempSync,existsSync} from 'node:
 import {resolve,join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {pathToFileURL} from 'node:url';
-import type {Rider,RunState} from '../lib/game-engine';
-import type {PassengerKind} from '../lib/game-data';
+import type {Rider,RunState} from '../experiments/v8.31/lib/game-engine';
+import type {PassengerKind} from '../experiments/v8.31/lib/game-data';
 
 const root=resolve(import.meta.dirname,'..'),experiment=join(root,'experiments/person-power-20260903');
 const reportPath=resolve(root,process.argv[2]);

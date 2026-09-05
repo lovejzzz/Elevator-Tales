@@ -1,0 +1,84 @@
+{
+  "status": "research-only, not implemented in live rules",
+  "distinctLayouts": 1687,
+  "configurations": 6,
+  "evaluations": 10122,
+  "configs": [
+    {
+      "coinsPerMember": 1,
+      "pressurePerEdge": 1,
+      "evaluated": 1687,
+      "safeOneFloor": 1629,
+      "positiveNetFlow": 457,
+      "maxSafeNetFlow": 10
+    },
+    {
+      "coinsPerMember": 1,
+      "pressurePerEdge": 2,
+      "evaluated": 1687,
+      "safeOneFloor": 1459,
+      "positiveNetFlow": 291,
+      "maxSafeNetFlow": 8
+    },
+    {
+      "coinsPerMember": 2,
+      "pressurePerEdge": 1,
+      "evaluated": 1687,
+      "safeOneFloor": 1629,
+      "positiveNetFlow": 755,
+      "maxSafeNetFlow": 16
+    },
+    {
+      "coinsPerMember": 2,
+      "pressurePerEdge": 2,
+      "evaluated": 1687,
+      "safeOneFloor": 1459,
+      "positiveNetFlow": 585,
+      "maxSafeNetFlow": 12
+    },
+    {
+      "coinsPerMember": 3,
+      "pressurePerEdge": 1,
+      "evaluated": 1687,
+      "safeOneFloor": 1629,
+      "positiveNetFlow": 1039,
+      "maxSafeNetFlow": 22
+    },
+    {
+      "coinsPerMember": 3,
+      "pressurePerEdge": 2,
+      "evaluated": 1687,
+      "safeOneFloor": 1459,
+      "positiveNetFlow": 869,
+      "maxSafeNetFlow": 16
+    }
+  ],
+  "hypothesis": "Each edge between two uncontrolled thieves gives each endpoint +2 coins/floor and the cabin +1 agitation/floor. Control breaks the edge. Ordinary calming does not remove its cabin-wide pressure.",
+  "examples": {
+    "calmPair": {
+      "links": 1,
+      "coins": 12,
+      "energy": 5,
+      "pressure": 1,
+      "safeOneFloor": true,
+      "netFlowAtShopEnergyPrice": 2
+    },
+    "controlled": {
+      "links": 0,
+      "coins": 5,
+      "energy": 5,
+      "pressure": 0,
+      "safeOneFloor": true,
+      "netFlowAtShopEnergyPrice": -5
+    },
+    "allThieves": {
+      "links": 7,
+      "coins": 52,
+      "energy": 7,
+      "pressure": 13,
+      "safeOneFloor": false,
+      "netFlowAtShopEnergyPrice": 38
+    }
+  },
+  "limits": "One non-arrival floor at zero initial agitation; not survival probabilities. No arrival fares, helper acquisition cost, future departures, or player comprehension. Positive net flow is not a winning build. Exhaustive layouts are not equally probable encounters, nor proven reachable from real offer and trip histories."
+}

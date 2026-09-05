@@ -11,6 +11,7 @@ import {
   musicSceneKey,
   musicTrackForScene,
   setGameMusic,
+  unlockGameMusic,
 } from '../lib/game-music';
 
 assert.equal(clampMusicVolume(-0.0000246154), 0, 'floating-point fade undershoot must clamp to zero');
@@ -61,11 +62,14 @@ for (const track of [...FLOOR_MUSIC_TRACKS, ...Object.values(MUSIC_TRACKS)]) {
 
 const previousAudio = Object.getOwnPropertyDescriptor(globalThis, 'Audio');
 const players: FakeAudio[] = [];
+const pendingPlays: Array<() => void> = [];
+let deferPlay = false;
 class FakeAudio {
   src: string;
   preload = '';
   loop = false;
   volume = 1;
+  muted = false;
   paused = true;
   onended: (() => void) | null = null;
   plays = 0;
@@ -78,7 +82,7 @@ class FakeAudio {
   play() {
     this.paused = false;
     this.plays += 1;
-    return Promise.resolve();
+    return deferPlay ? new Promise<void>(resolve => pendingPlays.push(resolve)) : Promise.resolve();
   }
   pause() {
     this.paused = true;
@@ -130,6 +134,41 @@ try {
   );
   setGameMusic(true, { kind: 'death' });
   assert.equal(players.at(-1)?.src, MUSIC_TRACKS.death);
+  await Promise.resolve();
+  disposeGameMusic();
+  const oldRAF = Object.getOwnPropertyDescriptor(globalThis, 'requestAnimationFrame');
+  const oldCancel = Object.getOwnPropertyDescriptor(globalThis, 'cancelAnimationFrame');
+  const frames = new Map<number, FrameRequestCallback>();
+  let frameId = 0;
+  try {
+    Object.defineProperty(globalThis,'requestAnimationFrame',{configurable:true,value:(callback:FrameRequestCallback)=>{frames.set(++frameId,callback);return frameId;}});
+    Object.defineProperty(globalThis,'cancelAnimationFrame',{configurable:true,value:(id:number)=>frames.delete(id)});
+    deferPlay = true;
+    setGameMusic(true,{kind:'theme'});
+    const delayed = players.at(-1)!;
+    setGameMusic(false,{kind:'theme'});
+    assert.equal(delayed.paused,true,'Mute must pause immediately without any animation frames');
+    assert.equal(delayed.muted,true);
+    assert.equal(delayed.volume,0);
+    pendingPlays.splice(0).forEach(resolve=>resolve()); await Promise.resolve();
+    assert.equal(frames.size,0,'A pending play promise must not revive a muted fade');
+    unlockGameMusic();
+    assert.equal(delayed.plays,1,'User input cannot unlock muted music');
+    setGameMusic(true,{kind:'theme'});
+    setGameMusic(true,{kind:'shop'});
+    pendingPlays.splice(0).forEach(resolve=>resolve()); await Promise.resolve();
+    assert.equal(frames.size,1,'Only the current scene may schedule a fade');
+    assert.equal(delayed.muted,true,'Replaced tracks remain muted');
+    setGameMusic(false,{kind:'shop'});
+    assert.equal(frames.size,0,'Mute cancels even a stalled background fade');
+    setGameMusic(true,{kind:'shop'});
+    disposeGameMusic();
+    pendingPlays.splice(0).forEach(resolve=>resolve()); await Promise.resolve();
+    assert.equal(frames.size,0,'Disposal blocks late callbacks');
+  } finally {
+    if(oldRAF)Object.defineProperty(globalThis,'requestAnimationFrame',oldRAF);else Reflect.deleteProperty(globalThis,'requestAnimationFrame');
+    if(oldCancel)Object.defineProperty(globalThis,'cancelAnimationFrame',oldCancel);else Reflect.deleteProperty(globalThis,'cancelAnimationFrame');
+  }
 } finally {
   disposeGameMusic();
   if (previousAudio) Object.defineProperty(globalThis, 'Audio', previousAudio);
@@ -137,5 +176,5 @@ try {
 }
 
 console.log(
-  'Music verified: 15 assets, floor bands 1–120, endless shuffle, scene switching, safe fade bounds, no same-band restart, and independent mute.',
+  'Music verified with fake audio only: 15 assets, floor bands, scene switching, immediate background mute, pending-play races, disposal and muted unlock.',
 );

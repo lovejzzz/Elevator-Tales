@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { PASSENGERS, PASSENGER_ORDER, type PassengerKind } from '../lib/game-data';
-import { CHARGE_PRICE, chargeBattery, chargingPlan, cooperationBonus, dismissRider, dismissalCost, initialRun, installedUpgradeSummary, makeOffers, resolveFloor, totalWeight, upgradeChoices, type Rider } from '../lib/game-engine';
-import { BONDS, bondStatus, randomTraits, riderProfile } from '../lib/rider-profile';
-import { passengerBrief } from '../lib/passenger-presentation';
-import { planPlacement, activeConnection, conflictingConnection } from '../lib/game-interaction';
-import { stressForecast, energyForecast } from '../lib/game-forecast';
-import { metricChanges } from '../lib/metric-feedback';
+import { PASSENGERS, PASSENGER_ORDER, type PassengerKind } from '../experiments/v8.31/lib/game-data';
+import { CHARGE_PRICE, chargeBattery, chargingPlan, cooperationBonus, dismissRider, dismissalCost, initialRun, installedUpgradeSummary, makeOffers, resolveFloor, totalWeight, upgradeChoices, type Rider } from '../experiments/v8.31/lib/game-engine';
+import { BONDS, bondStatus, randomTraits, riderProfile } from '../experiments/v8.31/lib/rider-profile';
+import { passengerBrief } from '../experiments/v8.31/lib/passenger-presentation';
+import { planPlacement, activeConnection, conflictingConnection } from '../experiments/v8.31/lib/game-interaction';
+import { stressForecast, energyForecast } from '../experiments/v8.31/lib/game-forecast';
+import { metricChanges } from '../experiments/v8.31/lib/metric-feedback';
 let seed=618321;const rng=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
 const rider=(kind:PassengerKind,id=kind as string,overrides:Partial<Rider>={}):Rider=>({kind,id,destination:8,patience:12,boardedAt:1,fareBonus:0,...overrides});
 const cabin=(...riders:Rider[])=>Array.from({length:6},(_,i)=>riders[i]??null);
@@ -96,7 +96,7 @@ for(const bonus of [3,5,7]){
 }
 // Regression for the screenshot: explicit line breaks plus independently
 // block-level sections cannot be flattened by .passenger-rules > span.
-const presentationSource=readFileSync(new URL('../components/elevator-game.tsx',import.meta.url),'utf8');
+const presentationSource=readFileSync(new URL('../experiments/v8.31/components/elevator-game.tsx.txt',import.meta.url),'utf8');
 const stylesheet=readFileSync(new URL('../app/globals.css',import.meta.url),'utf8');
 assert.match(presentationSource,/<span key={line}><br \/>{line}<\/span>/);
 assert.match(stylesheet,/\.passenger-rule-blocks>\.passenger-rule-block\s*{\s*display:block/);

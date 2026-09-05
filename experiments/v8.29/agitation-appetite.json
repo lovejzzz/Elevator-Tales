@@ -1,0 +1,199 @@
+{
+  "version": "8.29",
+  "configurations": 18,
+  "controlledCases": 864,
+  "selected": {
+    "threshold": 3,
+    "bonus": 1,
+    "minimumNeighbours": 2,
+    "cases": 48,
+    "triggered": 12,
+    "loneRiderTriggers": 0,
+    "maxExtraFare": 22,
+    "meanExtraFare": 4.5
+  },
+  "samples": [
+    {
+      "threshold": 2,
+      "bonus": 0.5,
+      "minimumNeighbours": 0,
+      "cases": 48,
+      "triggered": 32,
+      "loneRiderTriggers": 8,
+      "maxExtraFare": 11,
+      "meanExtraFare": 6
+    },
+    {
+      "threshold": 2,
+      "bonus": 0.5,
+      "minimumNeighbours": 2,
+      "cases": 48,
+      "triggered": 16,
+      "loneRiderTriggers": 0,
+      "maxExtraFare": 11,
+      "meanExtraFare": 3
+    },
+    {
+      "threshold": 2,
+      "bonus": 1,
+      "minimumNeighbours": 0,
+      "cases": 48,
+      "triggered": 32,
+      "loneRiderTriggers": 8,
+      "maxExtraFare": 22,
+      "meanExtraFare": 12
+    },
+    {
+      "threshold": 2,
+      "bonus": 1,
+      "minimumNeighbours": 2,
+      "cases": 48,
+      "triggered": 16,
+      "loneRiderTriggers": 0,
+      "maxExtraFare": 22,
+      "meanExtraFare": 6
+    },
+    {
+      "threshold": 2,
+      "bonus": 1.5,
+      "minimumNeighbours": 0,
+      "cases": 48,
+      "triggered": 32,
+      "loneRiderTriggers": 8,
+      "maxExtraFare": 33,
+      "meanExtraFare": 18
+    },
+    {
+      "threshold": 2,
+      "bonus": 1.5,
+      "minimumNeighbours": 2,
+      "cases": 48,
+      "triggered": 16,
+      "loneRiderTriggers": 0,
+      "maxExtraFare": 33,
+      "meanExtraFare": 9
+    },
+    {
+      "threshold": 3,
+      "bonus": 0.5,
+      "minimumNeighbours": 0,
+      "cases": 48,
+      "triggered": 24,
+      "loneRiderTriggers": 6,
+      "maxExtraFare": 11,
+      "meanExtraFare": 4.5
+    },
+    {
+      "threshold": 3,
+      "bonus": 0.5,
+      "minimumNeighbours": 2,
+      "cases": 48,
+      "triggered": 12,
+      "loneRiderTriggers": 0,
+      "maxExtraFare": 11,
+      "meanExtraFare": 2.25
+    },
+    {
+      "threshold": 3,
+      "bonus": 1,
+      "minimumNeighbours": 0,
+      "cases": 48,
+      "triggered": 24,
+      "loneRiderTriggers": 6,
+      "maxExtraFare": 22,
+      "meanExtraFare": 9
+    },
+    {
+      "threshold": 3,
+      "bonus": 1,
+      "minimumNeighbours": 2,
+      "cases": 48,
+      "triggered": 12,
+      "loneRiderTriggers": 0,
+      "maxExtraFare": 22,
+      "meanExtraFare": 4.5
+    },
+    {
+      "threshold": 3,
+      "bonus": 1.5,
+      "minimumNeighbours": 0,
+      "cases": 48,
+      "triggered": 24,
+      "loneRiderTriggers": 6,
+      "maxExtraFare": 33,
+      "meanExtraFare": 13.5
+    },
+    {
+      "threshold": 3,
+      "bonus": 1.5,
+      "minimumNeighbours": 2,
+      "cases": 48,
+      "triggered": 12,
+      "loneRiderTriggers": 0,
+      "maxExtraFare": 33,
+      "meanExtraFare": 6.75
+    },
+    {
+      "threshold": 4,
+      "bonus": 0.5,
+      "minimumNeighbours": 0,
+      "cases": 48,
+      "triggered": 16,
+      "loneRiderTriggers": 4,
+      "maxExtraFare": 11,
+      "meanExtraFare": 3
+    },
+    {
+      "threshold": 4,
+      "bonus": 0.5,
+      "minimumNeighbours": 2,
+      "cases": 48,
+      "triggered": 8,
+      "loneRiderTriggers": 0,
+      "maxExtraFare": 11,
+      "meanExtraFare": 1.5
+    },
+    {
+      "threshold": 4,
+      "bonus": 1,
+      "minimumNeighbours": 0,
+      "cases": 48,
+      "triggered": 16,
+      "loneRiderTriggers": 4,
+      "maxExtraFare": 22,
+      "meanExtraFare": 6
+    },
+    {
+      "threshold": 4,
+      "bonus": 1,
+      "minimumNeighbours": 2,
+      "cases": 48,
+      "triggered": 8,
+      "loneRiderTriggers": 0,
+      "maxExtraFare": 22,
+      "meanExtraFare": 3
+    },
+    {
+      "threshold": 4,
+      "bonus": 1.5,
+      "minimumNeighbours": 0,
+      "cases": 48,
+      "triggered": 16,
+      "loneRiderTriggers": 4,
+      "maxExtraFare": 33,
+      "meanExtraFare": 9
+    },
+    {
+      "threshold": 4,
+      "bonus": 1.5,
+      "minimumNeighbours": 2,
+      "cases": 48,
+      "triggered": 8,
+      "loneRiderTriggers": 0,
+      "maxExtraFare": 33,
+      "meanExtraFare": 4.5
+    }
+  ],
+  "rationale": "Threshold 3 leaves 3 points to the initial failure cap. Two neighbors prevents a solo-rider premium. +100% base is legible, not a whole-payout doubling. The choice remains a playtest hypothesis, not an optimum inferred from this grid.",
+  "limits": "Uniform fixed states are sensitivity checks, not encounter probabilities, optimal play, human fun, or a measured session length."
+}

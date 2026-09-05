@@ -3,9 +3,17 @@ import { CHANGELOG_EN } from '../lib/changelog';
 import { initialRun, type Rider } from '../lib/game-engine';
 import { PASSENGERS, PASSENGER_ORDER, UPGRADES } from '../lib/game-data';
 import { I18N_CORE_SAMPLES, translateGameText } from '../lib/i18n';
+import { planPlacement } from '../lib/game-interaction';
 import { PASSENGER_RULES, SHARED_SAVING_RULE, passengerBrief, passengerCardRules, passengerCardSections, passengerFace } from '../lib/passenger-presentation';
 
+if(!translateGameText(PASSENGERS.bomb.detail,'en').startsWith('Base fare 14,'))throw Error('Bomb detail must translate the current base fare, not the historical 20');
+
 const dynamicSamples = [
+  '商店舒缓 −1 躁动，支付 8 金币。',
+  '商店舒缓 −6 躁动，支付 48 金币。',
+  '修复至上限以下 · 24 金币',
+  '躁动上限 7；安装时立即舒缓2点，本局唯一',
+  '下一站耗 4 电＝运转 1＋人物 3−节能 0＋可能补电 0–4；并联回充50%，不保证续航',
   '当前楼层 · BEST 27',
   '距离 30 层商店还有 3 站',
   '下一站耗 5 电＝运转 1＋人物 7−节能 3',
@@ -55,6 +63,17 @@ const corpus = [
   ...runtimeFaceSamples,
   ...compactCardSamples,
   ...detailCardSamples,
+  ...PASSENGER_ORDER.flatMap((kind)=>Array.from({length:8},(_,copySeed)=>{
+    const run=initialRun();
+    const above:Rider={kind,id:'i18n-source',destination:5,boardedAt:1,patience:0,fareBonus:0};
+    run.cabin=[above,null,null,null,null,null];
+    const mimic:Rider={...above,kind:'mimic',id:'i18n-copy',copySeed};
+    const result=planPlacement(run,mimic,3);
+    return [result.label,result.next.message];
+  }).flat()),
+  '危险协作已连接',
+  ...[2,3].map(amount=>`成员每层暂存${amount}金币，每条链接+1躁动；送达兑现，请离放弃。`),
+  '当前位置没有正上方来源，恢复复制人本体数值。',
   ...Object.values(PASSENGERS).flatMap((rider) => [rider.name, rider.short, rider.detail, rider.risk?.label ?? '', rider.risk?.guide ?? '']),
   ...Object.values(UPGRADES).flatMap((upgrade) => [upgrade.name, upgrade.description, upgrade.strategy]),
   ...Object.values(PASSENGER_RULES).flat(),

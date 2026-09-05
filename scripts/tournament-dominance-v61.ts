@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { PASSENGER_ORDER, type PassengerKind } from '../lib/game-data';
-import { initialRun, makeOffers, resolveFloor, hasNeighbour, neighbours, totalWeight, energySavings, cooperationBonus, chargingPlan, chargeBattery, installUpgrade, leaveShop, dismissRider, dismissalCost, nextShopFloor, type RunState } from '../lib/game-engine';
-import { bondStatus, riderProfile } from '../lib/rider-profile';
-import { planPlacement } from '../lib/game-interaction';
-import { stressForecast, energyForecast } from '../lib/game-forecast';
+import { PASSENGER_ORDER, type PassengerKind } from '../experiments/v8.31/lib/game-data';
+import { initialRun, makeOffers, resolveFloor, hasNeighbour, neighbours, totalWeight, energySavings, cooperationBonus, chargingPlan, chargeBattery, installUpgrade, leaveShop, dismissRider, dismissalCost, nextShopFloor, type RunState } from '../experiments/v8.31/lib/game-engine';
+import { bondStatus, riderProfile } from '../experiments/v8.31/lib/rider-profile';
+import { planPlacement } from '../experiments/v8.31/lib/game-interaction';
+import { stressForecast, energyForecast } from '../experiments/v8.31/lib/game-forecast';
 
 type Policy={id:string;cap:number;risk:number;favorite:PassengerKind[];bias:number;shop:'balanced'|'calm'|'economy';moves:number;adaptive?:boolean;earlyRush?:boolean;safe?:boolean;rogue?:boolean;quick?:boolean;lookahead?:boolean;cashoutAt?:number;mustServe?:boolean;restAware?:boolean;relay?:boolean};
 const policy=(id:string,options:Partial<Policy>={}):Policy=>({id,cap:3,risk:3,favorite:[],bias:2,shop:'balanced',moves:1,...options});

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { PASSENGERS, PASSENGER_ORDER, type PassengerKind, type UpgradeKey } from '../lib/game-data';
+import { PASSENGERS, PASSENGER_ORDER, type PassengerKind, type UpgradeKey } from '../experiments/v8.31/lib/game-data';
 import {
   HIGH_RISK_BONUS,
   agitationThreshold,
@@ -18,9 +18,9 @@ import {
   totalEnergyCost,
   type Rider,
   type RunState,
-} from '../lib/game-engine';
-import { energyForecast, stressForecast } from '../lib/game-forecast';
-import { bondStatus, conflictLinks, riderProfile } from '../lib/rider-profile';
+} from '../experiments/v8.31/lib/game-engine';
+import { energyForecast, stressForecast } from '../experiments/v8.31/lib/game-forecast';
+import { bondStatus, conflictLinks, riderProfile } from '../experiments/v8.31/lib/rider-profile';
 
 type Style = 'balanced' | 'synergy' | 'frugal' | 'risk';
 type Variant = { id: string; target?: PassengerKind; effect: 'normal' | 'favor' | 'ban' };
@@ -165,6 +165,7 @@ function shopValue(state: RunState, key: UpgradeKey, style: Style) {
     case 'concierge': return style === 'risk' || state.energy > 12 ? 28 : 10;
     case 'reinforced': return state.energy < 20 ? 34 : 24;
     case 'express': return state.energy > 9 ? 27 : 11;
+    default: return 0; // Legacy policy; see the dedicated v8.30 shop experiment.
   }
 }
 

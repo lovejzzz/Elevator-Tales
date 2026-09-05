@@ -34,6 +34,10 @@ try {
   assert.equal(cues[0].frequency, 1046.5, 'coin uses its dedicated chime');
   assert.equal(cues[2].frequency, 293.66, 'energy cost uses a descending cue');
   assert.equal(cues[4].frequency, 174.61, 'pressure uses its low warning cue');
+  const beforeReveal = voices.length;
+  playGameSound(true, 'rare'); playGameSound(true, 'debut');
+  assert.equal(voices.length - beforeReveal, 5, 'two-note rare cue and three-note first encounter');
+  playGameSound(false, 'debut'); assert.equal(voices.length - beforeReveal, 5, 'muted reveal adds no voices');
   disposeGameAudio();
   assert.equal(closed, 1);
   assert.ok(voices.every((voice) => voice.stops.length === 2), 'muting/disposal stops even scheduled future notes');

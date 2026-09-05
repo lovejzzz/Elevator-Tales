@@ -1,3 +1,6 @@
+import {V831_EN, V831_ZH} from './release-v831';
+import {V832_EN, V832_ZH} from './release-v832';
+
 export type ChangelogEntry = {
   version: string;
   date: string;
@@ -8,9 +11,55 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.28';
+export const GAME_VERSION = '8.32';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  V832_ZH,
+  V831_ZH,
+  {
+    "version": "8.30",
+    "date": "2026-09-04",
+    "title": "每次进店，都留下一种选择",
+    "summary": "永久能力本局不再重复，维修服务独立常驻；新能力让载客量、乘坐时长、邻座和同时到站各有可经营的回报。",
+    "changes": [
+      "永久能力池6→10项，全部本局限装一次；每店最多安装一项。普通抽取、紧急维修、购买和预览统一排除已装能力，买空后不填重复卡。未买能力以后仍可出现。",
+      "按点舒缓成为常驻服务：8金币降低1已有躁动，不提升上限、不触发回收，不占能力选择；充电仍为2金币/电。舒缓系统仍为35金币，上限+1且立即−2躁动，仅可安装一次。",
+      "小费盒30金币：每位正常到站且至少2邻座，独立50%概率额外+4币，不参与倍率；同层到站仍互算邻座。并联回充30金币：同层至少2人到站，50%概率回4电，每层仅一次且不超过容量。",
+      "共乘票40金币：关门至少4人，整车每次上行+3币。长途计价器25金币：每位乘客自实际第5次上行起每次+1币，包含到站和额外延误行程；换位不重置。",
+      "永久能力取消楼层与重复购买涨价。固定价格：默契30、回收30、舒缓35、礼宾40、稳压45、快速45、小费盒30、并联30、共乘40、计价器25。礼宾原首店50→40，快速65→45。",
+      "概率只在实际结算时抽取。车费数字不含概率奖励，明细分开记录；回电预报显示范围并按最坏结果警告。商店移除分类标签，不显示流派或组合发现名称。",
+      "危险人物互相强化仅增加实验入口，正常对局不启用。比较固定与随机额外收入；护理不消除链接躁动，控制或拆分可打断。"
+    ],
+    "experiments": [
+      "4096种持有状态/维修组合验证不重复、少于三张及买空；新增12000次混合结算，连同已有14000次共26000次资源预报检查。",
+      "320000组固定机会序列比较不同概率的收益分布；数字只是实验参数，不是指定概率。相同平均收益不保证相同回本率或乐趣。",
+      "最终900局启发式回归：单人均值74.71层，多人均衡72.43、偏收入68.33、偏续航73.47、偏行程71.90；不能宣称多人已领先或整体平衡完成。",
+      "同伙最终63000段人工行程覆盖护理、高危、醉汉和商店叠加。+1躁动比+2留下更长操作窗口；自然获取的100局固定+2币/+1躁动实验只触发12个楼层，不能用整局均值证明其平衡。"
+    ],
+    "watch": [
+      "概率值与价格仍待真人验证；观察晚买能力的回本窗口、同时到站规划、护理者先离开时的应对，以及随机版是否比等均值固定版更愿意重复尝试。所有实验标签不进入游戏。"
+    ]
+  },
+  {
+    version: '8.29', date: '2026-09-04', title: '躁动也有另一面',
+    summary: '醉汉开始在特定状态下支付额外车费；新的回收系统、持续开放的人物池与短促开门揭晓，为自行探索保留更多可能。',
+    changes: [
+      '醉汉在到站前关门时，若躁动至少3且有至少2位邻座，基价额外+100%。与教练倍率相加；高危基价参与，小费和默契奖励不参与。未安抚的每层+1躁动仍保留。',
+      '节能线路改为压力回收，首店价格55→30。正常到站每实际消掉1躁动回充1电，每层最多2电且不超过容量；零躁动、护理、请离和商店维修不产电。本局限装一次。',
+      '默契契约首店价格60→30，每级每条默契到站奖励仍额外+2；后续价格增长不变。',
+      '强制风险候客最多2位，保留一个完整人物池抽取位；不保证安全牌。独处恋人的25%呼唤可在高层正确出现，回应标记不再贴到其他人物。',
+      '车内金币显示按当前站位计算的到站总额，候客卡明确显示基价；封存车费仍保密。能力绿线与实际默契奖励分开写，护理连线和舒缓明细更准确。',
+      '候客卡按0/90/180毫秒错峰，单卡240毫秒显现；初次见面与传奇档使用轻短音型。快速开门可关闭揭晓并缩短行程，减少动态效果设置同样生效。',
+      '保留直接规则和实际收支反馈，不显示流派名称、发现成就或组合档案；手机卡片内容较长时可纵向滚动。',
+    ],
+    experiments: [
+      '比较18组躁动门槛、倍率与邻座要求，共864个固定状态；另测关门快照、同层送达、回收顺序和倍率边界。参数仍是实玩候选。',
+      '新增10000个随机结算场景，连同已有4000场景，电量和躁动预报零偏差。测试20000批候客，错误恋人回应为0，高层辅助人物仍可出现。',
+      '最终候选跑900次启发式完整运行；多人与单人的生存优势仍不显著，不能据此宣称已解决平衡或达到10–20分钟真人时长。',
+      '中英文、音效取消、隐藏车费、人物叠加和商店流程回归；危险人物相互强化另做10122次单层研究，尚未加入游戏规则。',
+    ],
+    watch: ['观察是否出现主动维持适量躁动的经营选择，以及收益兑现后能否顺利转向。继续验证多人经营价值、开门节奏与真实一局时长，不以模拟器替代玩家体验。'],
+  },
   {
     version: '8.28', date: '2026-09-04', title: '游客明确接受任何邻座',
     summary: '游客卡现在直接写“任何邻座”，明确恋人、游客或其他人物都能成为旅伴；绿线来自游客的单向收益，并不代表恋人已经配对。',
@@ -513,6 +562,52 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  V832_EN,
+  V831_EN,
+  {
+    "version": "8.30",
+    "date": "2026-09-04",
+    "title": "A choice at every shop",
+    "summary": "Permanent abilities no longer repeat, repairs remain available, and new abilities reward passenger count, ride duration, neighbors and shared arrivals.",
+    "changes": [
+      "The permanent pool grows from 6 to 10 abilities, each installable once per run. At most one permanent purchase per shop. Offers, crisis handling, previews and purchases exclude installed abilities; depleted pools stay depleted. Unpurchased abilities may return.",
+      "Pay-per-point soothing is always available: 8 coins remove 1 existing agitation, without increasing the cap, generating power or using the ability choice. Charging remains 2 coins per power. Calm System costs 35, adds 1 cap and immediately removes 2 agitation, once per run.",
+      "Tip Jar costs 30: each normal arrival with at least 2 neighbors independently has a 50% chance of 4 extra coins, not multiplied. Simultaneous arrivals remain neighbors. Arrival Relay costs 30: at least 2 arrivals give one 50% roll for 4 power per floor, within capacity.",
+      "Shared Ticket costs 40: depart with at least 4 riders for 3 extra cabin-wide coins per ascent. Long-Ride Meter costs 25: each rider earns 1 extra coin from their fifth actual ascent, including arrival and delayed travel. Reseating does not reset duration.",
+      "Permanent prices no longer rise with floor or previous installations. Fixed prices: Pact 30, Reclaimer 30, Calm 35, Concierge 40, Stabilizer 45, Express 45, Tip Jar 30, Relay 30, Shared Ticket 40, Meter 25. Concierge previously started at 50 and Express at 65.",
+      "Rolls occur only at actual resolution. Displayed fares exclude chance bonuses, receipts itemize them, and power forecasts show a range with worst-case warnings. Shop category labels are removed; no build names or combination discoveries are shown.",
+      "Dangerous-passenger links have an experimental entry point only; normal play does not enable it. Fixed and random bonus income are compared. Calming does not remove link pressure; control or separation breaks the link."
+    ],
+    "experiments": [
+      "4,096 ownership/crisis combinations verify unique offers and depleted pools. 12,000 new mixed resolutions plus 14,000 existing cases give 26,000 resource-forecast checks.",
+      "320,000 fixed-opportunity sequences compare payout distributions. Probabilities are experimental values, not required numbers. Equal expected rewards do not imply equal repayment rates or fun.",
+      "Final 900 heuristic runs: solo mean 74.71 floors; four-rider neutral 72.43, income-focused 68.33, sustain-focused 73.47 and timing-focused 71.90. These do not establish dense-play superiority or completed balance.",
+      "Final 63,000 synthetic linked-passenger trips cover care, high-risk riders, Drunk and shop stacking. One added agitation allows a longer response window than two. In 100 naturally acquired runs, the fixed +2 coins/member, +1 agitation candidate was active for only 12 floors; overall means cannot establish its balance."
+    ],
+    "watch": [
+      "Probabilities and prices still need human playtests: late-purchase payback, shared-arrival planning, helpers leaving first, and whether a random bonus is more replayable than an equal-mean fixed bonus. Experimental policy labels never appear in the game."
+    ]
+  },
+  {
+    version: '8.29', date: '2026-09-04', title: 'Another side to agitation',
+    summary: 'Conditional Drunk fares, energy recovery, an open passenger pool and brief door reveals create more room for player-led experimentation.',
+    changes: [
+      'At departure before arrival, a Drunk with agitation at least 3 and at least 2 neighbors earns +100% base fare. Additive with Coach multipliers; the high-risk premium participates, tips and bond bonuses do not. Uncalmed agitation remains +1/floor.',
+      'Eco Circuit becomes Pressure Reclaimer; first-shop price 55→30. Each agitation point actually removed by normal arrivals restores 1 energy, up to 2/floor within capacity. Zero agitation, calming, dismissal and shop repairs generate no energy. One installation per run.',
+      'Cooperation Pact first-shop price 60→30. Each level still adds 2 coins per actual bond on arrival; later price growth is unchanged.',
+      'Forced risk offers cap at 2, leaving one draw from the complete unlocked pool without guaranteeing safety. The 25% solo-Lover call works at higher floors and only marks actual Lovers.',
+      'Cabin fares show the current seating-based arrival total; waiting cards label base fare. Sealed fares stay hidden. Ability links and bond rewards are distinct, with clearer care links and actual-relief receipts.',
+      'Offers enter at 0/90/180ms with a 240ms reveal per card. First encounters and legendary-grade cards have gentle cues. Quick reveal skips the flourish and shortens travel; reduced-motion preferences are respected.',
+      'Only direct rules and real resource changes are explained. No named strategies, discovery achievements or build archive. Long mobile cards can scroll vertically.',
+    ],
+    experiments: [
+      'Compared 18 threshold, multiplier and neighbor configurations across 864 fixed states; checked departure timing, simultaneous arrivals, recovery order and multiplier boundaries. Parameters remain playtest candidates.',
+      '10000 new random resolutions plus 4000 existing cases produced zero energy/agitation forecast misses. 20000 offer batches had zero false Lover-call markers and retained late-floor support availability.',
+      '900 final-candidate heuristic runs did not establish a clear survival advantage for dense cabins over conservative solo play. Neither balance nor a 10–20 minute human session is proven.',
+      'English/Chinese, audio cancellation, sealed fares, stacking and shop-flow regressions. A separate 10122-case study of links between risky riders remains research-only, not a live rule.',
+    ],
+    watch: ['Observe whether players maintain useful agitation and adapt after cashing it in. Test dense-cabin viability, reveal pacing and actual session length with people, not only simulations.'],
+  },
   {
     version: '8.28', date: '2026-09-04', title: 'Tourists explicitly accept any neighbor',
     summary: 'Tourist cards now say “Any neighbor,” making it explicit that a Lover, Tourist, or any other rider can become a companion. The green line comes from the Tourist’s one-way benefit and does not mean that a Lover is paired.',

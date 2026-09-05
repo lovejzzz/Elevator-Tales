@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { PASSENGERS, type UpgradeKey } from '../lib/game-data';
-import { HIGH_RISK_BONUS, agitationThreshold, chargingPlan, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, resolveFloor, touristCompanionCount, totalEnergyCost, type Rider, type RunState } from '../lib/game-engine';
-import { energyForecast, stressForecast } from '../lib/game-forecast';
+import { PASSENGERS, type UpgradeKey } from '../experiments/v8.31/lib/game-data';
+import { HIGH_RISK_BONUS, agitationThreshold, chargingPlan, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, resolveFloor, touristCompanionCount, totalEnergyCost, type Rider, type RunState } from '../experiments/v8.31/lib/game-engine';
+import { energyForecast, stressForecast } from '../experiments/v8.31/lib/game-forecast';
 
 type Policy = 'balanced' | 'ignore-agitation' | 'hoard' | 'greedy';
 const policies: Policy[] = ['balanced', 'ignore-agitation', 'hoard', 'greedy'];
@@ -81,6 +81,7 @@ function shopValue(state: RunState, key: UpgradeKey, policy: Policy) {
     case 'concierge': return state.energy > 8 ? 27 : 9;
     case 'reinforced': return Math.min(3, state.energyCap + 3 - state.energy) * 4 + (state.weightCap <= 10 ? 15 : 2);
     case 'express': return state.energy > 8 ? 30 : 8;
+    default: return 0; // Legacy policy; the v8.30 experiment explicitly values new abilities.
   }
 }
 

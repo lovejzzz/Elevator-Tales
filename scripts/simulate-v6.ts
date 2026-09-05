@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, energySavings, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, nextShopFloor, resolveFloor, totalWeight, type RunState, type Rider } from '../lib/game-engine';
-import { bondStatus, riderProfile } from '../lib/rider-profile';
-import { stressForecast, energyForecast } from '../lib/game-forecast';
-import { planPlacement } from '../lib/game-interaction';
+import { chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, energySavings, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, nextShopFloor, resolveFloor, totalWeight, type RunState, type Rider } from '../experiments/v8.31/lib/game-engine';
+import { bondStatus, riderProfile } from '../experiments/v8.31/lib/rider-profile';
+import { stressForecast, energyForecast } from '../experiments/v8.31/lib/game-forecast';
+import { planPlacement } from '../experiments/v8.31/lib/game-interaction';
 
 const runs=Number(process.argv[2]??500),seedBase=660301,horizon=600;
 assert.ok(Number.isInteger(runs)&&runs>0);

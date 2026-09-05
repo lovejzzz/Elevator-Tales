@@ -1,0 +1,183 @@
+{
+  "version": "8.29",
+  "theft": [
+    {
+      "trip": 3,
+      "variants": [
+        {
+          "support": "cop",
+          "coins": 27,
+          "energySpent": 9,
+          "stress": 0,
+          "status": "playing",
+          "replacementCostAdjustedCoins": 9
+        },
+        {
+          "support": "nurse",
+          "coins": 25,
+          "energySpent": 9,
+          "stress": 0,
+          "status": "playing",
+          "replacementCostAdjustedCoins": 7
+        },
+        {
+          "support": "musician",
+          "coins": 31,
+          "energySpent": 12,
+          "stress": 0,
+          "status": "playing",
+          "replacementCostAdjustedCoins": 7
+        }
+      ]
+    },
+    {
+      "trip": 4,
+      "variants": [
+        {
+          "support": "cop",
+          "coins": 28,
+          "energySpent": 12,
+          "stress": 0,
+          "status": "playing",
+          "replacementCostAdjustedCoins": 4
+        },
+        {
+          "support": "nurse",
+          "coins": 29,
+          "energySpent": 12,
+          "stress": 0,
+          "status": "playing",
+          "replacementCostAdjustedCoins": 5
+        },
+        {
+          "support": "musician",
+          "coins": 35,
+          "energySpent": 16,
+          "stress": 0,
+          "status": "playing",
+          "replacementCostAdjustedCoins": 3
+        }
+      ]
+    },
+    {
+      "trip": 5,
+      "variants": [
+        {
+          "support": "cop",
+          "coins": 29,
+          "energySpent": 15,
+          "stress": 0,
+          "status": "playing",
+          "replacementCostAdjustedCoins": -1
+        },
+        {
+          "support": "nurse",
+          "coins": 33,
+          "energySpent": 15,
+          "stress": 0,
+          "status": "playing",
+          "replacementCostAdjustedCoins": 3
+        },
+        {
+          "support": "musician",
+          "coins": 39,
+          "energySpent": 20,
+          "stress": 0,
+          "status": "playing",
+          "replacementCostAdjustedCoins": -1
+        }
+      ]
+    },
+    {
+      "trip": 6,
+      "variants": [
+        {
+          "support": "cop",
+          "coins": 30,
+          "energySpent": 18,
+          "stress": 0,
+          "status": "playing",
+          "replacementCostAdjustedCoins": -6
+        },
+        {
+          "support": "nurse",
+          "coins": 37,
+          "energySpent": 18,
+          "stress": 0,
+          "status": "playing",
+          "replacementCostAdjustedCoins": 1
+        },
+        {
+          "support": "musician",
+          "coins": 43,
+          "energySpent": 24,
+          "stress": 0,
+          "status": "playing",
+          "replacementCostAdjustedCoins": -5
+        }
+      ]
+    }
+  ],
+  "delay": [
+    {
+      "companions": 1,
+      "additionalFlow": 1,
+      "additionalEnergy": 1,
+      "marginalCoinsAfterEnergyReplacement": -1,
+      "excludes": "Fare timing, replacement-rider opportunity, future arrivals, and human decision time"
+    },
+    {
+      "companions": 2,
+      "additionalFlow": 2,
+      "additionalEnergy": 1,
+      "marginalCoinsAfterEnergyReplacement": 0,
+      "excludes": "Fare timing, replacement-rider opportunity, future arrivals, and human decision time"
+    },
+    {
+      "companions": 3,
+      "additionalFlow": 3,
+      "additionalEnergy": 1,
+      "marginalCoinsAfterEnergyReplacement": 1,
+      "excludes": "Fare timing, replacement-rider opportunity, future arrivals, and human decision time"
+    }
+  ],
+  "reclaim": [
+    {
+      "stress": 0,
+      "extraEnergy": 0,
+      "remainingStress": 0,
+      "status": "playing"
+    },
+    {
+      "stress": 1,
+      "extraEnergy": 1,
+      "remainingStress": 0,
+      "status": "playing"
+    },
+    {
+      "stress": 2,
+      "extraEnergy": 2,
+      "remainingStress": 0,
+      "status": "playing"
+    },
+    {
+      "stress": 3,
+      "extraEnergy": 2,
+      "remainingStress": 1,
+      "status": "playing"
+    },
+    {
+      "stress": 4,
+      "extraEnergy": 2,
+      "remainingStress": 2,
+      "status": "playing"
+    },
+    {
+      "stress": 5,
+      "extraEnergy": 2,
+      "remainingStress": 3,
+      "status": "playing"
+    }
+  ],
+  "limitations": "Controlled legal windows, not proof of a winning strategy. Coin equivalents value energy at the current shop price, not the shadow price near failure."
+}

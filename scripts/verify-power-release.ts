@@ -5,11 +5,11 @@ import {tmpdir} from 'node:os';
 import {resolve,join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {execFileSync} from 'node:child_process';
-import * as live from '../lib/game-engine';
-import {PASSENGER_ORDER,PASSENGERS} from '../lib/game-data';
-import {riderProfile,randomTraits} from '../lib/rider-profile';
-import {energyForecast,stressForecast} from '../lib/game-forecast';
-import {passengerBrief,PASSENGER_RULES} from '../lib/passenger-presentation';
+import * as live from '../experiments/v8.31/lib/game-engine';
+import {PASSENGER_ORDER,PASSENGERS} from '../experiments/v8.31/lib/game-data';
+import {riderProfile,randomTraits} from '../experiments/v8.31/lib/rider-profile';
+import {energyForecast,stressForecast} from '../experiments/v8.31/lib/game-forecast';
+import {passengerBrief,PASSENGER_RULES} from '../experiments/v8.31/lib/passenger-presentation';
 
 const root=resolve(import.meta.dirname,'..'),dir=join(root,'experiments/person-power-20260903');
 const reference=JSON.parse(readFileSync(join(dir,'results/final/inspect3-normal.json'),'utf8'));

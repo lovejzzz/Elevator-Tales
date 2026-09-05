@@ -1,8 +1,65 @@
 import { Children, cloneElement, isValidElement, type ReactElement, type ReactNode } from 'react';
+import {V831_PAIRS} from './i18n-v831';
+import {V832_PAIRS} from './i18n-v832';
 
 export type GameLocale = 'en' | 'zh';
 
 const exactPairs: Array<[string, string]> = [
+  ...V831_PAIRS,
+  ['每条实际默契的本人到站奖励额外 +2 金币，多位默契对象分别叠加。本局限装一次。', 'Each actual bond partner adds 2 coins to the rider’s arrival reward. Multiple partners stack. One installation per run.'],
+  ['躁动上限 +1，并立即降低 2 躁动。本局限装一次；商店按点舒缓服务始终可用。', 'Agitation cap +1 and immediately reduce agitation by 2. One installation per run; pay-per-point soothing is always available at shops.'],
+  ['此后新出现的乘客到站小费 +3，不参与车费倍率。本局限装一次。', 'Riders appearing after installation bring a 3-coin arrival tip, excluded from fare multipliers. One installation per run.'],
+  ['小费盒', 'Tip Jar'], ['并联回充', 'Arrival Relay'], ['共乘票', 'Shared Ticket'], ['长途计价器', 'Long-Ride Meter'],
+  ['到站机会', 'Arrival chances'], ['同时送达', 'Shared arrivals'], ['载客收入', 'Passenger income'], ['乘坐时长', 'Ride duration'],
+  ['每位正常到站且有至少2位邻座的乘客，独立有50%概率额外支付4金币。同层下车者仍互算邻座；额外金币不参与倍率。本局限装一次。', 'Each normal arrival with at least 2 neighbors independently has a 50% chance to pay 4 extra coins. Simultaneous arrivals still count as neighbors. Extra coins are not multiplied. One installation per run.'],
+  ['同层至少2位乘客正常到站，50%概率回充4电；每层只抽一次，不超过容量。请离不触发。本局限装一次。', 'When at least 2 riders arrive normally on the same floor, a 50% chance restores 4 power. One roll per floor, within capacity. Dismissals do not trigger it. One installation per run.'],
+  ['关门时至少4位乘客，每次上行整车额外赚3金币；同层到站也算。不改变耗电或躁动。本局限装一次。', 'Depart with at least 4 riders to earn 3 extra coins per ascent for the whole cabin. Riders arriving that floor count. Power and agitation are unchanged. One installation per run.'],
+  ['从每位乘客实际乘坐的第5次上行起，每次额外赚1金币，包括到站那次。幽灵造成的额外行程也算。本局限装一次。', 'From each rider’s fifth actual ascent, earn 1 extra coin per ascent, including arrival. Extra travel caused by Ghosts counts. One installation per run.'],
+  ['每间店最多安装一项永久能力，已安装的本局不再出现。充电与舒缓服务可重复使用。', 'Install at most one permanent ability per shop. Installed abilities never reappear this run. Charging and soothing services remain repeatable.'],
+  ['电量与躁动同时失控：使用充电与按点舒缓服务，两项都修复才能继续。', 'Power and agitation both need repair. Use charging and pay-per-point soothing; fix both to continue.'],
+  ['躁动已达到或超过上限：使用按点舒缓服务，降到上限以下才能继续。', 'Agitation has reached or exceeded the cap. Use pay-per-point soothing to bring it below the cap before continuing.'],
+  ['按点舒缓', 'Pay-per-point soothing'], ['商店舒缓', 'Shop soothing'],
+  ['每点8金币 · 只降低已有躁动，不提升上限、不回充电量', '8 coins per point · lowers existing agitation only; no cap increase or power recovery'],
+  ['可以保留已有躁动；不必清零。', 'You may keep some agitation; clearing it is optional.'],
+  ['本店能力已选购，下次商店再选。维修服务仍然可用。', 'Ability chosen for this shop. Choose again at the next shop. Repair services remain available.'],
+  ['本局所有永久能力均已安装。维修服务仍然可用。', 'All permanent abilities are installed this run. Repair services remain available.'],
+  ['本店没有未安装的能力可选。维修服务仍然可用。', 'No uninstalled abilities are available in this shop. Repair services remain available.'],
+  ['购买后不足以预留充电与必要舒缓费', 'This purchase leaves too little for charging and required soothing'],
+  ['本局唯一 · 概率只在实际结算时抽取', 'One per run · chance rolls only at actual resolution'],
+  ['本局唯一 · 只在实际上行时结算', 'One per run · resolves only on an actual ascent'],
+  ['小费盒另算：到站时有至少2位邻座，50%概率再得4金币。上方车费不含这项概率奖励。', 'Tip Jar is separate: arrive with at least 2 neighbors for a 50% chance of 4 extra coins. The fare above excludes this chance reward.'],
+  ['按当前站位计算，不含概率奖励；未来站位与属性变化会改变收益', 'At current seating, excluding chance rewards; future positions and traits alter the payout'],
+  ['小费盒额外小费', 'Tip Jar bonus'],
+  ['并联回充50%，不保证续航', 'Arrival Relay has a 50% chance; do not rely on it for power'],
+  ['可能补电', 'possible recharge'], ['补电', 'recharge'],
+  ['每点8金币，按需降低已有躁动。充电和舒缓不占本店能力名额。', 'Reduce existing agitation as needed for 8 coins per point. Charging and soothing do not use the shop’s ability choice.'],
+  ['修复至上限以下 · ', 'Repair below the cap · '],
+  ['安装时立即舒缓2点，本局唯一', 'Immediately relieved 2 agitation on installation; one per run'],
+  ['商店舒缓 −2 躁动，支付 16 金币。', 'Shop soothing: −2 agitation for 16 coins.'],
+  ['基价', 'Base fare'],
+  ['只有列出的默契对象给到站奖励；人物能力产生的绿线另算。', 'Only the listed bond partners grant arrival bonuses; ability links are separate.'],
+  ['喜欢热闹：躁动≥3且2+邻座，到站基价+100%', 'Likes a crowd: agitation ≥3 and 2+ neighbors give +100% base arrival fare'],
+  ['未安抚时每层躁动+1；护士或音乐家安抚后，免除这项躁动并每层赚1金币。到站前关门时，若躁动至少3且有至少2位邻座，基价额外+100%；与教练等倍率相加，小费和默契奖励不翻倍。', 'Uncalmed: +1 agitation/floor. A Nurse or Musician prevents that agitation and grants 1 coin/floor. At departure before arrival, agitation of at least 3 and at least 2 neighbors add 100% base fare. Additive with Coach multipliers; tips and bond bonuses are not multiplied.'],
+  ['到站前关门时：躁动至少3且有至少2位邻座，基价额外 +100%；与教练等倍率相加，小费和默契奖励不翻倍。', 'At departure before arrival: agitation ≥3 and at least 2 neighbors add 100% base fare. Additive with Coach multipliers; tips and bond bonuses are not multiplied.'],
+  ['关门躁动≥3且2+邻座：基价 +100%', 'Departing at agitation ≥3 with 2+ neighbors: base fare +100%'],
+  ['醉汉躁动加价', 'Drunk agitation premium'],
+  ['躁动达标 · 基价+100%', 'Agitation met · base fare +100%'],
+  ['压力回收', 'Pressure Reclaimer'], ['风险转续航', 'Risk into range'],
+  ['乘客到站实际消除1躁动，回充1电；每层最多2电，不超过电量上限。零躁动、安抚、请离和商店维修不产电。', 'Each agitation point actually removed by arrivals restores 1 energy; up to 2 per floor, within capacity. Zero agitation, calming, dismissal and shop repairs generate no energy.'],
+  ['到站实际消除1躁动 → 回充1电 · 每层最多2电 · 本局唯一', 'Actual arrival relief: 1 agitation → 1 energy · up to 2/floor · one per run'],
+  ['维修工和受控幽灵的节能逐项相加，最多抵完人物耗电；运转仍耗1电。压力回收在到站舒缓后另算。', 'Mechanics and controlled ghosts stack savings up to passenger power cost. The motor still costs 1. Pressure Reclaimer recovery is separate, after arrival relief.'],
+  ['只有列出的对象有这项到站奖励；能力绿线不一定有奖励。到站那一刻仍相邻才算。', 'Only the listed partners grant this arrival bonus. Ability links do not necessarily pay it. Partners must still be adjacent at arrival.'],
+  ['恋人已配对：每条恋人连接每层 +2 金币，双方到站基价各 +100%。', 'Lovers linked: each Lover connection earns 2 coins per floor and adds 100% to each partner’s base arrival fare.'],
+  ['基价；高危加价参与倍率，小费不参与', 'Base fare; high-risk premium is multiplied, tips are not'],
+  ['按当前站位计算；未来站位与属性变化会改变收益', 'At current seating; future position and trait changes alter the payout'],
+  ['按当前站位到站：', 'Arrival at current seating: '],
+  ['。包括倍率、联动和小费，不包括途中收入；未来站位与属性变化会改变收益。', '. Includes multipliers, bonds and tips, not flow income. Future position and trait changes alter the payout.'],
+  ['每次开门，都是新机会', 'Every door, a new possibility'], ['快速开门：开', 'Quick reveal: on'], ['快速开门：关', 'Quick reveal: off'],
+  ['初次见面', 'FIRST ENCOUNTER'],
+  ['绿线表示能力或默契，红线表示额外交易，不一定只有损失。只有卡片列出的默契对象，才给本人到站 +', 'Green links indicate abilities or bonds; red links add a trade-off, not necessarily just a loss. Only the bond partners listed on the card grant an own-arrival bonus of +'],
+  [' 金币；双方分别判断。', ' coins; each rider is evaluated separately.'],
+  ['高危乘客基价 +', 'High-risk base fare +'], ['，参与倍率，但每层多 +1 躁动。', ', affected by multipliers, but adds 1 agitation each floor.'],
+  ['小偷每层改赚 +1', 'Thief now earns +1/floor'], ['小偷不加躁动', 'Thief adds no agitation'],
   // Passenger names.
   ['通勤者', 'Commuter'], ['游客', 'Tourist'], ['快递员', 'Courier'], ['维修工', 'Mechanic'],
   ['恋人', 'Lover'], ['音乐家', 'Musician'], ['小偷', 'Thief'], ['警察', 'Officer'],
@@ -384,7 +441,7 @@ const exactPairs: Array<[string, string]> = [
   ['按需购卡，可买多张，也可离开。', 'Buy as many cards as needed, or leave.'], ['可用金币', 'Available coins'], ['累计收入', 'Total earned'], ['已花费', 'Spent'],
   ['充电或购买升级。每张卡限购一次。', 'Recharge or buy upgrades. Each card can be bought once.'], ['充电 ·', 'Recharge ·'], ['币 = 1电', ' coin = 1 power'], ['金币买1电', 'coin per power'], ['已达到62电参考线', '62-power reference reached'], ['购买并安装', 'Buy & install'],
   [' · 到下个商店至少需 ', ' · at least '], [' · 到下个补给站运转至少要 ', ' · motor to next supply stop costs at least '], [' 电，人物另计', ' power to the next shop, plus riders'], ['电参考线', '-power reference reached'],
-  ['当前电量不足以抵达下个商店，人物还会额外耗电。再点一次确认。', 'Current power cannot reach the next shop before rider costs. Click again to confirm the risk.'], ['确认冒险离开', 'Confirm risky departure'], ['继续上行', 'Continue upward'],
+  ['当前电量低于下一段运转参考；人物耗电与途中回充另计。再点一次确认冒险。', 'Power is below the next sector’s motor reference. Rider costs and power gained en route are separate. Click again to accept the risk.'], ['确认冒险离开', 'Confirm risky departure'], ['继续上行', 'Continue upward'],
   ['下一站：商店', 'Next: Shop'], ['十层商店', 'Shop every ten floors'], ['收入 ', 'Earned '], [' · 支出 ', ' · Spent '], ['三个值，六个站位', 'Three values, six positions'], ['躁动只来自人物', 'Agitation comes from riders'], ['安抚可以堆叠', 'Calming stacks'], ['十层补给', 'Supply every ten floors'], ['协作、冲突与堆叠', 'Cooperation, conflict, and stacks'],
   ['每一点躁动，都能在人物身上找到。', 'Every agitation point traces back to a rider.'], ['会增加躁动', 'Adds agitation'], ['人物自身', 'Rider values'], ['人物事件', 'Rider events'], ['红色冲突线', 'Red conflict links'], ['可以主动缓解', 'Ways to reduce it'], ['安抚邻座', 'Calm adjacent riders'], ['完成短程', 'Complete a trip'], ['购买舒缓系统', 'Buy Calm System'],
   ['人物卡明确显示每层 0、+1 或 +2；高危乘客固定再 +1。', 'Rider cards explicitly show 0, +1, or +2 per floor. High Risk adds another +1.'],
@@ -465,8 +522,8 @@ const phrasePairs: Array<[string, string]> = [
   ['或', ' or '], ['/条', '/link'], ['/站', '/floor'], ['/ 站', '/floor'], ['金币', 'Coins'], ['耗电', 'Power'], ['躁动', 'Agitation'], ['到站', 'Arrival'], ['车费', 'fare'],
 ];
 
-const exact = new Map(exactPairs);
-const phrases = [...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
+const exact = new Map([...exactPairs, ...V832_PAIRS]);
+const phrases = [...V832_PAIRS, ...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
 
 export function translateGameText(value: string, locale: GameLocale): string {
   if (locale === 'zh') return value;
@@ -479,8 +536,29 @@ export function translateGameText(value: string, locale: GameLocale): string {
   const direct = exact.get(core);
   if (direct) return `${leading}${direct}${trailing}`;
   let translated = value
+    .replace(/^(.+?)已购入，花费 (\d+) 金币。$/u, '$1 purchased for $2 coins.')
+    .replace(/ · 已购入$/u, ' · Purchased')
+    .replace(/^使用应急电池 \+(\d+)电$/u, 'Use Reserve Cell +$1 power')
+    .replace(/容量 (\d+) → (\d+)；仍需付费充电/gu, 'Capacity $1 → $2; charging still costs coins')
+    .replace(/新乘客到站小费 \+(\d+)/gu, 'New riders: +$1 arrival tip')
+    .replace(/充满 (\d+) · (\d+) 金币/gu, 'Fill to $1 · $2 coins')
+    .replace(/维修工检修完成：后续(\d+)层运转少耗1电/gu, 'Mechanic repair complete: save 1 motor power for the next $1 floors')
+    .replace(/到站 \+(\d+)金币\/人/gu, 'Arrival +$1 coins/person')
+    .replace(/本人到站时 \+(\d+)金币\/人/gu, 'Own arrival +$1 coins/person')
+    .replace(/低躁动到站 \+(\d+)金币/gu, 'Low-agitation arrival +$1 coins')
+    .replace(/中躁动到站 \+(\d+)金币/gu, 'Medium-agitation arrival +$1 coins')
+    .replace(/完成：后续(\d+)层运转少耗1电/gu, 'Complete: save 1 motor power for the next $1 floors')
+    .replace(/低躁动检修 (\d+)\/(\d+)；完成后(\d+)层运转少耗1电；每人一次/gu, 'Low-agitation work $1/$2; save 1 motor power for $3 future floors on completion; once per rider')
+    .replace(/连续低躁动(\d+)层：到站 \+(\d+)金币/gu, '$1 consecutive low-agitation floors: +$2 arrival coins')
+    .replace(/累计被照顾(\d+)层：到站 \+(\d+)金币/gu, '$1 cared-for floors: +$2 arrival coins')
+    .replace(/累计(\d+)层：到站 \+(\d+)金币/gu, '$1 accumulated floors: +$2 arrival coins')
+    .replace(/达标：到站 \+(\d+)金币/gu, 'Complete: +$1 arrival coins')
+    .replace(/商店舒缓 −(\d+) 躁动，支付 (\d+) 金币。/gu, 'Shop soothing: −$1 agitation for $2 coins.')
+    .replace(/本人到站时 \+(\d+)\/人/gu, 'Own arrival +$1/person')
     .replace(/(.+?)到站时，每位仍相邻的协作对象额外赚 (\d+) 金币。/gu, '$1 arrival: each cooperation partner still adjacent earns $2 extra coins.')
     .replace(/契约生效：(.+?)协作到站，额外躁动 −(\d+)。/gu, 'Pact active: $1 cooperative arrival reduces agitation by $2.')
+    .replace(/倒计时 (\d+) · 未到站归零失败/gu, 'Timer $1 · fails at zero if still aboard')
+    .replace(/检修生效 · 余(\d+)层/gu, 'Repair active · $1 floors left')
     .replace(/倒计时 (\d+) · 归零失败/gu, 'Timer $1 · zero ends the run')
     .replace(/已复制 (\d+) 项/gu, 'Copied $1 fields')
     .replace(/到站 \+(\d+)\/邻座/gu, 'Arrival +$1/neighbor')
@@ -491,6 +569,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/本人到站 −(\d+)\/人/gu, 'Own arrival −$1/person')
     .replace(/距商店 (\d+) 层/gu, 'Shop in $1 floors')
     .replace(/查看已装升级，共 (\d+) 次/gu, 'View installed upgrades: $1')
+    .replace(/任何邻座 ×(\d+) · 到站\+(\d+)币/gu, 'Any neighbor ×$1 · +$2 arrival coins')
     .replace(/任何邻座 ×(\d+) · \+(\d+)币\/层/gu, 'Any neighbor ×$1 · +$2 coins/floor')
     .replace(/每邻(.+?)：每层 \+(\d+) 躁动/gu, 'Each adjacent $1: +$2 agitation/floor')
     .replace(/(\d+)号位/gu, '$1 position')

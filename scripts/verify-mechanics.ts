@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { chargeBattery, agitationThreshold, crowdAgitation, difficultyTier, expressTrip, failureLesson, initialRun, installUpgrade, leaveShop, makeOffers, nextShopFloor, patienceCost, previewUpgrade, readyPartner, resolveFloor, synergyPartnerAtSlot, travelEnergyCost, upgradeChoices, upgradePrice, type ChangeLine, type Rider, type RunState } from '../lib/game-engine';
-import { PASSENGER_ORDER, PASSENGERS, UPGRADES, type PassengerKind } from '../lib/game-data';
-import { energyForecast, stressForecast } from '../lib/game-forecast';
-import { activeConnection, planPlacement } from '../lib/game-interaction';
-import { passengerBrief, PASSENGER_RULES } from '../lib/passenger-presentation';
-import { metricChanges } from '../lib/metric-feedback';
-import { metricSound } from '../lib/game-audio';
+import { chargeBattery, agitationThreshold, crowdAgitation, difficultyTier, expressTrip, failureLesson, initialRun, installUpgrade, leaveShop, makeOffers, nextShopFloor, patienceCost, previewUpgrade, readyPartner, resolveFloor, synergyPartnerAtSlot, travelEnergyCost, upgradeChoices, upgradePrice, type ChangeLine, type Rider, type RunState } from '../experiments/v8.31/lib/game-engine';
+import { PASSENGER_ORDER, PASSENGERS, UPGRADES, type PassengerKind } from '../experiments/v8.31/lib/game-data';
+import { energyForecast, stressForecast } from '../experiments/v8.31/lib/game-forecast';
+import { activeConnection, planPlacement } from '../experiments/v8.31/lib/game-interaction';
+import { passengerBrief, PASSENGER_RULES } from '../experiments/v8.31/lib/passenger-presentation';
+import { metricChanges } from '../experiments/v8.31/lib/metric-feedback';
+import { metricSound } from '../experiments/v8.31/lib/game-audio';
 
 const rider = (kind: PassengerKind, id: string, overrides: Partial<Rider> = {}): Rider => ({
   id, kind, destination: 8, patience: 10, boardedAt: 1, fareBonus: 0, ...overrides,

@@ -2,6 +2,23 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
+/* Keep the route notice outside the legacy hidden floor plaque. */
+.game-shell .status-rail .energy > .route-notice, .story-dialog > .route-notice {
+  display:block; grid-column:1 / -1; flex:none; margin:0; padding:8px;
+  border:1px solid #907b53; background:#18221e; color:#f0d7a7;
+  font:500 14px/1.5 var(--font-sans); letter-spacing:0; overflow-wrap:anywhere;
+}
+.game-shell .status-rail .energy > .route-notice { border:0; border-top:1px solid #907b5355; padding:4px 0 0; margin-top:4px; background:transparent; line-height:1.4; }
+@media (min-width:1101px) and (min-height:501px) {
+  .game-shell .status-rail .meter-card.energy>div:first-child,
+  .game-shell .status-rail .meter-card.pressure>div:first-child { grid-template-columns:24px minmax(0,1fr) auto; gap:6px; }
+  .game-shell .status-rail .meter-card.energy>div:first-child>svg,
+  .game-shell .status-rail .meter-card.pressure>div:first-child>svg { width:24px; height:24px; padding:4px; }
+  .game-shell .status-rail .meter-card .rail-metric-name { font-size:14px; letter-spacing:0; }
+  .game-shell .status-rail .meter-card.energy>div:first-child>b,
+  .game-shell .status-rail .meter-card.pressure>div:first-child>b { font-size:26px; }
+}
+
 @theme inline {
   --font-sans: var(--font-sans); --font-mono: var(--font-mono); --font-heading: var(--font-display);
   --color-background: var(--background); --color-foreground: var(--foreground); --color-primary: var(--primary);
@@ -1164,20 +1181,6 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 /* v7.1 desktop instrument rail: readable at a glance, with icon, name, value, and forecast hierarchy. */
 .rail-metric-name { white-space:nowrap; }
 
-@media (max-width:700px) {
- .rail-metric-name {
-  position:absolute!important;
-  width:1px!important;
-  height:1px!important;
-  padding:0!important;
-  margin:-1px!important;
-  overflow:hidden!important;
-  clip:rect(0,0,0,0)!important;
-  white-space:nowrap!important;
-  border:0!important;
- }
-}
-
 @media (min-width:1101px) and (min-height:501px) {
  .game-shell .status-rail {
   display:grid;
@@ -1652,7 +1655,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  font-weight:800;
 }
 
-.upgrade-dialog>.shop-wallet {
+.upgrade-dialog .shop-wallet {
  padding:15px 18px;
  border-color:rgba(222,180,98,.48);
  background:linear-gradient(105deg,rgba(104,76,25,.2),rgba(28,50,40,.22));
@@ -1675,7 +1678,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 @keyframes shop-next-pulse { from { filter:brightness(.92); } to { filter:brightness(1.15); } }
 
 @media (max-width:700px) {
- .upgrade-dialog>.shop-wallet { padding:10px 12px; }
+ .upgrade-dialog .shop-wallet { padding:10px 12px; }
  .upgrade-dialog .shop-wallet b { font-size:34px; }
  .upgrade-dialog .shop-wallet svg { width:22px; height:22px; }
 }
@@ -1920,6 +1923,19 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .game-grid { grid-template-rows:clamp(250px,42dvh,300px) minmax(0,1fr) 65px; }
 }
 
+/* v8.29: brief reveal inside the existing door cycle, never a click-to-open gate. */
+.reveal-toggle[aria-pressed='true'] { color:#f2d28a; border-color:#b39858; background:#273126; }
+.game-shell .passenger-card > .offer-debut { display:block; width:fit-content; margin:0 0 4px; color:#e8d69e; font:600 10px/1.3 var(--font-sans); letter-spacing:.08em; }
+@keyframes offer-enter { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:none; } }
+@media (max-width:700px) {
+ .game-shell .passenger-card { overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; }
+ .game-shell .brand-bar h1 { font-size:18px; line-height:18px; }
+}
+@media (prefers-reduced-motion:no-preference) {
+ .game-shell .offer-revealing .passenger-item { animation:offer-enter 240ms both ease-out; }
+ .game-shell .offer-revealing .passenger-item:focus-within { animation:none; }
+}
+
 /* v8.25 — cabin cards reserve a row for every fact and keep all values inside the frame. */
 .game-shell .rider-visual {
  display:grid;
@@ -1974,4 +1990,189 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .rider-visual .rider-name { width:calc(100% - 36px); }
  .game-shell .seat-metrics>span { gap:1px; font-size:9px; }
  .game-shell .seat-metrics svg { width:9px; height:9px; }
+}
+
+/* v8.31: category owns hue; material owns grain, edge and reflection. */
+.game-shell .category-good { --category-ink:#96e0b2; --category-edge:#39895d; --category-base:#102a20; }
+.game-shell .category-bad { --category-ink:#ffaca2; --category-edge:#ae4948; --category-base:#361b20; }
+.game-shell .category-special { --category-ink:#f1d28a; --category-edge:#ad893c; --category-base:#332a16; }
+.game-shell .passenger-card[class*='category-'] {
+ --card-edge:var(--category-edge); --card-accent:var(--category-ink);
+ --card-surface:linear-gradient(135deg,var(--category-base),#0a1313);
+ --card-sheen:linear-gradient(108deg,transparent 26%,#ffffff25 46%,transparent 64%);
+ border-color:var(--category-edge); background:var(--card-surface);
+ box-shadow:inset 4px 0 var(--category-edge),inset 0 1px #ffffff12,0 5px 15px #0005;
+}
+.game-shell .passenger-card[class*='category-'].grade-fine { background:repeating-linear-gradient(115deg,#ffffff05 0 1px,transparent 1px 5px),var(--card-surface); }
+.game-shell .passenger-card[class*='category-'].grade-rare { border-style:double; border-width:3px; background:repeating-linear-gradient(40deg,#ffffff08 0 1px,transparent 1px 7px),var(--card-surface); }
+.game-shell .passenger-card[class*='category-'].grade-legendary { border-style:double; border-width:3px; background:linear-gradient(115deg,transparent 20%,#ffffff14 45%,transparent 65%),var(--card-surface); box-shadow:inset 4px 0 var(--category-edge),inset 0 0 0 2px #ffffff16,0 6px 20px #0009; }
+.game-shell .card-category,.game-shell .category-legend i { color:var(--category-ink); border:1px solid var(--category-edge); background:var(--category-base); padding:3px 6px; font:600 12px/1.2 var(--font-mono); border-radius:3px; white-space:nowrap; }
+.game-shell .card-grade { color:#d0d5d0!important; background:#ffffff0b!important; border-color:#bac4bc55!important; }
+.category-legend { display:flex; flex-wrap:wrap; gap:6px; margin:7px 0; }
+.game-shell .standing-slot.occupied[class*='category-'] { border-top:3px solid var(--category-edge); }
+.game-shell .relation-risk { border-top:1px dashed #dc8f6380; background:#3b211e80; padding:9px 10px; }
+.game-shell .relation-risk .relation-title { color:#f3b07f; }
+.game-shell .partnership-link .connection-core { stroke:#f7a975; stroke-dasharray:4 3; filter:drop-shadow(0 0 4px #d87432); }
+.game-shell .partnership-link .connection-node { fill:#ffc18c; stroke:#b96c39; filter:drop-shadow(0 0 5px #ee9e60); }
+.game-shell .partnership-link .connection-effect { fill:#ffd0a8; }
+.game-shell .seat-stash { position:absolute; left:5px; top:41px; padding:2px 5px; background:#302318e8; border:1px dashed #d09d62; color:#ffce90; font:600 12px/1.2 var(--font-mono); z-index:3; }
+.game-shell .card-self-effects,.game-shell .relation-effects { overflow-wrap:anywhere; }
+@media(max-width:700px) {
+ .game-shell .card-category { font-size:12px; }
+ .category-legend { margin:3px 0; }
+ .game-shell .relation-risk { padding:7px; }
+ .game-shell .seat-stash { top:35px; font-size:12px; }
+}
+
+/* Copy direction is factual, not a green success signal. Red costs remain visible. */
+.game-shell .copy-link:not(.conflict-link) .connection-core { stroke:#d7b5ff; stroke-dasharray:none; filter:drop-shadow(0 0 4px #9565c9); }
+.game-shell .copy-direction { fill:none; stroke:#ead5ff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 0 3px #724699); }
+/* v8.32: fixed state bands, readable forecasts and explicit preparation. */
+.game-shell .status-rail .agitation-gauge { display:block; width:100%; margin:4px 0 0; text-align:center; }
+.game-shell .agitation-gauge svg { display:block; width:100%; height:auto; overflow:visible; }
+.agitation-gauge .gauge-sector { fill:none; stroke-width:13; }
+.agitation-gauge .sector-low { stroke:#4b9b77; }
+.agitation-gauge .sector-medium { stroke:#c6a459; }
+.agitation-gauge .sector-high { stroke:#bb6862; }
+.agitation-gauge .gauge-tick { stroke:#0d1815; stroke-width:3; }
+.agitation-gauge .gauge-needle { stroke:#fff0ca; stroke-width:3; stroke-linecap:round; }
+.agitation-gauge .gauge-hub { fill:#fff0ca; stroke:#574d36; stroke-width:2; }
+.agitation-gauge .gauge-future { stroke:#b8d4e6; stroke-width:2; stroke-dasharray:3 4; opacity:.8; }
+.agitation-gauge .gauge-range { fill:none; stroke:#b8d4e6; stroke-width:4; stroke-dasharray:2 3; }
+.game-shell .agitation-gauge .gauge-state { display:block; font:600 14px/1.4 var(--font-sans); color:#f6dfac; }
+.game-shell .agitation-gauge .gauge-legend { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:3px; margin-top:5px; }
+.game-shell .gauge-legend>span { display:grid; gap:1px; }
+.game-shell .gauge-legend b { font:500 14px/1.3 var(--font-sans); }
+.game-shell .gauge-legend span span,.game-shell .gauge-limit { font:400 12px/1.35 var(--font-mono); color:#c8c5b9; }
+.game-shell .gauge-legend .legend-low b { color:#9fdfb9; }
+.game-shell .gauge-legend .legend-medium b { color:#e9c37c; }
+.game-shell .gauge-legend .legend-high b { color:#f1b0a6; }
+.game-shell .gauge-limit { display:block; margin-top:5px; }
+.game-shell .status-rail .rail-forecast { display:block; margin-top:5px; letter-spacing:0; text-align:left; }
+.game-shell .status-rail .rail-forecast span,.game-shell .status-rail .rail-forecast b { font-size:14px; line-height:1.4; color:#e1d4b9; }
+.game-shell .status-rail .rail-forecast b.forecast-fatal { color:#ffc0af; }
+.game-shell .status-rail .agitation-state span { display:block; font-size:14px; line-height:1.4; color:#d8e1d4; }
+.game-shell .service-status { margin:0; padding:7px; border:1px solid #78af9570; color:#b6dfc4; font-size:12px; line-height:1.5; }
+.game-shell .reserve-use { display:flex; align-items:center; justify-content:center; gap:5px; min-height:44px; padding:8px; border:1px solid #bda362; background:#2c2a1c; color:#f4d9a1; font:600 14px/1.4 var(--font-sans); cursor:pointer; }
+.game-shell .reserve-use svg { display:block; width:18px; flex-shrink:0; }
+.game-shell .reserve-use:disabled { opacity:.5; cursor:default; }
+.game-shell .rider-visual .rider-name { width:calc(100% - 12px); padding-right:12px; font-size:clamp(14px,8cqw,17px); }
+.game-shell .rider-visual .slot-state,.game-shell .rider-visual .fuse,.game-shell .rider-visual .slot-destination { font-size:12px; line-height:1.4; }
+.game-shell .seat-metrics>span { font-size:14px; gap:2px; }
+.game-shell .seat-metrics svg { width:12px; height:12px; }
+.game-shell .card-effect,.game-shell .relation-row>b,.game-shell .relation-title { font-size:14px; line-height:1.4; }
+.game-shell .passenger-card { overflow-y:auto; scrollbar-width:thin; }
+.game-shell .unified-passenger-summary { min-height:min-content; }
+.story-dialog [data-slot='dialog-description'],.story-dialog>p:not(.dialog-kicker),.manual-grid p,.pressure-rule-grid p { font-size:16px; line-height:1.6; }
+.story-dialog .recharge-panel span,.story-dialog .recharge-actions button,.story-dialog .upgrade-grid button>p { font-size:14px; line-height:1.5; }
+@media (max-width:1100px), (max-height:500px) {
+ .game-shell .status-rail { overflow-y:auto; }
+ .game-shell .status-rail .pressure { min-height:220px; flex:none; }
+ .game-shell .status-rail .energy { min-height:85px; flex:none; }
+ .game-shell .status-rail .wallet-card { min-height:65px; flex:none; }
+ .game-shell .status-rail .meter-help { position:static; width:24px; height:24px; display:inline-grid; }
+ .game-shell .status-rail .meter-help svg { display:block; }
+ .game-shell .status-rail .receipt-button { position:static; width:100%; min-height:44px; font-size:12px; }
+ .game-shell .status-rail .receipt-button::after { content:none; }
+ .game-shell .status-rail .rail-forecast { display:block!important; }
+ .game-shell .status-rail .rail-forecast span { display:block; }
+}
+
+/* The band legend needs real width. On phones the full-width instrument panel
+   replaces the old 82px sidebar; the cabin keeps six readable positions. */
+@media (max-width:700px) {
+ html,body { height:auto; overflow-x:hidden; overflow-y:auto; }
+ .game-shell { height:auto; min-height:100dvh; overflow:visible; }
+ .game-shell .game-grid { flex:none; grid-template-columns:minmax(0,1fr); grid-template-rows:300px auto 340px 76px; gap:8px; height:auto; }
+ .game-shell .candidate-panel { grid-column:1; grid-row:1; }
+ .game-shell .card-head { flex-direction:row; gap:10px; text-align:left; min-height:44px; }
+ .game-shell .card-head .portrait-window { display:block; width:40px; height:40px; flex:none; }
+ .game-shell .card-head strong { font-size:20px; }
+ .game-shell .passenger-card>.unified-passenger-summary { display:flex; font-size:14px; line-height:1.4; gap:5px; }
+ .game-shell .compact-candidate-tabs button { min-height:44px; font-size:14px; line-height:17px; }
+ .game-shell .compact-candidate-tabs span { font-size:12px; line-height:15px; }
+ .game-shell .candidate-notes { white-space:normal; font-size:12px; line-height:16px; }
+ .game-shell .status-rail { grid-column:1; grid-row:2; display:grid; grid-template-columns:minmax(0,1fr) 156px; grid-template-rows:auto auto; height:auto; overflow:visible; gap:5px; }
+ .game-shell .status-rail .energy { grid-column:1; grid-row:1; min-height:70px; }
+ .game-shell .status-rail .wallet-card { grid-column:1; grid-row:2; min-height:68px; }
+ .game-shell .status-rail .pressure { grid-column:2; grid-row:1/3; min-height:0; }
+ .game-shell .status-rail .meter-card,.game-shell .status-rail .score-card { padding:7px 9px; }
+ .game-shell .status-rail .meter-card>div:first-child { display:flex; align-items:center; justify-content:space-between; }
+ .game-shell .status-rail .rail-metric-name { position:static; display:inline; width:auto; height:auto; margin:0; padding:0; overflow:visible; clip:auto; clip-path:none; white-space:normal; font-size:14px; }
+ .game-shell .status-rail .meter-label { display:flex; align-items:center; }
+ .game-shell .status-rail .meter-card>div:first-child>svg { display:none; }
+ .game-shell .status-rail .meter-card>div:first-child>b { font-size:22px; }
+ .game-shell .status-rail .agitation-gauge { margin-top:0; }
+ .game-shell .agitation-gauge svg { width:100px; margin:auto; }
+ .game-shell .gauge-legend b,.game-shell .gauge-legend span span { white-space:nowrap; }
+ .game-shell .gauge-legend { margin-top:3px; }
+ .game-shell .gauge-limit { margin-top:3px; }
+ .game-shell .status-rail .rail-forecast span { white-space:normal; }
+ .game-shell .status-rail .wallet-card { display:grid; grid-template-columns:auto 1fr auto; grid-template-rows:auto auto; align-content:center; }
+ .game-shell .status-rail .wallet-card>.rail-metric-name { grid-row:1; grid-column:2; }
+ .game-shell .status-rail .wallet-card>strong { grid-row:1; grid-column:3; }
+ .game-shell .status-rail .wallet-card>.mobile-shop-note { font-size:12px; grid-column:1/-1; }
+ .game-shell .status-rail .receipt-button,.game-shell .service-status,.game-shell .reserve-use { grid-column:1/-1; }
+ .game-shell .elevator-stage { grid-column:1; grid-row:3; height:340px; }
+ .game-shell .standing-grid { top:48px; bottom:34px; }
+ .game-shell .cabin-message { display:flex; font-size:12px; line-height:15px; max-height:30px; overflow-y:auto; }
+ .game-shell .departure-controls { grid-column:1; grid-row:4; }
+}
+
+/* The full rule sheet is an explicit action, including when a long card has
+   more content below its own scroll boundary. Never cover the passenger name. */
+.game-shell .mobile-rule-button { display:flex; align-items:center; justify-content:center; gap:4px; position:absolute; top:6px; right:6px; width:78px; height:40px; border:1px solid #657563; border-radius:5px; background:#15271ff2; color:#f0dfb9; font:500 12px/1.2 var(--font-sans); }
+.game-shell .mobile-rule-button svg { flex:none; width:15px; height:15px; }
+/* R01: the last offer must remain discoverable even when complete rules scroll. */
+@media (min-width:1101px) and (min-height:501px) {
+ .game-shell .compact-candidate-tabs { display:flex; flex:none; gap:5px; margin-bottom:6px; }
+ .game-shell .compact-candidate-tabs button { flex:1; min-width:0; min-height:44px; padding:4px; border:1px solid #79673f; background:#18251d; color:#eed5a3; font:600 13px/17px var(--font-sans); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+ .game-shell .compact-candidate-tabs span { display:block; color:#bbc6ba; font-size:11px; }
+ .game-shell .seat-metrics { width:min(96%,230px); padding:6px 5px; }
+ .game-shell .seat-metrics>span { font-size:16px; gap:4px; }
+ .game-shell .seat-metrics svg { width:14px; height:14px; }
+}
+.recharge-actions .affordable-charge { grid-column:1/-1; }
+/* Separate scroll content from departure controls: sticky controls used to
+   cover reserve purchases when the browser scrolled a button into view. */
+.story-dialog.upgrade-dialog { display:flex; flex-direction:column; max-height:90dvh; overflow:hidden; }
+.upgrade-dialog .shop-scroll-body { display:flex; flex-direction:column; gap:12px; min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:4px; scroll-padding-block:12px; }
+.upgrade-dialog .shop-scroll-body>* { flex-shrink:0; }
+.upgrade-dialog .shop-footer { flex:none; display:flex; flex-direction:column; gap:8px; border-top:1px solid #92704466; padding-top:10px; }
+.upgrade-dialog .shop-footer>.story-primary { position:static; width:100%; min-height:44px; height:auto; margin:0; font-size:14px; box-shadow:none; }
+.game-shell .status-rail .agitation-state { display:block; margin-top:6px; padding-top:6px; }
+/* The gauge and relief rule must size their card. A legacy minimum-height
+   grid row let the last lines overflow under the following wallet surface. */
+.game-shell .status-rail .meter-card.pressure { height:max-content; min-height:max-content; flex:0 0 auto; }
+@media (min-width:701px) {
+ .game-shell .status-rail { overflow-y:auto; }
+}
+/* Purchase conditions are essential information at every viewport size. */
+.upgrade-dialog .upgrade-grid button>p { display:block; }
+@media (max-width:700px) {
+ .upgrade-dialog .upgrade-grid button { display:flex; flex-direction:column; align-items:stretch; gap:8px; }
+ .upgrade-dialog .upgrade-grid button>p { margin:0; font-size:14px; line-height:1.5; }
+ .upgrade-dialog .upgrade-grid button>em { font-size:12px; line-height:1.4; }
+ .upgrade-dialog .upgrade-grid .shop-price { flex-direction:row; justify-content:flex-end; gap:6px; }
+ .upgrade-dialog .upgrade-grid .reserve-warning { font-size:14px; line-height:1.5; }
+}
+/* Rescue and purchase-risk advice is decision text, not tiny metadata. */
+.upgrade-dialog .shop-warning,.upgrade-dialog .reserve-warning { font-size:14px; line-height:1.5; }
+/* A long English restart label must not set the result grid's minimum width. */
+.story-dialog.failure-dialog { grid-template-columns:minmax(0,1fr); }
+.failure-dialog>* { min-width:0; }
+.failure-dialog .failure-cause { overflow-wrap:anywhere; }
+.failure-dialog .story-primary { white-space:normal; height:auto!important; min-height:52px; padding-block:12px; font-size:14px; }
+.game-shell .card-head { padding-right:78px; }
+@media (max-width:700px) {
+ .game-shell .brand-bar { display:flex; flex-direction:column; align-items:flex-start; gap:6px; height:82px; flex-basis:82px; padding:0 0 6px; }
+ .game-shell .brand-bar h1 { font-size:22px; line-height:26px; }
+ .game-shell .brand-actions { display:grid; width:100%; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
+ .game-shell .brand-actions>.icon-button,.game-shell .brand-actions>.language-button,.game-shell .brand-actions>.version-button { width:100%; min-width:0; height:44px; padding:2px; }
+ .game-shell .brand-actions>.version-button { font-size:10px; gap:2px; }
+ .game-shell .brand-actions>.version-button svg { width:12px; height:12px; }
+ .game-shell .status-rail .wallet-card>span.rail-metric-name:first-of-type { grid-column:2; width:auto; height:auto; font-size:14px; }
+ .game-shell .status-rail .wallet-card>span.rail-metric-name:first-of-type::after { content:none; }
+ .game-shell .card-head { padding-right:72px; }
+ .game-shell .mobile-rule-button { width:72px; }
 }

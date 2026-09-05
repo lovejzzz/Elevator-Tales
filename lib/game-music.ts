@@ -95,7 +95,7 @@ let active: HTMLAudioElement | null = null;
 let activeTrack = '';
 let activeSceneKey = '';
 let desiredScene: MusicScene = { kind: 'theme' };
-let enabled = true;
+let enabled = false;
 let fadeFrame: number | null = null;
 
 function cancelFade() {
@@ -118,6 +118,7 @@ function fade(
   }
   const started = performance.now();
   const tick = (now: number) => {
+    if (!enabled || active !== player || player.paused) return;
     const progress = Math.min(1, (now - started) / FADE_MS);
     player.volume = clampMusicVolume(from + (to - from) * progress);
     if (progress < 1) fadeFrame = requestAnimationFrame(tick);
@@ -129,21 +130,27 @@ function fade(
   fadeFrame = requestAnimationFrame(tick);
 }
 
+function playCurrent(player: HTMLAudioElement) {
+  player.muted = false;
+  void player.play().then(() => {
+    // A pending play() may finish after mute, disposal or a scene switch.
+    if (enabled && active === player && !player.paused)
+      fade(player, player.volume, MUSIC_VOLUME);
+  }).catch(() => undefined);
+}
+
 function startTrack(track: string, endless: boolean, sceneKey: string) {
   if (typeof Audio === 'undefined') return;
   if (activeTrack === track && active) {
     cancelFade();
     activeSceneKey = sceneKey;
     active.loop = !endless;
-    if (enabled)
-      void active
-        .play()
-        .then(() => fade(active!, active!.volume, MUSIC_VOLUME))
-        .catch(() => undefined);
+    if (enabled) playCurrent(active);
     return;
   }
 
   const previous = active;
+  cancelFade();
   const next = new Audio(track);
   next.preload = 'auto';
   next.loop = !endless;
@@ -167,16 +174,14 @@ function startTrack(track: string, endless: boolean, sceneKey: string) {
   activeTrack = track;
   activeSceneKey = sceneKey;
   if (previous) {
+    previous.muted = true;
     previous.onended = null;
     previous.pause();
     previous.removeAttribute('src');
     previous.load();
   }
   if (!enabled) return;
-  void next
-    .play()
-    .then(() => fade(next, 0, MUSIC_VOLUME))
-    .catch(() => undefined);
+  playCurrent(next);
 }
 
 export function setGameMusic(nextEnabled: boolean, scene: MusicScene) {
@@ -184,7 +189,9 @@ export function setGameMusic(nextEnabled: boolean, scene: MusicScene) {
   enabled = nextEnabled;
   desiredScene = scene;
   if (!enabled) {
-    if (active) fade(active, active.volume, 0, () => active?.pause());
+    // Explicit mute is immediate, even while background animation is frozen.
+    cancelFade();
+    if (active) { active.muted = true; active.volume = 0; active.pause(); }
     return;
   }
   const endless = scene.kind === 'floor' && scene.floor > 120;
@@ -197,15 +204,14 @@ export function setGameMusic(nextEnabled: boolean, scene: MusicScene) {
 
 export function unlockGameMusic() {
   if (!enabled || !active || !active.paused) return;
-  void active
-    .play()
-    .then(() => fade(active!, active!.volume, MUSIC_VOLUME))
-    .catch(() => undefined);
+  playCurrent(active);
 }
 
 export function disposeGameMusic() {
+  enabled = false;
   cancelFade();
   if (active) {
+    active.muted = true;
     active.onended = null;
     active.pause();
     active.removeAttribute('src');
