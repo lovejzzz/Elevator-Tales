@@ -18,6 +18,12 @@ Verification for this wording checkpoint: full npm verify, Player Lab49, TypeScr
 
 ## Archived earlier checkpoint
 
+### Subsequent savings diagnostic (no gameplay adoption)
+
+`scripts/player-lab/audit-savings.mts` enumerated8192 static placements/Steady states. Ghost-provider cap changes340; Steady's apparent zero-energy occupancy benefit occurs in1254 states but actually saves power in849. Do not infer causal saving from occupancy eligibility. Scenario equality assertion verifies the cap is the only override.
+
+Eight new development full runs, seeds193842701+i*97 for i0–1, planner/operator, committed shops, horizon160: baseline29/56 and46/39; cap29/48 and46/39. Each step-hash replayed. All eight bought zero permanent upgrades. Post-hoc replay audit: only baseline planner1 had cap exposure (departure35/36/37/50). The equal operator outcomes do not test the invested loop. Reject adopting this cap from these data; next coverage must explicitly include invested continuation fixtures, separately labeled from whole runs. Research workspace `player-lab/V836-SAVINGS-STUDY.md` records the prospective protocol and full results. Cumulative344 synthetic executions include repeated controls, not independent seeds.
+
 ## Delivery state
 
 Local only. Public Sites and GitHub remain v8.35. Do not publish this candidate as balanced.
