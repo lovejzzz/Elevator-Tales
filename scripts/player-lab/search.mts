@@ -41,7 +41,7 @@ function localActions(w:World,names:Names,mode:PolicyName):Action[]{
 }
 const key=(w:World)=>w.state.cabin.map(r=>r?.id??'-').join('|')+'/'+w.state.coins+'/'+w.state.swapped+'/'+w.state.energy+'/'+Boolean(w.state.reserveCell);
 export function enumerate(base:World,names:Names,mode:PolicyName,seen:Set<string>,budgetOverride?:number){
- const budget=budgetOverride??({novice:18,minimalist:70,merchant:110,explorer:160,planner:180,opportunist:180,investor:180,operator:180}[mode]);
+ const budget=budgetOverride??({novice:18,minimalist:70,merchant:110,explorer:160,planner:180,opportunist:180,investor:180,operator:180,allocator:180}[mode]);
  type Node={w:World;actions:Action[];q:Preview;score:number};
  const q=quick(base,[],base.state.coins,names),root={w:base,actions:[],q,score:score(q,mode,seen)};
  let beam:Node[]=[root],count=0;const all:Node[]=[root],visited=new Set([key(base)]);
@@ -98,6 +98,15 @@ function beliefWorld(w:World,rng:()=>number):World {
  }
  return b;
 }
+export function shopInvestmentRoom(w:World):number {
+ const s=w.state;
+ if(s.status!=='upgrade'||Object.values(s.upgrades).filter(Boolean).length>=4)return 0;
+ const soothe=Math.max(0,s.stress-s.stressCap+1),repaired={...s,stress:s.stress-soothe};
+ const commitment=features({...w,state:repaired},s.coins).committedEnergy+2;
+ const optionCash=Math.max(0,...s.cabin.flatMap((r,slot)=>r&&((repaired.stress>=s.stressCap-2&&(R.riderProfile(r,s.cabin,slot).agitation+Number(Boolean(r.volatile))>0||r.kind==='thief'))||(r.kind==='bomb'&&(r.fuse??0)<=2))?[E.dismissalCost(s,r)]:[]));
+ const room=s.coins-soothe*E.SOOTHE_PRICE-Math.max(0,commitment-s.energy)*E.CHARGE_PRICE-optionCash;
+ return Math.max(0,Math.min(60,room));
+}
 export function serviceFor(base:World,names:Names):PreviewService {
  // This seed is derived exclusively from redacted, currently visible data.
  const publicSeed=planningSeed(observe(base,names));
@@ -125,10 +134,10 @@ export function serviceFor(base:World,names:Names):PreviewService {
     }
     const s=w.state,repair=Math.max(0,1-s.energy)*E.CHARGE_PRICE+Math.max(0,s.stress-s.stressCap+1)*E.SOOTHE_PRICE;
     const survived=s.status!=='lost'&&(s.status!=='upgrade'||s.coins>=repair);
-    outcomes.push({survived,travelled,minRoom,net:s.coins-startCoins,energy:s.energy,stress:s.stress});
+    outcomes.push({survived,travelled,minRoom,net:s.coins-startCoins,energy:s.energy,stress:s.stress,investmentRoom:survived?shopInvestmentRoom(w):0});
    }
    return {samples,depth,survivalFraction:mean(outcomes.map(v=>Number(v.survived))),minStressRoom:Math.min(...outcomes.map(v=>v.minRoom)),
-    meanFloors:mean(outcomes.map(v=>v.travelled)),meanNetCash:mean(outcomes.map(v=>v.net)),meanEnergy:mean(outcomes.map(v=>v.energy)),meanStress:mean(outcomes.map(v=>v.stress)),
+    meanFloors:mean(outcomes.map(v=>v.travelled)),meanNetCash:mean(outcomes.map(v=>v.net)),meanEnergy:mean(outcomes.map(v=>v.energy)),meanStress:mean(outcomes.map(v=>v.stress)),meanInvestmentRoom:mean(outcomes.map(v=>v.investmentRoom)),
     hypothesis:`Independent sampled futures; ${continuation} reactive continuation; stop at next shop and test minimum repair affordability. Not actual future / exhaustive survival probability.`};
   }
  };

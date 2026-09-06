@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import {E,F,B,S,R,D,I,P,GAME_ROOT,type Rider,type RunState} from './game.mts';
 import {configureScenario,scenarioRecord} from './scenarios.mts';
 import {Session,Names,observe,previewWorld,applyPlan,clone,replay,features} from './runtime.mts';
-import {serviceFor,enumerate,planningSeed} from './search.mts';
+import {serviceFor,enumerate,planningSeed,shopInvestmentRoom} from './search.mts';
 import {Player,score} from './policies.mts';
 import {flagBlock} from './analytics.mts';
 import {runOne} from './run.mts';
@@ -16,6 +16,19 @@ import {investmentSample} from './investment-study.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('allocator values shop investment room without changing shopping safety or public-only planning',()=>{
+  const a=fixtures.sealed();Object.assign(a.state,{floor:10,status:'upgrade',energy:20,coins:90,stress:0,cabin:Array(6).fill(null),upgrades:{...E.EMPTY_UPGRADES}});a.offers=[];
+  a.state.cabin[0]=fixtures.rider('commuter','a',10,2);
+  const b=clone(a);for(let i=0;i<4;i++)b.state.cabin[i]=fixtures.rider('commuter',String(i),10,6);
+  const before=hash(a);assert(shopInvestmentRoom(a)>shopInvestmentRoom(b));assert.equal(hash(a),before);
+  const full=clone(a);for(const k of ['battery','meter','relay','reinforced'] as const)full.state.upgrades[k]=1;
+  assert.equal(shopInvestmentRoom(full),0);
+  const n=new Names(),o=observe(a,n),operator=new Player('operator','committed'),allocator=new Player('allocator','committed');
+  assert.deepEqual(allocator.shop(o,serviceFor(a,n)),operator.shop(o,serviceFor(a,n)));
+  const w=fixtures.sealed(),names=new Names();const publicBefore=hash(w),service=serviceFor(w,names);
+  const first=service.imagine([],3,2,'operator');assert.deepEqual(first,service.imagine([],3,2,'operator'));assert.equal(hash(w),publicBefore);
+  assert.equal(first.meanInvestmentRoom,0,'No reached shop, no investment-room reward');
+ });
  test('investment history does not double-count Steady and capped Ghost savings',()=>{
   const w=fixtures.sealed();Object.assign(w.state,{floor:31,cabin:Array(6).fill(null),upgrades:{...E.EMPTY_UPGRADES}});
   w.state.cabin[0]=fixtures.rider('ghost','g',31,4);w.state.cabin[1]=fixtures.rider('exorcist','e',31,4);w.state.cabin[3]=fixtures.rider('ghost','h',31,4);

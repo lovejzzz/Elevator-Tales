@@ -18,6 +18,12 @@ Verification for this wording checkpoint: full npm verify, Player Lab49, TypeScr
 
 ## Archived earlier checkpoint
 
+### Investment-room policy probe
+
+Added allocator as a separate internal research policy: same operator root/rollout budgets and shopping, plus1.2×sampled shop investment room (0–60), after known charging/repair/option costs, only with remaining permanent slots. No actual future income or RNG.54 Lab checks/TypeScript pass; original operator ranking unchanged.
+
+Eight new full runs, four fresh matched seeds: operator65/58/41/57→allocator68/57/41/54, both1/4 above60/no censor. Mean installed upgrades2.25→1.75; allocator two long-refusal flags versus operator none. Not a stronger replacement. Keep diagnostic and controls, no post-result coefficient tuning. See research workspace `player-lab/V836-ALLOCATOR-STUDY.md` and results/v836-allocator-development. Counts352 whole-run executions plus64 conditional fixtures, not independent games. Next audit finalist coverage at first divergences rather than asserting the terminal-value idea solves acquisition.
+
 ### Acquisition audit: carried obligations and marginal valuation
 
 Browser shop affordability reconstructed from public fixed totals/remaining trips: selected upgrades at10/20/30/40 pass current purchase gate (available vs budget+2:41/29,52/34,45/40,58/40). Unknown ride ages set1; not hidden-state/history replay. Exact prior synthetic operator replays show different obligations: shop10 four4–5-stop riders makes tipjar34available vs42required; shop20 battery36vs37. Another seed meter35vs36. Positive valuation alone cannot overcome carried load. Next policy experiment should value discretionary investment room when approaching shops, not simply remove the safety gate.
