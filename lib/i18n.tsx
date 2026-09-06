@@ -348,7 +348,7 @@ const exactPairs: Array<[string, string]> = [
   ['门已开启。把候选人物直接拖进指定站位。', 'Doors open. Drag a candidate directly into a position.'],
   ['拖拽人物安排站位 · 有效组合会亮起', 'Drag riders into position · valid links will glow'],
   ['谁要上楼？', 'Who is going up?'], ['送达后领取基础奖励 · 途中收益与人物联动另算', 'Collect the base fare on arrival · floor income and links resolve separately'],
-  ['关门上行', 'Close Doors & Ascend'], ['正在上行', 'Ascending'], ['人物/请离', 'Rider / Dismiss'],
+  ['关门上行', 'Ascend'], ['正在上行', 'Ascending'], ['人物/请离', 'Rider / Dismiss'],
   ['试着连出一条绿线', 'Create a green link'], ['绿色协作已生效', 'Green cooperation active'], ['有人回应了呼唤', 'Someone answered the call'],
   ['新手示例：让两位恋人成为邻座，观察绿色协作线', 'Tutorial example: place two Lovers together and watch the green cooperation line'],
   ['新手示例 · 让两位恋人成为邻座，观察绿色协作线', 'Tutorial · place two Lovers together and watch the green cooperation line'],

@@ -1,5 +1,23 @@
 # v8.36 research checkpoint — 2026-09-06
 
+## Latest revision: R836-02 censored alive at120
+
+This section supersedes the archived candidate below. Current gameplay checkpoint `dabec4b`: original public v8.35 prices, one role-minimum offer from31, localExtra0. No mechanical changes during this continuous browser sample. Public remains v8.35; long-run acceptance is unresolved.
+
+Owned muted browser `et-v836-02`, timeOrigin1788676432324.9, visible UI only, no state injection or future RNG access. Stopped observation at120 shop, alive and repairable:0/60 power,190 coins,7/8 agitation, income1468/spending1278, no reserve. Not a win, death or terminal game. Session closed after recording final screenshot and research-stop. Raw observations: `player-lab/results/v836-02/browser.jsonl` in the research workspace.
+
+Upgrades: battery30 at10, meter25 at20, reinforced45 at30, relay30 at40. Reserve bought50/70/80/100; used68/78/98/117. Paid dismissals36 Coach8 and62 high-risk Mechanic8. Shop-entry coins100:136,110:182,120:190: the later recovery disproves a steadily declining-cash interpretation. Many tight power checkpoints coexist with a financially sustainable late run.
+
+The48 fresh same-policy synthetic comparisons had candidate maximum65; this120-floor counterexample demonstrates limited policy coverage, not a measured human success rate or proof of universal dominance. Do not nerf Ghost/Steady based on eligibility alone: capped Ghost savings can substitute for Steady's saving. Any ablation must include adaptive placements and overlapping caps.
+
+Play-reading corrections: only one old-rider move per floor; unsuccessful second moves were rejected, not random placement. The limit text was hidden in the desktop layout; selected-after-used now shows a visible cabin hint. Uncontrolled Ghost delay repeats on destination floors divisible by3, not once per journey. Tourist medium bonus reads departure agitation, not post-ascent agitation. Added regression cases for both timings and clearer bilingual short cards; shortened English action to Ascend. No gameplay parameter changes in this wording checkpoint.
+
+Separate forced-muted injected UI fixtures (not games): Ghost/Tourist/Nurse in Chinese and English at1440×900 and1280×800; all card text bounds and page height passed. The apparent62px card overflow came from decorative pseudo-element sheen, not clipped rules; check rendered text bounds instead of raw scrollHeight. Actual selected-move hint and Ascend were also inspected. Screenshots: `player-lab/results/v836-copyqa/`.
+
+Verification for this wording checkpoint: full npm verify, Player Lab49, TypeScript, production build and diff whitespace checks passed. Release/internationalization checks and build repeated after the final bilingual evidence update. Owned QA browser closed. Existing Node deprecation and bundle-size warnings remain non-fatal. This completes a documented local research iteration, not final balance certification or publication.
+
+## Archived earlier checkpoint
+
 ## Delivery state
 
 Local only. Public Sites and GitHub remain v8.35. Do not publish this candidate as balanced.

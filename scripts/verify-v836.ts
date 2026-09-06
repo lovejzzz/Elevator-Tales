@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {makeOffers,initialRun,UPGRADE_BASE_PRICES,upgradePrice,expressTrip} from '../lib/game-engine';
+import {makeOffers,initialRun,UPGRADE_BASE_PRICES,upgradePrice,expressTrip,resolveFloor,type Rider} from '../lib/game-engine';
 import {JOURNEY_RULES} from '../lib/balance-v832';
 import {PASSENGERS} from '../lib/game-data';
 assert.deepEqual(UPGRADE_BASE_PRICES,{battery:30,capacity:35,calm:35,concierge:40,reinforced:45,express:45,tipjar:30,relay:30,crowd:40,meter:25});
@@ -27,4 +27,20 @@ try{
  }
 }finally{JOURNEY_RULES.localFrom31=enabled;}
 assert.ok(enabled&&changed>0);
+// Browser R836-02: departure bands must not be confused with settled agitation.
+const rider=(kind:Rider['kind'],id:string,extra:Partial<Rider>={}):Rider=>({kind,id,boardedAt:1,destination:20,patience:0,fareBonus:0,...extra});
+for(const [stress,settledStress,fare] of [[2,3,8],[4,5,11]]){
+ const s={...initialRun(),floor:4,energy:60,stress,cabin:[rider('tourist','t',{destination:5}),null,rider('mechanic','m',{volatile:true}),null,null,rider('cop','c',{volatile:true})]};
+ const next=resolveFloor(s,()=>.99);
+ assert.equal(next.stress,settledStress);
+ assert.equal(next.lastEarnings.sources.find(l=>l.label==='游客到站')?.amount,fare);
+}
+assert.match(PASSENGERS.tourist.short,/关门时中躁动/);
+assert.match(PASSENGERS.ghost.short,/3的倍数层.*随机1位邻座.*1站/);
+for(const floor of [1,2,3,4,5,6]){
+ const s={...initialRun(),floor,energy:60,cabin:[rider('ghost','g'),rider('commuter','c'),null,rider('mechanic','m'),null,null]};
+ const next=resolveFloor(s,()=>0);
+ assert.equal(next.cabin[1]?.destination,20+Number((floor+1)%3===0));
+ assert.equal(next.cabin[3]?.destination,20,'one neighbor, not all neighbors');
+}
 console.log({v836OfferPairs:cases,shortened:changed,fixedPrices:true,rngAndRiskUnchanged:true});

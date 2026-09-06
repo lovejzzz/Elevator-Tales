@@ -466,7 +466,7 @@ export default function ElevatorGame() {
         })}</div>
         <button className="cabin-inspect-button" disabled={!activeRider || locked} onClick={() => {if(activeRider){setEjectArmed(false);setPassengerDetails(activeRider);}}}><BookOpen />{activeRider ? `查看${PASSENGERS[activeRider.kind].name} · 请离` : '选中人物 · 查看 / 请离'}</button>
         <div className="door door-left" /><div className="door door-right" />
-        <div className={`cabin-message ${hoveredPlan && !hoveredPlan.ok ? 'message-error' : ''}`} aria-live="polite"><Sparkles /><span>{hoveredPlan ? hoveredPlan.ok ? hoveredPlan.next.message : hoveredPlan.label : run.message}</span></div><div className="swap-status">{pendingOfferId ? '选择发光站位 · ESC 取消' : selectedSlot !== null ? '再选一个站位完成调整 · ESC 取消' : run.swapped ? <><LockKeyhole /> 旧乘客换位已用 · 新上客仍可调整</> : '拖拽人物安排站位 · 有效组合会亮起'}</div>
+        <div className={`cabin-message ${hoveredPlan && !hoveredPlan.ok ? 'message-error' : ''}`} aria-live="polite"><Sparkles /><span>{hoveredPlan ? hoveredPlan.ok ? hoveredPlan.next.message : hoveredPlan.label : selectedSlot !== null && run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : run.message}</span></div><div className="swap-status">{pendingOfferId ? '选择发光站位 · ESC 取消' : selectedSlot !== null ? run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : '再选一个站位完成调整 · ESC 取消' : run.swapped ? <><LockKeyhole /> 旧乘客换位已用 · 新上客仍可调整</> : '拖拽人物安排站位 · 有效组合会亮起'}</div>
       </section>
       <aside className="arrival-panel">
         <div className={`arrival-heading ${loverResponse || firstPairLesson ? 'lover-response' : ''}`}><div><span>{loverResponse ? 'LOVER SIGNAL · RESPONSE' : firstPairLesson ? 'FIRST LINK · GUIDED SHIFT' : doors === 'open' ? 'DOORS OPEN' : 'IN TRANSIT'}</span><h2>{loverResponse ? '有人回应了呼唤' : firstPairLesson ? firstPairActive ? '绿色协作已生效' : '试着连出一条绿线' : '谁要上楼？'}</h2></div><div className="arrival-count">{offers.length} 位</div></div>
@@ -491,7 +491,7 @@ export default function ElevatorGame() {
         <div className="departure-controls">
           <button className="mobile-inspect-button" disabled={!activeRider || locked} onClick={() => {if(activeRider){setEjectArmed(false);setPassengerDetails(activeRider);}}} aria-label="查看选中人物规则"><BookOpen /><span>人物/请离</span></button>
           <button className="depart-button" onClick={depart} disabled={locked || occupied===0}><span>{doors === 'open' ? occupied===0?'至少接1人':'关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
-          {(pendingOfferId || selectedSlot !== null || firstPairLesson && !firstPairActive) && <p className={`mobile-departure-note forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? `已选${activeRider ? PASSENGERS[activeRider.kind].name : '乘客'} · 点下方空位` : selectedSlot !== null ? '点另一站位换位 · 再点原位取消' : '新手示例：让两位恋人成为邻座，观察绿色协作线'}</p>}
+          {(pendingOfferId || selectedSlot !== null || firstPairLesson && !firstPairActive) && <p className={`mobile-departure-note forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? `已选${activeRider ? PASSENGERS[activeRider.kind].name : '乘客'} · 点下方空位` : selectedSlot !== null ? run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : '点另一站位换位 · 再点原位取消' : '新手示例：让两位恋人成为邻座，观察绿色协作线'}</p>}
           <p className={`panel-hint forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : firstPairLesson && !firstPairActive ? '新手示例 · 让两位恋人成为邻座，观察绿色协作线' : departureForecast}</p>
         </div>
       </aside>

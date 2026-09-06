@@ -4,7 +4,9 @@ Every public update must add a new entry here and in `lib/changelog.ts`. Record 
 
 ## v8.36 — 2026-09-06 — One local passenger / 多一位短途候客
 
-- Revised local candidate, awaiting full muted playtest / 修订本地候选，等待完整静音实玩。31层起每批轮换一位候客使用该人物正常最短旅程，随后应用快速升级；另两位照常。角色、风险、随机数消耗不变，无资源救场。
+- Local candidate; publication held / 本地候选，暂缓发布。31层起每批轮换一位候客使用该人物正常最短旅程，随后应用快速升级；另两位照常。角色、风险、随机数消耗不变，无资源救场。
+- 当前修订静音实玩在120层主动停止观察：0/60电、190币、7/8躁动，可付费修复，仍存活。不是死亡、通关或完整终局；不能以合成测试最高65层证明长期平衡。Current revision censored alive at120:0/60 power,190 coins,7/8 agitation, repair affordable. Not a death, win or terminal game; synthetic maximum65 does not establish containment.
+- 文案与交互：游客明确以本次关门时躁动结算；幽灵明确未受控时在3的倍数层随机延误一位邻座1站；已使用旧乘客换位后，选中人物时在车厢底部直接提示限制。英文上行按钮缩短为Ascend。机制、收益与换位次数不变。Copy exposes Tourist departure timing, Ghost delay cadence and the used movement allowance; shorter English Ascend label. Mechanics unchanged.
 - Retain public v8.35 prices / 保留公开价格：battery30, capacity35, calm35, concierge40, reinforced45, express45, tipjar30, relay30, crowd40, meter25. Withdraw unpublished discounts, not a public price rise. Motor, fares, agitation, combinations and charge prices unchanged.
 - 336 synthetic executions including repeated controls, with step-hash replay; not336 independent seeds. Latest48 fresh executions:8 per planner/operator/minimalist per arm. Upgrades1.75→1.875 and2→2.25; common30–59 refusals52/136→47/136 and64/146→58/146, mean longest3→2.25 and2.875→2.625. Refusal is behavior, not proven impossibility.
 - Latest active-policy above60:4/16→3/16, candidate maximum65; minimalist8 unchanged. Medians57.5→44 and50→54. Not universal parity or human win probability. 拒绝最短旅程叠加降价：此前16次主动策略4次超过100层。早期100层静音截尾反例保留，不混为当前版本完整实玩。
