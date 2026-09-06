@@ -16,6 +16,17 @@ import {investmentSample} from './investment-study.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('diverse policy retains intake representatives without adding expansions or rollout slots',()=>{
+  const w=fixtures.sealed();Object.assign(w.state,{floor:9,status:'playing',energy:20,coins:60,stress:0,cabin:Array(6).fill(null),upgrades:{...E.EMPTY_UPGRADES}});
+  w.state.cabin[0]=fixtures.rider('commuter','old-c',8,4);w.state.cabin[1]=fixtures.rider('tourist','old-t',8,2);w.state.cabin[4]=fixtures.rider('courier','old-q',8,2);
+  w.offers=[fixtures.rider('courier','q',9,1),fixtures.rider('tourist','t',9,6),fixtures.rider('commuter','c',9,4)];
+  const n=new Names(),o=observe(w,n),ids=new Set(o.offers.map(r=>r.id)),count=(p:ReturnType<typeof enumerate>['plans'][number])=>p.observation.cabin.filter(r=>r&&ids.has(r.id)).length;
+  const before=hash(w),all=enumerate(w,n,'allocator',new Set(),undefined,true),d=enumerate(w,n,'diverse',new Set());
+  assert.equal(all.enumerated,d.enumerated);const represented=new Set(d.plans.map(count));assert(all.plans.every(p=>represented.has(count(p))));assert(represented.has(1));
+  const service=serviceFor(w,n),calls:number[][]=[];
+  const decision=new Player('diverse','committed').decide(o,{...service,imagine:(a,depth,samples,continuation)=>{calls.push([depth,samples]);return service.imagine(a,depth,samples,continuation);}});
+  assert(calls.length<=4);assert(calls.every(([d,s])=>d===5&&s===4));assert(previewWorld(w,decision.actions,n));assert.equal(hash(w),before);
+ });
  test('offline all-node diagnostic preserves normal enumeration and does not mutate the world',()=>{
   const w=fixtures.sealed(),n=new Names(),before=hash(w);
   const normal=enumerate(w,n,'allocator',new Set()),all=enumerate(w,n,'allocator',new Set(),undefined,true);

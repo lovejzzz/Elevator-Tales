@@ -18,6 +18,12 @@ Verification for this wording checkpoint: full npm verify, Player Lab49, TypeScr
 
 ## Archived earlier checkpoint
 
+### Intake-diverse policy coverage
+
+New separate diverse policy preserves0–3 newly boarded count representatives, same allocator scoring/shop logic and root/four-rollout caps.12 full runs across four fresh seeds: operator57/77/68/49; allocator86/86/69/49; diverse66/49/79/98, no censor. Mean upgrades3/3/4; diverse reaches four upgrades every run. Common30+ refusals versus operator37→26 and boardings99→113; versus allocator30→32 and boardings118→118. Useful invested coverage, not universal superiority or balance proof.
+
+Historical floor9 case now retains and selects short Courier-only plan at unchanged rollout cap.56 Lab checks/TypeScript pass; minor type-narrowing guard clarified after cohort completion without changing runtime behavior. No game parameters edited. Found opening mismatch for interpretation: fresh-browser long runs guided, non-novice full simulations ordinary. Next game A/B must stratify explicit openings and retain original operator. Research workspace `player-lab/V836-DIVERSE-STUDY.md` gives details.364 whole-run executions plus64 conditional fixtures, not independent games.
+
 ### Offline finalist coverage audit
 
 Audited all four first operator/allocator divergences at28/26/27/9 using exact shared predecision replay. Evaluated728 already-generated legal candidate plans with additional independent sampled rollout work; not728 games or equal-budget improvement. Two best-under-model alternatives were omitted: floor26 Commuter relocation from four finalists (still in13-plan shortlist), floor9 single short Courier intake from shortlist itself. Other two best choices were already included. Actual world hashes unchanged and actual future never used.

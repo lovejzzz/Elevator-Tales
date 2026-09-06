@@ -34,7 +34,7 @@ export type Rollout = {samples:number; depth:number; survivalFraction:number; mi
   meanFloors:number; meanNetCash:number; meanEnergy:number; meanStress:number; meanInvestmentRoom?:number; hypothesis:string};
 export type Decision = {actions:Action[]; reason:string; alternatives:Array<{actions:Action[];score:number;safety:Preview['safety']}>;
   diagnostics:{enumerated:number; sampledSafePlans:number; horizon:Rollout|null; knowledge:string[]}};
-export type PolicyName = 'novice'|'merchant'|'explorer'|'minimalist'|'planner'|'opportunist'|'investor'|'operator'|'allocator';
+export type PolicyName = 'novice'|'merchant'|'explorer'|'minimalist'|'planner'|'opportunist'|'investor'|'operator'|'allocator'|'diverse';
 export type ShopStyle = 'native' | 'committed' | 'adaptive';
 export type InvestmentSample = {floor:number; arrivals:number; rideSum:number; nearLimit:boolean; gross:Record<string,number>};
 export type PreviewService = {

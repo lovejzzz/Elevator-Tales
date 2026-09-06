@@ -1,7 +1,7 @@
 import type {Preview,Observation,PolicyName,PreviewService,Decision,Action,ShopStyle,InvestmentSample} from './types.mts';
 // No runtime/engine imports: decisions receive public observations and a bounded
 // preview service. These are behavioral hypotheses, not calibrated humans.
-export const POLICIES:PolicyName[]=['novice','merchant','explorer','minimalist','planner','opportunist','investor','operator','allocator'];
+export const POLICIES:PolicyName[]=['novice','merchant','explorer','minimalist','planner','opportunist','investor','operator','allocator','diverse'];
 export function score(p:Preview,mode:PolicyName,seen:Set<string>):number {
  const f=p.features,o=p.observation;
  if(!f.occupied)return -1e8;
@@ -9,7 +9,7 @@ export function score(p:Preview,mode:PolicyName,seen:Set<string>):number {
  const room=o.stressCap-o.stress;
  const stressAfter=o.stress+(o.forecast?.stress[1]??f.rise-Math.min(o.arrivalReliefCap,f.due));
  const danger=unsafe?1e6:0;
- if(mode==='operator'||mode==='allocator'){
+ if(mode==='operator'||mode==='allocator'||mode==='diverse'){
   // R836-01 behavioral hypothesis: bankroll has diminishing marginal value;
   // schedule groups matter, and high agitation is not itself a reason to flee.
   // No actual future offers, seeds or sealed rewards enter these terms.
@@ -60,18 +60,24 @@ export class Player {
  investmentStudy:{key:string;gross:number;net:number;observations:number}[]=[];
  constructor(readonly mode:PolicyName,readonly shopStyle:ShopStyle='native'){}
  decide(o:Observation,service:PreviewService):Decision {
+  const allocates=this.mode==='allocator'||this.mode==='diverse',operates=this.mode==='operator'||allocates;
   const known=[...this.seen],{plans,enumerated}=service.candidates(this.mode,this.seen);
   if(!plans.length)throw Error('No boarding plan available');
   let ranked=plans.map(p=>({p,value:score(p,this.mode,this.seen),rollout:null as ReturnType<PreviewService['imagine']>|null})).sort((a,b)=>b.value-a.value);
-  if(['planner','opportunist','investor','operator','allocator'].includes(this.mode)){
+  if(['planner','opportunist','investor'].includes(this.mode)||operates){
    const economical=ranked.filter(c=>c.p.safety.resourceSafe&&c.p.safety.bombSafe).sort((a,b)=>a.p.features.energyCost-b.p.features.energyCost||a.p.features.rise-b.p.features.rise)[0];
-   const finalists=[...new Set([...ranked.slice(0,3),...(economical?[economical]:[])])];
+   let finalists=[...new Set([...ranked.slice(0,3),...(economical?[economical]:[])])];
+   if(this.mode==='diverse'){
+    const offered=new Set(o.offers.map(r=>r.id)),representatives=new Map<number,typeof ranked[number]>();
+    for(const c of ranked){const count=c.p.observation.cabin.filter(r=>r&&offered.has(r.id)).length;if(!representatives.has(count))representatives.set(count,c);}
+    finalists=[...new Set([...representatives.values(),...ranked])].slice(0,4);
+   }
    for(const c of finalists){
-    c.rollout=['operator','allocator'].includes(this.mode)?service.imagine(c.p.actions,5,4,'operator'):service.imagine(c.p.actions,3,2);
+    c.rollout=operates?service.imagine(c.p.actions,5,4,'operator'):service.imagine(c.p.actions,3,2);
     // Research estimates, never a promise of safety or a use of real future RNG.
     c.value+=c.rollout.survivalFraction*180+c.rollout.meanFloors*15+c.rollout.meanNetCash*1.2
-      +c.rollout.meanEnergy*(['operator','allocator'].includes(this.mode)?2:.8)-c.rollout.meanStress*(['opportunist','operator','allocator'].includes(this.mode)?1:5);
-    if(this.mode==='allocator')c.value+=(c.rollout.meanInvestmentRoom??0)*1.2;
+      +c.rollout.meanEnergy*(operates?2:.8)-c.rollout.meanStress*((this.mode==='opportunist'||operates)?1:5);
+    if(allocates)c.value+=(c.rollout.meanInvestmentRoom??0)*1.2;
    }
    ranked=finalists.sort((a,b)=>Number(b.p.safety.resourceSafe&&b.p.safety.bombSafe)-Number(a.p.safety.resourceSafe&&a.p.safety.bombSafe)
     ||b.rollout!.survivalFraction-a.rollout!.survivalFraction||b.rollout!.meanFloors-a.rollout!.meanFloors||b.value-a.value);
@@ -80,7 +86,7 @@ export class Player {
   for(const r of [...(this.mode==='novice'?o.offers.slice(0,2):o.offers),...o.cabin])if(r)this.seen.add(r.kind);
   return {actions:chosen.p.actions,
    reason:this.mode==='novice'?'有限阅读：看前两张、优先可见收益与当前警告':this.mode==='minimalist'?'少载检验：优先控制持续压力和人数':
-    this.mode==='allocator'?'投资空间假设：沿用经营者，另重视想象中进店后支付已知承诺仍余下的投资资金；不预支真实未来':this.mode==='operator'?'经营者假设：同层送达、现金边际价值、五层四样本经营式反应；不读取真实未来':
+    this.mode==='diverse'?'接客数量多样性：同投资空间评分，四个推演名额优先覆盖不同的新上客人数':this.mode==='allocator'?'投资空间假设：沿用经营者，另重视想象中进店后支付已知承诺仍余下的投资资金；不预支真实未来':this.mode==='operator'?'经营者假设：同层送达、现金边际价值、五层四样本经营式反应；不读取真实未来':
     this.mode==='merchant'?'经营检验：收入与可见资源成本对比':this.mode==='explorer'?'探索检验：新人物、关系和收入并看':this.mode==='opportunist'?'窗口检验：主动寻找短期危险合作与高躁动收益，保留区间续航预算和三层推演':
     this.mode==='investor'?'投资检验：沿用规划检验的关门策略，商店先投资并保留基础续航，不自动清零躁动':
     '规划检验：对当前候选方案做独立随机、可反应的三层推演',
@@ -92,7 +98,7 @@ export class Player {
   if(sample){this.investmentHistory.push(structuredClone(sample));if(this.investmentHistory.length>20)this.investmentHistory.shift();}
  }
  shop(o:Observation,service?:Pick<PreviewService,'preview'>):{actions:Action[];reason:string}{
-  if(this.mode==='allocator'){
+  if(this.mode==='allocator'||this.mode==='diverse'){
    const operator=new Player('operator',this.shopStyle);operator.investmentHistory.push(...this.investmentHistory);
    const decision=operator.shop(o,service);this.investmentStudy=operator.investmentStudy;return decision;
   }
@@ -170,7 +176,7 @@ export class Player {
    planner:['reinforced','calm','express','concierge','capacity','crowd','tipjar','relay','battery','meter'],
    opportunist:['calm','relay','battery','reinforced','express','tipjar','capacity','concierge','crowd','meter'],
    investor:[], // Handled above; never falls through to charge-first shopping.
-   operator:[],allocator:[],
+   operator:[],allocator:[],diverse:[],
   };
   const desired=orders[this.mode].find(k=>o.shop.some(c=>c.key===k&&c.price<=coins));
   if(desired)buy(desired);
