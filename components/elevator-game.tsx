@@ -5,7 +5,7 @@ import { ChevronsUp, ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Chec
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, passengerCardGrade, passengerCategory, PASSENGER_CATEGORY_LABELS, type PassengerCardGrade, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
-import { availableShopCards, SOOTHE_PRICE, sootheAgitation, emergencyRepairPlan, repairEmergency, dismissalsRemaining, energyBreakdown, affordableChargingPlan, purchaseRepairWarning } from '@/lib/game-engine';
+import { availableShopCards, SOOTHE_PRICE, LOVER_CALL_CHANCE, sootheAgitation, emergencyRepairPlan, repairEmergency, dismissalsRemaining, energyBreakdown, affordableChargingPlan, purchaseRepairWarning } from '@/lib/game-engine';
 import { CHARGE_PRICE, INITIAL_ENERGY, ENERGY_CAPACITY, HIGH_RISK_BONUS, SHOP_ENTRY_CHARGE, travelEnergyCost, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, touristCompanionCount, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, stressForecast } from '@/lib/game-forecast';
 import { activeConnection, copyConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
@@ -89,17 +89,26 @@ function CardEffect({ effect, locale }: { effect: PassengerCardEffect; locale: G
   return <span className={`card-effect effect-${effect.tone}`}><Icon aria-hidden="true" />{translateGameText(effect.text,locale)}</span>;
 }
 
-function RelationRow({ relation, locale }: { relation: PassengerCardRelation; locale: GameLocale }) {
-  return <span className={`relation-row ${relation.effects.length?'':'relation-target-only'}`}><b>{relation.targetLabel?translateGameText(relation.targetLabel,locale):relation.targets?.map((kind,index)=><span key={kind}>{index>0&&' / '}{translateGameText(PASSENGERS[kind].name,locale)}</span>)}</b>{relation.effects.length>0&&<span className="relation-effects">{relation.effects.map((item,index)=><CardEffect effect={item} locale={locale} key={`${item.tone}-${item.text}-${index}`}/>)}</span>}</span>;
+// Full rules stay in the detail sheet; offers are a simultaneous comparison surface.
+function CandidateRelations({ rows, label, tone, locale }: { rows: PassengerCardRelation[]; label: string; tone: string; locale: GameLocale }) {
+  const names = [...new Set(rows.flatMap(row => row.targetLabel ? [translateGameText(row.targetLabel, locale)] : (row.targets ?? []).map(kind => translateGameText(PASSENGERS[kind].name, locale))))];
+  const detail = rows.map(row => `${row.targetLabel ? translateGameText(row.targetLabel, locale) : row.targets?.map(kind => translateGameText(PASSENGERS[kind].name, locale)).join(' / ')}: ${row.effects.map(effect => translateGameText(effect.text, locale)).join('; ')}`).join('\n');
+  const simple = rows.length === 1 && rows[0].effects.length === 1 && names.length <= 2 ? rows[0].effects[0] : null;
+  return <span className={`candidate-relation relation-${tone}`} title={detail}>
+    <b>{label}</b><span>{names.slice(0, 2).join(' / ') || '—'}{names.length > 2 && <em>{locale === 'zh' ? ` 等${names.length}种` : ` +${names.length - 2}`}</em>}{simple && <span className="candidate-link-effect"> · {translateGameText(simple.text, locale)}</span>}</span>
+  </span>;
 }
 
-// One card face at every breakpoint: no separate mobile rulebook to drift.
 function PassengerCardFace({ rider, run, action, locale }: { rider: Rider; run: RunState; action?: string; locale: GameLocale }) {
   const brief=passengerBrief(rider,run.floor,run.cabin,cooperationBonus(run),cooperationRelief(run),eventPressureMultiplier(run),run.stress);
   const sections=passengerCardSections(rider,run,cooperationBonus(run),cooperationRelief(run));
   const grade=passengerCardGrade(rider.kind);
   const agitationText=`+${brief.agitation}/层`;
-  return localizeTree(<span className="unified-passenger-summary">
+  const work = ['mechanic', 'inspector', 'bomb', 'mimic'].includes(rider.kind) ? sections.self[0] : rider.kind === 'child' ? sections.self[1] : undefined;
+  const ability = rider.kind === 'lover'
+    ? (locale === 'zh' ? `每位恋人邻座：基价+100%；未配对时，全车${LOVER_CALL_CHANCE * 100}%呼唤1位` : `Per Lover neighbor: +100% base fare; ${LOVER_CALL_CHANCE * 100}% cabin call for 1 if unpaired`)
+    : translateGameText(PASSENGERS[rider.kind].short, locale);
+  return localizeTree(<span className="unified-passenger-summary candidate-summary">
     <span className="card-self">
       <span className="card-head"><Portrait kind={rider.kind}/><span><strong>{PASSENGERS[rider.kind].name}</strong><span className="card-meta"><span className={`card-category category-${passengerCategory(rider.kind)}`}>{PASSENGER_CATEGORY_LABELS[passengerCategory(rider.kind)]}</span><span className="card-trip">还剩 {brief.distance} 站</span><span className={`card-grade grade-${grade}`} title="卡牌稀有度">{CARD_GRADE_LABELS[grade]}</span>{rider.kind==='tourist'&&<span className="tourist-stamp">旅伴加成</span>}{rider.volatile&&<span className="high-risk-tag"><Flame aria-hidden="true" />高危 +{HIGH_RISK_BONUS}</span>}</span></span></span>
       <span className="card-values">
@@ -107,12 +116,14 @@ function PassengerCardFace({ rider, run, action, locale }: { rider: Rider; run: 
         <span className="card-energy" aria-label={`每层耗电 ${brief.energy}`} title="每层耗电"><BatteryCharging aria-hidden="true" />{brief.energy}/层</span>
         {brief.agitation>0&&<span className="card-agitation" aria-label={`每层自身躁动 ${brief.agitation}`} title="每层自身躁动"><Flame aria-hidden="true" />{agitationText}</span>}
       </span>
-      {sections.self.length>0&&<span className="card-self-effects">{sections.self.map((item,index)=><CardEffect effect={item} locale={locale} key={`${item.tone}-${item.text}-${index}`}/>)}</span>}
+      <span className="candidate-ability">{ability}</span>
+      {work && <span className="candidate-work"><CardEffect effect={work} locale={locale}/></span>}
     </span>
-    <span className="card-relations relation-green"><span className="relation-heading"><span className="relation-title">绿色邻座</span><span className="relation-bonus">{sections.greenBonus.map((item,index)=><CardEffect effect={item} locale={locale} key={`${item.tone}-${item.text}-${index}`}/>)}</span></span>{sections.green.map((relation,index)=><RelationRow relation={relation} locale={locale} key={`green-${index}`}/>)}</span>
-    <span className="card-relations relation-red"><span className="relation-title">红色邻座</span>{sections.red.length?sections.red.map((relation,index)=><RelationRow relation={relation} locale={locale} key={`red-${index}`}/>):<span className="relation-empty">—</span>}</span>
-    {sections.risk.length>0&&<span className="card-relations relation-risk"><span className="relation-title">危险协作</span>{sections.risk.map((relation,index)=><RelationRow relation={relation} locale={locale} key={index}/>)}</span>}
-    {action&&<span className="card-action">{action}</span>}
+    <span className="candidate-links">
+      <CandidateRelations rows={sections.green} label={locale === 'zh' ? '绿线' : 'Green'} tone="green" locale={locale}/>
+      <CandidateRelations rows={sections.red} label={locale === 'zh' ? '红线' : 'Red'} tone="red" locale={locale}/>
+    </span>
+    <span className="card-action">{action || (sections.risk.length ? (locale === 'zh' ? '坏人链接：暂存收益，同时增加躁动' : 'Risk links: bank coins, add agitation') : (locale === 'zh' ? '点击或拖入空位 · 关系效果见完整规则' : 'Click or drag to board · link effects in Details'))}</span>
   </span>, locale);
 }
 
@@ -457,7 +468,7 @@ export default function ElevatorGame() {
       <aside className="arrival-panel">
         <div className={`arrival-heading ${loverResponse || firstPairLesson ? 'lover-response' : ''}`}><div><span>{loverResponse ? 'LOVER SIGNAL · RESPONSE' : firstPairLesson ? 'FIRST LINK · GUIDED SHIFT' : doors === 'open' ? 'DOORS OPEN' : 'IN TRANSIT'}</span><h2>{loverResponse ? '有人回应了呼唤' : firstPairLesson ? firstPairActive ? '绿色协作已生效' : '试着连出一条绿线' : '谁要上楼？'}</h2></div><div className="arrival-count">{offers.length} 位</div></div>
         <p className="arrival-explainer"><span>每次开门，都是新机会</span><span className="category-legend"><i className="category-good">好人</i><i className="category-bad">坏人</i><i className="category-special">特殊</i></span></p>
-        <div className="candidate-panel"><nav className="compact-candidate-tabs" aria-label="切换候客卡片">{offers.map((rider,index)=><button key={rider.id} onClick={()=>document.querySelectorAll('.passenger-item')[index]?.scrollIntoView({block:'nearest',inline:'start',behavior:'smooth'})}>{PASSENGERS[rider.kind].name}<span>查看第 {index+1} 位</span></button>)}</nav><div className={`passenger-list ${!intro && !fastReveal && run.status === 'playing' ? 'offer-revealing' : ''}`} key={run.floor} role="list" aria-label="本层候客乘客">
+        <div className="candidate-panel"><div className={`passenger-list ${!intro && !fastReveal && run.status === 'playing' ? 'offer-revealing' : ''}`} key={run.floor} role="list" aria-label="本层候客乘客">
           {offers.map((offer, offerIndex) => {
             const spec = PASSENGERS[offer.kind];
             const currentRider=run.cabin.find((rider)=>rider?.id===offer.id);

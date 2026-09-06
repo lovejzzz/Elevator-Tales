@@ -1,6 +1,18 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.32**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.33**. Publication status is tracked separately from the source version.
+
+## v8.33 — 2026-09-05 — Three offers at a glance / 三位候客，同时看清
+
+- 桌面取消卡内和候客列表滚动、重复跳转导航。高窗口右侧三张等高卡，短桌面/平板横排三卡；正文14px。主卡保留关键参数、能力摘要、工作状态和关系对象；简单关系保留效果，复杂关系通过完整规则查看。已上车候客仍使用当前行程；类别颜色、稀有度材质不变。
+- Desktop offers no longer scroll internally or as a list. Tall windows stack three equal cards on the right; short desktops/tablets show three columns. 14px ability/link text, current boarded state, full Details, category colors and rarity materials remain. Complex relationships are explicit summaries, not clipped rules.
+- 隔离强制静音浏览器的56个候客夹具：19人物，中文/英文，1728×900、1440×900、1280×720、1024×768；核对三卡文字边界、页面无滚动、规则入口。手机保留原横向浏览，不宣称手机整页无滚动。
+- 56 forced-muted UI fixtures cover 19 roles in Chinese/English at four desktop/tablet sizes. Check all three card/text bounds, no page scrolling and Details reachability. Phones retain existing browsing. These are UI fixtures, not games.
+- 恋人召唤现在成功时恰好补1位，另两位为能互动的非恋人。全车25%判定、普通未触发候客、新手首包、基价3、每位恋人邻座+100%基价均不变；商店与结算不变。
+- Successful calls now supply exactly one Lover and two interacting non-Lovers. Keep the cabin-wide 25% roll, normal no-call offers, tutorial packet, base fare3 and +100% base per Lover neighbor. Shop and settlement unchanged.
+- 修改前后各240000候客包（3楼层×4车厢×20000）：成功召唤恰好1恋人且其余两位能互动，1位/2位未配对同种子结果一致，无人/已配对不召唤。第5层未配对时2+恋人包41.36%→15.945%，恋人卡占比34.58%→24.24%；无人/已配对样本不变。
+- Before/after240000 packets each: calls always yield one Lover plus an interacting pair; one/two unpaired give identical seeded results. No unpaired means no call. Floor5 unpaired: 2+ Lover packets41.36%→15.945%; Lover card share34.58%→24.24%. No-Lover/paired samples unchanged.
+- Watch / 后续：复杂关系摘要会不会要求玩家过于频繁打开规则；观察恋人补位的吸引力。普通候客仍可出现多位恋人，候客包测试不代表整局强弱或胜率。
 
 ## v8.32 — 2026-09-05 — Manage a state
 

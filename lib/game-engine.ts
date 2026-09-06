@@ -188,9 +188,9 @@ export function shuffle<T>(items: T[], rng: () => number = Math.random): T[] {
 }
 
 const INTRINSIC_RISK: PassengerKind[] = ['thief','drunk','child','celebrity','inspector','mystery','shifter'];
-function weightedKind(floor: number, rng: () => number, forcedRisk = false): PassengerKind {
+function weightedKind(floor: number, rng: () => number, forcedRisk = false, excludeLover = false): PassengerKind {
   const unlocked = unlockedAt(floor);
-  const pool = forcedRisk ? unlocked.filter(kind => INTRINSIC_RISK.includes(kind)) : unlocked;
+  const pool = unlocked.filter(kind => (!forcedRisk || INTRINSIC_RISK.includes(kind)) && (!excludeLover || kind !== 'lover'));
   const total = pool.reduce((sum, kind) => sum + PASSENGERS[kind].rarity, 0);
   let roll = rng() * total;
   for (const kind of pool) { roll -= PASSENGERS[kind].rarity; if (roll <= 0) return kind; }
@@ -202,11 +202,14 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
   const available = unlockedAt(floor);
   const waiting = cabin.some((rider, slot) => rider?.kind === 'lover' && !hasNeighbour(cabin, slot, ['lover']));
   const called = !tutorial && waiting && rng() < loverCallChance;
-  const anchor = called ? 'lover' : weightedKind(floor, rng);
-  const tension = floor >= 21 && rng() < .3 ? BONDS[anchor].avoids.filter(kind => available.includes(kind)) : [];
-  const partners = tension.length ? tension : OFFER_PARTNERS[anchor].filter(kind => available.includes(kind));
+  // A call fills one slot, not the anchor's whole encounter packet. The other
+  // two slots still introduce an interacting pair, without another Lover.
+  const anchor = weightedKind(floor, rng, false, called);
+  const eligible = (kind: PassengerKind) => available.includes(kind) && (!called || kind !== 'lover');
+  const tension = floor >= 21 && rng() < .3 ? BONDS[anchor].avoids.filter(eligible) : [];
+  const partners = tension.length ? tension : OFFER_PARTNERS[anchor].filter(eligible);
   const partner = partners[rand(0, partners.length - 1, rng)] ?? 'tourist';
-  const kinds: PassengerKind[] = guided ? ['lover', 'lover', 'courier'] : [anchor, partner, weightedKind(floor, rng)];
+  const kinds: PassengerKind[] = guided ? ['lover', 'lover', 'courier'] : [anchor, partner, called ? 'lover' : weightedKind(floor, rng)];
   // At least one non-high-risk card survives every packet, even after 60F.
   // Its role may still carry intrinsic risk. No player-resource-based rescue.
   const calmIndex = guided ? -1 : rand(0, 2, rng);
@@ -223,7 +226,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
       destination: floor + expressTrip(baseTrip, upgrades.express), patience: 0, traits, volatile,
       copySeed: kind === 'mimic' ? rand(0, 2147483647, rng) : undefined,
       boardedAt: floor, fareBonus: upgrades.concierge * ECONOMY_RULES.conciergeTip, stash: 0,
-      fuse: kind === 'bomb' ? rand(3, 6, rng) : undefined, calledByLover: called && index === 0,
+      fuse: kind === 'bomb' ? rand(3, 6, rng) : undefined, calledByLover: called && index === 2,
     };
   });
   // Variable riders bring one matching visible relation in their own packet.
