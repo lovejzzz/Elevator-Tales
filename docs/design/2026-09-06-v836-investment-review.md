@@ -18,6 +18,14 @@ Verification for this wording checkpoint: full npm verify, Player Lab49, TypeScr
 
 ## Archived earlier checkpoint
 
+### Invested continuation coverage
+
+Added optional explicit initial-world fixtures to the trusted Lab runtime and exact replay, without changing ordinary runs or policy inputs.50 Lab regressions, TypeScript and full game verify pass; four old normal trajectories retain every step hash. No live game parameters changed.
+
+Six loadout/start-cabin combinations×two seeds plus four cap comparisons:16 conditional61→120 probes, not16 full games. Baseline observed battery/meter/reinforced/relay with controlled Ghost/Exorcist start reaches120 in both seeds,216/156coins from60 starting coins;48/44 actual Relay power. Earnings setup also reaches120 once without Relay. Energy at shops remains nearly empty while income sustains purchases. This matches the qualitative real-browser counterexample without copying hidden RNG.
+
+Provider cap remains inconclusive as a remedy: observed neutral94→120 and99→99; controlled120→120 and120→91. Both arms2/4 censors. Buffer set dies79–97 in these limited probes; no universal weakness claim. One apparent rich-player missed dismissal was checked: all dismissal allowances already spent at78, so the action was genuinely unavailable. See research workspace `player-lab/V836-CONTINUATION-STUDY.md` for prospective protocol, all outcomes and next comparison.344 earlier synthetic full-run executions plus16 conditional fixtures are separate counts.
+
 ### Subsequent savings diagnostic (no gameplay adoption)
 
 `scripts/player-lab/audit-savings.mts` enumerated8192 static placements/Steady states. Ghost-provider cap changes340; Steady's apparent zero-energy occupancy benefit occurs in1254 states but actually saves power in849. Do not infer causal saving from occupancy eligibility. Scenario equality assertion verifies the cap is the only override.

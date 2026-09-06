@@ -8,7 +8,7 @@ for(const file of process.argv.slice(2)){
  const saved=JSON.parse(readFileSync(file,'utf8'));
  configureScenario(saved.scenario.name);
  const record=saved.record;
- const session=new Session(record.seed,record.tutorial);
+ const session=new Session(record.seed,record.tutorial,record.initialWorld);
  const exposed:number[]=[],marginals:number[]=[];
  for(const item of record.transcript){
   if(item.action.type==='depart'){

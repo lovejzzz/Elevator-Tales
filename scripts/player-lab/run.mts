@@ -1,14 +1,15 @@
 import {performance} from 'node:perf_hooks';
 import {S} from './game.mts';
-import {Session,previewWorld,features} from './runtime.mts';
+import {Session,previewWorld,features,type World} from './runtime.mts';
 import {Player} from './policies.mts';
 import {serviceFor} from './search.mts';
 import {summarize,type Turn,type ShopVisit} from './analytics.mts';
 import type {PolicyName,ShopStyle} from './types.mts';
 import {investmentSample} from './investment-study.mts';
 
-export function runOne(policy:PolicyName,seed:number,horizon:number,tutorial=false,shopStyle:ShopStyle='native'){
- const session=new Session(seed,tutorial),player=new Player(policy,shopStyle),turns:Turn[]=[],shops:ShopVisit[]=[];
+export function runOne(policy:PolicyName,seed:number,horizon:number,tutorial=false,shopStyle:ShopStyle='native',fixture?:World){
+ const session=new Session(seed,tutorial,fixture),player=new Player(policy,shopStyle),turns:Turn[]=[],shops:ShopVisit[]=[];
+ const openingCoins=session.observation().coins;
  const start=performance.now();let guard=0;
  while(session.observation().phase!=='lost'&&session.observation().floor<horizon){
   if(guard++>horizon*3)throw Error('Run did not progress');
@@ -44,6 +45,6 @@ export function runOne(policy:PolicyName,seed:number,horizon:number,tutorial=fal
   player.feedback(departure,after,investmentSample(w,session.world()));
  }
  const summary=summarize(turns,shops,session.observation());
- if(summary.income-summary.spend!==summary.final.coins)throw Error('Ledger does not reconcile');
+ if(openingCoins+summary.income-summary.spend!==summary.final.coins)throw Error('Ledger does not reconcile');
  return {policy,seed,horizon,tutorial,wallMs:performance.now()-start,summary,turns,shops,replay:session.replayRecord()};
 }

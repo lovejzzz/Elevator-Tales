@@ -16,6 +16,16 @@ import {investmentSample} from './investment-study.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('continuation fixtures clone their initial world, preserve opening cash and replay every step',()=>{
+  const w=fixtures.sealed();Object.assign(w.state,{floor:61,energy:60,coins:60,stress:0,status:'playing',cabin:Array(6).fill(null)});w.offers=[];
+  w.state.cabin[0]=fixtures.rider('commuter','fixture-rider',61,3);
+  const session=new Session(193843117,false,w),start=hash(session.world());w.state.coins=999;
+  assert.equal(session.observation().coins,60);session.act({type:'depart'});
+  const record=session.replayRecord();assert.equal(hash(record.initialWorld),start);assert.equal(hash(replay(record).world()),hash(session.world()));
+  const normal=new Session(19).replayRecord();assert(!Object.hasOwn(normal,'initialWorld'));
+  const result=runOne('minimalist',193843117,62,false,'committed',record.initialWorld);
+  assert.equal(60+result.summary.income-result.summary.spend,result.summary.final.coins);
+ });
  test('minimum local trip experiment retains RNG, roles and risks and restores the default',()=>{
   let shortened=0;
   for(const floor of [30,31,40,51,61])for(let seed=1;seed<=100;seed++){

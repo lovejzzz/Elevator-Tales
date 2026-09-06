@@ -133,9 +133,12 @@ export function previewWorld(base:World,actions:Action[],names:Names):Preview|nu
 export class Session {
  #world:World; #seed:number; #tutorial:boolean; names=new Names();
  transcript:Array<{action:Action;before:string;after:string}> = [];
- constructor(seed:number,tutorial=false){
+ #initialWorld:World|undefined;
+ constructor(seed:number,tutorial=false,fixture?:World){
   assert(Number.isSafeInteger(seed));this.#seed=seed;this.#tutorial=tutorial;
-  const state=E.initialRun();this.#world={state,offers:E.makeOffers(1,state.upgrades,tutorial,this.rng('offers',1),state.cabin)};this.names.register(this.#world);
+  if(fixture){assert(!tutorial,'Continuation fixture cannot be a tutorial');this.#initialWorld=clone(fixture);this.#world=clone(fixture);}
+  else {const state=E.initialRun();this.#world={state,offers:E.makeOffers(1,state.upgrades,tutorial,this.rng('offers',1),state.cabin)};}
+  this.names.register(this.#world);
  }
  private rng(channel:string,floor:number){return rngFor(seedFor(`${this.#seed}/${channel}/${floor}`));}
  // Trusted runtime access only. Policies import types, never this module.
@@ -154,10 +157,10 @@ export class Session {
   if(!w)throw Error('Illegal action '+JSON.stringify(a));
   this.#world=w;this.names.register(w);this.transcript.push({action:clone(a),before,after:hash(w)});return this.observation();
  }
- replayRecord(){return {schema:2,version:GAME_VERSION,scenario:currentScenario,seed:this.#seed,tutorial:this.#tutorial,transcript:this.transcript,finalHash:hash(this.#world)};}
+ replayRecord(){return {schema:2,version:GAME_VERSION,scenario:currentScenario,seed:this.#seed,tutorial:this.#tutorial,...(this.#initialWorld?{initialWorld:clone(this.#initialWorld)}:{}),transcript:this.transcript,finalHash:hash(this.#world)};}
 }
 export function replay(record:ReturnType<Session['replayRecord']>){
- assert.equal(record.version,GAME_VERSION);assert.equal(record.scenario??'baseline',currentScenario);const s=new Session(record.seed,record.tutorial);
+ assert.equal(record.version,GAME_VERSION);assert.equal(record.scenario??'baseline',currentScenario);const s=new Session(record.seed,record.tutorial,record.initialWorld);
  for(const event of record.transcript){assert.equal(hash(s.world()),event.before);s.act(event.action);assert.equal(hash(s.world()),event.after);}
  assert.equal(hash(s.world()),record.finalHash);return s;
 }
