@@ -18,6 +18,12 @@ Verification for this wording checkpoint: full npm verify, Player Lab49, TypeScr
 
 ## Archived earlier checkpoint
 
+### Cooperation payoff/price diagnostic: not adopted
+
+Neutral `ECONOMY_RULES.cooperationIncrement` defaults2; process-only `cooperation-access` sets1 and price20 instead of30. Base cooperation1 and neighbor stacking remain.24 conditional executions (12 repeated controls+12 treatment), exact replay. Four buffer/no-battery complete transcripts identical across arms. In eight affected pairs:206 common ascents, refusals63/204→78/202, boardings216→208, longest-streak sum18→25. One observed-controlled treatment still censored120 with270coins vs216 baseline. Fewer censors does not compensate for degraded intake.
+
+Reject adoption under the prospective conditional gate; price reduction's early acquisition effect is not measured by prepaid fixtures.52 Lab checks, TypeScript, full verify/build pass. Live cooperation remains30coins/+2. Research workspace `player-lab/V836-COOPERATION-STUDY.md` contains parameters/results.344 earlier whole-run executions plus64 conditional executions are separate counts. Next audit policy acquisition against successful player evidence rather than continue scalar nerfs; conditional tails do not measure natural frequency of strong builds.
+
 ### Rejected fixed late-motor curve
 
 Process-only switch `MOTOR_RULES.lateSteps`, default false:71–90 motor7,91+ motor8 capped, other rules/prices intact.24 conditional runs (12 repeated baseline,12 treatment), exact replay. Baseline reproduces prior outcomes. Treatment ends79–108 with no censor, versus3 baseline120 censors;11/12 common-exposure pairs have MORE space-available refusals. Strong observed-controlled cases go7→15 and3→9 refusals, longest2→4 and1→5. This is a counterexample to equating shorter survival with better balance. Reject adoption: live motor remains6, no full-run or holdout spent on this failing development arm.

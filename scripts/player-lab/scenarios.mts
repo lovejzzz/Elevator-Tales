@@ -16,6 +16,7 @@ const BASE_JOURNEY={...B.JOURNEY_RULES};
 const BASE_GHOST={...B.GHOST_RULES};
 const BASE_MOTOR={...B.MOTOR_RULES};
 const BASE_UPGRADE_PRICES={...E.UPGRADE_BASE_PRICES};
+const BASE_COOP_DESCRIPTION=D.UPGRADES.battery.description;
 const V835_PRICES={battery:30,capacity:35,calm:35,concierge:40,reinforced:45,express:45,tipjar:30,relay:30,crowd:40,meter:25};
 const BASE_OFFER_PARTNERS=structuredClone(U.OFFER_PARTNERS);
 const FARE_VARIANTS:Record<string,typeof BASE_FARE_RULES>={
@@ -46,6 +47,7 @@ export const SCENARIOS={
  'v836-local-minimum':{},
  'v836-minimum-original-prices':{},
  'v836-late-motor':{},
+ 'cooperation-access':{},
  'v836-support-trips':{},
  'encounter-discovery':{},
  'encounter-legacy':{},
@@ -108,6 +110,11 @@ export function configureScenario(name:string){
  B.AGITATION_RULES.arrivalReliefCap=name==='income-b-one-relief'?1:BASE_RELIEF;
  Object.assign(B.MUSIC_RULES,BASE_MUSIC,name==='music-two-step'?{step:2}:name==='music-one-step'?{step:1}:{});
  Object.assign(B.ECONOMY_RULES,BASE_ECONOMY,ECONOMY_VARIANTS[name]??{});
+ D.UPGRADES.battery.description=BASE_COOP_DESCRIPTION;
+ if(name==='cooperation-access'){
+  B.ECONOMY_RULES.cooperationIncrement=1;E.UPGRADE_BASE_PRICES.battery=20;
+  D.UPGRADES.battery.description='每条实际默契的本人到站奖励额外 +1 金币，多位默契对象分别叠加。本局限装一次。';
+ }
  Object.assign(B.FARE_RULES,BASE_FARE_RULES,FARE_VARIANTS[name]??{});
  Object.assign(B.JOURNEY_RULES,BASE_JOURNEY,name==='journey-one'?{extraFrom31:1,extraFrom51:1}:name==='journey-two'?{extraFrom31:1,extraFrom51:2}:{});
  if(name.startsWith('v836-')||name==='v835-baseline')B.JOURNEY_RULES.localFrom31=name==='v836-local'||name==='v836-local-investment'||name==='v836-local-minimum'||name==='v836-minimum-original-prices'||name==='v836-late-motor';

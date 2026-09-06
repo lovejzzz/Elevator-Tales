@@ -117,7 +117,7 @@ export function musicAgitation(state: RunState) {
   return musicBeatForAgitation(state.stress);
 }
 export const serviceSaving = (state: RunState) => (state.serviceTurns ?? 0) > 0 ? Math.min(REPAIR_MOTOR_SAVING, motorCost(state.floor+1)) : 0;
-export const cooperationBonus = (state: RunState) => 1 + state.upgrades.battery * 2;
+export const cooperationBonus = (state: RunState) => 1 + state.upgrades.battery * ECONOMY_RULES.cooperationIncrement;
 // One cabin-wide reward per travelled floor. Further contract levels improve
 // coins, not soothing; boarding, reseating and dismissing cannot trigger it.
 export const COOPERATION_RELIEF = 0;
@@ -480,7 +480,7 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  const count=state.upgrades[key];
  if(!count)return '未安装';
  switch(key){
-  case 'battery':return `每条协作连接的到站加成 +${cooperationBonus(state)} 金币（基础1 + 升级${count*2}）。`;
+  case 'battery':return `每条协作连接的到站加成 +${cooperationBonus(state)} 金币（基础1 + 升级${count*ECONOMY_RULES.cooperationIncrement}）。`;
   case 'capacity':return `电量上限${state.energyCap}；只扩容，不赠送电量，本局唯一。`;
   case 'calm':return `躁动上限 ${state.stressCap}；安装时立即舒缓2点，本局唯一`;
   case 'concierge':return `此后新乘客到站小费 +${count*ECONOMY_RULES.conciergeTip}；不参与车费倍率`;

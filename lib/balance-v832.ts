@@ -9,7 +9,7 @@ export const AGITATION_RULES = { arrivalReliefCap: 2 };
 export const MUSIC_RULES = { step: 2 };
 // Defaults unchanged after R01. Isolated Lab scenarios may override these;
 // never use player resources or floor to change their values mid-run.
-export const ECONOMY_RULES = { thiefTravel: 3, celebrityTravel: 2, conciergeTip: 2, conciergeCondition: 'any' as 'any'|'medium', tipReward: 4 };
+export const ECONOMY_RULES = { thiefTravel: 3, celebrityTravel: 2, conciergeTip: 2, conciergeCondition: 'any' as 'any'|'medium', tipReward: 4, cooperationIncrement: 2 };
 export const FARE_RULES = { baseOnlyMultipliers: true, coachNeighbour: 3 };
 export const GHOST_RULES = { oneSavingPerExorcist: false };
 export const JOURNEY_RULES = { extraFrom31: 0, extraFrom51: 0, localFrom31: true, localExtra: 0 };

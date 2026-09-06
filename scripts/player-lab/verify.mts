@@ -16,6 +16,16 @@ import {investmentSample} from './investment-study.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('cooperation access probe changes only marginal upgrade income and its price',()=>{
+  const base=configureScenario('baseline');const s=E.initialRun();
+  try{
+   const probe=configureScenario('cooperation-access');assert.deepEqual({...probe,name:base.name,economy:base.economy,upgradePrices:base.upgradePrices},base);
+   assert.equal(E.cooperationBonus(s),1);assert.equal(E.cooperationBonus({...s,upgrades:{...s.upgrades,battery:1}}),2);
+   assert.equal(E.UPGRADE_BASE_PRICES.battery,20);assert.match(D.UPGRADES.battery.description,/额外 \+1/);
+  }finally{configureScenario('baseline');}
+  assert.equal(E.cooperationBonus({...s,upgrades:{...s.upgrades,battery:1}}),3);assert.equal(E.UPGRADE_BASE_PRICES.battery,30);
+  assert.match(D.UPGRADES.battery.description,/额外 \+2/);
+ });
  test('late motor probe preserves pre71 rules and defaults, with fixed announced cap8',()=>{
   const base=configureScenario('baseline'),costs=Array.from({length:120},(_,n)=>B.motorCost(n+1));
   try{
