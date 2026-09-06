@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {makeOffers,initialRun,UPGRADE_BASE_PRICES,upgradePrice,expressTrip} from '../lib/game-engine';
 import {JOURNEY_RULES} from '../lib/balance-v832';
 import {PASSENGERS} from '../lib/game-data';
-assert.deepEqual(UPGRADE_BASE_PRICES,{battery:30,capacity:30,calm:35,concierge:35,reinforced:40,express:35,tipjar:25,relay:25,crowd:30,meter:20});
+assert.deepEqual(UPGRADE_BASE_PRICES,{battery:30,capacity:35,calm:35,concierge:40,reinforced:45,express:45,tipjar:30,relay:30,crowd:40,meter:25});
 for(const key of Object.keys(UPGRADE_BASE_PRICES) as (keyof typeof UPGRADE_BASE_PRICES)[])for(const floor of [10,30,60,100])assert.equal(upgradePrice(key,floor,4),UPGRADE_BASE_PRICES[key]);
 let cases=0,changed=0;
 const enabled=JOURNEY_RULES.localFrom31;
@@ -18,7 +18,7 @@ try{
    assert.deepEqual({...got,destination:r.destination},r);
    if(floor<31||Number(r.id.split('-')[1])!==floor%3)assert.equal(got.destination,r.destination);
    else{
-    const cap=expressTrip(PASSENGERS[r.kind].trip[0]+1,express);
+    const cap=expressTrip(PASSENGERS[r.kind].trip[0],express);
     assert.ok(got.destination-floor<=cap);
     assert.ok(got.destination<=r.destination);
     if(got.destination!==r.destination)changed++;

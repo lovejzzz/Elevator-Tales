@@ -28,7 +28,7 @@ export function verify(){
     assert.deepEqual({...b[i],destination:r.destination},r);
    });
   }
-  assert(shortened>0);configureScenario('baseline');assert.equal(B.JOURNEY_RULES.localExtra,1);
+  assert(shortened>0);configureScenario('baseline');assert.equal(B.JOURNEY_RULES.localExtra,0);
  });
  test('operator preserves a visible post-shop dismissal option instead of buying surplus power',()=>{
   const w=fixtures.sealed();Object.assign(w.state,{floor:50,status:'upgrade',energy:4,coins:108,stress:6,cabin:Array(6).fill(null),shop:[]});w.offers=[];

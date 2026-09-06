@@ -2,7 +2,15 @@
 
 Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.36**. Publication status is tracked separately from the source version.
 
-## v8.36 — 2026-09-06 — Room for investment / 为投资留一点空间
+## v8.36 — 2026-09-06 — One local passenger / 多一位短途候客
+
+- Revised local candidate, awaiting full muted playtest / 修订本地候选，等待完整静音实玩。31层起每批轮换一位候客使用该人物正常最短旅程，随后应用快速升级；另两位照常。角色、风险、随机数消耗不变，无资源救场。
+- Retain public v8.35 prices / 保留公开价格：battery30, capacity35, calm35, concierge40, reinforced45, express45, tipjar30, relay30, crowd40, meter25. Withdraw unpublished discounts, not a public price rise. Motor, fares, agitation, combinations and charge prices unchanged.
+- 336 synthetic executions including repeated controls, with step-hash replay; not336 independent seeds. Latest48 fresh executions:8 per planner/operator/minimalist per arm. Upgrades1.75→1.875 and2→2.25; common30–59 refusals52/136→47/136 and64/146→58/146, mean longest3→2.25 and2.875→2.625. Refusal is behavior, not proven impossibility.
+- Latest active-policy above60:4/16→3/16, candidate maximum65; minimalist8 unchanged. Medians57.5→44 and50→54. Not universal parity or human win probability. 拒绝最短旅程叠加降价：此前16次主动策略4次超过100层。早期100层静音截尾反例保留，不混为当前版本完整实玩。
+- Watch meaningful choices, investment and long-trip roles / 继续检查有意义的选择、投资与长途人物价值。
+
+### Earlier unpublished v8.36 candidate — superseded / 已替代的未公开候选
 
 - **Local research checkpoint; publication held / 本地研究候选，暂缓发布。** 静音浏览器连续1→100层仍存活：9/70电、378币、4项升级，98层首次使用应急电池；125次接客、18种人物，31–59层有空位却全拒3/26层。约29.5分钟含工具操作，不是人类时长，不是死亡或完整结束的一局。需要更强策略覆盖长期循环后再评估。
 - One continuous muted browser sample censored alive at100,9/70 power,378 coins,4 upgrades, first reserve at98;125 boardings across18 roles and3/26 late space-available floors skipped. About29.5 minutes including automation overhead, not human timing. No claimed death or completed game. Hold publication and strengthen long-run policy coverage.
