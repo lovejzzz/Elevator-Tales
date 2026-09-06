@@ -246,7 +246,7 @@ export function verify(){
   const before=scenarioRecord();
   try{
    for(const floor of [1,30,31,50,51,100]){
-    configureScenario('baseline');
+    configureScenario('v835-baseline');
     const ordinary=E.makeOffers(floor,E.EMPTY_UPGRADES,false,rngFor(942+floor));
     configureScenario('journey-two');
     const changed=E.makeOffers(floor,E.EMPTY_UPGRADES,false,rngFor(942+floor));

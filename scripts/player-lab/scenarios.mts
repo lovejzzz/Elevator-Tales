@@ -16,6 +16,7 @@ const BASE_JOURNEY={...B.JOURNEY_RULES};
 const BASE_GHOST={...B.GHOST_RULES};
 const BASE_MOTOR={...B.MOTOR_RULES};
 const BASE_UPGRADE_PRICES={...E.UPGRADE_BASE_PRICES};
+const V835_PRICES={battery:30,capacity:35,calm:35,concierge:40,reinforced:45,express:45,tipjar:30,relay:30,crowd:40,meter:25};
 const BASE_OFFER_PARTNERS=structuredClone(U.OFFER_PARTNERS);
 const FARE_VARIANTS:Record<string,typeof BASE_FARE_RULES>={
  'legacy-fare':{baseOnlyMultipliers:false,coachNeighbour:3},
@@ -36,6 +37,7 @@ const ECONOMY_VARIANTS: Record<string,Partial<typeof BASE_ECONOMY>>={
 };
 export const SCENARIOS={
  baseline:{},
+ 'v835-baseline':{},
  'v836-motor-room':{},
  'v836-investment':{},
  'v836-investment-light':{},
@@ -90,7 +92,7 @@ export function configureScenario(name:string){
  for(const kind of Object.keys(BASE_TRIPS) as PassengerKind[])D.PASSENGERS[kind].trip=[...BASE_TRIPS[kind]];
  if(name==='commuter-short'||name==='commuter-short-bomb-fourteen')D.PASSENGERS.commuter.trip=[2,3];
  if(name==='v836-support-trips')for(const kind of ['mechanic','nurse','exorcist','inspector'] as const)D.PASSENGERS[kind].trip[1]=5;
- Object.assign(E.UPGRADE_BASE_PRICES,BASE_UPGRADE_PRICES,name==='v836-investment'?{reinforced:30,express:30,concierge:30,tipjar:20,relay:25,crowd:25,meter:20,capacity:30}:{});
+ Object.assign(E.UPGRADE_BASE_PRICES,BASE_UPGRADE_PRICES,name.startsWith('v836-')||name==='v835-baseline'?V835_PRICES:{},name==='v836-investment'?{reinforced:30,express:30,concierge:30,tipjar:20,relay:25,crowd:25,meter:20,capacity:30}:{});
  if(name==='v836-investment-light'||name==='v836-local-investment')Object.assign(E.UPGRADE_BASE_PRICES,{reinforced:40,express:35,concierge:35,tipjar:25,relay:25,crowd:30,meter:20,capacity:30});
  for(const kind of Object.keys(BASE_AVOIDS) as PassengerKind[])R.BONDS[kind].avoids=[...BASE_AVOIDS[kind]];
  if(name==='inspector-quiet-relations')for(const kind of QUIET_INSPECTOR_KINDS)R.BONDS[kind].avoids=R.BONDS[kind].avoids.filter(target=>target!=='inspector');
@@ -105,7 +107,8 @@ export function configureScenario(name:string){
  Object.assign(B.ECONOMY_RULES,BASE_ECONOMY,ECONOMY_VARIANTS[name]??{});
  Object.assign(B.FARE_RULES,BASE_FARE_RULES,FARE_VARIANTS[name]??{});
  Object.assign(B.JOURNEY_RULES,BASE_JOURNEY,name==='journey-one'?{extraFrom31:1,extraFrom51:1}:name==='journey-two'?{extraFrom31:1,extraFrom51:2}:{});
- if(name==='v836-local'||name==='v836-local-investment')B.JOURNEY_RULES.localFrom31=true;
+ if(name.startsWith('v836-')||name==='v835-baseline')B.JOURNEY_RULES.localFrom31=name==='v836-local'||name==='v836-local-investment';
+ if(name==='journey-one'||name==='journey-two')B.JOURNEY_RULES.localFrom31=false;
  Object.assign(B.GHOST_RULES,BASE_GHOST,name==='ghost-provider-cap'?{oneSavingPerExorcist:true}:{});
  Object.assign(B.MOTOR_RULES,BASE_MOTOR,name==='motor-upper'?{upperZone:true}:name==='motor-legacy'?{upperZone:false}:{});
  if(name==='v836-motor-room')B.MOTOR_RULES.midDiscount=1;

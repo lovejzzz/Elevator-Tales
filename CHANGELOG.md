@@ -1,6 +1,17 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.35**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.36**. Publication status is tracked separately from the source version.
+
+## v8.36 — 2026-09-06 — Room for investment / 为投资留一点空间
+
+- 固定价格：扩容35→30、礼宾40→35、稳压45→40、快速45→35、小费盒30→25、并联30→25、共乘40→30、计价器25→20；默契30、舒缓35不变。每店一项、每局不重复不变。
+- Fixed prices: capacity35→30, concierge40→35, reinforced45→40, express45→35, tipjar30→25, relay30→25, crowd40→30, meter25→20; battery30/calm35 unchanged. Purchase limits remain.
+- 31层起每批轮换一位候客，行程至多该角色正常最短+1层，快速升级随后生效；其余两位照常。不改变人物、风险、随机数消耗，不根据资源救场。运转、人物收益、躁动和组合不变。
+- From31, one rotating offer is capped at its role minimum+1 before Express; other rolls, roles, risks and RNG consumption remain. No resource-adaptive rescue. Motor, fares, agitation and combinations unchanged.
+- 160次合成执行，含8次重复基线，不是160个独立种子或人类游戏。最终新种子每组每策略8局：规划/机会型升级0.75→1、1.25→1.875，平均最长拒客5.125→4.75、4→3.375；少接人8局完全不变。
+- 160 synthetic executions including8 repeated controls. Final fresh-seed8/policy/arm: planner/opportunist upgrades0.75→1 and1.25→1.875; longest refusal streak5.125→4.75 and4→3.375. All minimalist outcomes unchanged.
+- 两种主动策略超过60层1/16→0/16，中位层数规划47.5→46.5、机会39.5→44.5；改善不均匀，开发样本仍有100层截尾。关注真实拒客、投资手感和长途计价器，非平衡认证。
+- Active policies above60:1/16→0/16, median floors47.5→46.5 and39.5→44.5. Uneven gains, with100-floor development censoring; watch real refusals, investment feel and long-trip builds. Not balance certification.
 
 ## v8.35 — 2026-09-06 — Clear decisions, intact combinations / 把决定讲清楚，把组合留下来
 
