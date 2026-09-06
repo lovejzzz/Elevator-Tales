@@ -2,6 +2,11 @@ import type {Preview,Observation,PolicyName,PreviewService,Decision,Action,ShopS
 // No runtime/engine imports: decisions receive public observations and a bounded
 // preview service. These are behavioral hypotheses, not calibrated humans.
 export const POLICIES:PolicyName[]=['novice','merchant','explorer','minimalist','planner','opportunist','investor','operator','allocator','diverse'];
+export function gapOpportunityCount(history:ReadonlyArray<Pick<InvestmentSample,'arrivals'>>,required:number):number {
+ let progress=0,triggers=0;
+ for(const sample of history){if(sample.arrivals){if(progress>=required)triggers++;progress=0;}else progress=Math.min(required,progress+1);}
+ return triggers;
+}
 export function score(p:Preview,mode:PolicyName,seen:Set<string>):number {
  const f=p.features,o=p.observation;
  if(!f.occupied)return -1e8;
@@ -148,6 +153,9 @@ export class Player {
      // New-rider-only abilities lose the observed average travel-time lag.
      const horizon=['concierge','express'].includes(card.key)?Math.max(0,30-averageRide):30;
      let gross=steps?history.reduce((n,x)=>n+(x.gross[card.key]??0),0)/steps*horizon:0;
+     // Public observed delivery gaps, not overflow history or real future offers.
+     // Start each rolling window unarmed: no invented progress before its first sample.
+     if(card.key==='buffer'&&o.bufferGapRule)gross=steps?gapOpportunityCount(history,o.bufferGapRule.turns)/steps*horizon*o.bufferGapRule.energy*o.prices.charge:0;
      // Capacity has no income; value it only when it uniquely lets the current
      // public commitment fit. Other long-term capacity uses remain unmodelled.
      if(card.key==='capacity')gross=prefix+2>energyCap&&prefix+2<=energyCap+card.effect.energyCap?card.price+(prefix+2-energyCap)*o.prices.charge:0;

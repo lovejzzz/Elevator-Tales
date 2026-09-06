@@ -12,9 +12,10 @@ export function planningSeed(o:Observation):number {
   if(!r)return null;
   const {name:_name,rule:_rule,...mechanics}=r;return mechanics;
  };
- const {schema:_schema,version:_version,receipt:_receipt,cabin,offers,shop,...state}=o;
+ const {schema:_schema,version:_version,receipt:_receipt,bufferGapRule,bufferGapTurns,cabin,offers,shop,...state}=o;
  const mechanics={...state,cabin:cabin.map(rider),offers:offers.map(rider),
-  shop:shop.map(({rule:_rule,...card})=>card),reserved:o.reserved?rider(o.reserved):null};
+  shop:shop.map(({rule:_rule,...card})=>card),reserved:o.reserved?rider(o.reserved):null,
+  ...(o.installed.includes('buffer')&&bufferGapRule?{bufferGapRule,bufferGapTurns:bufferGapTurns??0}:{})};
  return seedFor(JSON.stringify(mechanics)+'/planning-v2');
 }
 
@@ -128,7 +129,13 @@ export function jointChargeTargets(w:World){
   commitment:features(w,s.coins).committedEnergy+2,
   reserve:s.energy+Math.floor(Math.max(0,s.coins-optionCash)/E.CHARGE_PRICE)};
 }
-export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,continuation:'greedy'|'operator'|'diverse'='greedy'):import('./types.mts').ShopTrial[] {
+// Diagnostic intake restriction: preserve the real packet/RNG and existing cabin,
+// but remove excluded new offers consistently from every planning generation.
+export function restrictIntake(w:World,excluded:readonly Rider['kind'][]=[]):World {
+ if(!excluded.length)return w;
+ return {...w,offers:w.offers.filter(r=>!excluded.includes(r.kind)||w.state.cabin.some(p=>p?.id===r.id))};
+}
+export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,continuation:'greedy'|'operator'|'diverse'='greedy',excluded:readonly Rider['kind'][]=[]):import('./types.mts').ShopTrial[] {
  if(base.state.status!=='upgrade')throw Error('Joint shopping requires shop state');
  if(!Number.isInteger(samples)||samples<1||samples>16)throw Error('Joint sample budget exceeded');
  if(![10,20].includes(depth))throw Error('Joint horizon budget exceeded');
@@ -152,18 +159,18 @@ export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,
    // when a purchase changes settlement trigger counts. Never use run seed.
    const stream=(channel:string,floor:number)=>rngFor(seedFor(seed+'/joint-v3/'+sample+'/'+channel+'/'+floor));
    let w=beliefWorld({state:left,offers:[]},stream('belief',left.floor)),travelled=0;
-   w=E.nextOfferBatch(w.state,stream('offers',w.state.floor));
+   w=restrictIntake(E.nextOfferBatch(w.state,stream('offers',w.state.floor)),excluded);
    const reactive=continuation==='greedy'?null:new Player(continuation,'committed');
    const persistentNames=new Names();persistentNames.register(w);
    for(let step=0;step<depth&&w.state.status==='playing';step++){
     const ids=reactive?persistentNames:new Names();ids.register(w);
     const beforeObservation=observe(w,ids);
-    const best=reactive?reactive.decide(beforeObservation,serviceFor(w,ids)):
+    const best=reactive?reactive.decide(beforeObservation,serviceFor(w,ids,{excludedIntake:excluded})):
      enumerate(w,ids,'diverse',new Set(),72).plans.sort((a,b)=>score(b,'operator',new Set())-score(a,'operator',new Set()))[0];
     if(!best)break;
     w=applyPlan(w,best.actions,ids)!;
     const next=E.resolveFloor(clone(w.state),stream('settle',w.state.floor));travelled++;
-    w=next.status==='playing'?E.nextOfferBatch(next,stream('offers',next.floor)):{state:next,offers:[]};
+    w=next.status==='playing'?restrictIntake(E.nextOfferBatch(next,stream('offers',next.floor)),excluded):{state:next,offers:[]};
     if(reactive){ids.register(w);reactive.feedback(beforeObservation,observe(w,ids));}
     // At the intermediate shop, pay real mandatory repair and charging.
     // No further ability purchase: isolates the current investment while
@@ -176,7 +183,7 @@ export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,
      const power=Math.min(serviced.energyCap-serviced.energy,Math.floor(serviced.coins/E.CHARGE_PRICE));
      if(power>0)serviced=E.chargeBattery(serviced,power);
      serviced=E.leaveShop(serviced);
-     w=serviced.status==='playing'?E.nextOfferBatch(serviced,stream('offers',serviced.floor)):{state:serviced,offers:[]};
+     w=serviced.status==='playing'?restrictIntake(E.nextOfferBatch(serviced,stream('offers',serviced.floor)),excluded):{state:serviced,offers:[]};
     }
    }
    const s=w.state,freeRelief=s.calmCharge?2:0;
@@ -196,12 +203,13 @@ export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,
  }
  return trials;
 }
-export function serviceFor(base:World,names:Names,options:{boardingHorizon?:'fixed'|'next-shop'}={}):PreviewService {
+export function serviceFor(base:World,names:Names,options:{boardingHorizon?:'fixed'|'next-shop';excludedIntake?:readonly Rider['kind'][]}={}):PreviewService {
+ const excluded=[...(options.excludedIntake??[])];base=restrictIntake(base,excluded);
  // This seed is derived exclusively from redacted, currently visible data.
  const publicSeed=planningSeed(observe(base,names));
  return {
   preview:actions=>previewWorld(base,actions,names),
-  jointShop:(samples=4,depth=10)=>jointShopTrials(base,names,samples,depth),
+  jointShop:(samples=4,depth=10)=>jointShopTrials(base,names,samples,depth,'greedy',excluded),
   candidates:(mode,seen)=>enumerate(base,names,mode,seen),
   imagine(actions,depth,samples,continuation='minimalist'):Rollout {
    const placed=applyPlan(base,actions,names);if(!placed)throw Error('Illegal imagined root plan');
@@ -218,7 +226,7 @@ export function serviceFor(base:World,names:Names,options:{boardingHorizon?:'fix
      w={state,offers:[]};
      if(state.status==='lost'||state.status==='upgrade')break;
      if(t+1<actualDepth){
-      w=E.nextOfferBatch(state,rng);
+      w=restrictIntake(E.nextOfferBatch(state,rng),excluded);
       const localNames=new Names();localNames.register(w);
       const next=enumerate(w,localNames,continuation,new Set(),24).plans.sort((a,b)=>score(b,continuation,new Set())-score(a,continuation,new Set()))[0];
       if(next)w=applyPlan(w,next.actions,localNames)!;

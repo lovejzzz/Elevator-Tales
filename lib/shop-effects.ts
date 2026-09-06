@@ -8,7 +8,13 @@ export const RELAY_ENERGY = 4;
 export const CROWD_MINIMUM = 4;
 export const CROWD_COINS = 3;
 export const METER_START = 5;
-export const SHOP_TUNING={bufferBoost:0,finaleRemaining:1};
+export const SHOP_TUNING={bufferBoost:0,finaleRemaining:1,bufferGap:0,bufferGapEnergy:4};
+export function deliveryGapCharge(state:RunState,arrivals:number) {
+ const gap=SHOP_TUNING.bufferGap;
+ if(!gap||!state.upgrades.buffer)return {progress:0,energy:0};
+ const previous=Math.min(gap,state.bufferGapTurns??0);
+ return arrivals>0?{progress:0,energy:previous>=gap?SHOP_TUNING.bufferGapEnergy:0}:{progress:Math.min(gap,previous+1),energy:0};
+}
 export const naturalChargeBoost=(state:RunState,naturalCharge:number)=>state.upgrades.buffer&&naturalCharge>0?SHOP_TUNING.bufferBoost:0;
 export const finaleIncome=(state:RunState,arrivals:number,remaining:number)=>state.upgrades.finale&&arrivals>=2&&remaining<=SHOP_TUNING.finaleRemaining?6:0;
 /** Process-local experimental switches; production uses these defaults. */

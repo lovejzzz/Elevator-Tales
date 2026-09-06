@@ -3,8 +3,8 @@ import {readFileSync} from 'node:fs';
 import {E,F,B,S,R,D,I,P,GAME_ROOT,type Rider,type RunState} from './game.mts';
 import {configureScenario,scenarioRecord} from './scenarios.mts';
 import {Session,Names,observe,previewWorld,applyPlan,clone,replay,features} from './runtime.mts';
-import {serviceFor,enumerate,planningSeed,shopInvestmentRoom} from './search.mts';
-import {Player,score} from './policies.mts';
+import {serviceFor,enumerate,planningSeed,shopInvestmentRoom,restrictIntake} from './search.mts';
+import {Player,score,gapOpportunityCount} from './policies.mts';
 import {flagBlock} from './analytics.mts';
 import {runOne} from './run.mts';
 import * as fixtures from './fixtures.mts';
@@ -17,6 +17,73 @@ import {guidedOpening} from './opening.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('gap commitment budget credits scheduled arrivals, not unseen riders or later rescue',()=>{
+  const tuning={...S.SHOP_TUNING};
+  try{
+   S.SHOP_TUNING.bufferGap=2;
+   const w=fixtures.sealed();w.state.floor=10;w.state.stress=0;w.state.upgrades.buffer=1;
+   w.state.cabin=[{id:'known',kind:'commuter',boardedAt:10,destination:13,patience:4,fareBonus:0},null,null,null,null,null];w.offers=[];
+   const before=hash(w),withGap=features(w,w.state.coins).committedEnergy;
+   const plain=clone(w);plain.state.upgrades.buffer=0;
+   assert(withGap<features(plain,plain.state.coins).committedEnergy);
+   const late=clone(w);late.state.cabin[0]!.destination=21;
+   const latePlain=clone(late);latePlain.state.upgrades.buffer=0;
+   assert.equal(features(late,0).committedEnergy,features(latePlain,0).committedEnergy,'No reward before next shop');
+   const empty=clone(w);empty.state.cabin.fill(null);
+   const emptyPlain=clone(empty);emptyPlain.state.upgrades.buffer=0;
+   assert.equal(features(empty,0).committedEnergy,features(emptyPlain,0).committedEnergy,'Imaginary baseline rider cannot trigger reward');
+   const last=clone(w);last.state.floor=17;last.state.cabin[0]!.destination=20;
+   const prefix=E.totalEnergyCost(last.state)+E.totalEnergyCost({...last.state,floor:18});
+   assert(features(last,0).committedEnergy>=prefix+1,'Shop arrival reward cannot pay an earlier dead ascent');
+   assert.equal(hash(w),before);
+  }finally{Object.assign(S.SHOP_TUNING,tuning);}
+ });
+ test('unowned experiment metadata does not perturb planning randomness; owned progress does',()=>{
+  const w=fixtures.sealed(),n=new Names();n.register(w);const o=observe(w,n),experimental={...o,bufferGapRule:{turns:2,energy:4},bufferGapTurns:0};
+  assert.equal(planningSeed(o),planningSeed(experimental));
+  const owned={...experimental,installed:[...o.installed,'buffer']};
+  assert.notEqual(planningSeed(owned),planningSeed({...owned,bufferGapTurns:2}));
+  assert.notEqual(planningSeed(owned),planningSeed({...owned,bufferGapRule:{turns:3,energy:4}}));
+ });
+ test('gap investment estimates count completed public cycles without arrival stacking',()=>{
+  const count=(arrivals:number[])=>gapOpportunityCount(arrivals.map(arrivals=>({arrivals})),2);
+  assert.equal(count([0,0,6]),1);assert.equal(count([0,1,0,1]),0);
+  assert.equal(count([0,0,0,0]),0);assert.equal(count([0,0,1,0,0,2]),2);
+  assert.equal(count([1,0,0]),0);assert.equal(count([]),0);
+ });
+ test('experimental delivery-gap charge is capped, arrival-only and forecast-consistent',()=>{
+  const tuning={...S.SHOP_TUNING};
+  try{
+   S.SHOP_TUNING.bufferGap=2;S.SHOP_TUNING.bufferGapEnergy=4;
+   const s=E.initialRun();s.upgrades.buffer=1;
+   assert.deepEqual(S.deliveryGapCharge(s,0),{progress:1,energy:0});
+   s.bufferGapTurns=1;assert.deepEqual(S.deliveryGapCharge(s,1),{progress:0,energy:0});
+   s.bufferGapTurns=2;assert.deepEqual(S.deliveryGapCharge(s,0),{progress:2,energy:0});
+   for(const count of [1,2,6])assert.deepEqual(S.deliveryGapCharge(s,count),{progress:0,energy:4});
+   for(const floor of [1,8,9,29])for(const energy of [1,4,59,60])for(const progress of [0,1,2])for(const remaining of [1,2]){
+    const state=E.initialRun();Object.assign(state,{floor,energy,bufferGapTurns:progress});state.upgrades.buffer=1;
+    state.cabin[0]={id:'gap',kind:'commuter',destination:floor+remaining,boardedAt:floor-1,patience:4,fareBonus:0};
+    const before=hash(state),f=F.energyForecast(state),after=E.resolveFloor(clone(state),rngFor(1));
+    assert.equal(after.energy-state.energy,f.lowDelta);assert.equal(f.lowDelta,f.highDelta);assert.equal(hash(state),before);
+    assert.equal(after.bufferGapTurns,remaining===1?0:Math.min(2,progress+1));
+    assert.equal(after.bufferPower,0);
+   }
+  }finally{Object.assign(S.SHOP_TUNING,tuning);}
+ });
+ test('diagnostic intake restrictions preserve state and exclude future boarding',()=>{
+  const w=fixtures.sealed(),n=new Names();n.register(w);const before=hash(w);
+  assert.equal(restrictIntake(w),w);
+  assert.deepEqual(serviceFor(w,n,{excludedIntake:[]}).imagine([],3,2),serviceFor(w,n).imagine([],3,2));
+  const all=Object.keys(D.PASSENGERS) as Rider['kind'][];
+  const filtered=restrictIntake(w,all);assert.equal(filtered.state,w.state);
+  assert(filtered.offers.every(r=>w.state.cabin.some(p=>p?.id===r.id)));
+  const one=clone(w);one.state.floor=1;one.state.energy=60;one.state.stress=0;
+  one.state.cabin=one.state.cabin.map((r,i)=>i===0&&r?{...r,destination:2}:null);one.offers=[];
+  const ids=new Names();ids.register(one);
+  const future=serviceFor(one,ids,{excludedIntake:all}).imagine([],5,4,'operator');
+  assert.equal(future.meanFloors,1,'No imagined new passengers after the existing rider leaves');
+  assert.equal(hash(w),before);
+ });
  test('next-shop boarding horizon is opt-in, bounded, public-only and distinguishes censoring',()=>{
   const a=fixtures.sealed(),b=clone(a);b.state.cabin[0]!.traits!.fare=8;
   const na=new Names(),nb=new Names();na.register(a);nb.register(b);const before=hash(a);

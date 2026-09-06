@@ -10,6 +10,8 @@ export type PublicRider = {
   progress:{repair:number;repairDone:boolean;inspection:number;stamped:boolean;care:number};
 };
 export type Observation = {
+  bufferGapTurns?:number;
+  bufferGapRule?:{turns:number;energy:number};
   schema:2; version:string; floor:number; phase:'playing'|'upgrade'|'lost';
   energy:number; energyCap:number; stress:number; stressCap:number; coins:number;
   reserved?:PublicRider|null; bufferPower?:number; punchCount?:number; retimeAvailable?:boolean; oldMovesRemaining?:number; calmCharge?:boolean; reservationAvailable?:boolean; oldMoveUsed:boolean; failureCause:'bomb'|'energy'|'agitation'|null; cabin:Array<PublicRider|null>; offers:PublicRider[];

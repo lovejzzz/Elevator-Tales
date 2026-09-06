@@ -2330,6 +2330,8 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .retime-controls button:disabled { opacity:.45; }
 @media(min-width:701px) { .run-tools { position:fixed; right:18px; bottom:194px; width:220px; } }
 .arrival-exit { position:absolute; inset:0; z-index:12; pointer-events:none; display:flex; align-items:center; justify-content:center; flex-direction:column; color:#fff2bd; }
+/* Receipts alone sit above opening doors; occupants and links stay behind them. */
+.game-shell .arrival-grid { z-index:16; pointer-events:none; }
 .arrival-portrait { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; animation:arrival-person-out 1600ms ease-in forwards; }
 .arrival-portrait .portrait-large { width:88%; height:88%; border:0; background:transparent; }
 .arrival-name { position:absolute; top:8%; font:700 16px/1.2 var(--font-sans); text-shadow:0 2px 6px #000; animation:arrival-person-out 1600ms ease-in forwards; }

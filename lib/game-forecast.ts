@@ -1,6 +1,6 @@
 import { COURIER_ARRIVAL_CHARGE, SHOP_ENTRY_CHARGE, settleBuffer, redAgitationProtection, arrivalRelief, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, type RunState } from './game-engine';
 import { conflictLinks } from './rider-profile';
-import { RELAY_ENERGY, shopOpportunities, naturalChargeBoost } from './shop-effects';
+import { RELAY_ENERGY, shopOpportunities, naturalChargeBoost, SHOP_TUNING, deliveryGapCharge } from './shop-effects';
 import { experimentalRiskLinks, type RiskLinkTuning } from './risk-link-experiment';
 import { riskPartnerships } from './shift-rules';
 
@@ -76,12 +76,13 @@ export function energyForecast(state: RunState, _legacyWeight?: number, _riskTun
   const slots=state.cabin.flatMap((rider,slot)=>rider&&destinations[slot]!==null&&destinations[slot]!<=nextFloor?[slot]:[]);
   const arriving=slots.map(slot=>state.cabin[slot]!);
   const natural=arriving.filter(rider=>rider.kind==='courier').length*COURIER_ARRIVAL_CHARGE;
-  const charge=shopCharge+natural+naturalChargeBoost(state,natural);
+  const gap=deliveryGapCharge(state,slots.length).energy;
+  const charge=shopCharge+natural+naturalChargeBoost(state,natural)+gap;
   const relay=shopOpportunities(state,state.cabin,slots).relay;
   relayPossible ||= relay;
-  return relay ? [charge,shopCharge+natural+RELAY_ENERGY+naturalChargeBoost(state,natural+RELAY_ENERGY)] : [charge];
+  return relay ? [charge,shopCharge+natural+RELAY_ENERGY+naturalChargeBoost(state,natural+RELAY_ENERGY)+gap] : [charge];
  });
- const deltas=charges.map(charge=>settleBuffer(state.energy-total+charge,state.energyCap,state.bufferPower??0,Boolean(state.upgrades.buffer)).energy-state.energy);
+ const deltas=charges.map(charge=>settleBuffer(state.energy-total+charge,state.energyCap,state.bufferPower??0,Boolean(state.upgrades.buffer)&&!SHOP_TUNING.bufferGap).energy-state.energy);
  const lowDelta=Math.min(...deltas),highDelta=Math.max(...deltas);
  const minCharge=Math.min(...charges),maxCharge=Math.max(...charges);
  const chargeNote=maxCharge?minCharge===maxCharge?`＋补电 ${maxCharge}`:`＋可能补电 ${minCharge}–${maxCharge}`:'';
