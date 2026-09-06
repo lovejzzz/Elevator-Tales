@@ -4,6 +4,9 @@ Every public update must add a new entry here and in `lib/changelog.ts`. Record 
 
 ## v8.36 — 2026-09-06 — Room for investment / 为投资留一点空间
 
+- **Local research checkpoint; publication held / 本地研究候选，暂缓发布。** 静音浏览器连续1→100层仍存活：9/70电、378币、4项升级，98层首次使用应急电池；125次接客、18种人物，31–59层有空位却全拒3/26层。约29.5分钟含工具操作，不是人类时长，不是死亡或完整结束的一局。需要更强策略覆盖长期循环后再评估。
+- One continuous muted browser sample censored alive at100,9/70 power,378 coins,4 upgrades, first reserve at98;125 boardings across18 roles and3/26 late space-available floors skipped. About29.5 minutes including automation overhead, not human timing. No claimed death or completed game. Hold publication and strengthen long-run policy coverage.
+
 - 固定价格：扩容35→30、礼宾40→35、稳压45→40、快速45→35、小费盒30→25、并联30→25、共乘40→30、计价器25→20；默契30、舒缓35不变。每店一项、每局不重复不变。
 - Fixed prices: capacity35→30, concierge40→35, reinforced45→40, express45→35, tipjar30→25, relay30→25, crowd40→30, meter25→20; battery30/calm35 unchanged. Purchase limits remain.
 - 31层起每批轮换一位候客，行程至多该角色正常最短+1层，快速升级随后生效；其余两位照常。不改变人物、风险、随机数消耗，不根据资源救场。运转、人物收益、躁动和组合不变。
