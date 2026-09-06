@@ -12,6 +12,7 @@ import {auditUILog} from './ui-audit.mts';
 import {diverseQueue} from './review-queue.mts';
 import type {Action,PolicyName,Observation,Decision,ShopStyle} from './types.mts';
 import {configureScenario} from './scenarios.mts';
+import {guidedOpening} from './opening.mts';
 
 const [command,...args]=process.argv.slice(2);
 function arg(key:string,fallback?:string){const i=args.indexOf('--'+key);return i<0?fallback:args[i+1];}
@@ -28,21 +29,23 @@ else if(command==='run'){
  assert(['development','holdout'].includes(split!));
  const requested=(arg('policies')?.split(',')??POLICIES) as PolicyName[];assert(requested.every(p=>POLICIES.includes(p)));
  const shopStyle=arg('shop-style','native') as ShopStyle;assert(['native','committed','adaptive'].includes(shopStyle));
+ const opening=arg('opening','policy-default')!;guidedOpening(opening,requested[0]);
  const seedBase=Number(arg('seed-base',String(split==='holdout'?193260904:173260904)));assert(Number.isSafeInteger(seedBase));
- writeNew(join(dir,'manifest.json'),{...before,split,runsPerPolicy:runs,horizon,seedBase,shopStyle,
+ writeNew(join(dir,'manifest.json'),{...before,split,runsPerPolicy:runs,horizon,seedBase,shopStyle,opening,scenario,
   methodology:'Same real engine and legal actions. Floor-keyed offer/settlement streams; conditional Lover calls and earlier choices can still change offers. All outcomes are synthetic policy samples. Seeds never enter policy inputs. Search budgets and probabilities are not human calibration.'});
- const results:Array<ReturnType<typeof runOne>['summary']&{policy:PolicyName;index:number;seed:number;wallMs:number}>=[];
+ const results:Array<ReturnType<typeof runOne>['summary']&{policy:PolicyName;index:number;seed:number;wallMs:number;opening:string}>=[];
  const packets:Array<{caseId:string;trigger:string;observation:Observation;proposedActions:Action[];alternatives:Decision['alternatives'];reviewQuestions:string[];limitation:string}>=[];
  const started=performance.now();
  for(const policy of requested)for(let i=0;i<runs;i++){
-  const result=runOne(policy,seedBase+i*97,horizon,policy==='novice',shopStyle);
+  const guided=guidedOpening(opening,policy);
+  const result=runOne(policy,seedBase+i*97,horizon,guided,shopStyle);
   const stem=policy+'-'+i;
   writeNew(join(dir,stem+'.public.jsonl'),result.turns.map(t=>JSON.stringify(t)).join('\n')+'\n');
   writeNew(join(dir,stem+'.shops.json'),result.shops);
   writeNew(join(dir,stem+'.private-replay.json'),{source:before.source,lab:before.lab,scenario,record:result.replay});
   // Replaying every trajectory verifies execution parity, not only totals.
   replay(result.replay);
-  results.push({policy,index:i,seed:result.seed,wallMs:result.wallMs,...result.summary});
+  results.push({policy,index:i,seed:result.seed,wallMs:result.wallMs,...result.summary,opening:guided?'guided':'ordinary'});
   const reviewFlags=[...(result.summary.outcome!=='alive-censored'?[{code:'DEATH_REVIEW',floor:result.summary.final.floor}]:[]),...result.summary.flags.filter(f=>!['ALL_HIGH_RISK_REJECTED'].includes(f.code)).slice(0,5)];
   for(const flag of reviewFlags){
    const t=result.turns.find(t=>t.before.floor===flag.floor||t.after.floor===flag.floor);
@@ -60,7 +63,7 @@ else if(command==='run'){
   meanOccupancy:mean(rs.map(r=>r.meanOccupancy)),maximumOccupancy:Math.max(...rs.map(r=>r.maxOccupancy)),
   meanFinalCoins:mean(rs.map(r=>r.final.coins)),flags:Object.fromEntries([...new Set(rs.flatMap(r=>r.flags.map(f=>f.code)))].map(code=>[String(code),rs.filter(r=>r.flags.some(f=>f.code===code)).length]))};});
  writeNew(join(dir,'summary.json'),{groups,elapsedMs,totalAscents,ascentsPerSecond:totalAscents/(elapsedMs/1000),results,
-  caveats:['Censored floors are observed lower bounds, not deaths or wins.','Above60 is policy-specific, not a human success probability.','Novelty/choice flags are review cues, not measurements of fun.','Safe plan counts cover a bounded shortlist only.','Novice starts guided; other policies start ordinary, so persona contrasts are descriptive, not isolated causal effects.']});
+  opening,caveats:['Censored floors are observed lower bounds, not deaths or wins.','Above60 is policy-specific, not a human success probability.','Novelty/choice flags are review cues, not measurements of fun.','Safe plan counts cover a bounded shortlist only.',opening==='policy-default'?'Novice starts guided; other policies start ordinary, so persona contrasts are descriptive, not isolated causal effects.':'Opening is held fixed across policies in this batch; policy results still are not human calibration.']});
  writeNew(join(dir,'review-queue.json'),diverseQueue(packets));
  assert.deepEqual(manifest(),before,'Game or lab changed during experiment');
  console.log(JSON.stringify({dir,groups,elapsedMs,ascentsPerSecond:totalAscents/(elapsedMs/1000)}));

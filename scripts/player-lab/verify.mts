@@ -12,10 +12,22 @@ import {hash,rngFor,quantile} from './util.mts';
 import {checkVisibleUI} from './ui-audit.mts';
 import {diverseQueue} from './review-queue.mts';
 import {investmentSample} from './investment-study.mts';
+import {guidedOpening} from './opening.mts';
 
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('explicit openings are policy-independent, preserve defaults, and replay',()=>{
+  for(const p of ['novice','operator','diverse'] as const){
+   assert.equal(guidedOpening('guided',p),true);assert.equal(guidedOpening('ordinary',p),false);
+   assert.equal(guidedOpening('policy-default',p),p==='novice');
+  }
+  assert.throws(()=>guidedOpening('invalid','operator'));
+  for(const guided of [false,true]){
+   const s=new Session(193847501,guided);s.act({type:'place',rider:s.observation().offers[0].id,slot:0});s.act({type:'depart'});
+   assert.equal(hash(replay(s.replayRecord()).world()),hash(s.world()));
+  }
+ });
  test('diverse policy retains intake representatives without adding expansions or rollout slots',()=>{
   const w=fixtures.sealed();Object.assign(w.state,{floor:9,status:'playing',energy:20,coins:60,stress:0,cabin:Array(6).fill(null),upgrades:{...E.EMPTY_UPGRADES}});
   w.state.cabin[0]=fixtures.rider('commuter','old-c',8,4);w.state.cabin[1]=fixtures.rider('tourist','old-t',8,2);w.state.cabin[4]=fixtures.rider('courier','old-q',8,2);

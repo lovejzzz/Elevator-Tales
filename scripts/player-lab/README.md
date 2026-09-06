@@ -27,7 +27,7 @@ Output paths must be new; existing evidence is never overwritten. `.player-lab/`
 - `opportunist`: the same bounded planning budget, but deliberately tests short risk-link windows and useful high agitation rather than always buying silence.
 - `investor`: identical departure scoring/search to `planner`, but invests before charging to full and does not automatically clear agitation. A purchase must preserve the ability to fund the next sector's motor baseline plus one power; passenger costs remain a risk. Introduced after UI R01 reached floor 100 alive, not calibrated to reproduce that run.
 
-These labels exist only in research. Non-novice policies use ordinary openings. Persona comparisons are not isolated causal effects or human win rates. Opportunity counts currently check single-card placements; zero adoption cannot justify deleting a role.
+These labels exist only in research. `--opening policy-default` preserves guided novice and ordinary non-novice starts. Use `--opening ordinary` or `--opening guided` to hold openings fixed across policies; manifests/results record the choice. Persona comparisons are not isolated causal effects or human win rates. Opportunity counts currently check single-card placements; zero adoption cannot justify deleting a role.
 
 ## Information and verification boundaries
 

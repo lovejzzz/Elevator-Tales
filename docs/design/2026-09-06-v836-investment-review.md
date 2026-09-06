@@ -1,5 +1,15 @@
 # v8.36 research checkpoint — 2026-09-06
 
+## Latest: opening-stratified confirmation rejects short-trip-only acceptance
+
+Added explicit --opening policy-default|ordinary|guided, preserving prior defaults and recording actual opening in manifests/results.57 Lab checks and TypeScript pass.32 fresh executions:4 seeds193847501+i*97 ×operator/diverse ×ordinary/guided ×v835/minimum. Every action replayed. Ordinary/diverse control88/47/68/79 becomes160(censored)/47/159/160(censored), with366/653coins in the censored samples. Common30–59 skips36/97→18/85, boardings100→132: improved intake does not establish acceptable economy. Guided is not uniformly easier and cannot explain away this failure.
+
+Separate declared exploratory minimum+1 follow-up:16 executions on reused seeds, all replayed. Ordinary/operator46/45/45/54; ordinary/diverse79/47/72/67; guided/operator67/44/33/127; guided/diverse49/38/67/22. No censor, but ordinary refusal counts unchanged/worse and one guided control81 becomes127. No fresh holdout claim or adoption. Total412 whole-run executions +64 conditional continuations, including repeated controls. Public remainsv8.35; local minimum implementation remains an unaccepted research candidate. Full protocol/tables in research workspace player-lab/V836-OPENING-STUDY.md.
+
+Next hypothesis: faster turnover needs a visible economic tradeoff, e.g. lower short-trip base fare while preserving ability/relationship rewards. Not implemented or assumed to work. Test engine/profile/card agreement and fresh matched comparisons before adoption; do not keep moving a trip cap to fit historical outcomes.
+
+Final full game verification and production build pass; existing non-fatal Node deprecation/bundle-size warnings remain. No browser opened during this synthetic cohort, no new playtest claimed, no audio emitted.
+
 ## Latest revision: R836-02 censored alive at120
 
 This section supersedes the archived candidate below. Current gameplay checkpoint `dabec4b`: original public v8.35 prices, one role-minimum offer from31, localExtra0. No mechanical changes during this continuous browser sample. Public remains v8.35; long-run acceptance is unresolved.
