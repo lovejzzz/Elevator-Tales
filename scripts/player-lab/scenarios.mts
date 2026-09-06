@@ -44,6 +44,7 @@ export const SCENARIOS={
  'v836-local':{},
  'v836-local-investment':{},
  'v836-local-minimum':{},
+ 'v836-minimum-original-prices':{},
  'v836-support-trips':{},
  'encounter-discovery':{},
  'encounter-legacy':{},
@@ -108,8 +109,8 @@ export function configureScenario(name:string){
  Object.assign(B.ECONOMY_RULES,BASE_ECONOMY,ECONOMY_VARIANTS[name]??{});
  Object.assign(B.FARE_RULES,BASE_FARE_RULES,FARE_VARIANTS[name]??{});
  Object.assign(B.JOURNEY_RULES,BASE_JOURNEY,name==='journey-one'?{extraFrom31:1,extraFrom51:1}:name==='journey-two'?{extraFrom31:1,extraFrom51:2}:{});
- if(name.startsWith('v836-')||name==='v835-baseline')B.JOURNEY_RULES.localFrom31=name==='v836-local'||name==='v836-local-investment'||name==='v836-local-minimum';
- if(name==='v836-local-minimum')B.JOURNEY_RULES.localExtra=0;
+ if(name.startsWith('v836-')||name==='v835-baseline')B.JOURNEY_RULES.localFrom31=name==='v836-local'||name==='v836-local-investment'||name==='v836-local-minimum'||name==='v836-minimum-original-prices';
+ if(name==='v836-local-minimum'||name==='v836-minimum-original-prices')B.JOURNEY_RULES.localExtra=0;
  if(name==='journey-one'||name==='journey-two')B.JOURNEY_RULES.localFrom31=false;
  Object.assign(B.GHOST_RULES,BASE_GHOST,name==='ghost-provider-cap'?{oneSavingPerExorcist:true}:{});
  Object.assign(B.MOTOR_RULES,BASE_MOTOR,name==='motor-upper'?{upperZone:true}:name==='motor-legacy'?{upperZone:false}:{});
