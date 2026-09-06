@@ -26,7 +26,7 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'courier':special='到站补充2电（不超过上限）';break;
   case 'lover':moneyNote='每位邻座恋人：到站基价+100%';special='无恋人邻座：每站25%呼唤恋人';break;
   case 'thief':moneyNote='无警察：每站+3；受控仅到站+5';pressure.splice(0,1,`每层 +1`,'挨警察免除');break;
-  case 'drunk':moneyNote='高躁动到站：基价+100%';pressure.splice(0,1,'每层 +1','挨护士免除');break;
+  case 'drunk':moneyNote='到站前关门时高躁动：基价+100%';pressure.splice(0,1,'每层 +1','挨护士免除');break;
   case 'child':pressure.splice(0,1,'每层 +1','挨恋人或护士免除');moneyNote=`累计被照顾${CHILD_CARE_WORK}层：到站 +${CHILD_CARE_BONUS}金币`;break;
   case 'celebrity':moneyNote='恰好1邻座：每站+2';pressure.splice(0,1,`2+邻座：每层 +1`);break;
   case 'musician':special='按关门时状态：低档向3、高档向4靠近最多2点；中档不变，整车不叠加';break;
@@ -115,7 +115,7 @@ export function passengerCardSections(
   case 'lawyer':self.push(effect('coins','整车红线损失每层抵消最多2'));addGreen(['thief'],[effect('coins','小偷仅到站 +5'),effect('agitation','小偷不加躁动')]);break;
   case 'drunk':
    self.push(effect('agitation','未安抚 +1/层'));
-   self.push(effect('coins','高躁动到站：基价 +100%'));
+   self.push(effect('coins','到站前关门时高躁动：基价 +100%'));
    addGreen(['nurse'],[effect('agitation','不加躁动')]);
    break;
   case 'nurse':addGreen(null,[effect('agitation','每人 −1/层')],'任意人物');break;

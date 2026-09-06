@@ -4,10 +4,13 @@ Every public update must add a new entry here and in `lib/changelog.ts`. Record 
 
 ## v8.36 — 2026-09-06 — Local trip tradeoffs / 短途也有取舍
 
-- Local playtest candidate, not public / 本地实玩候选，尚未公开。31层起每批轮换一位候客缩到角色正常最短行程；实际缩短才将基价乘以短途/原抽取行程比例，向上取整。比例生成时固定，延误/换位不重算；快速随后生效、不额外减价。Other two offers, risk and RNG consumption unchanged; no resource-adaptive rescue.
+- Incremental balance checkpoint / 有边界的平衡迭代。31层起每批轮换一位候客缩到角色正常最短行程；实际缩短才将基价乘以短途/原抽取行程比例，向上取整。比例生成时固定，延误/换位不重算；快速随后生效、不额外减价。Other two offers, risk and RNG consumption unchanged; no resource-adaptive rescue.
 - Card labels Local fare / 短途基价；游客按卡面基价计算。倍率作用于调整后基价；邻座奖励、小费、暂存和达标奖励不打折。Mimic copies source adjusted base, then its own ticket ratio applies; Mystery stays sealed. Normal prices retained:30/35/35/40/45/45/30/30/40/25 for battery/capacity/calm/concierge/reinforced/express/tipjar/relay/crowd/meter. Charge2/ power; motor/agitation unchanged.
 - 本轮84次逐步回放：48开发、32新种子复核、4特选历史反例。累计496次整局合成执行，另64次条件续局，含重复对照，不是独立人类样本。Fresh opening-stratified confirmation: common30–59 skips143→128, upgrades34→35; above60 4/16→5/16, maximum124→77. Not universal parity or human probabilities.
-- Four selected historical challenges end80/51/68/98, versus free-local160*/159/160*/103 (*alive censored). Deaths80/98 still hold137/106coins: not proof of economic containment. 旧免费短途浏览器120层仍可修复、190金币；反例保留，不混作新方案实玩。Complete muted ticket browser acceptance pending; publication held.
+- Four selected historical challenges end80/51/68/98, versus free-local160*/159/160*/103 (*alive censored). Deaths80/98 still hold137/106coins: not proof of economic containment. 旧免费短途浏览器120层仍可修复、190金币；反例保留，不混作新方案实玩。
+- 新方案完整静音浏览器1局，59层缺电失败：5电需6电、剩48金币、2项升级，累计收入588、支出540。约37.8分钟含研究与操作开销，非人类时长；没有中途改规则、重载或注入状态。One complete muted ticket run, not censored; exact ledger and interpretation corrections recorded in docs/design/2026-09-06-v836-ticket-play.md.
+- 醉汉卡面明确到站前关门时高躁动；电量栏说明预测已含到店补电；商店说明补电参与缺电判定以及每次上行至少1人在车内。Presentation only: settlement timing unchanged. Exact49→50 survival and58→59 death regressions; Chinese/English1440×900 and1280×800 card/shop QA.
+- 后期仍有拒载，30/40/50层因充电预算放弃升级。Partial improvement, not all-build parity or proof60+ is extremely rare. Continue studying investment opportunity cost and mandatory-occupancy clarity.
 - Existing copy fixes remain: Tourist departure agitation, Ghost repeated delay cadence, old-rider movement allowance and Ascend label. Watch local/long-trip choices, investment, late cash, and card clarity; safe-but-declined intake is not forced refusal.
 
 ### Archived free-local candidate — rejected for publication / 免费短途旧候选，未通过发布验收
