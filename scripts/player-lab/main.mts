@@ -28,7 +28,7 @@ else if(command==='run'){
  assert(Number.isInteger(runs)&&runs>=1&&runs<=1000);assert(Number.isInteger(horizon)&&horizon>=10&&horizon<=1000);
  assert(['development','holdout'].includes(split!));
  const requested=(arg('policies')?.split(',')??POLICIES) as PolicyName[];assert(requested.every(p=>POLICIES.includes(p)));
- const shopStyle=arg('shop-style','native') as ShopStyle;assert(['native','committed','adaptive'].includes(shopStyle));
+ const shopStyle=arg('shop-style','native') as ShopStyle;assert(['native','committed','adaptive','joint','joint-long'].includes(shopStyle));
  const opening=arg('opening','policy-default')!;guidedOpening(opening,requested[0]);
  const seedBase=Number(arg('seed-base',String(split==='holdout'?193260904:173260904)));assert(Number.isSafeInteger(seedBase));
  writeNew(join(dir,'manifest.json'),{...before,split,runsPerPolicy:runs,horizon,seedBase,shopStyle,opening,scenario,

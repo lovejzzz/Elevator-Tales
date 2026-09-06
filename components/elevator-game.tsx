@@ -24,7 +24,7 @@ import { offerReveal } from '@/lib/offer-reveal';
 import { shouldPreviewConnection } from '@/lib/connection-preview';
 import { AgitationGauge } from '@/components/agitation-gauge';
 import { agitationBand, musicBeatForAgitation, motorAdvanceNotice, motorScheduleText, REPAIR_WORK, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE } from '@/lib/balance-v832';
-import { buyReserveCell, consumeReserveCell } from '@/lib/game-engine';
+import { buyReserveCell, consumeReserveCell, nextOfferBatch, retimeRider, oldMovesRemaining, reserveOffer, useCalmCharge } from '@/lib/game-engine';
 
 type DragPayload = { type: 'offer'; id: string } | { type: 'slot'; slot: number };
 type Feedback = { id: number; tone: 'place' | 'combo' | 'error' | 'arrival'; label: string; slots: number[]; coins?: number; energy?: number; pressure?: number };
@@ -186,6 +186,7 @@ export default function ElevatorGame() {
   const [run, setRun] = useState<RunState>(initialRun); const [offers, setOffers] = useState<Rider[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null); const [doors, setDoors] = useState<'open' | 'closing' | 'moving' | 'opening'>('open');
   const [fastReveal, setFastReveal] = useState(false);
+  const [arriving, setArriving] = useState<NonNullable<RunState['lastArrivals']>>([]);
   const [offerDebuts, setOfferDebuts] = useState<string[]>([]);
   const discoveredRef = useRef<PassengerKind[]>([]);
   const revealedBatch = useRef('');
@@ -321,7 +322,7 @@ export default function ElevatorGame() {
   const canDismiss=Boolean(detailRider&&detailOnboard&&detailRider.boardedAt<run.floor&&run.status==='playing'&&doors==='open');
   const penalty=detailRider?dismissalCost(run,detailRider):0;
 
-  const reset = useCallback(() => { journeyTimers.current.forEach(clearTimeout); journeyTimers.current = []; if (feedbackTimer.current) clearTimeout(feedbackTimer.current); setFeedback(null); setMetricEvent(null); setReceiptOpen(false); setInventoryOpen(false); setChangelogOpen(false); setPassengerDetails(null); setEjectArmed(false); setLeaveArmed(false); disposeGameAudio(); const fresh = initialRun(); setRunStartBest(bestFloor); setRun(fresh); presentOffers(makeOffers(1, fresh.upgrades)); setGuidedShift(false); setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setDoors('open'); setIntro(false); busyRef.current = false; }, [bestFloor, presentOffers]);
+  const reset = useCallback(() => { journeyTimers.current.forEach(clearTimeout); journeyTimers.current = []; if (feedbackTimer.current) clearTimeout(feedbackTimer.current); setFeedback(null); setArriving([]); setMetricEvent(null); setReceiptOpen(false); setInventoryOpen(false); setChangelogOpen(false); setPassengerDetails(null); setEjectArmed(false); setLeaveArmed(false); disposeGameAudio(); const fresh = initialRun(); setRunStartBest(bestFloor); setRun(fresh); presentOffers(makeOffers(1, fresh.upgrades)); setGuidedShift(false); setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setDoors('open'); setIntro(false); busyRef.current = false; }, [bestFloor, presentOffers]);
   const commitPlacement = (result: PlacementResult) => {
     if (result.ok && result.changed) reportMetrics(run, result.next, result.label);
     setRun(result.next);
@@ -378,13 +379,14 @@ export default function ElevatorGame() {
       setTimeout(() => setDoors('moving'), reduced ? 30 : 250),
       setTimeout(() => {
         const resolved = resolveFloor(run); let delivered = resolved;
-        if (resolved.status === 'playing') { const nextOffers = makeOffers(resolved.floor, resolved.upgrades, false, Math.random, resolved.cabin); presentOffers(nextOffers); if (nextOffers.some((rider) => rider.calledByLover) && resolved.lastPressure.delta <= 0) delivered = { ...resolved, message: '恋人的呼唤得到了回应。把两人安排在相邻站位。' }; }
-        setRun(delivered); setDoors('opening');
+        if (resolved.status === 'playing') { const batch=nextOfferBatch(resolved); delivered=batch.state; presentOffers(batch.offers); if (batch.offers.some((rider) => rider.calledByLover) && resolved.lastPressure.delta <= 0) delivered = { ...delivered, message: '恋人的呼唤得到了回应。把两人安排在相邻站位。' }; }
+        setRun(delivered); setArriving(resolved.lastArrivals??[]); setDoors('opening');
+        journeyTimers.current.push(setTimeout(()=>{setArriving([]);setDoors('open');busyRef.current=false;if(!document.querySelector('[role="dialog"]'))scrollMobileTarget('.candidate-panel','start');},resolved.lastArrivals?.length?(reduced?800:1600):(reduced?40:260)));
         reportMetrics(run, resolved, `${resolved.floor} 层 · 到站结算`);
         flash({ tone: 'arrival', label: `${String(resolved.floor).padStart(2, '0')}F · 本层结算`, slots: [], coins: resolved.lastEarnings.total, energy: resolved.lastEnergy.delta, pressure: resolved.lastPressure.delta });
         playTone(soundEnabled.current, resolved.status === 'lost' ? 'danger' : 'arrive');
       }, reduced ? 70 : 470),
-      setTimeout(() => { setDoors('open'); busyRef.current = false; if(!document.querySelector('[role="dialog"]'))scrollMobileTarget('.candidate-panel','start'); }, reduced ? 110 : 730),
+
     ];
   }, [locked, sound, run, flash, reportMetrics, fastReveal, presentOffers]);
   useEffect(() => { const onKey = (event: KeyboardEvent) => {
@@ -399,7 +401,7 @@ export default function ElevatorGame() {
     setRun(updated); flash({ tone: 'combo', label: `${UPGRADES[key].name} · 已购入`, slots: [] }); playTone(sound, 'upgrade');
   };
 
-  const finishShopping = () => { if (upgradeCrisis) { const repaired = repairEmergency(run); if (repaired !== run) { setLeaveArmed(false); reportMetrics(run,repaired,'紧急维修'); setRun(repaired); return; } if (!leaveArmed) { setLeaveArmed(true); return; } } if(!upgradeCrisis && run.energy < chargePlan.baseline && !leaveArmed) {setLeaveArmed(true);return;} setLeaveArmed(false); const next = leaveShop(run); if (next === run) return; setRun(next); if(next.status==='lost')playTone(sound,'danger'); if (next.status === 'playing') presentOffers(makeOffers(next.floor, next.upgrades, false, Math.random, next.cabin)); };
+  const finishShopping = () => { if (upgradeCrisis) { const repaired = repairEmergency(run); if (repaired !== run) { setLeaveArmed(false); reportMetrics(run,repaired,'紧急维修'); setRun(repaired); return; } if (!leaveArmed) { setLeaveArmed(true); return; } } if(!upgradeCrisis && run.energy < chargePlan.baseline && !leaveArmed) {setLeaveArmed(true);return;} setLeaveArmed(false); const next = leaveShop(run); if (next === run) return; if(next.status==='lost'){setRun(next);playTone(sound,'danger');} if (next.status === 'playing') {const batch=nextOfferBatch(next);setRun(batch.state);presentOffers(batch.offers);} };
 
   const recharge = (units:number) => {const next=chargeBattery(run,units);if(next===run)return;setLeaveArmed(false);reportMetrics(run,next,'商店充电');setRun(next);playTone(sound,'upgrade');};
   const confirmDismiss = () => {
@@ -426,14 +428,24 @@ export default function ElevatorGame() {
         <div data-metric="coins" className="score-card wallet-card"><Coins aria-hidden="true" /><span className="rail-metric-name">余额</span><strong><AnimatedNumber value={run.coins} /></strong><MetricResponse metric="coins" event={metricEvent} locale={language} /><span className={`mobile-shop-note ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</span><small className={`wallet-summary ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</small></div>
 
         {(run.serviceTurns??0)>0&&<p className="service-status">{`检修生效 · 余${run.serviceTurns}层`}<br/>运转少耗1电/层</p>}
+        <div className="run-tools">
+        {run.calmCharge&&<button className="reserve-use" disabled={locked||run.stress<=0} onClick={()=>{const next=useCalmCharge(run);setRun(next);reportMetrics(run,next,'手动调节');}}>手动调节 −2躁动 · 一次</button>}
+        {run.upgrades.rails>0&&<p className="route-note">旧乘客换位剩余{oldMovesRemaining(run)}次</p>}
+        {run.reservedRider&&<p className="route-note">已留座：{PASSENGERS[run.reservedRider.kind].name} · 下一批到来</p>}
         {run.reserveCell&&<button className="reserve-use" disabled={locked||run.energy>=run.energyCap} onClick={()=>{const next=consumeReserveCell(run);if(next!==run){setRun(next);reportMetrics(run,next,'使用应急电池');}}}><BatteryCharging aria-hidden="true"/>{`使用应急电池 +${Math.min(RESERVE_CELL_CHARGE,Math.max(0,run.energyCap-run.energy))}电`}</button>}
+        {run.upgrades.buffer>0&&<p>缓冲电量 {run.bufferPower??0}/4</p>}
+        {run.upgrades.punchcard>0&&<p>第五张票 {(run.punchCount??0)+1}/5 · 同层按1→6号位</p>}
+        {run.upgrades.single>0&&<p>单人到站：整车+2币</p>}
+        {run.upgrades.finale>0&&<p>至少2人到站，车内剩0–1人：+6币</p>}
+        {run.upgrades.retime>0&&<div className="retime-controls"><p>改签 · 每十层一次</p>{[-1,1].map(delta=><button key={delta} disabled={locked||!activeRider||activeRider.boardedAt!==run.floor||!run.cabin.some(r=>r?.id===activeRider.id)||run.retimeUsedSector===Math.floor(run.floor/10)||(delta<0&&activeRider.destination<=run.floor+1)} onClick={()=>{if(activeRider){const next=retimeRider(run,activeRider.id,delta);setRun(next);}}}>{delta<0?'提前1站':'延后1站'}</button>)}</div>}
+        </div>
         {metricEvent && <button className="receipt-button" onClick={() => setReceiptOpen(true)}><BookOpen /> 本次变化明细 <span>↗</span></button>}
         <div className="event-log">{run.log.slice(0, 3).map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}</div>
       </aside>
       <section className={`elevator-stage doors-${doors} ${activeRider ? 'is-placing' : ''} ${agitated ? 'cabin-agitated' : ''}`} aria-label="电梯座舱" aria-busy={doors !== 'open'}>
         <div className="elevator-image" /><div className="motion-lines" /><div className="floor-indicator"><ArrowUp /><b key={run.floor}>{String(run.floor).padStart(2, '0')}</b></div><div className="cabin-title"><span>CAR № 07</span><i /><span>{occupied} / 6 OCCUPIED</span></div>
         {outlook && <div className={`adjacency-key shift-outlook ${nextIsShop ? 'shop-next-outlook' : 'peak-outlook'}`}><span>{outlook}</span><span className="connection-legend">绿线协作 · 红线代价 · 紫箭头复制</span></div>}
-        {feedback && <output key={feedback.id} className={`cabin-feedback feedback-${feedback.tone}`}>
+        {feedback && (feedback.tone!=='arrival'||arriving.length===0) && <output key={feedback.id} className={`cabin-feedback feedback-${feedback.tone}`}>
           <div className="feedback-label">{feedback.tone === 'error' ? <X /> : feedback.tone === 'combo' ? <Sparkles /> : <Check />}<b>{feedback.label}</b></div>
           {feedback.tone === 'arrival' && <div className="feedback-values">{Boolean(feedback.coins) && <span className="value-coins" aria-label={`金币增加 ${feedback.coins}`}><Coins aria-hidden="true" />{signedDelta(feedback.coins ?? 0)}</span>}<span aria-label={`电量 ${signedDelta(feedback.energy ?? 0)}`} className={feedback.energy! > 0 ? 'value-gain' : feedback.energy! < 0 ? 'value-spent' : 'value-neutral'}><BatteryCharging aria-hidden="true" />{signedDelta(feedback.energy ?? 0)}</span><span aria-label={`躁动 ${signedDelta(feedback.pressure ?? 0)}`} className={feedback.pressure! > 0 ? 'value-danger' : feedback.pressure! < 0 ? 'value-gain' : 'value-neutral'}><Flame aria-hidden="true" />{signedDelta(feedback.pressure ?? 0)}</span></div>}
           {feedback.tone === 'arrival' && <p className="feedback-cause">{[earningSummary,positiveEnergySummary||(!earningSummary?energySummary:''),pressureSummary].filter(Boolean).join(' · ')}</p>}
@@ -455,6 +467,7 @@ export default function ElevatorGame() {
           return <g key={`${first}-${second}`} className={`connection-path ${shownActive ? 'active' : ''} ${partnership ? 'partnership-link' : ''} ${copy?'copy-link':''} ${shownConflict?'conflict-link':''} ${previewEdge ? 'preview-link' : ''}`}><line className="connection-underlay" x1={x1} y1={y1} x2={x2} y2={y2}/><line className="connection-core" x1={x1} y1={y1} x2={x2} y2={y2}/>{(shownActive||shownConflict)&&!copy&&<circle className="connection-node" cx={(x1+x2)/2} cy={(y1+y2)/2} r="3"/>}{copy&&<path className="copy-direction" d={`M ${x1-5} 104 L ${x1} 96 L ${x1+5} 104`}/>} {cost&&<text className="connection-effect" x={(x1+x2)/2+(copy?12:0)} y={(y1+y2)/2-6} textAnchor={copy?'start':'middle'}>{cost}</text>}</g>;
         })}</svg>{run.cabin.map((rider, index) => {
           const state = riderState(run.cabin, index, cooperationBonus(run), run.stress); const plan = placementPlans[index]; const synergy = plan?.ok && plan.changed && plan.tone === 'combo'; const agitation=riderAgitation(run,index); const seatBrief=rider?{...passengerBrief(rider,run.floor,run.cabin,cooperationBonus(run),cooperationRelief(run),eventPressureMultiplier(run),run.stress),energy:seatEnergyCosts[index].total}:null;
+          const arrival=arriving.find(entry=>entry.slot===index);
           const target = dragOverSlot === index && Boolean(activeRider); const reaction = feedback?.slots.includes(index) ? feedback : null;
           const agitationValue=agitation.low===agitation.high?signedDelta(agitation.low):`${signedDelta(agitation.low)}～${signedDelta(agitation.high)}`;
           const compactAgitationValue=agitation.low===agitation.high?compactDelta(agitation.low):`${compactDelta(agitation.low)}～${compactDelta(agitation.high)}`;
@@ -462,7 +475,7 @@ export default function ElevatorGame() {
             {rider && seatBrief ? <span className={`rider-visual ${rider.kind==='bomb'?'rider-bomb':''} ${rider.volatile?'rider-high-risk':''}`} key={rider.id}>{rider.volatile&&<span className="seat-risk-tag"><Flame aria-hidden="true" />高危</span>}<span className="rider-name">{PASSENGERS[rider.kind].name}</span>{Boolean(rider.stash)&&<span className="seat-stash">暂存 {rider.stash}</span>}<span className="slot-destination">还剩 {Math.max(0, rider.destination - run.floor)} 站</span><span className="seat-art"><Portrait kind={rider.kind} large /></span>{state && rider.kind !== 'bomb' && <span className={`slot-state ${state.tone}`}>{state.label}</span>}{rider.fuse !== undefined && <span className="fuse">炸弹倒计时 {rider.fuse}</span>}<span className="seat-metrics"><span className="seat-fare" title="按当前站位、躁动和已完成进度计算；下一站到站含本次进度，不含概率奖励" aria-label={`到站收益 ${seatBrief.expectedFare??'未知'}`}><Coins aria-hidden="true" />{seatBrief.expectedFare??'?'}</span><span className="seat-energy" title="人物耗电含红线倍率；链接固定耗电与整车节能另计" aria-label={`每站耗电 ${seatBrief.energy}`}><BatteryCharging aria-hidden="true" />{seatBrief.energy}</span><span className="seat-agitation" title="下一站躁动" aria-label={`下一站躁动 ${agitationValue}`}><Flame aria-hidden="true" />{compactAgitationValue}</span></span></span> : <><span className="slot-number">{String(index + 1).padStart(2, '0')}</span>{target && plan?.ok && activeRider && <span className="placement-ghost"><Portrait kind={activeRider.kind} large /></span>}</>}
             {reaction && <span key={reaction.id} className={`slot-reaction reaction-${reaction.tone}`} aria-hidden="true" />}
             {target && plan && <span className={`drop-caption ${plan.ok ? 'allowed' : 'blocked'}`}>{plan.ok ? `${dragged ? '松手' : '点击'} · ${synergy ? '联动' : '就位'}` : '不可放置'}</span>}
-          </button>{rider && <button className="seat-info-button" type="button" disabled={locked} draggable={false} onDragStart={(event)=>event.preventDefault()} onClick={()=>{setEjectArmed(false);setPassengerDetails(rider);}} aria-label={`查看${PASSENGERS[rider.kind].name}详情`} title="查看人物详情"><Info aria-hidden="true" /></button>}</div>;
+          </button>{arrival&&<div key={arrival.riderId} className={`arrival-exit ${fastReveal?'arrival-quick':''}`} role="status" aria-label={`${PASSENGERS[arrival.kind].name} 到站 +${arrival.coins} 金币`}><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{PASSENGERS[arrival.kind].name}</span><span className="arrival-payout"><Coins aria-hidden="true"/>+{arrival.coins}<small>金币</small></span></div>}{rider && <button className="seat-info-button" type="button" disabled={locked} draggable={false} onDragStart={(event)=>event.preventDefault()} onClick={()=>{setEjectArmed(false);setPassengerDetails(rider);}} aria-label={`查看${PASSENGERS[rider.kind].name}详情`} title="查看人物详情"><Info aria-hidden="true" /></button>}</div>;
         })}</div>
         <button className="cabin-inspect-button" disabled={!activeRider || locked} onClick={() => {if(activeRider){setEjectArmed(false);setPassengerDetails(activeRider);}}}><BookOpen />{activeRider ? `查看${PASSENGERS[activeRider.kind].name} · 请离` : '选中人物 · 查看 / 请离'}</button>
         <div className="door door-left" /><div className="door door-right" />
@@ -475,7 +488,7 @@ export default function ElevatorGame() {
           {offers.map((offer, offerIndex) => {
             const spec = PASSENGERS[offer.kind];
             const currentRider=run.cabin.find((rider)=>rider?.id===offer.id);
-            const displayedOffer=currentRider??offer;
+            const displayedOffer=currentRider??(run.rebooked?.[offer.id]!==undefined?{...offer,destination:run.rebooked[offer.id]}:offer);
             const boarded = Boolean(currentRider); const pending = pendingOfferId === offer.id;
             const full = !boarded && cabinFull;
             const unavailable = full; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id;
@@ -485,9 +498,9 @@ export default function ElevatorGame() {
               {boarded && <span className="boarded-status" aria-hidden="true"><Check />已上车</span>}
               {offerDebuts.includes(offer.id) && <span className="offer-debut">初次见面</span>}
               <PassengerCardFace rider={displayedOffer} run={run} action={boarded?'点此撤回':pending?'已选中 · 点空位':full?'车厢已满':partner?`${offer.kind==='mimic'?'可复制正上方':'可连绿线'} · ${PASSENGERS[partner].name}`:undefined} locale={language}/>
-            </button><button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(displayedOffer);}} aria-label={`查看${spec.name}规则`}><BookOpen /><span>{language === 'en' ? 'Details' : '完整规则'}</span></button></div>;
+            </button>{run.upgrades.reservation>0&&!boarded&&<button className="reservation-button" disabled={locked||Boolean(run.reservedRider)||run.reservationUsedSector===Math.floor(run.floor/10)||run.reservedIds?.includes(offer.id)} onClick={()=>{const next=reserveOffer(run,offers,offer.id);if(next!==run){setRun(next);setOffers(current=>current.filter(r=>r.id!==offer.id));setPendingOfferId(null);setDragged(null);}}}>{run.reservedIds?.includes(offer.id)?'已保留过 · 不可续订':'留到下一批 · 每十层一次'}</button>}<button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(displayedOffer);}} aria-label={`查看${spec.name}规则`}><BookOpen /><span>{language === 'en' ? 'Details' : '完整规则'}</span></button></div>;
           })}
-        </div><div className="candidate-notes"><span className="route-note">运转 {travelEnergyCost(run.floor+1)} 电/层 · 下段 {travelEnergyCost(nextShop+1)} 电/层</span><span>每层＝上行后立即结算 · 到站＝下车时结算 · 邻座逐人叠加</span>{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
+        </div><div className="candidate-notes"><span className="route-note">运转 {travelEnergyCost(run.floor+1)} 电/层 · 下段 {travelEnergyCost(nextShop+1)} 电/层</span><span>每层＝上行后立即结算 · 到站＝下车时结算 · 邻座逐人叠加</span>{run.upgrades.single>0&&<span>车费不含整车奖励：单人到站+2币</span>}{run.upgrades.crowd>0&&<span>车费不含整车奖励：三类齐全且有人到站+3币</span>}{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
         <div className="departure-controls">
           <button className="mobile-inspect-button" disabled={!activeRider || locked} onClick={() => {if(activeRider){setEjectArmed(false);setPassengerDetails(activeRider);}}} aria-label="查看选中人物规则"><BookOpen /><span>人物/请离</span></button>
           <button className="depart-button" onClick={depart} disabled={locked || occupied===0}><span>{doors === 'open' ? occupied===0?'至少接1人':'关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
@@ -523,7 +536,7 @@ export default function ElevatorGame() {
 
     <Dialog open={receiptOpen} onOpenChange={setReceiptOpen}><DialogContent className="story-dialog receipt-dialog">
       <p className="dialog-kicker">DECISION RECEIPT</p><DialogHeader><DialogTitle>这次，改变了什么？</DialogTitle><DialogDescription>{metricEvent?.label}。以下是实际变化，不是下一层预测。</DialogDescription></DialogHeader>
-      <div className="receipt-sections">{metricEvent?.changes.map((change) => <section key={change.key} className={`receipt-section pulse-${change.tone}`}>
+      <div className="receipt-sections">{Boolean(run.lastArrivals?.length)&&<section className="receipt-section"><h3>本层到站乘客</h3>{run.lastArrivals?.map(entry=><p key={entry.riderId}><span>{entry.slot+1}号位 · {PASSENGERS[entry.kind].name}</span><b>+{entry.coins} 金币</b></p>)}<p>个人收入含实际小费与个人升级奖励；整车奖励及扣款另计。</p></section>}{metricEvent?.changes.map((change) => <section key={change.key} className={`receipt-section pulse-${change.tone}`}>
         <h3><span>{change.label}</span><b>{change.before} → {change.after}<em>{signedDelta(change.delta)}</em></b></h3>
         {change.sources.map((source, index) => <p key={`${index}-${source.label}`}><span>{source.label}</span><b>{signedDelta(source.amount)}</b></p>)}
         {change.capDelta !== 0 && <p><span>{change.label}上限</span><b>{signedDelta(change.capDelta)}</b></p>}
@@ -543,7 +556,7 @@ export default function ElevatorGame() {
     </div><div className="pressure-footer"><div className={`pressure-now forecast-${pressurePreview.tone}`}><small>按现在的站位</small><b>{pressurePreview.summary}</b></div><Button className="story-primary pressure-start-button" onClick={() => setPressureHelp(false)}>开始游戏 <ArrowUp /></Button></div></DialogContent></Dialog>
     <Dialog open={archive} onOpenChange={setArchive}><DialogContent className="story-dialog archive-dialog"><p className="dialog-kicker">PASSENGER ARCHIVE</p><DialogHeader><DialogTitle>午夜乘客档案</DialogTitle><DialogDescription>遇见过的乘客会录入档案。最高抵达 {highest}F。</DialogDescription></DialogHeader><div className="archive-grid">{PASSENGER_ORDER.map((kind) => { const open = discovered.includes(kind); const spec = PASSENGERS[kind]; return <div className={`archive-item ${open ? '' : 'locked'}`} key={kind}>{open ? <Portrait kind={kind} /> : <LockKeyhole />}<span><b>{open ? spec.name : '尚未遇见'}</b><small>{open ? spec.short : '继续向上，等待相遇'}</small></span></div>; })}</div></DialogContent></Dialog>
     <Dialog open={changelogOpen} onOpenChange={setChangelogOpen}><DialogContent className="story-dialog changelog-dialog"><p className="dialog-kicker">SHIFT REVISION ARCHIVE</p><DialogHeader><DialogTitle>版本 v{GAME_VERSION}</DialogTitle><DialogDescription>每次更新都记录玩法变化、数值依据、测试结论与仍需观察的问题。</DialogDescription></DialogHeader><div className="changelog-list">{(language === 'en' ? CHANGELOG_EN : CHANGELOG).map((entry,index)=><article className={index===0?'current-release':''} key={entry.version}><header><div><span>VERSION {entry.version}</span><h3>{entry.title}</h3></div><time>{entry.date}</time></header><p>{entry.summary}</p><div className="changelog-columns"><section><b>改进</b><ul>{entry.changes.map(item=><li key={item}>{item}</li>)}</ul></section><section><b>试验与结论</b><ul>{entry.experiments.map(item=><li key={item}>{item}</li>)}</ul></section><section><b>继续观察</b><ul>{entry.watch.map(item=><li key={item}>{item}</li>)}</ul></section></div></article>)}</div></DialogContent></Dialog>
-    <Dialog open={run.status === 'upgrade'}><DialogContent className={`story-dialog upgrade-dialog ${upgradeCrisis ? 'upgrade-crisis' : ''}`} showCloseButton={false}>
+    <Dialog open={run.status === 'upgrade' && doors === 'open'}><DialogContent className={`story-dialog upgrade-dialog ${upgradeCrisis ? 'upgrade-crisis' : ''}`} showCloseButton={false}>
       <div className="shop-resources">
         <div className={`shop-power ${run.energy <= 0 ? 'shop-power-empty' : ''}`} aria-live="polite" aria-atomic="true">
           <span className="shop-resource-label"><BatteryCharging aria-hidden="true"/>{language === 'zh' ? '剩余电量' : 'Power left'}</span>
@@ -555,6 +568,11 @@ export default function ElevatorGame() {
       <p className="route-notice">运转 {travelEnergyCost(run.floor+1)} 电 / 层<br />{motorAdvanceNotice(run.floor)}</p>
       <p className="dialog-kicker">FLOOR {run.floor} · SHOP</p><DialogHeader><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle><DialogDescription>本局4个永久安装位，每店最多选一项，已选能力不再出现。可随时充电；躁动仅在失控时允许最低抢救。</DialogDescription></DialogHeader>
       {upgradeCrisis && <p className="shop-warning">{upgradeCrisis === 'both' ? '电量与躁动同时失控：底部最低抢救可恢复1电，并将躁动降至上限以下1点。' : upgradeCrisis === 'energy' ? '电量已耗尽：使用下方充电服务，将电量恢复到 0 以上才能继续。' : '躁动失控：底部最低抢救每点8金币，只降至上限以下1点，不可继续购买舒缓。'} 若无力修复，本班将在这里结束。</p>}
+      <button className="shop-inventory-link" onClick={()=>setInventoryOpen(true)}><Layers />安装位 {upgradeCount} / {UPGRADE_SLOTS} · 查看已装升级</button>
+      {!availableShopCards(run).length&&<p className="shop-receipt" role="status">{upgradeCount >= UPGRADE_SLOTS ? '四个安装位已满。本班保留当前能力，维修服务仍然可用。' : run.shopUpgradeBought?'本店能力已选购，下次商店再选。维修服务仍然可用。':'本店没有未安装的能力可选。维修服务仍然可用。'}</p>}
+      <div className="upgrade-grid">{availableShopCards(run).map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, run); const warning = purchaseRepairWarning(run,key,card.price); return <button key={key} className={rescue ? 'crisis-rescue' : ''} disabled={!affordable} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price} 金币${!affordable ? '，金币不足' : ''}`}>
+        <span className="upgrade-card-head"><small>{UPGRADES[key].label}</small></span><b>{UPGRADES[key].name}</b><p>{UPGRADES[key].description}</p><em>{upgradeImpact(key, run)}</em>{warning && <span className="reserve-warning">{warning === 'crisis' ? '购买后不足以修复当前失控' : '购买后无法补至参考电量；参考线不是离店要求'}</span>}<span className="shop-price"><Coins aria-hidden="true" /><strong>{card.price}</strong><span>{affordable ? '购买并安装' : `还差 ${card.price - run.coins}`}</span></span>
+      </button>; })}</div>
       <section className="recharge-panel charge-slider-panel">
         <div><b>{language==='zh'?'充电至':'Charge to'} <output>{chargeTarget}/{run.energyCap}</output></b><span>{CHARGE_PRICE}{language==='zh'?'金币 / 电':' coins / power'}</span></div>
         <label className="charge-control"><span className="sr-only">{language==='zh'?'充电目标':'Charge target'}</span><Slider className="charge-slider" min={Math.min(run.energy,run.energyCap)} max={run.energyCap} step={1} value={[chargeTarget]} disabled={run.energy>=run.energyCap} onValueChange={value=>setChargeChoice({floor:run.floor,target:Array.isArray(value)?value[0]:value})}/></label>
@@ -563,17 +581,13 @@ export default function ElevatorGame() {
         <p aria-live="polite">{language==='zh'?(chargeCost>run.coins?`还差 ${chargeCost-run.coins} 金币；拖低目标即可少充。`:`充电后剩余 ${run.coins-chargeCost} 金币。`):(chargeCost>run.coins?`Need ${chargeCost-run.coins} more coins; lower the target to buy less.`:`${run.coins-chargeCost} coins left after charging.`)}</p>
         <p>{language==='zh'?`到店补电最多 ${SHOP_ENTRY_CHARGE} 电，计入本层结算后再判断缺电。下段运转需 ${chargePlan.baseline} 电，人物另计；每次上行至少1人在车内，50电只是参考。`:`Shop power (up to ${SHOP_ENTRY_CHARGE}) counts before the power-loss check. Next motor segment: ${chargePlan.baseline}, plus riders; every ascent needs a rider aboard. 50 is only a reference.`}</p>
       </section>
+      {run.calmCharge&&<button className="reserve-use" disabled={run.stress<=0} onClick={()=>{const next=useCalmCharge(run);setRun(next);reportMetrics(run,next,'手动调节');}}>手动调节 −2躁动 · 一次</button>}
       <section className="recharge-panel reserve-panel"><div><b>应急电池 · {RESERVE_CELL_PRICE}金币</b><span>携带上限1份，不占安装位；离店后主动使用，补{RESERVE_CELL_CHARGE}电，不超过容量。</span></div><div className="recharge-actions"><button disabled={Boolean(run.reserveCell)||run.coins<RESERVE_CELL_PRICE} onClick={()=>{const next=buyReserveCell(run);if(next!==run){setRun(next);setLeaveArmed(false);reportMetrics(run,next,'购买应急电池');}}}>{run.reserveCell?'已携带1份':`购买应急电池 · ${RESERVE_CELL_PRICE}金币`}</button></div></section>
-      <button className="shop-inventory-link" onClick={()=>setInventoryOpen(true)}><Layers />安装位 {upgradeCount} / {UPGRADE_SLOTS} · 查看已装升级</button>
-      {!availableShopCards(run).length&&<p className="shop-receipt" role="status">{upgradeCount >= UPGRADE_SLOTS ? '四个安装位已满。本班保留当前能力，维修服务仍然可用。' : run.shopUpgradeBought?'本店能力已选购，下次商店再选。维修服务仍然可用。':'本店没有未安装的能力可选。维修服务仍然可用。'}</p>}
-      <div className="upgrade-grid">{availableShopCards(run).map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, run); const warning = purchaseRepairWarning(run,key,card.price); return <button key={key} className={rescue ? 'crisis-rescue' : ''} disabled={!affordable} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price} 金币${!affordable ? '，金币不足' : ''}`}>
-        <span className="upgrade-card-head"><small>{UPGRADES[key].label}</small></span><b>{UPGRADES[key].name}</b><p>{UPGRADES[key].description}</p><em>{upgradeImpact(key, run)}</em>{warning && <span className="reserve-warning">{warning === 'crisis' ? '购买后不足以修复当前失控' : '购买后无法补至参考电量；参考线不是离店要求'}</span>}<span className="shop-price"><Coins aria-hidden="true" /><strong>{card.price}</strong><span>{affordable ? '购买并安装' : `还差 ${card.price - run.coins}`}</span></span>
-      </button>; })}</div>
       {metricEvent && <p className="shop-receipt" aria-live="polite">{metricEvent.label}{metricEvent.changes.map((change) => ` · ${change.label} ${signedDelta(change.delta)}${change.capDelta ? `（上限 ${signedDelta(change.capDelta)}）` : ''}`).join('')}</p>}
       </div>
       <div className="shop-footer">{leaveArmed && !upgradeCrisis && <p className="shop-warning">当前电量低于下一段运转参考；人物耗电与途中回充另计。再点一次确认冒险。</p>}<Button className="story-primary" onClick={finishShopping}>{upgradeCrisis ? emergencyRepairPlan(run).affordable ? `最低抢救 · ${emergencyRepairPlan(run).cost} 金币` : leaveArmed ? '确认结束本班' : '无法支付抢救费 · 结束本班' : leaveArmed ? '确认冒险离开' : '继续上行'}<ArrowUp /></Button></div>
     </DialogContent></Dialog>
-    <Dialog open={run.status === 'lost'}><DialogContent className="story-dialog result-dialog failure-dialog" showCloseButton={false}><p className="dialog-kicker">ENDLESS SHIFT · {run.floor}F</p><DialogHeader><DialogTitle>本班失败</DialogTitle><DialogDescription className="failure-cause">{run.message.includes('炸弹倒计时') ? '炸弹倒计时归零' : run.energy<=0 && run.stress>=run.stressCap ? '电量耗尽 · 躁动失控' : run.energy<=0 ? '电量耗尽' : '躁动失控'}<span>{run.message}</span></DialogDescription></DialogHeader>{run.floor>runStartBest && <p className="result-record">这次抵达 {run.floor} 层，刷新了你的纪录。</p>}<div className="result-score"><span>本班抵达 <b>{run.floor} 层</b></span><span>无尽纪录 <b>{bestFloor} 层</b></span><span>累计赚取 <b>{run.earned}</b></span><span>本班支出 <b>{run.earned - run.coins}</b></span></div><p className="result-challenge failure">{resultChallenge}</p><p className="result-investment">{upgradeCount} 次升级 · 剩余 {run.coins} 金币。金币只在本班使用，下一班重新开始。</p><Button className="story-primary" onClick={reset}><RotateCcw /> 再开一班 · 挑战更高楼层</Button><button className="story-link" onClick={() => setArchive(true)}><BookOpen /> 查看乘客档案</button></DialogContent></Dialog>
+    <Dialog open={run.status === 'lost' && doors === 'open'}><DialogContent className="story-dialog result-dialog failure-dialog" showCloseButton={false}><p className="dialog-kicker">ENDLESS SHIFT · {run.floor}F</p><DialogHeader><DialogTitle>本班失败</DialogTitle><DialogDescription className="failure-cause">{run.message.includes('炸弹倒计时') ? '炸弹倒计时归零' : run.energy<=0 && run.stress>=run.stressCap ? '电量耗尽 · 躁动失控' : run.energy<=0 ? '电量耗尽' : '躁动失控'}<span>{run.message}</span></DialogDescription></DialogHeader>{run.floor>runStartBest && <p className="result-record">这次抵达 {run.floor} 层，刷新了你的纪录。</p>}<div className="result-score"><span>本班抵达 <b>{run.floor} 层</b></span><span>无尽纪录 <b>{bestFloor} 层</b></span><span>累计赚取 <b>{run.earned}</b></span><span>本班支出 <b>{run.earned - run.coins}</b></span></div><p className="result-challenge failure">{resultChallenge}</p><p className="result-investment">{upgradeCount} 次升级 · 剩余 {run.coins} 金币。金币只在本班使用，下一班重新开始。</p><Button className="story-primary" onClick={reset}><RotateCcw /> 再开一班 · 挑战更高楼层</Button><button className="story-link" onClick={() => setArchive(true)}><BookOpen /> 查看乘客档案</button></DialogContent></Dialog>
   </main>;
   return localizeTree(content, language);
 }

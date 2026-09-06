@@ -1,6 +1,7 @@
 import { Children, cloneElement, isValidElement, type ReactElement, type ReactNode } from 'react';
 import {V831_PAIRS} from './i18n-v831';
 import {V832_PAIRS} from './i18n-v832';
+import {V837_PAIRS} from './i18n-v837';
 import {V835_PAIRS} from './i18n-v835';
 
 export type GameLocale = 'en' | 'zh';
@@ -523,8 +524,8 @@ const phrasePairs: Array<[string, string]> = [
   ['或', ' or '], ['/条', '/link'], ['/站', '/floor'], ['/ 站', '/floor'], ['金币', 'Coins'], ['耗电', 'Power'], ['躁动', 'Agitation'], ['到站', 'Arrival'], ['车费', 'fare'],
 ];
 
-const exact = new Map([...exactPairs, ...V832_PAIRS, ...V835_PAIRS]);
-const phrases = [...V835_PAIRS, ...V832_PAIRS, ...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
+const exact = new Map([...exactPairs, ...V832_PAIRS, ...V835_PAIRS, ...V837_PAIRS]);
+const phrases = [...V837_PAIRS, ...V835_PAIRS, ...V832_PAIRS, ...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
 
 export function translateGameText(value: string, locale: GameLocale): string {
   if (locale === 'zh') return value;
@@ -537,6 +538,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
   const direct = exact.get(core);
   if (direct) return `${leading}${direct}${trailing}`;
   let translated = value
+    .replace(/电量耗尽 · 本层总扣电 (\d+)（运转 (\d+)、人物与红线 (\d+)）；抵消与回电 \+(\d+)；净变化 (-?\d+)。/gu, 'Power depleted · Gross cost $1 (motor $2, riders and red links $3); offsets and recharge +$4; net change $5. ')
     .replace(/^(.+?)已购入，花费 (\d+) 金币。$/u, '$1 purchased for $2 coins.')
     .replace(/ · 已购入$/u, ' · Purchased')
     .replace(/^使用应急电池 \+(\d+)电$/u, 'Use Reserve Cell +$1 power')

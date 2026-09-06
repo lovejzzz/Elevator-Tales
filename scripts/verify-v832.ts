@@ -52,7 +52,7 @@ test('fixed agitation bands do not move with the loss cap',()=>{
  assert.deepEqual([0,1,2,3,4,5,7,8].map(B.agitationBand),['low','low','low','medium','medium','high','high','high']);
  assert.equal(E.initialRun().stressCap,8);
  const calm=E.previewUpgrade(state({stress:6}),'calm');
- assert.equal(calm.stressCap,9);assert.equal(calm.stress,4);assert.equal(B.agitationBand(calm.stress),'medium');
+ assert.equal(calm.stressCap,9);assert.equal(calm.stress,6);assert.equal(calm.calmCharge,true);assert.equal(B.agitationBand(calm.stress),'high');
  for(const cap of [8,9,20])assert.equal(E.agitationThreshold(cap),5);
 });
 test('motor has a public capped schedule; shops never raise prices',()=>{
@@ -231,4 +231,4 @@ test('20000 mixed transitions match public forecasts, preserve inputs and reconc
   assert.equal(next.lastEarnings.sources.reduce((n,l)=>n+l.amount,0),next.coins-s.coins,'coin ledger '+i);
  }
 });
-console.log(JSON.stringify({version:'8.32',passed:checks.length,checks,mixedTransitions:20000,encounterPackets:12000,upgradeStates:1024,limits:'Synthetic rules and coverage, not human enjoyment or balance certification.'},null,2));
+console.log(JSON.stringify({version:'8.32',passed:checks.length,checks,mixedTransitions:20000,encounterPackets:12000,upgradeStates:1<<Object.keys(D.UPGRADES).length,limits:'Synthetic rules and coverage, not human enjoyment or balance certification.'},null,2));

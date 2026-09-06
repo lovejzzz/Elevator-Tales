@@ -17,6 +17,22 @@ import {guidedOpening} from './opening.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('next-shop boarding horizon is opt-in, bounded, public-only and distinguishes censoring',()=>{
+  const a=fixtures.sealed(),b=clone(a);b.state.cabin[0]!.traits!.fare=8;
+  const na=new Names(),nb=new Names();na.register(a);nb.register(b);const before=hash(a);
+  const fixed=serviceFor(a,na).imagine([],5,2,'operator');
+  assert.equal(fixed.depth,5);
+  const longer=serviceFor(a,na,{boardingHorizon:'next-shop'}).imagine([],5,2,'operator');
+  assert.deepEqual(longer,serviceFor(b,nb,{boardingHorizon:'next-shop'}).imagine([],5,2,'operator'));
+  assert.equal(longer.depth,10-a.state.floor%10);assert.equal(longer.censoredFraction,0);
+  assert.equal(longer.survivalFraction,longer.shopArrivalFraction);assert.equal(hash(a),before);
+  for(const floor of [20,21,25,29]){
+   const w=clone(a);w.state.floor=floor;w.state.cabin.forEach(r=>{if(r)r.destination=floor+12;});
+   const n=new Names();n.register(w);const service=serviceFor(w,n,{boardingHorizon:'next-shop'});
+   assert.equal(service.imagine([],5,1).depth,10-floor%10);
+   assert.throws(()=>service.imagine([],6,1),/budget/);assert.throws(()=>service.imagine([],5,17),/budget/);
+  }
+ });
  test('local ticket experiment preserves packets and RNG, prorating only actual local shortening before Express',()=>{
   let changed=0;
   try{
@@ -122,7 +138,7 @@ export function verify(){
   const base=configureScenario('baseline'),costs=Array.from({length:120},(_,n)=>B.motorCost(n+1));
   try{
    const treatment=configureScenario('v836-late-motor');
-   assert.deepEqual({...treatment,name:base.name,motor:base.motor},base);
+   assert.deepEqual({...treatment,name:base.name,motor:base.motor,upgradePrices:base.upgradePrices},base);
    for(let floor=1;floor<=120;floor++)assert.equal(B.motorCost(floor),floor<71?costs[floor-1]:floor<91?7:8);
    assert.deepEqual(B.nextMotorChange(69),{from:71,power:7});assert.deepEqual(B.nextMotorChange(89),{from:91,power:8});assert.equal(B.nextMotorChange(91),null);
    assert.match(B.motorScheduleText(),/71–90层7电/);assert.match(B.motorScheduleText(),/91层起8电封顶/);

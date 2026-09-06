@@ -1,6 +1,6 @@
-import { COURIER_ARRIVAL_CHARGE, SHOP_ENTRY_CHARGE, arrivalRelief, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, type RunState } from './game-engine';
+import { COURIER_ARRIVAL_CHARGE, SHOP_ENTRY_CHARGE, settleBuffer, redAgitationProtection, arrivalRelief, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, type RunState } from './game-engine';
 import { conflictLinks } from './rider-profile';
-import { RELAY_ENERGY, shopOpportunities } from './shop-effects';
+import { RELAY_ENERGY, shopOpportunities, naturalChargeBoost } from './shop-effects';
 import { experimentalRiskLinks, type RiskLinkTuning } from './risk-link-experiment';
 import { riskPartnerships } from './shift-rules';
 
@@ -41,7 +41,7 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
   const beat = musicAgitation(state);
   const passengerRise = effects.reduce((sum, effect) => sum + effect.low, 0) + beat;
   const linkRise = experimentalRiskLinks(state.cabin, riskTuning).agitation;
-  const redRise=conflictLinks(state.cabin).filter(link=>link.effect==='agitation').length + linkRise + riskPartnerships(state.cabin).agitation;
+  const redRise=conflictLinks(state.cabin).filter(link=>link.effect==='agitation').length - redAgitationProtection(state) + linkRise + riskPartnerships(state.cabin).agitation;
   const variants = projectedDestinationVariants(state).map((destinations) => {
     const arriving = state.cabin.flatMap((rider, slot) => rider && destinations[slot] !== null && nextFloor >= destinations[slot]! ? [slot] : []);
     return { arrivals: arriving.length };
@@ -75,12 +75,13 @@ export function energyForecast(state: RunState, _legacyWeight?: number, _riskTun
  const charges=projectedDestinationVariants(state).flatMap(destinations=>{
   const slots=state.cabin.flatMap((rider,slot)=>rider&&destinations[slot]!==null&&destinations[slot]!<=nextFloor?[slot]:[]);
   const arriving=slots.map(slot=>state.cabin[slot]!);
-  const charge=shopCharge+arriving.filter(rider=>rider.kind==='courier').length*COURIER_ARRIVAL_CHARGE;
+  const natural=arriving.filter(rider=>rider.kind==='courier').length*COURIER_ARRIVAL_CHARGE;
+  const charge=shopCharge+natural+naturalChargeBoost(state,natural);
   const relay=shopOpportunities(state,state.cabin,slots).relay;
   relayPossible ||= relay;
-  return relay ? [charge,charge+RELAY_ENERGY] : [charge];
+  return relay ? [charge,shopCharge+natural+RELAY_ENERGY+naturalChargeBoost(state,natural+RELAY_ENERGY)] : [charge];
  });
- const deltas=charges.map(charge=>Math.min(state.energyCap,state.energy-total+charge)-state.energy);
+ const deltas=charges.map(charge=>settleBuffer(state.energy-total+charge,state.energyCap,state.bufferPower??0,Boolean(state.upgrades.buffer)).energy-state.energy);
  const lowDelta=Math.min(...deltas),highDelta=Math.max(...deltas);
  const minCharge=Math.min(...charges),maxCharge=Math.max(...charges);
  const chargeNote=maxCharge?minCharge===maxCharge?`＋补电 ${maxCharge}`:`＋可能补电 ${minCharge}–${maxCharge}`:'';

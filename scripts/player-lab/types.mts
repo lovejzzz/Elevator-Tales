@@ -1,7 +1,7 @@
 // Policy / model boundary: no game-state, RNG seed, copy seed or sealed fare.
 export type Action = {type:'place'; rider:string; slot:number} | {type:'dismiss'; rider:string}
-  | {type:'withdraw'; rider:string} | {type:'charge'|'soothe'; units:number}
-  | {type:'buy'; key:string} | {type:'depart'|'leave'|'buy-reserve'|'use-reserve'};
+  | {type:'retime';rider:string;delta:number} | {type:'withdraw'|'reserve-offer'; rider:string} | {type:'charge'|'soothe'; units:number}
+  | {type:'buy'; key:string} | {type:'depart'|'leave'|'buy-reserve'|'use-reserve'|'use-calm'};
 export type PublicRider = {
   id:string; kind:string; name:string; remaining:number; boardedAt:number; volatile:boolean;
   energy:number; agitation:number; baseFare:number|null; currentPayout:number|null;
@@ -12,7 +12,7 @@ export type PublicRider = {
 export type Observation = {
   schema:2; version:string; floor:number; phase:'playing'|'upgrade'|'lost';
   energy:number; energyCap:number; stress:number; stressCap:number; coins:number;
-  oldMoveUsed:boolean; failureCause:'bomb'|'energy'|'agitation'|null; cabin:Array<PublicRider|null>; offers:PublicRider[];
+  reserved?:PublicRider|null; bufferPower?:number; punchCount?:number; retimeAvailable?:boolean; oldMovesRemaining?:number; calmCharge?:boolean; reservationAvailable?:boolean; oldMoveUsed:boolean; failureCause:'bomb'|'energy'|'agitation'|null; cabin:Array<PublicRider|null>; offers:PublicRider[];
   installed:string[]; shop:Array<{key:string; price:number; rule:string;effect:{energyCap:number;stressCap:number;energy:number;stress:number}}>;
   prices:{charge:number; soothe:number;reserve:number}; nextShop:number;
   agitationBand:'low'|'medium'|'high'; serviceTurns:number; reserveCell:boolean; reserveCharge:number;
@@ -30,14 +30,16 @@ export type Features = {
 export type Preview = {actions:Action[]; observation:Observation; features:Features;
   safety:{resourceSafe:boolean; bombSafe:boolean; shopWindow:boolean};
 };
-export type Rollout = {samples:number; depth:number; survivalFraction:number; minStressRoom:number;
+export type Rollout = {samples:number; depth:number; survivalFraction:number; shopArrivalFraction?:number; censoredFraction?:number; minStressRoom:number;
   meanFloors:number; meanNetCash:number; meanEnergy:number; meanStress:number; meanInvestmentRoom?:number; hypothesis:string};
 export type Decision = {actions:Action[]; reason:string; alternatives:Array<{actions:Action[];score:number;safety:Preview['safety']}>;
   diagnostics:{enumerated:number; sampledSafePlans:number; horizon:Rollout|null; knowledge:string[]}};
 export type PolicyName = 'novice'|'merchant'|'explorer'|'minimalist'|'planner'|'opportunist'|'investor'|'operator'|'allocator'|'diverse';
-export type ShopStyle = 'native' | 'committed' | 'adaptive';
+export type ShopStyle = 'native' | 'committed' | 'adaptive' | 'joint' | 'joint-long';
 export type InvestmentSample = {floor:number; arrivals:number; rideSum:number; nearLimit:boolean; gross:Record<string,number>};
+export type ShopTrial = {key:string; actions:Action[]; samples:number; depth:number; survival:number; floors:number; value:number; cash:number; power:number; stress:number};
 export type PreviewService = {
+  jointShop?(samples?:number,depth?:10|20):ShopTrial[];
   preview(actions:Action[]):Preview|null;
   candidates(mode:PolicyName,seen:Set<string>):{plans:Preview[];enumerated:number};
   imagine(actions:Action[],depth:number,samples:number,continuation?:'minimalist'|'operator'):Rollout;

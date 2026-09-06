@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {E,D,R,F,I,U,B,P,consumeReserveCell,GAME_VERSION,type RunState,type Rider,type UpgradeKey} from './game.mts';
+import {E,D,R,F,I,U,B,P,S,consumeReserveCell,GAME_VERSION,type RunState,type Rider,type UpgradeKey} from './game.mts';
 import type {Action,Observation,PublicRider,Preview,Features} from './types.mts';
 import {hash,rngFor,seedFor} from './util.mts';
 import {currentScenario} from './scenarios.mts';
@@ -29,17 +29,21 @@ export function applyLocal(w:World,a:Action,names:Names):World|null {
  else if(a.type==='soothe')next=E.sootheAgitation(s,a.units);
  else if(a.type==='buy-reserve')next=E.buyReserveCell(s);
  else if(a.type==='use-reserve')next=consumeReserveCell(s);
+ else if(a.type==='use-calm')next=E.useCalmCharge(s);
+ else if(a.type==='retime'){const id=names.actual(a.rider,w);if(!id)return null;next=E.retimeRider(s,id,a.delta);}
+ else if(a.type==='reserve-offer'){const id=names.actual(a.rider,w);if(!id)return null;next=E.reserveOffer(s,w.offers,id);}
  else if(a.type==='buy'){
   if(!Object.hasOwn(D.UPGRADES,a.key))return null;
   next=E.installUpgrade(s,a.key as UpgradeKey);
  }else return null;
  if(next===s)return null;
- return {state:next,offers:w.offers};
+ return {state:next,offers:w.offers.filter(r=>r.id!==next.reservedRider?.id)};
 }
 export function applyPlan(w:World,actions:Action[],names:Names):World|null {
  let next=w;for(const a of actions){const changed=applyLocal(next,a,names);if(!changed)return null;next=changed;}return next;
 }
 export function visibleRider(r:Rider,w:World,names:Names,slot=-1):PublicRider {
+ if(w.state.rebooked?.[r.id]!==undefined)r={...r,destination:w.state.rebooked[r.id]};
  const s=w.state,p=R.riderProfile(r,slot>=0?s.cabin:[],slot);
  return {id:names.id(r.id),kind:r.kind,name:D.PASSENGERS[r.kind].name,remaining:r.destination-s.floor,boardedAt:r.boardedAt,
   volatile:Boolean(r.volatile),energy:p.energy,agitation:p.agitation+(r.volatile?1:0),baseFare:p.hidden?null:p.fare,
@@ -51,7 +55,7 @@ export function visibleRider(r:Rider,w:World,names:Names,slot=-1):PublicRider {
 export function observe(w:World,names:Names,forecast=true):Observation {
  names.register(w);const s=w.state,ef=forecast&&s.status==='playing'?F.energyForecast(s):null,sf=ef?F.stressForecast(s):null;
  return {schema:2,version:GAME_VERSION,floor:s.floor,phase:s.status,energy:s.energy,energyCap:s.energyCap,stress:s.stress,stressCap:s.stressCap,coins:s.coins,
-  oldMoveUsed:s.swapped,failureCause:s.status!=='lost'?null:s.message.includes('炸弹')?'bomb':s.message.includes('电量')?'energy':'agitation',cabin:s.cabin.map((r,i)=>r?visibleRider(r,w,names,i):null),
+  bufferPower:s.bufferPower??0,punchCount:s.punchCount??0,retimeAvailable:Boolean(s.upgrades.retime&&s.retimeUsedSector!==Math.floor(s.floor/10)),reserved:s.reservedRider?visibleRider(s.reservedRider,w,names):null,oldMovesRemaining:E.oldMovesRemaining(s),calmCharge:Boolean(s.calmCharge),reservationAvailable:Boolean(s.upgrades.reservation&&!s.reservedRider&&s.reservationUsedSector!==Math.floor(s.floor/10)),oldMoveUsed:!E.oldMovesRemaining(s),failureCause:s.status!=='lost'?null:s.message.includes('炸弹')?'bomb':s.message.includes('电量')?'energy':'agitation',cabin:s.cabin.map((r,i)=>r?visibleRider(r,w,names,i):null),
   offers:w.offers.filter(r=>!s.cabin.some(p=>p?.id===r.id)).map(r=>visibleRider(r,w,names)),
   installed:(Object.keys(s.upgrades) as UpgradeKey[]).filter(k=>s.upgrades[k]>0),
   shop:E.availableShopCards(s).map(c=>{const p=E.previewUpgrade(s,c.key);return {key:c.key,price:c.price,rule:D.UPGRADES[c.key].description,
@@ -66,7 +70,7 @@ export function observe(w:World,names:Names,forecast=true):Observation {
 // is a documented model assumption, not a copy of a player's hidden reward.
 export function believed(w:World,rng?:()=>number):World {
  const b=clone(w);
- for(const r of [...b.state.cabin,...b.offers])if(r?.kind==='mystery'&&r.traits)r.traits.fare=rng?E.rand(8,24,rng):16;
+ for(const r of [...b.state.cabin,...b.offers,b.state.reservedRider])if(r?.kind==='mystery'&&r.traits)r.traits.fare=rng?E.rand(8,24,rng):16;
  return b;
 }
 export function features(w:World,baseCoins:number):Features {
@@ -84,7 +88,13 @@ export function features(w:World,baseCoins:number):Features {
   if(r.kind==='inspector'&&!r.complianceReady&&B.agitationBand(s.stress)==='low'&&remaining>=B.INSPECTION_WORK-(r.quietStreak??0))stateValue+=B.INSPECTION_BONUS/Math.max(1,remaining);
   if(r.kind==='child'&&(r.careProgress??0)<B.CHILD_CARE_WORK&&E.hasNeighbour(s.cabin,slot,['nurse','lover'])&&remaining>=B.CHILD_CARE_WORK-(r.careProgress??0))stateValue+=B.CHILD_CARE_BONUS/Math.max(1,remaining);
  }
+ if(s.reservedRider&&s.cabin.some(r=>r&&r.destination<=s.floor+2))stateValue+=Math.max(0,R.riderProfile(s.reservedRider,[]).fare-2*R.riderProfile(s.reservedRider,[]).energy*(s.reservedRider.destination-s.reservedRider.boardedAt))*.2; // Public option-value hypothesis, not paid fare.
  const reds=R.conflictLinks(s.cabin),people=s.cabin.filter((r):r is Rider=>Boolean(r));
+ // Forecast scheduled rewards without peeking at hidden fares; Ghost delays may invalidate order.
+ const scheduled=s.cabin.flatMap((r,i)=>r?[{r,i}]:[]).sort((a,b)=>a.r.destination-b.r.destination||a.i-b.i);
+ if(s.upgrades.punchcard)scheduled.forEach(({r,i},n)=>{if(((s.punchCount??0)+n+1)%5===0)fareRate+=R.riderProfile(r,s.cabin,i).fare/Math.max(1,r.destination-s.floor);});
+ if(s.upgrades.single){const counts=new Map<number,number>();people.forEach(r=>counts.set(r.destination,(counts.get(r.destination)??0)+1));for(const [d,n] of counts)if(n===1)fareRate+=2/Math.max(1,d-s.floor);}
+ if(s.upgrades.finale){const groups=new Map<number,number>();people.forEach(r=>groups.set(r.destination,(groups.get(r.destination)??0)+1));for(const [d,n] of groups)fareRate+=S.finaleIncome(s,n,people.filter(r=>r.destination>d).length)/Math.max(1,d-s.floor);}
  // A diagnostic counterfactual: hold this lineup for one floor with no arrivals.
  // It is NOT a legal player action or a simulated game turn. Reading the shared
  // settlement avoids a second, stale table of thief/celebrity/shop income rates.
@@ -94,7 +104,7 @@ export function features(w:World,baseCoins:number):Features {
  // currently visible profiles, deliver existing riders on schedule and assume
  // one baseline passenger after the cabin empties. No unseen offers are used.
  // Ghost delays and future variable traits can invalidate this estimate.
- let committedEnergy=0,cumulativeCost=0,projected=s;
+ let committedEnergy=0,cumulativeCost=-(s.bufferPower??0),projected=s;
  for(let floor=s.floor;floor<E.nextShopFloor(s.floor);floor++){
   const cabin=projected.cabin.map(r=>r&&r.destination>floor?r:null);
   projected={...projected,floor,cabin};
@@ -107,14 +117,14 @@ export function features(w:World,baseCoins:number):Features {
   committedEnergy=Math.max(committedEnergy,cumulativeCost+(reachesShop?0:1));
   const worked=cabin.map((r,i)=>r?E.riderAfterWork(r,cabin,i,projected.stress):null);
   const completions=worked.filter((r,i)=>r?.kind==='mechanic'&&r.repairDone&&!cabin[i]?.repairDone).length;
-  const rise=cabin.reduce((n,_,i)=>n+E.riderAgitation(projected,i).low,0)+R.conflictLinks(cabin).filter(r=>r.effect==='agitation').length+U.riskPartnerships(cabin).agitation+E.musicAgitation(projected);
+  const rise=cabin.reduce((n,_,i)=>n+E.riderAgitation(projected,i).low,0)+R.conflictLinks(cabin).filter(r=>r.effect==='agitation').length+U.riskPartnerships(cabin).agitation+E.musicAgitation(projected)-E.redAgitationProtection(projected);
   projected={...projected,cabin:worked,serviceTurns:Math.min(B.REPAIR_DURATION_CAP,Math.max(0,(projected.serviceTurns??0)-1)+completions*B.REPAIR_DURATION),
    stress:Math.max(0,projected.stress+rise-E.arrivalRelief(cabin.filter(r=>r&&r.destination<=floor+1).length))};
  }
  committedEnergy=Math.max(0,committedEnergy-(s.reserveCell?B.RESERVE_CELL_CHARGE:0));
  const risk=U.riskPartnerships(s.cabin),bankedPerStep=risk.members.length*(2+Number(B.agitationBand(s.stress)==='high'));
  return {occupied:people.length,newCount:people.filter(r=>r.boardedAt===s.floor).length,
-  flow,fareRate,payout,energyCost:E.totalEnergyCost(s),committedEnergy,rise:s.cabin.reduce((n,_,i)=>n+E.riderAgitation(s,i).low,0)+reds.filter(r=>r.effect==='agitation').length+risk.agitation+E.musicAgitation(s),
+  flow,fareRate,payout,energyCost:E.totalEnergyCost(s),committedEnergy,rise:s.cabin.reduce((n,_,i)=>n+E.riderAgitation(s,i).low,0)+reds.filter(r=>r.effect==='agitation').length+risk.agitation+E.musicAgitation(s)-E.redAgitationProtection(s),
   stateValue,pendingRepair:Math.min(B.REPAIR_DURATION_CAP,pendingRepair),bankedPerStep,riskEdges:risk.edges.length,
   green,red:reds.length,due:people.filter(r=>r.destination<=s.floor+1).length,
   shortest:people.length?Math.min(...people.map(r=>r.destination-s.floor)):0,hidden,
@@ -149,10 +159,10 @@ export class Session {
   if(a.type==='depart'){
    const s=this.#world.state;if(s.status!=='playing'||!s.cabin.some(Boolean))throw Error('Illegal empty or non-playing departure');
    const next=E.resolveFloor(clone(s),this.rng('settle',s.floor));
-   w={state:next,offers:next.status==='playing'?E.makeOffers(next.floor,next.upgrades,false,this.rng('offers',next.floor),next.cabin):[]};
+   w=next.status==='playing'?E.nextOfferBatch(next,this.rng('offers',next.floor)):{state:next,offers:[]};
   }else if(a.type==='leave'){
    const s=this.#world.state;if(s.status!=='upgrade')throw Error('Not in shop');
-   const next=E.leaveShop(s);w={state:next,offers:next.status==='playing'?E.makeOffers(next.floor,next.upgrades,false,this.rng('offers',next.floor),next.cabin):[]};
+   const next=E.leaveShop(s);w=next.status==='playing'?E.nextOfferBatch(next,this.rng('offers',next.floor)):{state:next,offers:[]};
   }else w=applyLocal(this.#world,a,this.names);
   if(!w)throw Error('Illegal action '+JSON.stringify(a));
   this.#world=w;this.names.register(w);this.transcript.push({action:clone(a),before,after:hash(w)});return this.observation();

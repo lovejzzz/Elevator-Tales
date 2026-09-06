@@ -17,7 +17,7 @@ export function runOne(policy:PolicyName,seed:number,horizon:number,tutorial=fal
   if(before.phase==='upgrade'){
    const service=shopStyle!=='native'||['operator','allocator','diverse'].includes(policy)?serviceFor(session.world(),session.names):undefined;
    const {actions}=player.shop(before,service);for(const a of actions)session.act(a);
-   const exit=session.observation();shops.push({entry:before,exit,actions,study:structuredClone(player.investmentStudy),spend:before.coins-exit.coins,
+   const exit=session.observation();shops.push({entry:before,exit,actions,study:structuredClone(player.investmentStudy),trials:structuredClone(player.shopTrials),spend:before.coins-exit.coins,
     emptyPermanentPool:before.shop.length===0&&before.installed.length>=before.upgradeSlots,
     minimumRepair:Math.max(0,1-before.energy)*before.prices.charge+Math.max(0,before.stress-before.stressCap+1)*before.prices.soothe,
     fullServiceQuote:(before.energyCap-before.energy)*before.prices.charge+before.stress*before.prices.soothe});continue;

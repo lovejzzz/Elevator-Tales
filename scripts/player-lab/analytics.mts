@@ -3,7 +3,7 @@ import {mean,quantile} from './util.mts';
 export type Turn={before:Observation;decision:Decision;departure:Observation;after:Observation;
   features:Preview['features'];opportunities:{kind:string;safeSinglePlacement:boolean;interactionPossible:boolean}[];
   income:number;spend:number;dismissed:number;arrivals:string[];tipEligible:number;tipCoins:number;relayEligible:boolean;relayEnergy:number;elapsedMs:number};
-export type ShopVisit={entry:Observation;exit:Observation;actions:Action[];study?:Array<{key:string;gross:number;net:number;observations:number}>;spend:number;emptyPermanentPool:boolean;minimumRepair:number;fullServiceQuote:number};
+export type ShopVisit={trials?:import('./types.mts').ShopTrial[];entry:Observation;exit:Observation;actions:Action[];study?:Array<{key:string;gross:number;net:number;observations:number}>;spend:number;emptyPermanentPool:boolean;minimumRepair:number;fullServiceQuote:number};
 export type Flag={code:string;floor:number;evidence:Record<string,unknown>;interpretation:string};
 export function flagBlock(b:{floor:number;occupancy:number;skipFraction:number;income:number;spend:number;coins:number;fullServiceQuote:number;emptyPermanentPool:boolean}):Flag[]{
  const out:Flag[]=[];
@@ -12,8 +12,25 @@ export function flagBlock(b:{floor:number;occupancy:number;skipFraction:number;i
  if(b.emptyPermanentPool)out.push({code:'PERMANENT_CHOICES_EXHAUSTED',floor:b.floor,evidence:{coins:b.coins},interpretation:'永久能力池已耗尽；商店是否仍有取舍需要UI/玩家复核。'});
  return out;
 }
+export function shopCalibrationFlags(shops:ShopVisit[],final:Observation):Flag[]{
+ const flags:Flag[]=[];if(final.phase!=='lost')return flags;
+ const last=shops.at(-1);
+ if(last&&final.failureCause==='energy'&&last.exit.energy<last.exit.energyCap&&
+   last.exit.coins>=(last.exit.energyCap-last.exit.energy)*last.exit.prices.charge)
+  flags.push({code:'AFFORDABLE_CHARGE_LEFT_BEFORE_DEATH',floor:last.entry.floor,
+   evidence:{chargedTo:last.exit.energy,cap:last.exit.energyCap,cash:last.exit.coins,deathFloor:final.floor},
+   interpretation:'上次离店有钱充满却未充满，后来断电；检查购物与接客策略，不等于已证明充满必活或金币经济失衡。'});
+ for(const shop of shops){
+  const selected=shop.trials?.find(t=>JSON.stringify(t.actions)===JSON.stringify(shop.actions));
+  if(selected&&selected.survival===1&&final.floor<=shop.entry.floor+selected.depth)
+   flags.push({code:'SHOP_MODEL_SURVIVAL_MISS',floor:shop.entry.floor,
+    evidence:{samples:selected.samples,depth:selected.depth,deathFloor:final.floor,key:selected.key},
+    interpretation:'全部抽样续局存活，但实际策略在推演窗口内死亡；可能是抽样噪声、续局策略差异或后续购物差异，不能将抽样存活率当保证。'});
+ }
+ return flags;
+}
 export function summarize(turns:Turn[],shops:ShopVisit[],final:Observation){
- const flags:Flag[]=[],byDecade=[];
+ const flags:Flag[]=shopCalibrationFlags(shops,final),byDecade=[];
  for(const floor of new Set(turns.map(t=>Math.ceil(t.after.floor/10)*10))){
   const ts=turns.filter(t=>Math.ceil(t.after.floor/10)*10===floor),shop=shops.find(s=>s.entry.floor===floor);
   const occupancy=mean(ts.map(t=>t.features.occupied)),skips=ts.filter(t=>t.features.newCount===0).length;

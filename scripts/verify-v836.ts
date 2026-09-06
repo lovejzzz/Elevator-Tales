@@ -3,7 +3,7 @@ import {makeOffers,initialRun,UPGRADE_BASE_PRICES,upgradePrice,expressTrip,resol
 import {JOURNEY_RULES} from '../lib/balance-v832';
 import {PASSENGERS} from '../lib/game-data';
 import {energyForecast} from '../lib/game-forecast';
-assert.deepEqual(UPGRADE_BASE_PRICES,{battery:30,capacity:35,calm:35,concierge:40,reinforced:45,express:45,tipjar:30,relay:30,crowd:40,meter:25});
+assert.deepEqual(UPGRADE_BASE_PRICES,{battery:30,capacity:35,calm:35,concierge:40,reinforced:45,express:45,tipjar:30,relay:30,crowd:24,meter:25,rails:24,insulation:24,reservation:20,single:24,delay:24,buffer:20,soundproof:24,retime:24,punchcard:24,finale:24});
 for(const key of Object.keys(UPGRADE_BASE_PRICES) as (keyof typeof UPGRADE_BASE_PRICES)[])for(const floor of [10,30,60,100])assert.equal(upgradePrice(key,floor,4),UPGRADE_BASE_PRICES[key]);
 let cases=0,changed=0;
 const enabled=JOURNEY_RULES.localFrom31;

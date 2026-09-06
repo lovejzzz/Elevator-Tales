@@ -17,7 +17,7 @@ export function score(p:Preview,mode:PolicyName,seen:Set<string>):number {
   const cashWeight=o.coins>refuel+60?1:o.coins>refuel?2:3;
   const groups=new Map<number,number>();
   for(const r of o.cabin)if(r)groups.set(r.remaining,(groups.get(r.remaining)??0)+1);
-  const alignment=[...groups].reduce((n,[d,count])=>n+(count>=2?(o.installed.includes('relay')?8:1)/Math.max(1,d):0),0);
+  const alignment=[...groups].reduce((n,[d,count])=>n+(count>=2?(o.installed.includes('relay')?8:1)/Math.max(1,d):o.installed.includes('single')?2/Math.max(1,d):0),0);
   return -danger+(f.flow+f.fareRate+f.stateValue+f.bankedPerStep*.5)*cashWeight
    -f.energyCost*3-f.spent*2+f.pendingRepair*1.5+alignment
    -Math.max(0,stressAfter-o.stressCap+2)*12-Math.max(0,f.committedEnergy-o.energy)*24;
@@ -58,6 +58,7 @@ export class Player {
  readonly seen=new Set<string>(); readonly successes=new Map<string,number>();
  readonly investmentHistory:InvestmentSample[]=[];
  investmentStudy:{key:string;gross:number;net:number;observations:number}[]=[];
+ shopTrials:import('./types.mts').ShopTrial[]=[];
  constructor(readonly mode:PolicyName,readonly shopStyle:ShopStyle='native'){}
  decide(o:Observation,service:PreviewService):Decision {
   const allocates=this.mode==='allocator'||this.mode==='diverse',operates=this.mode==='operator'||allocates;
@@ -97,7 +98,17 @@ export class Player {
   for(const r of before.cabin)if(r&&!after.cabin.some(p=>p?.id===r.id))this.successes.set(r.kind,(this.successes.get(r.kind)??0)+1);
   if(sample){this.investmentHistory.push(structuredClone(sample));if(this.investmentHistory.length>20)this.investmentHistory.shift();}
  }
- shop(o:Observation,service?:Pick<PreviewService,'preview'>):{actions:Action[];reason:string}{
+ shop(o:Observation,service?:Pick<PreviewService,'preview'|'jointShop'>):{actions:Action[];reason:string}{
+  if(this.shopStyle==='joint'||this.shopStyle==='joint-long'){
+   if(!service?.jointShop)throw Error('Joint shopping requires sampled public-information continuations');
+   const trials=service.jointShop(4,this.shopStyle==='joint-long'?20:10);this.shopTrials=trials;
+   if(trials.length){
+    const ranked=[...trials].sort((a,b)=>b.value-a.value);
+    const baseline=Math.max(...trials.filter(t=>t.key==='none').map(t=>t.value));
+    this.investmentStudy=trials.map(t=>({key:t.key,gross:t.value,net:t.value-baseline,observations:t.samples}));
+    return {actions:ranked[0].actions,reason:'联合购物实验：买/不买与充电预算共同推演至下一商店；独立公开信息未来，不是实际未来或最优解。'};
+   }
+  }
   if(this.mode==='allocator'||this.mode==='diverse'){
    const operator=new Player('operator',this.shopStyle);operator.investmentHistory.push(...this.investmentHistory);
    const decision=operator.shop(o,service);this.investmentStudy=operator.investmentStudy;return decision;
@@ -116,6 +127,7 @@ export class Player {
   // Repair both crisis dimensions before discretionary spending. Purchasing
   // CALM can itself rescue a stress crisis and is considered first if offered.
   if(stress>=cap)buy('calm');
+  if((o.calmCharge||actions.some(a=>a.type==='buy'&&a.key==='calm'))&&stress>=cap){actions.push({type:'use-calm'});stress=Math.max(0,stress-2);}
   soothe(Math.max(0,stress-cap+1));charge(1);
   this.investmentStudy=[];
   if(this.mode==='investor'||this.mode==='operator'||this.shopStyle==='committed'||this.shopStyle==='adaptive'){
@@ -126,7 +138,7 @@ export class Player {
    soothe(Math.max(0,stress-Math.min(cap-2,bankWindow?6:5)));
    if((this.shopStyle!=='native'||this.mode==='operator')&&!service)throw Error('Committed shopping requires public previews, never a hidden-world fallback');
    const floorBudget=(o.nextShop-o.floor)*o.nextMotor+1;
-   let order=['reinforced','concierge','tipjar','calm','battery','relay','crowd','capacity','express','meter'];
+   let order=['rails','insulation','reservation','single','retime','soundproof','punchcard','finale','buffer','delay','reinforced','concierge','tipjar','calm','battery','relay','crowd','capacity','express','meter'];
    if(this.shopStyle==='adaptive'||this.mode==='operator'){
     const history=this.investmentHistory,steps=history.length;
     const arrivals=history.reduce((n,x)=>n+x.arrivals,0),averageRide=arrivals?history.reduce((n,x)=>n+x.rideSum,0)/arrivals:0;
@@ -144,6 +156,11 @@ export class Player {
      if(this.mode==='operator'&&card.key==='capacity'&&o.nextMotor>=3&&
        energy+Math.floor((coins-card.price)/o.prices.charge)>=energyCap+8)
       gross=Math.max(gross,card.price+card.effect.energyCap*o.prices.charge);
+     if(card.key==='retime')gross=o.cabin.filter(Boolean).length>=3?card.price+4:0;
+     if(card.key==='soundproof')gross=o.stress>=4&&o.cabin.filter(Boolean).length>=3?card.price+2:0;
+     if(card.key==='delay')gross=o.floor>=30&&o.cabin.some(r=>r?.kind==='bomb')?card.price+2:0;
+     if(card.key==='rails')gross=o.cabin.filter(Boolean).length>=3?card.price+6:0; // Operational option proxy, not measured cash ROI.
+     if(card.key==='reservation')gross=o.cabin.filter(Boolean).length>=4?card.price+4:0; // Test policy hypothesis; not guaranteed future value.
      if(card.key==='calm')gross=Math.max(0,-card.effect.stress)*o.prices.soothe+(steps?history.filter(x=>x.nearLimit).length/steps*20*o.prices.soothe:0);
      return {key:card.key,gross,net:gross-card.price,observations:steps};
     });

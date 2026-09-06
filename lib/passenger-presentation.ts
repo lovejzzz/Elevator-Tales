@@ -126,9 +126,9 @@ export function passengerCardSections(
    break;
   case 'ghost':
    self.push(effect('neutral','3的倍数层：随机邻座 +1站'));
-   addGreen(['exorcist'],[effect('neutral','不再延误'),effect('energy','节能 1/层'),effect('coins','到站 +2')]);
+   addGreen(['exorcist'],[effect('neutral','不再延误'),effect('energy','每层抵1人物耗电，不抵运转'),effect('coins','到站 +2')]);
    break;
-  case 'exorcist':addGreen(['ghost'],[effect('neutral','不再延误'),effect('energy','节能 1/层'),effect('coins','幽灵到站 +2')]);break;
+  case 'exorcist':addGreen(['ghost'],[effect('neutral','不再延误'),effect('energy','每层抵1人物耗电，不抵运转'),effect('coins','幽灵到站 +2')]);break;
   case 'coach':
    self.push(effect('neutral','倍率只作用于本体基价；不再放大其他奖励'));
    addGreen(null,[effect('coins','基础车费 +50%/教练')],'任意非教练');

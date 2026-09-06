@@ -40,7 +40,7 @@ export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   nurse: { kind: 'nurse', name: '护士', title: 'The Nurse', weight: 1, fare: 5, energy: 1, trip: [3, 7], patience: 4, rarity: 8, sheet: '02', cell: 4, tone: 'support', short: '所有相邻乘客：每层各抵消1躁动', detail: '稳定的轻量照护：所有相邻乘客每层各抵消1点躁动，且自身每层只耗1电。也能阻止相邻醉汉与儿童的负面效果；多位护士可逐人叠加。' },
   child: { kind: 'child', name: '儿童', title: 'The Child', weight: 1, fare: 7, energy: 1, trip: [2, 5], patience: 1, rarity: 7, sheet: '02', cell: 5, tone: 'social', short: '照顾满2层：到站额外+6币', detail: '没有恋人或护士相邻时，每层躁动+1；有照顾者时免除并积累1次照护。累计2次后，到站额外+6金币，不参与倍率；无人照护时进度保留，不重复完成。' },
   ghost: { kind: 'ghost', name: '幽灵', title: 'The Apparition', weight: 0, fare: 4, energy: 0, trip: [4, 9], patience: 5, rarity: 6, sheet: '03', cell: 0, tone: 'occult', short: '0耗电；未受控到3的倍数层，随机1位邻座延误1站', detail: '相邻驱魔师时，不再延误邻座，每位受控幽灵每层抵消1点人物耗电且到站多得2金币；否则到3的倍数层时随机延误一位邻座1站。受控幽灵的节能逐项相加，但不能抵消电梯运转耗电。' },
-  exorcist: { kind: 'exorcist', name: '驱魔师', title: 'The Warden', weight: 1, fare: 5, energy: 1, trip: [3, 7], patience: 3, rarity: 6, sheet: '03', cell: 1, tone: 'occult', short: '每位受控幽灵每站节能1电', detail: '控制每位相邻幽灵，分别阻止延误并使其每层抵消1点人物耗电、到站多得2金币。多位幽灵的效果逐个叠加；电梯运转耗电不能被抵消。' },
+  exorcist: { kind: 'exorcist', name: '驱魔师', title: 'The Warden', weight: 1, fare: 5, energy: 1, trip: [3, 7], patience: 3, rarity: 6, sheet: '03', cell: 1, tone: 'occult', short: '每位受控幽灵每层抵1人物耗电；不抵运转', detail: '控制每位相邻幽灵，分别阻止延误并使其每层抵消1点人物耗电、到站多得2金币。多位幽灵的效果逐个叠加；电梯运转耗电不能被抵消。' },
   coach: { kind: 'coach', name: '教练', title: 'The Coach', weight: 3, fare: 8, energy: 1, trip: [3, 6], patience: 3, rarity: 6, sheet: '03', cell: 2, tone: 'social', short: '每位邻座教练使车费+50%', detail: '非教练乘客抵达时，每位相邻教练增加其本体基价的50%；与恋人配对、醉汉加价等倍率相加，不再放大受控奖励、小费或状态奖励。教练自己抵达时，每位仍在身旁的邻座额外支付3金币。' },
   celebrity: { kind: 'celebrity', name: '名人', title: 'The Celebrity', weight: 1, fare: 12, energy: 1, trip: [4, 8], patience: 2, rarity: 5, sheet: '03', cell: 3, tone: 'risk', short: "恰好1邻座每层+2币；2+邻座+1躁动", detail: "恰好一位邻座时每层赚2金币；至少两位邻座时每层+1躁动。无人相邻无效果。", risk: { label: '条件风险', guide: '保持恰好 1 名邻座' } },
   inspector: { kind: 'inspector', name: '检查员', title: 'The Inspector', weight: 2, fare: 8, energy: 1, trip: [4, 7], patience: 4, rarity: 5, sheet: '03', cell: 4, tone: 'support', short: '连续低躁动2层：到站额外+8币', detail: '连续两次关门时处于低躁动，获得合规印章，到站额外+8金币，不参与倍率。完成前离开低档会重新计数；完成后印章保留，每位检查员只奖励一次。不再检查人物耗电，也不因此增加躁动。' },
@@ -78,18 +78,28 @@ export const UNLOCK_TIERS: { floor: number; kinds: PassengerKind[] }[] = [
   { floor: 36, kinds: ['mimic'] },
 ];
 
-export type UpgradeKey = 'battery' | 'capacity' | 'calm' | 'concierge' | 'reinforced' | 'express' | 'tipjar' | 'relay' | 'crowd' | 'meter';
+export type UpgradeKey = 'battery' | 'capacity' | 'calm' | 'concierge' | 'reinforced' | 'express' | 'tipjar' | 'relay' | 'crowd' | 'meter' | 'rails' | 'insulation' | 'reservation' | 'single' | 'delay' | 'buffer' | 'soundproof' | 'retime' | 'punchcard' | 'finale';
 export const UPGRADES: Record<UpgradeKey, { name: string; label: string; description: string; strategy: string; tone: 'sustain' | 'control' | 'score' | 'capacity' | 'tempo' }> = {
   battery: { name: '默契契约', label: 'COOPERATION', description: '每条实际默契的本人到站奖励额外 +2 金币，多位默契对象分别叠加。本局限装一次。', strategy: '协作收益', tone: 'score' },
   capacity: { name: '扩容电池', label: 'BATTERY CAPACITY', description: '电量上限 +10。只扩容，不赠送电量；可在商店继续充电。本局限装一次。', strategy: '预先准备', tone: 'capacity' },
-  calm: { name: '舒缓系统', label: 'CALM SYSTEM', description: '躁动上限 +1，并立即降低 2 躁动。本局限装一次；日常躁动由乘客与站位管理。', strategy: '控场缓冲', tone: 'control' },
+  calm: { name: '安全余量', label: 'SAFETY MARGIN', description: '躁动上限+1，不自动降低躁动。赠送一次手动调节：降低2躁动，可留到之后使用。本局限装一次。', strategy: '控场缓冲', tone: 'control' },
   concierge: { name: '礼宾服务', label: 'CONCIERGE', description: '此后新出现的乘客到站小费 +2，不参与车费倍率。本局限装一次。', strategy: '收入投资', tone: 'score' },
   reinforced: { name: '稳压模块', label: 'STABILIZER', description: '关门时至少3人，每站抵消1点人物耗电；不影响电梯运转耗电。本局限装一次。', strategy: '抵消耗电', tone: 'sustain' },
   express: { name: '快速电梯', label: 'EXPRESS', description: '此后新乘客原定路程至少 5 层时，目的地提前 1 层；每局限装一次。', strategy: '长途周转', tone: 'tempo' },
   tipjar: { name: '小费盒', label: 'TIP JAR', description: '每位正常到站且有至少2位邻座的乘客，独立有50%概率额外支付4金币。同层下车者仍互算邻座；额外金币不参与倍率。本局限装一次。', strategy: '到站机会', tone: 'score' },
   relay: { name: '并联回充', label: 'ARRIVAL RELAY', description: '同层至少2位乘客正常到站，50%概率回充4电；每层只抽一次，不超过容量。请离不触发。本局限装一次。', strategy: '同时送达', tone: 'sustain' },
-  crowd: { name: '共乘票', label: 'SHARED TICKET', description: '关门时至少4人，且本层有人正常到站，整车额外赚3金币，每层一次。同层到站者计入人数，请离不触发。本局限装一次。', strategy: '载客收入', tone: 'score' },
+  crowd: { name: '混乘票', label: 'MIXED TICKET', description: '20层起出售。关门时好人、坏人、特殊三类齐全，且本层有人正常到站，额外赚3金币，每层一次。请离不触发，不参与倍率。', strategy: '载客收入', tone: 'score' },
   meter: { name: '长途计价器', label: 'LONG-RIDE METER', description: '实际乘坐至少5次上行的乘客，正常到站额外支付4金币，每人一次。幽灵延误计入行程，途中和请离不支付。本局限装一次。', strategy: '乘坐时长', tone: 'tempo' },
+  rails: { name: '滑轨底座', label: 'SLIDING RAILS', description: '每层旧乘客换位可用2次，原为1次。新上客仍可免费调整；复制人与同一人物的抽签不重抽。', strategy: '调整站位', tone: 'control' },
+  insulation: { name: '绝缘衬层', label: 'INSULATION', description: '每层全车抵消最多1电的红线固定扣电。不抵消人物耗电翻倍、运转耗电或躁动，不产生额外电量。', strategy: '容忍冲突', tone: 'sustain' },
+  reservation: { name: '留座牌', label: 'RESERVATION', description: '每十层可保留1位未上车候客到下一批，占一个候客位。属性与剩余路程不变，不能连续保留同一人。', strategy: '等待时机', tone: 'control' },
+  single: { name: '单站检票器', label: 'SINGLE ARRIVAL', description: '本层恰好1位乘客正常到站，额外赚2金币，每层一次。幽灵延误后判断；请离不触发，不参与倍率。', strategy: '错峰到站', tone: 'score' },
+  delay: { name: '延时保险', label: 'LONGER FUSE', description: '30层起出售。以后新出现的炸弹客倒计时+1；不改变路程、不重置旧炸弹。', strategy: '危险窗口', tone: 'control' },
+  buffer: { name: '回充缓冲槽', label: 'OVERFLOW CELL', description: '到站回充溢出时暂存最多4电；以后上行结算缺电量时自动补入。不储存金币充电或应急电池。', strategy: '保存回充', tone: 'capacity' },
+  soundproof: { name: '隔音门', label: 'SOUNDPROOF DOOR', description: '每层抵消最多1点普通红线躁动。不抵消人物自身、高危或坏人链接躁动，不降低已有躁动。', strategy: '容忍冲突', tone: 'control' },
+  retime: { name: '改签印章', label: 'REBOOKING STAMP', description: '每十层一次：选中本层新上客，路程缩短或延长1站，最短1站。车费、倒计时和随机属性不变；撤回不退次数。', strategy: '安排到站', tone: 'tempo' },
+  punchcard: { name: '第五张票', label: 'FIFTH RIDER BONUS', description: '每送达第5位乘客，额外获得其基价100%。只算安装后的正常到站；同层按1→6号位计数，不放大其他奖励。', strategy: '安排顺序', tone: 'score' },
+  finale: { name: '谢幕礼', label: 'CURTAIN CALL', description: '同层至少2人正常到站，且到站后车内最多剩1人，额外赚6金币，每层一次，不参与倍率。', strategy: '集中到站', tone: 'score' },
 };
 
 export const ADJACENT: [number, number][] = [[0,1],[1,2],[3,4],[4,5],[0,3],[1,4],[2,5]];

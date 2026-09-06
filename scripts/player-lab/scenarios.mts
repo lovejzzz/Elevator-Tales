@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
-import {D,B,R,U,E,type PassengerKind} from './game.mts';
+import {D,B,R,U,E,S,type PassengerKind} from './game.mts';
 
 // Process-local experiments only. No source files, dev-server state or published
 // data are changed. The observer and settlement read the same modified catalog.
 // Prose/visual acceptance belongs to the implemented candidate. Named overrides
 // are absolute catalog values, not deltas; baseline always means this checkout.
+const BASE_SHOP_TUNING={...S.SHOP_TUNING};
 const BASE_FARES=Object.fromEntries(Object.entries(D.PASSENGERS).map(([k,v])=>[k,v.fare])) as Record<PassengerKind,number>;
 const BASE_ENERGY=Object.fromEntries(Object.entries(D.PASSENGERS).map(([k,v])=>[k,v.energy])) as Record<PassengerKind,number>;
 const BASE_TRIPS=Object.fromEntries(Object.entries(D.PASSENGERS).map(([k,v])=>[k,[...v.trip]])) as Record<PassengerKind,[number,number]>;
@@ -31,6 +32,8 @@ const FARE_VARIANTS:Record<string,typeof BASE_FARE_RULES>={
 const BASE_AVOIDS=Object.fromEntries(Object.entries(R.BONDS).map(([kind,bond])=>[kind,[...bond.avoids]])) as Record<PassengerKind,PassengerKind[]>;
 const QUIET_INSPECTOR_KINDS:PassengerKind[]=['tourist','lover','musician','nurse'];
 const ECONOMY_VARIANTS: Record<string,Partial<typeof BASE_ECONOMY>>={
+ 'v837-concierge-one':{conciergeTip:1},
+ 'v837-thief-two':{thiefTravel:2},
  'concierge-middle':{conciergeTip:3,conciergeCondition:'medium'},
  'repeat-income-small':{thiefTravel:2,celebrityTravel:1},
  'commission-small':{conciergeTip:1,tipReward:3},
@@ -38,6 +41,12 @@ const ECONOMY_VARIANTS: Record<string,Partial<typeof BASE_ECONOMY>>={
 };
 export const SCENARIOS={
  baseline:{},
+ 'v837-concierge-one':{},'v837-thief-two':{},
+ 'v837-buffer-boost':{},'v837-finale-one':{},'v837-workshop':{},
+ 'v837-control':{},
+ 'v837-expanded':{},
+ 'v837-prices':{},
+ 'v837-combined':{},
  'v835-baseline':{},
  'v836-motor-room':{},
  'v836-investment':{},
@@ -83,6 +92,10 @@ export const SCENARIOS={
 export let currentScenario='baseline';
 export function configureScenario(name:string){
  assert(Object.hasOwn(SCENARIOS,name),'Unknown research scenario');
+ Object.assign(S.SHOP_TUNING,BASE_SHOP_TUNING);
+ if(['v837-buffer-boost','v837-workshop'].includes(name))S.SHOP_TUNING.bufferBoost=1;
+ if(['v837-finale-one','v837-workshop'].includes(name))S.SHOP_TUNING.finaleRemaining=1;
+ Object.assign(S.SHOP_RULES,{expanded:!['v837-control','v837-prices'].includes(name),grouped:!['v837-control','v837-prices'].includes(name),mixed:!['v837-control','v837-prices'].includes(name),optionalCalm:!['v837-control','v837-prices'].includes(name)});
  for(const kind of Object.keys(BASE_OFFER_PARTNERS) as PassengerKind[])U.OFFER_PARTNERS[kind]=[...BASE_OFFER_PARTNERS[kind]];
  if(name==='encounter-discovery'){
   U.OFFER_PARTNERS.tourist=[...new Set([...BASE_OFFER_PARTNERS.tourist,'musician','mimic'] as PassengerKind[])];
@@ -99,6 +112,8 @@ export function configureScenario(name:string){
  if(name==='commuter-short'||name==='commuter-short-bomb-fourteen')D.PASSENGERS.commuter.trip=[2,3];
  if(name==='v836-support-trips')for(const kind of ['mechanic','nurse','exorcist','inspector'] as const)D.PASSENGERS[kind].trip[1]=5;
  Object.assign(E.UPGRADE_BASE_PRICES,BASE_UPGRADE_PRICES,name.startsWith('v836-')||name==='v835-baseline'?V835_PRICES:{},name==='v836-investment'?{reinforced:30,express:30,concierge:30,tipjar:20,relay:25,crowd:25,meter:20,capacity:30}:{});
+ if(name==='v837-control'||name==='v837-prices')Object.assign(E.UPGRADE_BASE_PRICES,V835_PRICES);
+ if(name==='v837-prices'||name==='v837-combined')Object.assign(E.UPGRADE_BASE_PRICES,{capacity:20,concierge:30,reinforced:35,express:30,tipjar:24});
  if(name==='v836-investment-light'||name==='v836-local-investment'||name==='v836-local-minimum')Object.assign(E.UPGRADE_BASE_PRICES,{reinforced:40,express:35,concierge:35,tipjar:25,relay:25,crowd:30,meter:20,capacity:30});
  for(const kind of Object.keys(BASE_AVOIDS) as PassengerKind[])R.BONDS[kind].avoids=[...BASE_AVOIDS[kind]];
  if(name==='inspector-quiet-relations')for(const kind of QUIET_INSPECTOR_KINDS)R.BONDS[kind].avoids=R.BONDS[kind].avoids.filter(target=>target!=='inspector');
@@ -133,7 +148,7 @@ export function configureScenario(name:string){
  return scenarioRecord();
 }
 export function scenarioRecord(){return {name:currentScenario,baselineFares:BASE_FARES,
- upgradePrices:{...E.UPGRADE_BASE_PRICES},baselineUpgradePrices:BASE_UPGRADE_PRICES,
+ shopTuning:{...S.SHOP_TUNING},shopRules:{...S.SHOP_RULES},upgradePrices:{...E.UPGRADE_BASE_PRICES},baselineUpgradePrices:BASE_UPGRADE_PRICES,
  encounterPartners:structuredClone(U.OFFER_PARTNERS),baselineEncounterPartners:BASE_OFFER_PARTNERS,
  trips:Object.fromEntries(Object.entries(D.PASSENGERS).map(([k,v])=>[k,[...v.trip]])),baselineTrips:BASE_TRIPS,
  music:{...B.MUSIC_RULES},baselineMusic:BASE_MUSIC,

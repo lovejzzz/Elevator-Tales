@@ -2,17 +2,29 @@ import { BONDS, bondStatus, conflictLinks, profileWeight, randomTraits, riderPro
 import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
 import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, type PassengerKind, type UpgradeKey } from './game-data';
 import { agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
-import { rollShopRewards, shopFloorIncome, shopOpportunities } from './shop-effects';
+import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome } from './shop-effects';
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
 
 export type Rider = { id: string; kind: PassengerKind; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
 export type ChangeLine = { label: string; amount: number };
+export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number };
 export type ShopCard = { key: UpgradeKey; price: number; purchased: boolean };
 export type RunState = {
   floor: number; energy: number; energyCap: number; stress: number; stressCap: number; weightCap: number; coins: number; earned: number; shop: ShopCard[];
   cabin: Array<Rider | null>; swapped: boolean; upgrades: Record<UpgradeKey, number>;
   restStops: number;
+  oldMovesUsed?: number;
+  lastArrivals?: ArrivalReceipt[];
+  shopSeen?: UpgradeKey[];
+  calmCharge?: boolean;
+  reservedRider?: Rider;
+  reservationUsedSector?: number;
+  reservedIds?: string[];
+  bufferPower?: number;
+  retimeUsedSector?: number;
+  rebooked?: Record<string,number>;
+  punchCount?: number;
   dismissalsUsed?: number;
   serviceTurns?: number;
   reserveCell?: boolean;
@@ -21,7 +33,38 @@ export type RunState = {
   lastEarnings: { total: number; sources: ChangeLine[] }; lastPressure: { delta: number; sources: ChangeLine[] }; lastEnergy: { delta: number; sources: ChangeLine[] };
 };
 
-export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, capacity: 0, calm: 0, concierge: 0, reinforced: 0, express: 0, tipjar: 0, relay: 0, crowd: 0, meter: 0 };
+export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, capacity: 0, calm: 0, concierge: 0, reinforced: 0, express: 0, tipjar: 0, relay: 0, crowd: 0, meter: 0, rails: 0, insulation: 0, reservation: 0, single: 0, delay:0, buffer:0, soundproof:0, retime:0, punchcard:0, finale:0 };
+export function retimeRider(state:RunState,id:string,delta:number):RunState {
+  const r=state.cabin.find(r=>r?.id===id),sector=Math.floor(state.floor/10);
+  if(state.status!=='playing'||!state.upgrades.retime||!r||r.boardedAt!==state.floor||state.retimeUsedSector===sector||![-1,1].includes(delta)||r.destination+delta<=state.floor)return state;
+  return {...state,cabin:state.cabin.map(p=>p?.id===id?{...p,destination:p.destination+delta}:p),retimeUsedSector:sector,rebooked:{...state.rebooked,[id]:r.destination+delta},message:'改签完成：车费与倒计时不变，撤回不退次数。'};
+}
+export function settleBuffer(raw:number,cap:number,stored:number,enabled:boolean) {
+  const released=enabled?Math.min(stored,Math.max(0,cap-raw)):0;
+  const captured=enabled?Math.min(4-stored,Math.max(0,raw-cap)):0;
+  return {energy:Math.min(cap,raw+released),stored:enabled?stored-released+captured:0,released,captured};
+}
+export const redAgitationProtection=(state:RunState)=>state.upgrades.soundproof?Math.min(1,conflictLinks(state.cabin).filter(l=>l.effect==='agitation').length):0;
+export const oldMovesRemaining = (state:RunState) => Math.max(0,1+Number(Boolean(state.upgrades.rails))-(state.oldMovesUsed ?? Number(state.swapped)));
+export function useCalmCharge(state:RunState):RunState {
+  if(!state.calmCharge||!state.upgrades.calm||state.status==='lost'||state.stress<=0)return state;
+  const delta=-Math.min(2,state.stress);
+  return {...state,stress:state.stress+delta,calmCharge:false,lastPressure:{delta,sources:[{label:'手动调节',amount:delta}]},message:'手动调节已使用：最多降低2躁动，不恢复电量。'};
+}
+export function reserveOffer(state:RunState,offers:Rider[],id:string):RunState {
+  const rider=offers.find(r=>r.id===id),sector=Math.floor(state.floor/10);
+  if(state.status!=='playing'||!state.upgrades.reservation||!rider||state.reservedRider||state.reservationUsedSector===sector||state.reservedIds?.includes(id)||state.cabin.some(r=>r?.id===id))return state;
+  return {...state,reservedRider:{...rider,destination:state.rebooked?.[id]??rider.destination},reservationUsedSector:sector,reservedIds:[...(state.reservedIds??[]),id],message:'已留座：下一批占一个候客位，属性与剩余路程不变。'};
+}
+/** Consume a reservation at the next actual candidate batch, including shop exit.
+ * Generate the ordinary packet first; the held rider replaces exactly one card. */
+export function nextOfferBatch(state:RunState,rng:()=>number=Math.random):{state:RunState;offers:Rider[]} {
+  const offers=makeOffers(state.floor,state.upgrades,false,rng,state.cabin);
+  if(!state.reservedRider)return {state,offers};
+  const held=state.reservedRider;
+  const rider={...held,destination:state.floor+held.destination-held.boardedAt,boardedAt:state.floor,calledByLover:false};
+  return {state:{...state,reservedRider:undefined},offers:[rider,...offers.slice(1)]};
+}
 export const LOVER_CALL_CHANCE = .25;
 export const INSPECTOR_COMPLIANCE_REWARD = 1;
 export const INSPECTOR_ENERGY_LIMIT = 3;
@@ -173,7 +216,7 @@ export function energyBreakdown(state: RunState) {
   });
   const multiplied=riderCosts.reduce((sum,rider)=>sum+rider.extra,0);
   const conflict=flat+multiplied;
-  const conflictProtection=0;
+  const conflictProtection=state.upgrades.insulation ? Math.min(1,flat) : 0;
   return {motor,people,stabilizer,shared,service,conflict,conflictProtection,riderCosts,saved:stabilizer+shared+service+conflictProtection,total:motor+people+conflict-stabilizer-shared-service-conflictProtection};
 }
 export const totalEnergyCost = (state: RunState) => energyBreakdown(state).total;
@@ -229,7 +272,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
       destination: floor + expressTrip(baseTrip, upgrades.express), patience: 0, traits, volatile,
       copySeed: kind === 'mimic' ? rand(0, 2147483647, rng) : undefined,
       boardedAt: floor, fareBonus: upgrades.concierge * ECONOMY_RULES.conciergeTip, stash: 0,
-      fuse: kind === 'bomb' ? rand(3, 6, rng) : undefined, calledByLover: called && index === 2,
+      fuse: kind === 'bomb' ? rand(3, 6, rng)+Number(Boolean(upgrades.delay)) : undefined, calledByLover: called && index === 2,
     };
   });
   // Variable riders bring one matching visible relation in their own packet.
@@ -274,7 +317,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const redLinks=conflictLinks(state.cabin);
   const {conflict:redEnergy,conflictProtection}=energyBreakdown(state);
   if(redEnergy)adjustEnergy('红线额外耗电',-redEnergy);
-  if(conflictProtection)adjustEnergy('维修工抵消红线耗电',conflictProtection);
+  if(conflictProtection)adjustEnergy('绝缘衬层抵消',conflictProtection);
   let cabin = state.cabin.map((rider,slot) => rider ? riderAfterWork(rider,state.cabin,slot,state.stress) : null);
   const notes: string[] = []; const stressReasons: string[] = [];
   let serviceTurns = Math.max(0,(state.serviceTurns ?? 0)-1);
@@ -296,6 +339,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     adjustPressure('红线躁动',redAgitation);
     stressReasons.push(`红线冲突：躁动 +${redAgitation}`);
   }
+  if(redAgitationProtection(state))adjustPressure('隔音门抵消',-redAgitationProtection(state));
   const riskLinks = experimentalRiskLinks(state.cabin, fareTuning.riskLinks);
   if (riskLinks.agitation) adjustPressure('同伙躁动（实验）', riskLinks.agitation);
   const partnership = riskPartnerships(state.cabin);
@@ -322,7 +366,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     }
   });
   let arrivals = 0;
-  const arrivalSlots: number[] = [];
+  let punchCount=state.punchCount??0;
+  const arrivalSlots: number[] = []; const lastArrivals:ArrivalReceipt[]=[];
   cabin = cabin.map((rider, slot) => {
     if (!rider) return null;
     if (rider.kind === 'bomb' && (rider.fuse ?? 0) <= 0 && nextFloor < rider.destination) return rider;
@@ -335,16 +380,24 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare - appetitePremium - (rider.stash ?? 0));
     if (rider.stash) addCoins('坏人暂存兑现', rider.stash);
     if (appetitePremium) addCoins('醉汉躁动加价', appetitePremium);
+    let punchBonus=0;
+    if(state.upgrades.punchcard){punchCount=(punchCount+1)%5;if(punchCount===0){punchBonus=profile.fare;addCoins('第五位基价奖励',profile.fare);}}
+    lastArrivals.push({riderId:rider.id,kind:rider.kind,slot,coins:fare+punchBonus});
     arrivals += 1; arrivalSlots.push(slot); return null;
   });
   const shopRewards = rollShopRewards(shopOpportunities(state, effectCabin, arrivalSlots), rng);
   if (shopRewards.tips) addCoins('小费盒额外小费', shopRewards.tips);
+  const tipSlots=arrivalSlots.filter(slot=>neighbourCount(effectCabin,slot)>=2);
+  for(const index of shopRewards.winningTipIndices){const receipt=lastArrivals.find(r=>r.slot===tipSlots[index]);if(receipt)receipt.coins+=ECONOMY_RULES.tipReward;}
+  if(state.upgrades.meter)for(const receipt of lastArrivals)receipt.coins+=deliveryUpgradeIncome(state,effectCabin,[receipt.slot]).meter;
   if (shopRewards.energy) adjustEnergy('并联回充', shopRewards.energy);
-  if (state.upgrades.crowd && effectCabin.filter(Boolean).length >= 4 && arrivalSlots.length) addCoins('共乘票', 3);
-  if (state.upgrades.meter) {
-    const eligible = arrivalSlots.filter(slot => nextFloor - effectCabin[slot]!.boardedAt >= 5).length;
-    if (eligible) addCoins('长途计价器', eligible * 4);
-  }
+  const chargeBoost=naturalChargeBoost(state,arrivalSlots.filter(i=>effectCabin[i]?.kind==='courier').length*COURIER_ARRIVAL_CHARGE+shopRewards.energy);
+  if(chargeBoost)adjustEnergy('自然回充增幅',chargeBoost);
+  const deliveredUpgrades=deliveryUpgradeIncome(state,effectCabin,arrivalSlots);
+  if(deliveredUpgrades.crowd)addCoins(SHOP_RULES.mixed?'混乘票':'共乘票',deliveredUpgrades.crowd);
+  if(deliveredUpgrades.single)addCoins('单站检票器',deliveredUpgrades.single);
+  if(deliveredUpgrades.meter)addCoins('长途计价器',deliveredUpgrades.meter);
+  const finale=finaleIncome(state,arrivalSlots.length,cabin.filter(Boolean).length);if(finale)addCoins('谢幕礼',finale);
   const riskIncome = rollExperimentalRiskIncome(state.cabin, fareTuning.riskLinks, rng);
   if (riskIncome) addCoins('同伙收入（实验）', riskIncome);
   const redCoinDemand=Math.max(0, redLinks.filter(link=>link.effect==='coins').length*2 - (state.cabin.some(r=>r?.kind==='lawyer') ? 2 : 0));
@@ -355,6 +408,9 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const relieved = Math.min(Math.max(0, stress), arrivalRelief(arrivals));
   if (relieved) adjustPressure('乘客到站舒缓', -relieved);
   if(checkpoint&&energy<state.energyCap)adjustEnergy('抵达商店补电',Math.min(SHOP_ENTRY_CHARGE,state.energyCap-energy));
+  const buffer=settleBuffer(energy,state.energyCap,state.bufferPower??0,Boolean(state.upgrades.buffer));
+  if(buffer.released)adjustEnergy('缓冲槽补电',buffer.released);
+  if(buffer.captured)adjustEnergy('存入缓冲槽',-buffer.captured);
   if (energy > state.energyCap) adjustEnergy('超额回充未储存', state.energyCap - energy);
   energy = Math.min(state.energyCap, energy); stress = Math.max(0, stress);
   let status: RunState['status'] = checkpoint ? 'upgrade' : 'playing';
@@ -368,17 +424,32 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   cabin = cabin.map(rider => rider?.kind === 'shifter' ? { ...rider, traits: randomTraits('shifter', unlockedAt(nextFloor), rng, (rider.traits?.revision ?? 0) + 1) } : rider);
   if (cabin.some(rider => rider?.kind === 'shifter') && status === 'playing') message += ' 百变人已变化，关门前查看新属性。';
   const crisis: UpgradeCrisis = energy <= 0 && stress >= state.stressCap ? 'both' : energy <= 0 ? 'energy' : stress >= state.stressCap ? 'stress' : null;
-  const shop = status === 'upgrade' ? upgradeChoices(state.upgrades, rng, crisis).map((key) => ({ key, price: upgradePrice(key, nextFloor, state.upgrades[key]), purchased: false })) : [];
-  return { ...state, floor: nextFloor, energy, stress, coins, serviceTurns, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, earned: state.earned + lastEarnings.total, shop, cabin, swapped: false, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
+  const drawn=status==='upgrade'?drawUpgradeOffer(state.upgrades,state.shopSeen??[],rng,nextFloor):{keys:[],seen:state.shopSeen};
+  const shop = drawn.keys.map(key=>({key,price:upgradePrice(key,nextFloor,state.upgrades[key]),purchased:false}));
+  return { ...state, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
 }
 
 export type UpgradeCrisis = 'energy' | 'stress' | 'both' | null;
 export const upgradeChoices = (upgrades: Record<UpgradeKey, number> = EMPTY_UPGRADES, rng: () => number = Math.random, _crisis: UpgradeCrisis = null): UpgradeKey[] => {
-  if (Object.values(upgrades).filter(Boolean).length >= UPGRADE_SLOTS) return [];
-  const pool = (Object.keys(UPGRADES) as UpgradeKey[]).filter(key => !upgrades[key]);
-  return shuffle(pool, rng).slice(0, 3);
-  // Both repairs are permanent services, never dependent on a random card.
+  return drawUpgradeOffer(upgrades,[],rng).keys;
 };
+export const UPGRADE_GROUPS:UpgradeKey[][]=[['calm','rails','insulation','reservation','delay','soundproof'],['battery','concierge','tipjar','crowd','single','punchcard','finale'],['capacity','reinforced','express','relay','meter','buffer','retime']];
+export function drawUpgradeOffer(upgrades:Record<UpgradeKey,number>,history:UpgradeKey[],rng:()=>number,floor=Infinity) {
+  const added:UpgradeKey[]=['rails','insulation','reservation','single','delay','buffer','soundproof','retime','punchcard','finale'];
+  const pool=(Object.keys(UPGRADES) as UpgradeKey[]).filter(k=>!upgrades[k]&&(!SHOP_RULES.mixed||k!=='crowd'||floor>=20)&&(k!=='delay'||floor>=30)&&(SHOP_RULES.expanded||!added.includes(k)));
+  if(Object.values(upgrades).filter(Boolean).length>=UPGRADE_SLOTS)return {keys:[] as UpgradeKey[],seen:[...history]};
+  if(!SHOP_RULES.grouped)return {keys:shuffle(pool,rng).slice(0,3),seen:[...history]};
+  let seen=history.filter(k=>pool.includes(k));const keys:UpgradeKey[]=[];
+  const pick=(candidates:UpgradeKey[])=>{
+    if(!candidates.length)return;
+    let fresh=candidates.filter(k=>!seen.includes(k));
+    if(!fresh.length){seen=seen.filter(k=>!candidates.includes(k));fresh=candidates;}
+    const key=shuffle(fresh,rng)[0];keys.push(key);seen.push(key);
+  };
+  UPGRADE_GROUPS.forEach(group=>pick(pool.filter(k=>group.includes(k))));
+  while(keys.length<Math.min(3,pool.length))pick(pool.filter(k=>!keys.includes(k)));
+  return {keys:shuffle(keys,rng),seen};
+}
 export const availableShopCards = (state: RunState) => state.shopUpgradeBought || Object.values(state.upgrades).filter(Boolean).length >= UPGRADE_SLOTS ? [] : state.shop.filter(card => !card.purchased && !state.upgrades[card.key]);
 
 export function failureLesson(state: RunState): string {
@@ -388,8 +459,11 @@ export function failureLesson(state: RunState): string {
   if (state.message.includes('电量')) {
     const motor = Math.abs(state.lastEnergy.sources.find(s=>s.label==='电梯运转')?.amount ?? 0);
     const people = state.lastEnergy.sources.filter(s=>s.label.endsWith('耗电')).reduce((n,s)=>n+Math.max(0,-s.amount),0);
-    if (state.reserveCell) return `电量耗尽 · 最后一层运转${motor}电、人物与红线${people}电；还有一份未使用的应急电池。关门前可用它补电。`;
-    return `电量耗尽 · 最后一层运转${motor}电、人物与红线${people}电。${people===0?'当时已没有人物耗电；问题是剩余续航，不是乘客太多。':'人物耗电在到站前持续发生，离店时要算完整路程。'}途中不能直接充电，可在商店预备一份应急电池。`;
+    const restored = state.lastEnergy.sources.reduce((sum,line)=>sum+Math.max(0,line.amount),0);
+    const spent = state.lastEnergy.sources.reduce((sum,line)=>sum+Math.max(0,-line.amount),0);
+    const ledger = `电量耗尽 · 本层总扣电 ${spent}（运转 ${motor}、人物与红线 ${people}）；抵消与回电 +${restored}；净变化 ${state.lastEnergy.delta}。`;
+    if (state.reserveCell) return ledger+'还有一份未使用的应急电池。关门前可用它补电。';
+    return ledger+'途中不能直接充电；离店时要预留完整路程的电量。';
   }
   if (state.message.includes('躁动')) {
     const source = state.lastPressure.sources.filter((line) => line.amount > 0).sort((a, b) => b.amount - a.amount)[0];
@@ -404,11 +478,11 @@ export function failureLesson(state: RunState): string {
 export function previewUpgrade(current: RunState, key: UpgradeKey): RunState {
   if (current.upgrades[key] || Object.values(current.upgrades).filter(Boolean).length >= UPGRADE_SLOTS) return current;
   const upgrades = { ...current.upgrades, [key]: 1 }; const energyCap = current.energyCap + (key === 'capacity' ? CAPACITY_UPGRADE : 0); const energy = current.energy; let stressCap = current.stressCap; let stress = current.stress; const weightCap = current.weightCap;
-  if (key === 'calm') { stressCap += 1; stress = Math.max(0, stress - 2); }
-  return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap };
+  if (key === 'calm') { stressCap += 1; if(!SHOP_RULES.optionalCalm)stress = Math.max(0, stress - 2); }
+  return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap, calmCharge:key==='calm'&&SHOP_RULES.optionalCalm?true:current.calmCharge };
 }
 
-export const UPGRADE_BASE_PRICES: Record<UpgradeKey, number> = { battery: 30, capacity: 35, calm: 35, concierge: 40, reinforced: 45, express: 45, tipjar: 30, relay: 30, crowd: 40, meter: 25 };
+export const UPGRADE_BASE_PRICES: Record<UpgradeKey, number> = { battery: 30, capacity: 35, calm: 35, concierge: 40, reinforced: 45, express: 45, tipjar: 30, relay: 30, crowd: 24, meter: 25, rails:24, insulation:24, reservation:20, single:24, delay:24, buffer:20, soundproof:24, retime:24, punchcard:24, finale:24 };
 export const upgradePrice = (key: UpgradeKey, _floor: number, _installed: number) => UPGRADE_BASE_PRICES[key];
 export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
   const card = current.shop.find((item) => item.key === key);
@@ -483,7 +557,7 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  switch(key){
   case 'battery':return `每条协作连接的到站加成 +${cooperationBonus(state)} 金币（基础1 + 升级${count*ECONOMY_RULES.cooperationIncrement}）。`;
   case 'capacity':return `电量上限${state.energyCap}；只扩容，不赠送电量，本局唯一。`;
-  case 'calm':return `躁动上限 ${state.stressCap}；安装时立即舒缓2点，本局唯一`;
+  case 'calm':return `躁动上限 ${state.stressCap}；${state.calmCharge?'手动调节可用：−2躁动':'手动调节已使用'}，本局唯一`;
   case 'concierge':return `此后新乘客到站小费 +${count*ECONOMY_RULES.conciergeTip}；不参与车费倍率`;
   case 'reinforced':return '关门时至少3人，每站抵消1点人物耗电，不影响运转耗电；本局唯一。';
   case 'express':return '新乘客原定路程≥5站时少坐1站；本局唯一';
