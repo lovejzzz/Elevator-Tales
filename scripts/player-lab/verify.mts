@@ -16,6 +16,13 @@ import {investmentSample} from './investment-study.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('operator preserves a visible post-shop dismissal option instead of buying surplus power',()=>{
+  const w=fixtures.sealed();Object.assign(w.state,{floor:50,status:'upgrade',energy:4,coins:108,stress:6,cabin:Array(6).fill(null),shop:[]});w.offers=[];
+  w.state.cabin[0]=fixtures.rider('drunk','risk',50,2,true);
+  const n=new Names(),o=observe(w,n),decision=new Player('operator','committed').shop(o,serviceFor(w,n));
+  const next=applyPlan(w,decision.actions.slice(0,-1),n);assert(next);assert(next.state.coins>=o.cabin[0]!.dismissalCost!);
+  const left=E.leaveShop(next.state);assert.equal(left.status,'playing');const removed=E.dismissRider(left,'risk');assert.notEqual(removed,left);assert.equal(removed.cabin[0],null);
+ });
  test('operator values an affordable late capacity buffer before commitments require it',()=>{
   const w=fixtures.sealed();Object.assign(w.state,{floor:30,status:'upgrade',energy:20,coins:200,stress:0,cabin:Array(6).fill(null)});w.offers=[];
   w.state.shop=['capacity','calm'].map(key=>({key:key as 'capacity'|'calm',price:E.upgradePrice(key as 'capacity'|'calm',30,0),purchased:false}));

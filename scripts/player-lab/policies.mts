@@ -92,6 +92,12 @@ export class Player {
  }
  shop(o:Observation,service?:Pick<PreviewService,'preview'>):{actions:Action[];reason:string}{
   let coins=o.coins,energy=o.energy,stress=o.stress,energyCap=o.energyCap,cap=o.stressCap,bought=false;const actions:Action[]=[];
+  // Public post-shop option budget, not a forecast of offers or a guarantee:
+  // keep one known risky rider's removal affordable instead of spending the
+  // last coin on power while an agitation/fuse crisis is visibly approaching.
+  const optionCash=this.mode==='operator'?Math.max(0,...o.cabin.flatMap(r=>r&&
+   ((o.stress>=o.stressCap-2&&(r.agitation>0||r.kind==='thief'))||(r.kind==='bomb'&&(r.fuse??0)<=2))
+   ?[r.dismissalCost??0]:[])):0;
   const soothe=(units:number)=>{units=Math.max(0,stress-cap+1);if(units>0&&coins>=units*o.prices.soothe){actions.push({type:'soothe',units});coins-=units*o.prices.soothe;stress-=units;}};
   const charge=(target:number)=>{const units=Math.min(Math.max(0,Math.min(energyCap,target)-energy),Math.floor(coins/o.prices.charge));if(units>0){actions.push({type:'charge',units});coins-=units*o.prices.charge;energy+=units;}};
   const buy=(key:string)=>{const card=o.shop.find(c=>c.key===key);if(!card||card.price>coins||bought)return;
@@ -134,7 +140,7 @@ export class Player {
    }
    const desired=order.find(key=>{
     const card=o.shop.find(c=>c.key===key);if(!card||card.price>coins)return false;
-    const available=Math.min(energyCap+card.effect.energyCap,energy+card.effect.energy+Math.floor((coins-card.price)/o.prices.charge));
+    const available=Math.min(energyCap+card.effect.energyCap,energy+card.effect.energy+Math.floor(Math.max(0,coins-card.price-optionCash)/o.prices.charge));
     if(this.shopStyle==='native'&&this.mode!=='operator')return available>=floorBudget;
     const preview=service!.preview([...actions,{type:'buy',key}]);
     // Existing riders + one baseline rider once empty, scheduled departures,
@@ -143,8 +149,8 @@ export class Player {
     return preview!==null&&available>=preview.features.committedEnergy+2;
    });
    if(desired)buy(desired);
-   charge(energyCap);
-   if(!o.reserveCell&&coins>=o.prices.reserve&&energy>=Math.min(energyCap,50))actions.push({type:'buy-reserve'});
+   charge(Math.min(energyCap,energy+Math.floor(Math.max(0,coins-optionCash)/o.prices.charge)));
+   if(!o.reserveCell&&coins-optionCash>=o.prices.reserve&&energy>=Math.min(energyCap,50))actions.push({type:'buy-reserve'});
    actions.push({type:'leave'});
    return {actions,reason:this.mode==='operator'?'经营者购物假设：依公开历史估算30层回报，保留当前乘客前缀预算+2电；31层起也考虑可付得起的扩容续航缓冲。概率收益不能支付当前用电，不是未来保证。':this.shopStyle==='adaptive'?'基于最近最多20次实际上行的公开触发机会，估算未来30次回报减价格；新客能力扣除旅程延迟。扩容另看当前路程是否必须扩容才能容纳；舒缓另看近险频率。只买正估值且保留当前乘客前缀预算+2电的能力，否则留钱。概率收益不用于支付当前用电；不是最优购物或未来保证。':this.shopStyle==='committed'?'有承诺预算的投资：购后支付当前乘客至商店的前缀用电预算，另留2电；空车后假设一位基础乘客，不预支未知候客或概率回电。余款充电；这不是整段安全保证。':'先处理失控，再按公开价格投资；至少留运转基线+1电的购买能力，余款充电。人物耗电仍有风险，不是续航保证。'};
   }
