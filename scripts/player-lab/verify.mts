@@ -4,7 +4,7 @@ import {E,F,B,S,R,D,I,P,GAME_ROOT,type Rider,type RunState} from './game.mts';
 import {configureScenario,scenarioRecord} from './scenarios.mts';
 import {Session,Names,observe,previewWorld,applyPlan,clone,replay,features} from './runtime.mts';
 import {serviceFor,enumerate,planningSeed} from './search.mts';
-import {Player} from './policies.mts';
+import {Player,score} from './policies.mts';
 import {flagBlock} from './analytics.mts';
 import {runOne} from './run.mts';
 import * as fixtures from './fixtures.mts';
@@ -16,6 +16,29 @@ import {investmentSample} from './investment-study.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('operator values an affordable late capacity buffer before commitments require it',()=>{
+  const w=fixtures.sealed();Object.assign(w.state,{floor:30,status:'upgrade',energy:20,coins:200,stress:0,cabin:Array(6).fill(null)});w.offers=[];
+  w.state.shop=['capacity','calm'].map(key=>({key:key as 'capacity'|'calm',price:E.upgradePrice(key as 'capacity'|'calm',30,0),purchased:false}));
+  const n=new Names(),o=observe(w,n),p=new Player('operator','committed'),before=hash(w);
+  const decision=p.shop(o,serviceFor(w,n));assert(decision.actions.some(a=>a.type==='buy'&&a.key==='capacity'));
+  assert.equal(decision.actions.at(-1)?.type,'leave');
+  const next=applyPlan(w,decision.actions.slice(0,-1),n);assert(next);assert.equal(next.state.energyCap,70);assert.equal(next.state.energy,70);
+  assert.equal(E.leaveShop(next.state).status,'playing');assert.equal(hash(w),before);
+ });
+ test('operator arrival alignment is a valuation signal not guaranteed recharge',()=>{
+  const w=fixtures.sixSeats();w.state.upgrades.relay=1;const n=new Names();n.register(w);const p=previewWorld(w,[],n)!;
+  const dispersed=clone(p);dispersed.observation.cabin.forEach((r,i)=>{if(r)r.remaining=i+1;});
+  assert(score(p,'operator',new Set())>score(dispersed,'operator',new Set()));
+  assert.deepEqual(p.safety,dispersed.safety);assert.equal(p.features.committedEnergy,dispersed.features.committedEnergy);
+ });
+ test('operator five-floor four-sample continuation hides sealed fares and preserves actual world',()=>{
+  const a=fixtures.sealed(),b=clone(a);b.state.cabin[0]!.traits!.fare=8;
+  const na=new Names(),nb=new Names();na.register(a);nb.register(b);const before=hash(a);
+  const pa=new Player('operator','committed').decide(observe(a,na),serviceFor(a,na));
+  const pb=new Player('operator','committed').decide(observe(b,nb),serviceFor(b,nb));
+  assert.deepEqual(pa,pb);assert.equal(pa.diagnostics.horizon?.depth,5);assert.equal(pa.diagnostics.horizon?.samples,4);
+  assert.match(pa.diagnostics.horizon!.hypothesis,/operator reactive/);assert.equal(hash(a),before);
+ });
  test('R05 fixed-offer commitment window retains active and deferred-income alternatives',()=>{
   // Retrospective public-state fixture, not a seeded replay, optimal policy or win-rate sample.
   const play=(active:boolean,hit:boolean)=>{

@@ -22,8 +22,8 @@ function quick(w:World,actions:Action[],baseCoins:number,_names:Names):Preview {
  const f=features(w,baseCoins),s=w.state;
  // Cheap screen only. Exact shared forecasts are used for shortlisted plans.
  const energy=s.energy-f.energyCost+(s.floor%10===9?E.SHOP_ENTRY_CHARGE:0),stress=s.stress+f.rise-E.arrivalRelief(f.due);
- return {actions,features:f,observation:{floor:s.floor,coins:s.coins,energy:s.energy,stress:s.stress,stressCap:s.stressCap,
-  arrivalReliefCap:E.arrivalRelief(6),prices:{charge:E.CHARGE_PRICE,soothe:E.SOOTHE_PRICE},cabin:s.cabin.map((r,i)=>r?{kind:r.kind,currentPayout:R.riderProfile(r,s.cabin,i).hidden?null:E.arrivalFare(r,s.cabin,i,E.cooperationBonus(s),s.stress)}:null)} as Preview['observation'],
+ return {actions,features:f,observation:{floor:s.floor,coins:s.coins,energy:s.energy,energyCap:s.energyCap,stress:s.stress,stressCap:s.stressCap,installed:Object.keys(s.upgrades).filter(k=>s.upgrades[k as keyof typeof s.upgrades]>0),
+  arrivalReliefCap:E.arrivalRelief(6),prices:{charge:E.CHARGE_PRICE,soothe:E.SOOTHE_PRICE},cabin:s.cabin.map((r,i)=>r?{kind:r.kind,remaining:r.destination-s.floor,currentPayout:R.riderProfile(r,s.cabin,i).hidden?null:E.arrivalFare(r,s.cabin,i,E.cooperationBonus(s),s.stress)}:null)} as Preview['observation'],
   safety:{resourceSafe:f.occupied>0&&(s.floor%10===9?energy>=0:energy>0&&stress<s.stressCap),bombSafe:s.cabin.every((r,i)=>!r||r.kind!=='bomb'||(r.fuse??0)>1||r.destination<=s.floor+1||E.hasNeighbour(s.cabin,i,['cop'])),shopWindow:s.floor%10===9}};
 }
 function localActions(w:World,names:Names,mode:PolicyName):Action[]{
@@ -41,7 +41,7 @@ function localActions(w:World,names:Names,mode:PolicyName):Action[]{
 }
 const key=(w:World)=>w.state.cabin.map(r=>r?.id??'-').join('|')+'/'+w.state.coins+'/'+w.state.swapped+'/'+w.state.energy+'/'+Boolean(w.state.reserveCell);
 export function enumerate(base:World,names:Names,mode:PolicyName,seen:Set<string>,budgetOverride?:number){
- const budget=budgetOverride??({novice:18,minimalist:70,merchant:110,explorer:160,planner:180,opportunist:180,investor:180}[mode]);
+ const budget=budgetOverride??({novice:18,minimalist:70,merchant:110,explorer:160,planner:180,opportunist:180,investor:180,operator:180}[mode]);
  type Node={w:World;actions:Action[];q:Preview;score:number};
  const q=quick(base,[],base.state.coins,names),root={w:base,actions:[],q,score:score(q,mode,seen)};
  let beam:Node[]=[root],count=0;const all:Node[]=[root],visited=new Set([key(base)]);
@@ -104,7 +104,7 @@ export function serviceFor(base:World,names:Names):PreviewService {
  return {
   preview:actions=>previewWorld(base,actions,names),
   candidates:(mode,seen)=>enumerate(base,names,mode,seen),
-  imagine(actions,depth,samples):Rollout {
+  imagine(actions,depth,samples,continuation='minimalist'):Rollout {
    const placed=applyPlan(base,actions,names);if(!placed)throw Error('Illegal imagined root plan');
    if(!Number.isInteger(depth)||depth<1||depth>5||!Number.isInteger(samples)||samples<1||samples>16)throw Error('Planning budget exceeded');
    const outcomes=[];
@@ -119,7 +119,7 @@ export function serviceFor(base:World,names:Names):PreviewService {
      if(t+1<depth){
       w.offers=E.makeOffers(state.floor,state.upgrades,false,rng,state.cabin);
       const localNames=new Names();localNames.register(w);
-      const next=enumerate(w,localNames,'minimalist',new Set(),24).plans.sort((a,b)=>score(b,'minimalist',new Set())-score(a,'minimalist',new Set()))[0];
+      const next=enumerate(w,localNames,continuation,new Set(),24).plans.sort((a,b)=>score(b,continuation,new Set())-score(a,continuation,new Set()))[0];
       if(next)w=applyPlan(w,next.actions,localNames)!;
      }
     }
@@ -129,7 +129,7 @@ export function serviceFor(base:World,names:Names):PreviewService {
    }
    return {samples,depth,survivalFraction:mean(outcomes.map(v=>Number(v.survived))),minStressRoom:Math.min(...outcomes.map(v=>v.minRoom)),
     meanFloors:mean(outcomes.map(v=>v.travelled)),meanNetCash:mean(outcomes.map(v=>v.net)),meanEnergy:mean(outcomes.map(v=>v.energy)),meanStress:mean(outcomes.map(v=>v.stress)),
-    hypothesis:'Independent sampled futures; conservative low-load reactive continuation; stop at next shop and test minimum repair affordability. Not actual future / exhaustive survival probability.'};
+    hypothesis:`Independent sampled futures; ${continuation} reactive continuation; stop at next shop and test minimum repair affordability. Not actual future / exhaustive survival probability.`};
   }
  };
 }

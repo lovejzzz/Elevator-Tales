@@ -1,7 +1,7 @@
 import type {Preview,Observation,PolicyName,PreviewService,Decision,Action,ShopStyle,InvestmentSample} from './types.mts';
 // No runtime/engine imports: decisions receive public observations and a bounded
 // preview service. These are behavioral hypotheses, not calibrated humans.
-export const POLICIES:PolicyName[]=['novice','merchant','explorer','minimalist','planner','opportunist','investor'];
+export const POLICIES:PolicyName[]=['novice','merchant','explorer','minimalist','planner','opportunist','investor','operator'];
 export function score(p:Preview,mode:PolicyName,seen:Set<string>):number {
  const f=p.features,o=p.observation;
  if(!f.occupied)return -1e8;
@@ -9,6 +9,19 @@ export function score(p:Preview,mode:PolicyName,seen:Set<string>):number {
  const room=o.stressCap-o.stress;
  const stressAfter=o.stress+(o.forecast?.stress[1]??f.rise-Math.min(o.arrivalReliefCap,f.due));
  const danger=unsafe?1e6:0;
+ if(mode==='operator'){
+  // R836-01 behavioral hypothesis: bankroll has diminishing marginal value;
+  // schedule groups matter, and high agitation is not itself a reason to flee.
+  // No actual future offers, seeds or sealed rewards enter these terms.
+  const refuel=Math.max(0,o.energyCap-o.energy)*o.prices.charge;
+  const cashWeight=o.coins>refuel+60?1:o.coins>refuel?2:3;
+  const groups=new Map<number,number>();
+  for(const r of o.cabin)if(r)groups.set(r.remaining,(groups.get(r.remaining)??0)+1);
+  const alignment=[...groups].reduce((n,[d,count])=>n+(count>=2?(o.installed.includes('relay')?8:1)/Math.max(1,d):0),0);
+  return -danger+(f.flow+f.fareRate+f.stateValue+f.bankedPerStep*.5)*cashWeight
+   -f.energyCost*3-f.spent*2+f.pendingRepair*1.5+alignment
+   -Math.max(0,stressAfter-o.stressCap+2)*12-Math.max(0,f.committedEnergy-o.energy)*24;
+ }
  if(mode==='novice'){
   // Limited card reading: immediate visible payout, warning avoidance, familiar
   // people; no seat optimization or dismissal. Hidden fare is not a known 24.
@@ -50,14 +63,14 @@ export class Player {
   const known=[...this.seen],{plans,enumerated}=service.candidates(this.mode,this.seen);
   if(!plans.length)throw Error('No boarding plan available');
   let ranked=plans.map(p=>({p,value:score(p,this.mode,this.seen),rollout:null as ReturnType<PreviewService['imagine']>|null})).sort((a,b)=>b.value-a.value);
-  if(this.mode==='planner'||this.mode==='opportunist'||this.mode==='investor'){
+  if(this.mode==='planner'||this.mode==='opportunist'||this.mode==='investor'||this.mode==='operator'){
    const economical=ranked.filter(c=>c.p.safety.resourceSafe&&c.p.safety.bombSafe).sort((a,b)=>a.p.features.energyCost-b.p.features.energyCost||a.p.features.rise-b.p.features.rise)[0];
    const finalists=[...new Set([...ranked.slice(0,3),...(economical?[economical]:[])])];
    for(const c of finalists){
-    c.rollout=service.imagine(c.p.actions,3,2);
+    c.rollout=this.mode==='operator'?service.imagine(c.p.actions,5,4,'operator'):service.imagine(c.p.actions,3,2);
     // Research estimates, never a promise of safety or a use of real future RNG.
     c.value+=c.rollout.survivalFraction*180+c.rollout.meanFloors*15+c.rollout.meanNetCash*1.2
-      +c.rollout.meanEnergy*.8-c.rollout.meanStress*(this.mode==='opportunist'?1:5);
+      +c.rollout.meanEnergy*(this.mode==='operator'?2:.8)-c.rollout.meanStress*(['opportunist','operator'].includes(this.mode)?1:5);
    }
    ranked=finalists.sort((a,b)=>Number(b.p.safety.resourceSafe&&b.p.safety.bombSafe)-Number(a.p.safety.resourceSafe&&a.p.safety.bombSafe)
     ||b.rollout!.survivalFraction-a.rollout!.survivalFraction||b.rollout!.meanFloors-a.rollout!.meanFloors||b.value-a.value);
@@ -66,6 +79,7 @@ export class Player {
   for(const r of [...(this.mode==='novice'?o.offers.slice(0,2):o.offers),...o.cabin])if(r)this.seen.add(r.kind);
   return {actions:chosen.p.actions,
    reason:this.mode==='novice'?'有限阅读：看前两张、优先可见收益与当前警告':this.mode==='minimalist'?'少载检验：优先控制持续压力和人数':
+    this.mode==='operator'?'经营者假设：同层送达、现金边际价值、五层四样本经营式反应；不读取真实未来':
     this.mode==='merchant'?'经营检验：收入与可见资源成本对比':this.mode==='explorer'?'探索检验：新人物、关系和收入并看':this.mode==='opportunist'?'窗口检验：主动寻找短期危险合作与高躁动收益，保留区间续航预算和三层推演':
     this.mode==='investor'?'投资检验：沿用规划检验的关门策略，商店先投资并保留基础续航，不自动清零躁动':
     '规划检验：对当前候选方案做独立随机、可反应的三层推演',
@@ -87,16 +101,16 @@ export class Player {
   if(stress>=cap)buy('calm');
   soothe(Math.max(0,stress-cap+1));charge(1);
   this.investmentStudy=[];
-  if(this.mode==='investor'||this.shopStyle==='committed'||this.shopStyle==='adaptive'){
+  if(this.mode==='investor'||this.mode==='operator'||this.shopStyle==='committed'||this.shopStyle==='adaptive'){
    // R01 exposed a shop-order blind spot: charging to full first prevents early
    // permanent investments. This is a separate public-information hypothesis,
    // not a replay of R01's offers or proof of next-sector survival.
    const bankWindow=o.cabin.some(r=>r&&r.stash>0&&r.remaining<=2);
    soothe(Math.max(0,stress-Math.min(cap-2,bankWindow?6:5)));
-   if(this.shopStyle!=='native'&&!service)throw Error('Committed shopping requires public previews, never a hidden-world fallback');
+   if((this.shopStyle!=='native'||this.mode==='operator')&&!service)throw Error('Committed shopping requires public previews, never a hidden-world fallback');
    const floorBudget=(o.nextShop-o.floor)*o.nextMotor+1;
    let order=['reinforced','concierge','tipjar','calm','battery','relay','crowd','capacity','express','meter'];
-   if(this.shopStyle==='adaptive'){
+   if(this.shopStyle==='adaptive'||this.mode==='operator'){
     const history=this.investmentHistory,steps=history.length;
     const arrivals=history.reduce((n,x)=>n+x.arrivals,0),averageRide=arrivals?history.reduce((n,x)=>n+x.rideSum,0)/arrivals:0;
     const prefix=service!.preview(actions)?.features.committedEnergy??0;
@@ -108,6 +122,11 @@ export class Player {
      // Capacity has no income; value it only when it uniquely lets the current
      // public commitment fit. Other long-term capacity uses remain unmodelled.
      if(card.key==='capacity')gross=prefix+2>energyCap&&prefix+2<=energyCap+card.effect.energyCap?card.price+(prefix+2-energyCap)*o.prices.charge:0;
+     // More room can be useful BEFORE current commitments require it. Only
+     // value this buffer if later motor costs are public and it can be filled.
+     if(this.mode==='operator'&&card.key==='capacity'&&o.nextMotor>=3&&
+       energy+Math.floor((coins-card.price)/o.prices.charge)>=energyCap+8)
+      gross=Math.max(gross,card.price+card.effect.energyCap*o.prices.charge);
      if(card.key==='calm')gross=Math.max(0,-card.effect.stress)*o.prices.soothe+(steps?history.filter(x=>x.nearLimit).length/steps*20*o.prices.soothe:0);
      return {key:card.key,gross,net:gross-card.price,observations:steps};
     });
@@ -116,7 +135,7 @@ export class Player {
    const desired=order.find(key=>{
     const card=o.shop.find(c=>c.key===key);if(!card||card.price>coins)return false;
     const available=Math.min(energyCap+card.effect.energyCap,energy+card.effect.energy+Math.floor((coins-card.price)/o.prices.charge));
-    if(this.shopStyle==='native')return available>=floorBudget;
+    if(this.shopStyle==='native'&&this.mode!=='operator')return available>=floorBudget;
     const preview=service!.preview([...actions,{type:'buy',key}]);
     // Existing riders + one baseline rider once empty, scheduled departures,
     // actual upgrade savings and existing reserve. No predicted future offers
@@ -127,7 +146,7 @@ export class Player {
    charge(energyCap);
    if(!o.reserveCell&&coins>=o.prices.reserve&&energy>=Math.min(energyCap,50))actions.push({type:'buy-reserve'});
    actions.push({type:'leave'});
-   return {actions,reason:this.shopStyle==='adaptive'?'基于最近最多20次实际上行的公开触发机会，估算未来30次回报减价格；新客能力扣除旅程延迟。扩容另看当前路程是否必须扩容才能容纳；舒缓另看近险频率。只买正估值且保留当前乘客前缀预算+2电的能力，否则留钱。概率收益不用于支付当前用电；不是最优购物或未来保证。':this.shopStyle==='committed'?'有承诺预算的投资：购后支付当前乘客至商店的前缀用电预算，另留2电；空车后假设一位基础乘客，不预支未知候客或概率回电。余款充电；这不是整段安全保证。':'先处理失控，再按公开价格投资；至少留运转基线+1电的购买能力，余款充电。人物耗电仍有风险，不是续航保证。'};
+   return {actions,reason:this.mode==='operator'?'经营者购物假设：依公开历史估算30层回报，保留当前乘客前缀预算+2电；31层起也考虑可付得起的扩容续航缓冲。概率收益不能支付当前用电，不是未来保证。':this.shopStyle==='adaptive'?'基于最近最多20次实际上行的公开触发机会，估算未来30次回报减价格；新客能力扣除旅程延迟。扩容另看当前路程是否必须扩容才能容纳；舒缓另看近险频率。只买正估值且保留当前乘客前缀预算+2电的能力，否则留钱。概率收益不用于支付当前用电；不是最优购物或未来保证。':this.shopStyle==='committed'?'有承诺预算的投资：购后支付当前乘客至商店的前缀用电预算，另留2电；空车后假设一位基础乘客，不预支未知候客或概率回电。余款充电；这不是整段安全保证。':'先处理失控，再按公开价格投资；至少留运转基线+1电的购买能力，余款充电。人物耗电仍有风险，不是续航保证。'};
   }
   const keep=['explorer','merchant','opportunist'].includes(this.mode)? (o.cabin.some(r=>r?.kind==='drunk')?5: o.cabin.some(r=>r?.kind==='tourist')?3:0):0;
   if(this.mode==='novice'){charge(50);soothe(Math.max(0,stress-1));}
@@ -140,6 +159,7 @@ export class Player {
    planner:['reinforced','calm','express','concierge','capacity','crowd','tipjar','relay','battery','meter'],
    opportunist:['calm','relay','battery','reinforced','express','tipjar','capacity','concierge','crowd','meter'],
    investor:[], // Handled above; never falls through to charge-first shopping.
+   operator:[],
   };
   const desired=orders[this.mode].find(k=>o.shop.some(c=>c.key===k&&c.price<=coins));
   if(desired)buy(desired);

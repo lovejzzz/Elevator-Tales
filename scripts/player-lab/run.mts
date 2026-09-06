@@ -14,7 +14,7 @@ export function runOne(policy:PolicyName,seed:number,horizon:number,tutorial=fal
   if(guard++>horizon*3)throw Error('Run did not progress');
   const before=session.observation();
   if(before.phase==='upgrade'){
-   const service=shopStyle!=='native'?serviceFor(session.world(),session.names):undefined;
+   const service=shopStyle!=='native'||policy==='operator'?serviceFor(session.world(),session.names):undefined;
    const {actions}=player.shop(before,service);for(const a of actions)session.act(a);
    const exit=session.observation();shops.push({entry:before,exit,actions,study:structuredClone(player.investmentStudy),spend:before.coins-exit.coins,
     emptyPermanentPool:before.shop.length===0&&before.installed.length>=before.upgradeSlots,
