@@ -16,6 +16,20 @@ import {investmentSample} from './investment-study.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('minimum local trip experiment retains RNG, roles and risks and restores the default',()=>{
+  let shortened=0;
+  for(const floor of [30,31,40,51,61])for(let seed=1;seed<=100;seed++){
+   configureScenario('v836-local-investment');const aRng=rngFor(seed),a=E.makeOffers(floor,{...E.EMPTY_UPGRADES},false,aRng,Array(6).fill(null));
+   configureScenario('v836-local-minimum');const bRng=rngFor(seed),b=E.makeOffers(floor,{...E.EMPTY_UPGRADES},false,bRng,Array(6).fill(null));
+   assert.equal(aRng(),bRng());assert.equal(a.length,b.length);
+   a.forEach((r,i)=>{const delta=r.destination-b[i].destination;assert(delta===0||delta===1);shortened+=delta;
+    if(floor<31||Number(r.id.split('-')[1])!==floor%3)assert.equal(delta,0);
+    else assert.equal(b[i].destination-floor,D.PASSENGERS[r.kind].trip[0]);
+    assert.deepEqual({...b[i],destination:r.destination},r);
+   });
+  }
+  assert(shortened>0);configureScenario('baseline');assert.equal(B.JOURNEY_RULES.localExtra,1);
+ });
  test('operator preserves a visible post-shop dismissal option instead of buying surplus power',()=>{
   const w=fixtures.sealed();Object.assign(w.state,{floor:50,status:'upgrade',energy:4,coins:108,stress:6,cabin:Array(6).fill(null),shop:[]});w.offers=[];
   w.state.cabin[0]=fixtures.rider('drunk','risk',50,2,true);

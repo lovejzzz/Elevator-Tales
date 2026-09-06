@@ -43,6 +43,7 @@ export const SCENARIOS={
  'v836-investment-light':{},
  'v836-local':{},
  'v836-local-investment':{},
+ 'v836-local-minimum':{},
  'v836-support-trips':{},
  'encounter-discovery':{},
  'encounter-legacy':{},
@@ -93,7 +94,7 @@ export function configureScenario(name:string){
  if(name==='commuter-short'||name==='commuter-short-bomb-fourteen')D.PASSENGERS.commuter.trip=[2,3];
  if(name==='v836-support-trips')for(const kind of ['mechanic','nurse','exorcist','inspector'] as const)D.PASSENGERS[kind].trip[1]=5;
  Object.assign(E.UPGRADE_BASE_PRICES,BASE_UPGRADE_PRICES,name.startsWith('v836-')||name==='v835-baseline'?V835_PRICES:{},name==='v836-investment'?{reinforced:30,express:30,concierge:30,tipjar:20,relay:25,crowd:25,meter:20,capacity:30}:{});
- if(name==='v836-investment-light'||name==='v836-local-investment')Object.assign(E.UPGRADE_BASE_PRICES,{reinforced:40,express:35,concierge:35,tipjar:25,relay:25,crowd:30,meter:20,capacity:30});
+ if(name==='v836-investment-light'||name==='v836-local-investment'||name==='v836-local-minimum')Object.assign(E.UPGRADE_BASE_PRICES,{reinforced:40,express:35,concierge:35,tipjar:25,relay:25,crowd:30,meter:20,capacity:30});
  for(const kind of Object.keys(BASE_AVOIDS) as PassengerKind[])R.BONDS[kind].avoids=[...BASE_AVOIDS[kind]];
  if(name==='inspector-quiet-relations')for(const kind of QUIET_INSPECTOR_KINDS)R.BONDS[kind].avoids=R.BONDS[kind].avoids.filter(target=>target!=='inspector');
  if(name==='inspector-legacy-relations'){
@@ -107,7 +108,8 @@ export function configureScenario(name:string){
  Object.assign(B.ECONOMY_RULES,BASE_ECONOMY,ECONOMY_VARIANTS[name]??{});
  Object.assign(B.FARE_RULES,BASE_FARE_RULES,FARE_VARIANTS[name]??{});
  Object.assign(B.JOURNEY_RULES,BASE_JOURNEY,name==='journey-one'?{extraFrom31:1,extraFrom51:1}:name==='journey-two'?{extraFrom31:1,extraFrom51:2}:{});
- if(name.startsWith('v836-')||name==='v835-baseline')B.JOURNEY_RULES.localFrom31=name==='v836-local'||name==='v836-local-investment';
+ if(name.startsWith('v836-')||name==='v835-baseline')B.JOURNEY_RULES.localFrom31=name==='v836-local'||name==='v836-local-investment'||name==='v836-local-minimum';
+ if(name==='v836-local-minimum')B.JOURNEY_RULES.localExtra=0;
  if(name==='journey-one'||name==='journey-two')B.JOURNEY_RULES.localFrom31=false;
  Object.assign(B.GHOST_RULES,BASE_GHOST,name==='ghost-provider-cap'?{oneSavingPerExorcist:true}:{});
  Object.assign(B.MOTOR_RULES,BASE_MOTOR,name==='motor-upper'?{upperZone:true}:name==='motor-legacy'?{upperZone:false}:{});

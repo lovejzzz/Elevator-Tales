@@ -12,7 +12,7 @@ export const MUSIC_RULES = { step: 2 };
 export const ECONOMY_RULES = { thiefTravel: 3, celebrityTravel: 2, conciergeTip: 2, conciergeCondition: 'any' as 'any'|'medium', tipReward: 4 };
 export const FARE_RULES = { baseOnlyMultipliers: true, coachNeighbour: 3 };
 export const GHOST_RULES = { oneSavingPerExorcist: false };
-export const JOURNEY_RULES = { extraFrom31: 0, extraFrom51: 0, localFrom31: true };
+export const JOURNEY_RULES = { extraFrom31: 0, extraFrom51: 0, localFrom31: true, localExtra: 1 };
 export const journeyExtension = (floor: number) => floor >= 51 ? JOURNEY_RULES.extraFrom51 : floor >= 31 ? JOURNEY_RULES.extraFrom31 : 0;
 export type AgitationBand = 'low' | 'medium' | 'high';
 export const agitationBand = (value: number): AgitationBand => value <= AGITATION_LOW_MAX ? 'low' : value < AGITATION_HIGH_MIN ? 'medium' : 'high';

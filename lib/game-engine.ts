@@ -221,7 +221,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
     const spec = PASSENGERS[kind];
     const rolledTrip = guided ? [5, 5, 2][index] : rand(spec.trip[0], spec.trip[1], rng) + journeyExtension(floor);
     const baseTrip = JOURNEY_RULES.localFrom31 && floor>=31 && index===floor%3
-      ? Math.min(rolledTrip,spec.trip[0]+1) : rolledTrip;
+      ? Math.min(rolledTrip,spec.trip[0]+JOURNEY_RULES.localExtra) : rolledTrip;
     const traits = kind === 'mystery' || kind === 'shifter' ? randomTraits(kind, available, rng) : undefined;
     const volatile = !guided && index !== calmIndex && (index === rushIndex || rng() < chance);
     return { id: 'f' + floor + '-' + index + '-' + rng().toString(36).slice(2, 7), kind,
