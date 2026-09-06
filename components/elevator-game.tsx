@@ -553,7 +553,7 @@ export default function ElevatorGame() {
       </div>
       <div className="shop-scroll-body">
       <p className="route-notice">运转 {travelEnergyCost(run.floor+1)} 电 / 层<br />{motorAdvanceNotice(run.floor)}</p>
-      <p className="dialog-kicker">FLOOR {run.floor} · SHOP</p><DialogHeader><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle><DialogDescription>本局有4个永久安装位，每店最多选一项，不能拆换。已选能力不再出现；充电与舒缓常驻。</DialogDescription></DialogHeader>
+      <p className="dialog-kicker">FLOOR {run.floor} · SHOP</p><DialogHeader><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle><DialogDescription>本局4个永久安装位，每店最多选一项，已选能力不再出现。可随时充电；躁动仅在失控时允许最低抢救。</DialogDescription></DialogHeader>
       {upgradeCrisis && <p className="shop-warning">{upgradeCrisis === 'both' ? '电量与躁动同时失控：底部最低抢救可恢复1电，并将躁动降至上限以下1点。' : upgradeCrisis === 'energy' ? '电量已耗尽：使用下方充电服务，将电量恢复到 0 以上才能继续。' : '躁动失控：底部最低抢救每点8金币，只降至上限以下1点，不可继续购买舒缓。'} 若无力修复，本班将在这里结束。</p>}
       <section className="recharge-panel charge-slider-panel">
         <div><b>{language==='zh'?'充电至':'Charge to'} <output>{chargeTarget}/{run.energyCap}</output></b><span>{CHARGE_PRICE}{language==='zh'?'金币 / 电':' coins / power'}</span></div>

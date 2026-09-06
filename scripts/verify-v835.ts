@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {arrivalFare,initialRun,resolveFloor,sootheAgitation,repairEmergency,type Rider} from '../lib/game-engine';
 import {PASSENGER_ORDER,type PassengerKind} from '../lib/game-data';
-import {passengerCardSections} from '../lib/passenger-presentation';
+import {passengerBrief,passengerCardSections} from '../lib/passenger-presentation';
 import {V835_PAIRS} from '../lib/i18n-v835';
 import {translateGameText} from '../lib/i18n';
 const rider=(kind:PassengerKind,id:string,destination=2):Rider=>({kind,id,destination,boardedAt:1,patience:3,fareBonus:0});
@@ -37,4 +37,15 @@ for(const kind of PASSENGER_ORDER){
  assert.deepEqual(low.green,high.green);assert.deepEqual(low.red,high.red);
 }
 for(const [zh,en] of V835_PAIRS)assert.equal(translateGameText(zh,'en'),en);
+for(const stress of [0,3,5])for(const controlled of [false,true])for(const volatile of [false,true]){
+ const bomb={...rider('bomb','bank'),fuse:3,stash:3,volatile};
+ const cabin=[bomb,rider('bomb','partner',9),null,controlled?rider('cop','control',9):null,null,null];
+ const before=JSON.stringify(cabin);
+ const quote=passengerBrief(bomb,1,cabin,1,0,1,stress).expectedFare;
+ const next=resolveFloor({...initialRun(),stress,cabin},()=>.9);
+ assert.equal(quote,next.lastEarnings.total,'Next-arrival quote includes final guaranteed bank accrual');
+ assert.equal(JSON.stringify(cabin),before,'Quoting/settlement must not mutate input');
+ bomb.destination=3;
+ assert.equal(passengerBrief(bomb,1,cabin,1,0,1,stress).expectedFare,arrivalFare(bomb,cabin,0,1,stress),'Later-arrival quote does not pre-bank');
+}
 console.log(JSON.stringify({touristCombinationCases:cases,emergencyCases:13*81,simultaneousAndStaggeredArrivals:true,allTargetsVisibleAtEveryFloor:true}));

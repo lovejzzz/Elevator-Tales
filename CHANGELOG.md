@@ -4,7 +4,10 @@ Every public update must add a new entry here and in `lib/changelog.ts`. Record 
 
 ## v8.35 — 2026-09-06 — Clear decisions, intact combinations / 把决定讲清楚，把组合留下来
 
+- 完整静音浏览器实玩1局，67层缺电失败（6电需7电，剩7金币，仅1项升级）。保留高躁动醉汉、游客同层结算、坏人暂存和幽灵节能；后期频繁拒客与缺少投资机会仍需下一轮对照研究。修复商店舒缓旧说明、初见标记挤出操作文字；12种坏人到站报价检查包含最后一层暂存，不改真实收益。
+- One complete muted browser game ended at67:6 power versus7 required,7 coins left,1 upgrade. Keep high-agitation Drunks, aligned Tourists, criminal banking and Ghost savings; late refusals and investment access need controlled follow-up. Fix stale shop copy and debut badge layout.12 bank-quote cases include the final accrual without changing payouts.
 - 桌面三张候客并排，完整列出关系对象与效果；出场解锁节奏不变。左侧取消滚动和外侧变化数字，保留卡内动画和受静音控制的音效。
+- 手机保留横向逐卡浏览与整页滚动，卡高适应完整文字，避免英文长关系被裁切；不宣称手机三卡整页同时可见。Phones retain swipe browsing and page scrolling; card height fits complete rules, including longer English text.
 - 充电滑杆默认50电，已有更高电量不放电；2金币/电不变，明确支付与余额。取消日常舒缓，只允许已失控商店按8金币/点抢救至上限以下1点。
 - 游客基价8、每邻座2、中躁动3、每位名人协作1（升级3）全部保留。明确本人收款、同层互算、先离开不再算；教练只放大基价。
 - 2166游客组合与1053抢救边界检查；28局合成策略抽样中2局超过60层，不是人类胜率或流派平衡认证。关注有钱无电、满载续航与中高躁动的可控性。

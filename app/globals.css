@@ -2238,7 +2238,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .game-shell .candidate-summary > .card-action { font-size:12px; line-height:1.3; padding-top:0; margin-top:auto; }
 .game-shell .candidate-panel .candidate-notes { display:none; }
 .game-shell .passenger-card > .boarded-status { display:none; } /* The action row says Undo boarding. */
-.game-shell .passenger-card > .offer-debut { top:auto; bottom:6px; right:6px; left:auto; }
+.game-shell .passenger-card > .offer-debut { position:absolute; top:auto; bottom:6px; right:6px; left:auto; }
 .game-shell .passenger-card:has(.offer-debut) .card-action { padding-right:64px; }
 @media (min-width:1101px) and (min-height:801px) {
  .game-shell .game-grid { grid-template-columns:174px minmax(0,1fr) minmax(430px,480px); grid-template-rows:minmax(0,1fr) 72px; }
@@ -2308,3 +2308,13 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .status-rail .metric-ring { animation:metric-border 1000ms ease-out both; }
 }
 @media (prefers-reduced-motion:reduce) { .game-shell .status-rail .metric-ring { animation:none; } }
+/* Phones retain swipe browsing, but a full rule set must never be clipped. */
+@media (max-width:700px) {
+ .game-shell .game-grid { grid-template-rows:auto auto 340px 76px; }
+ .game-shell .candidate-panel { overflow:visible; }
+ .game-shell .passenger-list { flex:none; height:auto; align-items:stretch; }
+ .game-shell .passenger-item { display:flex; }
+ .game-shell .passenger-card { height:auto; min-height:300px; }
+ .game-shell .passenger-card > .candidate-summary { height:auto; min-height:100%; }
+ .game-shell .candidate-summary > .card-action { padding-top:8px; }
+}

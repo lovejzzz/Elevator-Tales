@@ -2,7 +2,8 @@ import { PASSENGERS, passengerCategory, type PassengerKind } from './game-data';
 import { bondLines, bondSummary, riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
 import { arrivalFare, arrivalTip, HIGH_RISK_BONUS, riderAfterWork, riderAgitation, type Rider, unlockedAt, type RunState } from './game-engine';
 import { CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
-import { RISK_PARTNERS } from './shift-rules';
+import { RISK_PARTNERS, RISK_STASH_PER_ASCENT, riskPartnerships } from './shift-rules';
+import { agitationBand } from './balance-v832';
 
 export const SHARED_SAVING_RULE = '检修完成：后续运转少耗1电；受控幽灵：抵消人物耗电。节能不产生电量，躁动不兑换电量。';
 
@@ -213,6 +214,9 @@ export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|n
  const detailRules=[bondRules[1],'绿色协作和红色冲突分别结算，互不抵消。',...bondRules.slice(3)];
  const slot=cabin.findIndex(candidate=>candidate?.id===rider.id);
  const quotedRider=slot>=0&&rider.destination<=floor+1?riderAfterWork(rider,cabin,slot,agitation):rider;
+ if(quotedRider!==rider&&riskPartnerships(cabin).members.includes(slot)) {
+  quotedRider.stash=(quotedRider.stash??0)+RISK_STASH_PER_ASCENT+Number(agitationBand(agitation)==='high');
+ }
  const expectedFare=profile.hidden?null:slot<0?profile.fare+(rider.volatile?HIGH_RISK_BONUS:0)+arrivalTip(rider,agitation):arrivalFare(quotedRider,cabin,slot,bonus,agitation);
  return {coins:profile.hidden?null:profile.fare, expectedFare, seated:slot>=0, riskBonus:rider.volatile?HIGH_RISK_BONUS:0, energy:profile.energy,agitation:profile.agitation+(rider.volatile?1:0), tip:rider.fareBonus,weight:0,hidden:profile.hidden,
   distance:Math.max(0,rider.destination-floor),bond,cooperation,cardRules:passengerCardRules(rider,cabin,bonus,relief,multiplier),detailRules,skillRules,bondRules,rules:[...skillRules,...bondRules]};
