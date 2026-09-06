@@ -16,6 +16,16 @@ import {investmentSample} from './investment-study.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('investment history does not double-count Steady and capped Ghost savings',()=>{
+  const w=fixtures.sealed();Object.assign(w.state,{floor:31,cabin:Array(6).fill(null),upgrades:{...E.EMPTY_UPGRADES}});
+  w.state.cabin[0]=fixtures.rider('ghost','g',31,4);w.state.cabin[1]=fixtures.rider('exorcist','e',31,4);w.state.cabin[3]=fixtures.rider('ghost','h',31,4);
+  // Move the second Ghost beside the same provider; only1 passenger power exists.
+  w.state.cabin[2]=w.state.cabin[3];w.state.cabin[3]=null;
+  assert.equal(E.stabilizedEnergy({...w.state,upgrades:{...w.state.upgrades,reinforced:1}}),1);
+  assert.equal(investmentSample(w,{...w,state:{...w.state,floor:32}}).gross.reinforced,0);
+  w.state.cabin[2]=fixtures.rider('commuter','c',31,4);
+  assert.equal(investmentSample(w,{...w,state:{...w.state,floor:32}}).gross.reinforced,2);
+ });
  test('cooperation access probe changes only marginal upgrade income and its price',()=>{
   const base=configureScenario('baseline');const s=E.initialRun();
   try{

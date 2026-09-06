@@ -18,6 +18,12 @@ Verification for this wording checkpoint: full npm verify, Player Lab49, TypeScr
 
 ## Archived earlier checkpoint
 
+### Acquisition audit: carried obligations and marginal valuation
+
+Browser shop affordability reconstructed from public fixed totals/remaining trips: selected upgrades at10/20/30/40 pass current purchase gate (available vs budget+2:41/29,52/34,45/40,58/40). Unknown ride ages set1; not hidden-state/history replay. Exact prior synthetic operator replays show different obligations: shop10 four4–5-stop riders makes tipjar34available vs42required; shop20 battery36vs37. Another seed meter35vs36. Positive valuation alone cannot overcome carried load. Next policy experiment should value discretionary investment room when approaching shops, not simply remove the safety gate.
+
+Fixed Lab-only valuation bug: Steady opportunity now uses actual marginal total power with/without upgrade, accounting for overlapping Ghost savings. Added zero-marginal and one-marginal regression;53 Lab checks and TypeScript pass. Actual game remains unchanged. Raw diagnostics in `audit-browser-shop-budget.mts` and `audit-acquisition.mts`; research workspace `player-lab/V836-ACQUISITION-AUDIT.md` records limitations. No new cohort or public release.
+
 ### Cooperation payoff/price diagnostic: not adopted
 
 Neutral `ECONOMY_RULES.cooperationIncrement` defaults2; process-only `cooperation-access` sets1 and price20 instead of30. Base cooperation1 and neighbor stacking remain.24 conditional executions (12 repeated controls+12 treatment), exact replay. Four buffer/no-battery complete transcripts identical across arms. In eight affected pairs:206 common ascents, refusals63/204→78/202, boardings216→208, longest-streak sum18→25. One observed-controlled treatment still censored120 with270coins vs216 baseline. Fewer censors does not compensate for degraded intake.

@@ -15,9 +15,13 @@ export function investmentSample(before:World,after:World):InvestmentSample {
  const bondCount=arrived.reduce((n,i)=>n+R.bondStatus(s.cabin[i]!,s.cabin,i).supportCount,0);
  const oneBond=E.cooperationBonus({...s,upgrades:{...s.upgrades,battery:1}})-E.cooperationBonus({...s,upgrades:{...s.upgrades,battery:0}});
  const eligibleTips=B.ECONOMY_RULES.conciergeCondition==='any'||B.agitationBand(s.stress)==='medium'?riders.length:0;
+ // Ghost savings are capped after Steady. Count marginal total power rather
+ // than nominal activation: otherwise the two upgrades claim the same saving.
+ const withoutSteady={...s,upgrades:{...s.upgrades,reinforced:0}};
+ const steadySaving=E.totalEnergyCost(withoutSteady)-E.totalEnergyCost({...s,upgrades:{...s.upgrades,reinforced:1}});
  return {floor:s.floor,arrivals:riders.length,rideSum:rides.reduce((a,b)=>a+b,0),nearLimit:s.stress>=s.stressCap-2,
   gross:{
-   reinforced:E.stabilizedEnergy(hypothetical)*E.CHARGE_PRICE,
+   reinforced:steadySaving*E.CHARGE_PRICE,
    concierge:eligibleTips*B.ECONOMY_RULES.conciergeTip,
    battery:bondCount*oneBond,
    tipjar:chance.eligibleTips*S.TIP_CHANCE*B.ECONOMY_RULES.tipReward,
