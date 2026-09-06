@@ -18,6 +18,12 @@ Verification for this wording checkpoint: full npm verify, Player Lab49, TypeScr
 
 ## Archived earlier checkpoint
 
+### Rejected fixed late-motor curve
+
+Process-only switch `MOTOR_RULES.lateSteps`, default false:71–90 motor7,91+ motor8 capped, other rules/prices intact.24 conditional runs (12 repeated baseline,12 treatment), exact replay. Baseline reproduces prior outcomes. Treatment ends79–108 with no censor, versus3 baseline120 censors;11/12 common-exposure pairs have MORE space-available refusals. Strong observed-controlled cases go7→15 and3→9 refusals, longest2→4 and1→5. This is a counterexample to equating shorter survival with better balance. Reject adoption: live motor remains6, no full-run or holdout spent on this failing development arm.
+
+51 Lab checks, TypeScript, full verify/build pass. Shared schedule/forecast/advance notice handles the disabled experiment without altering normal rules. Research workspace `player-lab/V836-LATE-MOTOR-STUDY.md` and results/v836-late-motor-development contain protocol and paired analysis. Counts:344 prior whole-run synthetic executions plus40 conditional executions, including12 repeated controls. Next investigate cooperation upgrade's marginal payoff alongside purchase price, preserving ordinary relations; no income change selected yet.
+
 ### Invested continuation coverage
 
 Added optional explicit initial-world fixtures to the trusted Lab runtime and exact replay, without changing ordinary runs or policy inputs.50 Lab regressions, TypeScript and full game verify pass; four old normal trajectories retain every step hash. No live game parameters changed.

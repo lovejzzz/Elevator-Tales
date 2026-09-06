@@ -16,6 +16,17 @@ import {investmentSample} from './investment-study.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('late motor probe preserves pre71 rules and defaults, with fixed announced cap8',()=>{
+  const base=configureScenario('baseline'),costs=Array.from({length:120},(_,n)=>B.motorCost(n+1));
+  try{
+   const treatment=configureScenario('v836-late-motor');
+   assert.deepEqual({...treatment,name:base.name,motor:base.motor},base);
+   for(let floor=1;floor<=120;floor++)assert.equal(B.motorCost(floor),floor<71?costs[floor-1]:floor<91?7:8);
+   assert.deepEqual(B.nextMotorChange(69),{from:71,power:7});assert.deepEqual(B.nextMotorChange(89),{from:91,power:8});assert.equal(B.nextMotorChange(91),null);
+   assert.match(B.motorScheduleText(),/71–90层7电/);assert.match(B.motorScheduleText(),/91层起8电封顶/);
+  }finally{configureScenario('baseline');}
+  assert.equal(B.MOTOR_RULES.lateSteps,false);assert.equal(B.motorCost(120),6);
+ });
  test('continuation fixtures clone their initial world, preserve opening cash and replay every step',()=>{
   const w=fixtures.sealed();Object.assign(w.state,{floor:61,energy:60,coins:60,stress:0,status:'playing',cabin:Array(6).fill(null)});w.offers=[];
   w.state.cabin[0]=fixtures.rider('commuter','fixture-rider',61,3);

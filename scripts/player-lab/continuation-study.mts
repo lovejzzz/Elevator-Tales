@@ -7,11 +7,12 @@ import {replay,type World} from './runtime.mts';
 import {configureScenario} from './scenarios.mts';
 import {manifest,rngFor,seedFor,writeNew} from './util.mts';
 const out=resolve(process.argv[2]??'');assert(process.argv[2],'Pass a fresh output directory');mkdirSync(out,{recursive:false});
+const scenarios=process.argv[3]?.split(',')??['baseline','ghost-provider-cap'];
 const loadouts:Record<string,UpgradeKey[]>={observed:['battery','meter','reinforced','relay'],earnings:['battery','concierge','crowd','meter'],buffer:['reinforced','calm','capacity','express']};
-const before=manifest();writeNew(join(out,'manifest.json'),{...before,classification:'constructed conditional continuation fixtures, not full games',seeds:[193843117,193843214],start:61,horizon:120,policy:'operator',shopStyle:'committed',loadouts});
+const before=manifest();writeNew(join(out,'manifest.json'),{...before,scenarios,classification:'constructed conditional continuation fixtures, not full games',seeds:[193843117,193843214],start:61,horizon:120,policy:'operator',shopStyle:'committed',loadouts});
 const rows:unknown[]=[];
-for(const scenario of ['baseline','ghost-provider-cap'])for(const [loadout,keys] of Object.entries(loadouts)){
- if(scenario!=='baseline'&&loadout!=='observed')continue;
+for(const scenario of scenarios)for(const [loadout,keys] of Object.entries(loadouts)){
+ if(scenario==='ghost-provider-cap'&&loadout!=='observed')continue;
  configureScenario(scenario);
  for(const cabinName of ['neutral','controlled'])for(const seed of [193843117,193843214]){
   let state=E.initialRun();for(const key of keys)state=E.previewUpgrade(state,key);

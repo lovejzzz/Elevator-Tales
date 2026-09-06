@@ -25,12 +25,12 @@ export function musicBeatForAgitation(value: number) {
 }
 // Local playtest candidate, adopted after matched and unused-seed comparisons.
 // The old schedule remains available only as an explicit research scenario.
-export const MOTOR_RULES = { upperZone: true, midDiscount: 0 };
+export const MOTOR_RULES = { upperZone: true, midDiscount: 0, lateSteps: false };
 export const motorCost = (destination: number) => MOTOR_RULES.upperZone && destination >= 41
-  ? destination <= 50 ? 4-MOTOR_RULES.midDiscount : destination <= 60 ? 5-MOTOR_RULES.midDiscount : 6
+  ? destination <= 50 ? 4-MOTOR_RULES.midDiscount : destination <= 60 ? 5-MOTOR_RULES.midDiscount : MOTOR_RULES.lateSteps&&destination>=71 ? destination>=91?8:7 : 6
   : destination <= 10 ? 1 : destination <= 30 ? 2 : destination <= 60 ? 3 : 4;
 export function nextMotorChange(floor:number) {
- const from=[11,31,41,51,61].find(n=>n>floor+1&&motorCost(n)!==motorCost(n-1));
+ const from=[11,31,41,51,61,71,91].find(n=>n>floor+1&&motorCost(n)!==motorCost(n-1));
  return from===undefined?null:{from,power:motorCost(from)};
 }
 export const motorAdvanceNotice=(floor:number)=>{
@@ -38,7 +38,7 @@ export const motorAdvanceNotice=(floor:number)=>{
  return change?`预告：${change.from}层起运转${change.power}电`:'运转已达上限，不再增加';
 };
 export const motorScheduleText=()=>MOTOR_RULES.upperZone
- ? '运转：1–10层1电，11–30层2电，31–40层3电，41–50层4电，51–60层5电，61层起6电封顶。每十层可维修，人物耗电另计。'
+ ? MOTOR_RULES.lateSteps?'运转：1–10层1电，11–30层2电，31–40层3电，41–50层4电，51–60层5电，61–70层6电，71–90层7电，91层起8电封顶。每十层可维修，人物耗电另计。':'运转：1–10层1电，11–30层2电，31–40层3电，41–50层4电，51–60层5电，61层起6电封顶。每十层可维修，人物耗电另计。'
  : '运转：1–10层1电，11–30层2电，31–60层3电，61层起4电封顶。每十层可维修，人物耗电另计。';
 export const REPAIR_WORK = 2;
 export const REPAIR_DURATION = 3;
