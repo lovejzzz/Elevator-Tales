@@ -6,7 +6,7 @@ import { rollShopRewards, shopFloorIncome, shopOpportunities } from './shop-effe
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
 
-export type Rider = { id: string; kind: PassengerKind; destination: number; patience: number; boardedAt: number; fareBonus: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
+export type Rider = { id: string; kind: PassengerKind; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
 export type ChangeLine = { label: string; amount: number };
 export type ShopCard = { key: UpgradeKey; price: number; purchased: boolean };
 export type RunState = {
@@ -225,6 +225,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
     const traits = kind === 'mystery' || kind === 'shifter' ? randomTraits(kind, available, rng) : undefined;
     const volatile = !guided && index !== calmIndex && (index === rushIndex || rng() < chance);
     return { id: 'f' + floor + '-' + index + '-' + rng().toString(36).slice(2, 7), kind,
+      ...(JOURNEY_RULES.prorateLocalFare && baseTrip<rolledTrip ? {localFareRatio:baseTrip/rolledTrip} : {}),
       destination: floor + expressTrip(baseTrip, upgrades.express), patience: 0, traits, volatile,
       copySeed: kind === 'mimic' ? rand(0, 2147483647, rng) : undefined,
       boardedAt: floor, fareBonus: upgrades.concierge * ECONOMY_RULES.conciergeTip, stash: 0,

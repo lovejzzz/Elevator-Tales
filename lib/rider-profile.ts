@@ -75,9 +75,12 @@ function ownProfile(rider:Rider){
  const spec=PASSENGERS[rider.kind];
  return {weight:0,energy:rider.traits?.energy??spec.energy,agitation:rider.traits?.agitation??0,fare:rider.traits?.fare??spec.fare,bond:rider.traits?.bond??BONDS[rider.kind],conflictEffect:rider.traits?.conflictEffect,hidden:rider.kind==='mystery'};
 }
+// A ticket adjustment applies only to the base fare, never to earned stashes,
+// tips or adjacency payouts. Express retains its full purchased benefit.
+const ticketFare=(rider:Rider,fare:number)=>Math.ceil(fare*(rider.localFareRatio??1));
 export function riderProfile(rider:Rider,cabin:Array<Rider|null>=[],slot=cabin.findIndex(r=>r?.id===rider.id)) {
  const result={...ownProfile(rider),copies:[] as CopiedTrait[]};
- if(rider.kind!=='mimic'||slot<0)return result;
+ if(rider.kind!=='mimic'||slot<0){result.fare=ticketFare(rider,result.fare);return result;}
  // Only the immediately-above position. The pair key deliberately excludes
  // floor, column, and all other neighbors. Preview/reseat never consumes RNG.
  const source = slot >= 3 ? cabin[slot-3] : null;
@@ -85,9 +88,10 @@ export function riderProfile(rider:Rider,cabin:Array<Rider|null>=[],slot=cabin.f
    const field:CopyField=hash(JSON.stringify([rider.copySeed??0,rider.id,source.id]))%2===0?'energy':'fare';
    const profile=ownProfile(source);
    if(field==='energy')result.energy=profile.energy;
-   if(field==='fare'){result.fare=profile.fare;result.hidden=profile.hidden;}
+   if(field==='fare'){result.fare=ticketFare(source,profile.fare);result.hidden=profile.hidden;}
    result.copies.push({sourceId:source.id,sourceKind:source.kind,field});
  }
+ result.fare=ticketFare(rider,result.fare);
  return result;
 }
 export function bondStatus(rider:Rider,cabin:Array<Rider|null>,slot=cabin.findIndex(r=>r?.id===rider.id)){

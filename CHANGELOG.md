@@ -2,7 +2,15 @@
 
 Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.36**. Publication status is tracked separately from the source version.
 
-## v8.36 — 2026-09-06 — One local passenger / 多一位短途候客
+## v8.36 — 2026-09-06 — Local trip tradeoffs / 短途也有取舍
+
+- Local playtest candidate, not public / 本地实玩候选，尚未公开。31层起每批轮换一位候客缩到角色正常最短行程；实际缩短才将基价乘以短途/原抽取行程比例，向上取整。比例生成时固定，延误/换位不重算；快速随后生效、不额外减价。Other two offers, risk and RNG consumption unchanged; no resource-adaptive rescue.
+- Card labels Local fare / 短途基价；游客按卡面基价计算。倍率作用于调整后基价；邻座奖励、小费、暂存和达标奖励不打折。Mimic copies source adjusted base, then its own ticket ratio applies; Mystery stays sealed. Normal prices retained:30/35/35/40/45/45/30/30/40/25 for battery/capacity/calm/concierge/reinforced/express/tipjar/relay/crowd/meter. Charge2/ power; motor/agitation unchanged.
+- 本轮84次逐步回放：48开发、32新种子复核、4特选历史反例。累计496次整局合成执行，另64次条件续局，含重复对照，不是独立人类样本。Fresh opening-stratified confirmation: common30–59 skips143→128, upgrades34→35; above60 4/16→5/16, maximum124→77. Not universal parity or human probabilities.
+- Four selected historical challenges end80/51/68/98, versus free-local160*/159/160*/103 (*alive censored). Deaths80/98 still hold137/106coins: not proof of economic containment. 旧免费短途浏览器120层仍可修复、190金币；反例保留，不混作新方案实玩。Complete muted ticket browser acceptance pending; publication held.
+- Existing copy fixes remain: Tourist departure agitation, Ghost repeated delay cadence, old-rider movement allowance and Ascend label. Watch local/long-trip choices, investment, late cash, and card clarity; safe-but-declined intake is not forced refusal.
+
+### Archived free-local candidate — rejected for publication / 免费短途旧候选，未通过发布验收
 
 - Local candidate; publication held / 本地候选，暂缓发布。31层起每批轮换一位候客使用该人物正常最短旅程，随后应用快速升级；另两位照常。角色、风险、随机数消耗不变，无资源救场。
 - 当前修订静音实玩在120层主动停止观察：0/60电、190币、7/8躁动，可付费修复，仍存活。不是死亡、通关或完整终局；不能以合成测试最高65层证明长期平衡。Current revision censored alive at120:0/60 power,190 coins,7/8 agitation, repair affordable. Not a death, win or terminal game; synthetic maximum65 does not establish containment.

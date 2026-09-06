@@ -1,15 +1,35 @@
 import type {ChangelogEntry} from './changelog';
-export const V836_ZH:ChangelogEntry={version:'8.36',date:'2026-09-06',title:'多一位短途候客',summary:'31层起，每批一位候客按该人物正常最短旅程出现；原升级价格与人物组合保持不变。',
-changes:['31层起，每批轮换一位候客，行程为该人物正常最短行程，快速升级随后生效；其余两位照常随机。人物、风险和随机数消耗不变，不根据当前资源救场。','保留公开v8.35固定价格：默契30、扩容35、舒缓35、礼宾40、稳压45、快速45、小费盒30、并联30、共乘40、计价器25。撤回未公开实验降价，不是公开版本涨价。每店一项、已选不再出现不变。','运转耗电、票价、躁动、游客/教练组合、坏人暂存与充电价格不变；保留其余正常长途候客，不统一缩短支持人物。'],
-experiments:['累计336次合成执行，含重复开发对照，不是336个独立种子或人类游戏。每次执行保留逐步哈希回放。经营型策略只读公开信息，五层四样本推演，保留危险乘客应急请离费用。','最新独立对照每组规划/经营/少接人各8局：升级1.75→1.875、2→2.25；共同30–59层拒客52/136→47/136、64/146→58/146；共同最长拒客均值3→2.25、2.875→2.625。拒客不等于证明无解。','最新主动策略超过60层4/16→3/16，候选最高65；少接人8局完全不变。规划中位57.5→44，经营50→54，非统一变容易，也非人类成功概率。','拒绝最短旅程叠加降价：此前16次主动策略中4次超过100层。早期候选静音实玩100层仍存活、378金币；截尾不是通关。当前修订等待完整静音实玩验收，尚未公开。'],
-watch:['观察有意义的选择、投资与长途人物价值。有限测试不能证明所有玩法等强。']};
-V836_ZH.changes.push('游客短卡明确关门时的躁动；幽灵明确未受控时在3的倍数层随机延误一位邻座1站。旧乘客换位已用后，选中时直接显示限制；英文上行按钮缩短为Ascend。机制和数值不变。');
-V836_ZH.experiments[V836_ZH.experiments.length-1]='拒绝最短旅程叠加降价：此前16次主动策略中4次超过100层。早期候选静音实玩100层仍存活、378金币。当前修订在120层停止观察，0/60电、190金币、7/8躁动，可付费修复，仍存活。两局均为截尾，不是死亡、通关或完整终局；长期平衡尚未验收，暂不公开。';
-V836_ZH.experiments.push('独立静音布局夹具：幽灵/游客/护士，中英两种语言、1440×900与1280×800，卡内文字和页面边界通过。夹具不是实玩。新增游客关门躁动跨区与幽灵延误周期回归检查。');
-export const V836_EN:ChangelogEntry={version:'8.36',date:'2026-09-06',title:'One local passenger',summary:'From31, one offer uses its role’s normal shortest trip; public upgrade prices and combinations stay intact.',
-changes:['From31, one rotating offer uses its role minimum trip, then Express applies; other offers roll normally. Roles, risks and RNG consumption unchanged. No resource-adaptive rescue.','Retain public v8.35 fixed prices: battery30, capacity35, calm35, concierge40, reinforced45, express45, tipjar30, relay30, crowd40, meter25. Withdraw unpublished discounts, not a public price rise. Purchase limits remain.','Motor, fares, agitation, Tourist/Coach combinations, criminal banking and charging prices unchanged. Normal long trips remain; no blanket support shortening.'],
-experiments:['336 synthetic executions including repeated controls, not336 independent seeds; step-hash replay retained. Public-only operator uses five-floor/four-sample planning and emergency dismissal funds.','Latest fresh comparison:8 per planner/operator/minimalist per arm. Upgrades1.75→1.875 and2→2.25; common30–59 refusals52/136→47/136 and64/146→58/146; mean longest3→2.25 and2.875→2.625. Refusals are not proofs of no solution.','Active-policy above60:4/16→3/16, candidate maximum65. All8 minimalist outcomes unchanged. Medians57.5→44 and50→54; not uniformly easier or a human success rate.','Rejected minimum trips plus discounts:4/16 earlier active samples exceeded100. Earlier muted browser candidate censored alive at100 with378 coins, not a win. Current revision awaits full muted browser acceptance and is not public.'],
-watch:['Watch meaningful choices, viable investments and long-trip roles. Finite tests do not prove universal strategy parity.']};
-V836_EN.changes.push('Short cards name Tourist door-close agitation and uncontrolled Ghost delay of one neighbor at floors divisible by3. Selection exposes the used existing-rider move allowance; shorter Ascend label fits. Mechanics and values unchanged.');
-V836_EN.experiments[V836_EN.experiments.length-1]='Rejected minimum trips plus discounts:4/16 earlier active samples exceeded100. Earlier muted browser candidate censored alive at100 with378 coins. Current revision censored alive at120:0/60 power,190 coins,7/8 agitation, repair affordable. Neither is a death, win or terminal game. Long-run acceptance unresolved; publication held.';
-V836_EN.experiments.push('Separate muted layout fixtures: Ghost/Tourist/Nurse in both languages at1440×900 and1280×800; text and page bounds pass. Fixtures are not games. Added Tourist departure-band and Ghost delay-cadence regressions.');
+export const V836_ZH:ChangelogEntry={
+ version:'8.36',date:'2026-09-06',title:'短途也有取舍',
+ summary:'31层起每批一位短途候客：较快下车，较低基价；组合奖励保留。当前为本地实玩候选，尚未公开。',
+ changes:[
+  '31层起，每批轮换一位候客，行程缩至人物正常最短值；另两位照常。只有实际缩短时，基价按短途/原抽取行程比例向上取整。比例在生成时固定，延误与换位不重算；快速升级随后生效，不额外减价。',
+  '卡面显示短途基价，游客公式使用卡面数值。倍率按调整后的基价计算；邻座奖励、小费、暂存、达标奖励不打折。复制车费时先取上方人物的调整后基价，再应用复制人自己的短途比例；神秘人物仍不提前揭晓。',
+  '公开v8.35价格不变：默契30、扩容35、舒缓35、礼宾40、稳压45、快速45、小费盒30、并联30、共乘40、计价器25。充电2币/电；每店一项、已选不再出现。运转、躁动与角色出场风险不变，不按玩家资源救场。',
+  '游客明确关门时躁动；幽灵明确未受控时在3的倍数层随机延误一位邻座1站。选中人物时提示旧乘客换位已用，英文按钮简化为Ascend。',
+ ],
+ experiments:[
+  '本轮84次执行：48开发、32新种子复核、4个特选历史反例重测。全部逐步回放。累计496次合成整局执行与64次条件续局分开统计，含重复对照，不是独立玩家样本。',
+  '新种子复核按普通/引导开局和两种固定策略分组：共同30–59层拒载143→128；升级34→35项。超过60层4/16→5/16，候选最高77，旧规则最高124；不是人类成功率，也没有证明所有策略等强。',
+  '免费短途曾两次160层仍存活，366/653金币；加一站也曾127层。新方案四个历史反例重测终止于80/51/68/98层。终局80层仍有137币、98层106币，不能把终止等同于经济循环已经解决。',
+  '旧免费短途版本静音浏览器在120层停止观察时仍可修复，190金币。该反例保留，不算新方案实玩。新方案完整静音浏览器验收尚待完成，暂不公开。',
+ ],
+ watch:['检查卡面、游客和复制人说明、短途与长途选择、投资感和后期现金。少拒载不代表每次拒载都被迫；已知安全单卡也可能被策略放弃。']
+};
+export const V836_EN:ChangelogEntry={
+ version:'8.36',date:'2026-09-06',title:'Local trips, real tradeoffs',
+ summary:'From31, one local offer trades a shorter trip for lower base fare while preserving combination rewards. Local playtest candidate, not published.',
+ changes:[
+  'From31 one rotating offer is capped at its role minimum; other two roll normally. Only actual shortening scales base fare by short/original rolled trip, rounded up. Ratio is fixed on generation; delays and moves do not reroll it. Express applies afterward without another fare reduction.',
+  'Cards label Local fare; Tourist formulas use the displayed base. Multipliers use that adjusted base; additive neighbor rewards, tips, stashes and accomplishments are intact. Mimic copies the source adjusted base, then applies its own ticket ratio. Mystery fares stay sealed.',
+  'Public v8.35 prices retained: battery30, capacity35, calm35, concierge40, reinforced45, express45, tipjar30, relay30, crowd40, meter25. Charge2/ power; one ability per shop, owned abilities excluded. Motor, agitation and offer risk unchanged; no resource-adaptive rescue.',
+  'Copy exposes Tourist door-close agitation, uncontrolled Ghost delay cadence, and used old-rider move allowance. Shorter Ascend label.',
+ ],
+ experiments:[
+  'This iteration:84 executions—48 development,32 fresh confirmation,4 selected historical challenges—all step-replayed. Cumulative496 whole-run synthetic executions and64 conditional continuations are separate counts, including repeated controls, not independent player samples.',
+  'Fresh confirmation stratifies ordinary/guided openings and two fixed policies. Common30–59 skips143→128; upgrades34→35. Above60:4/16→5/16; candidate maximum77, control124. Not human probabilities or universal strategy parity.',
+  'Free local trips previously censored at160 twice with366/653coins; minimum+1 reached127. Four selected ticket retests end80/51/68/98. Deaths at80 and98 still hold137/106coins: termination alone does not establish a solved economic loop.',
+  'Earlier free-local muted browser sample was repairable at120 with190coins. Retained counterexample, not a ticket playtest. Complete muted browser acceptance for this candidate is pending; publication held.',
+ ],
+ watch:['Inspect card readability, Tourist/Mimic explanations, local versus long-trip decisions, investment and late cash. Refusal behavior is not proof of forced rejection; policies sometimes decline known safe single-card placements.']
+};

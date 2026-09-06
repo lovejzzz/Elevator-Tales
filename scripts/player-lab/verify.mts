@@ -17,6 +17,45 @@ import {guidedOpening} from './opening.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('local ticket experiment preserves packets and RNG, prorating only actual local shortening before Express',()=>{
+  let changed=0;
+  try{
+   for(const floor of [1,30,31,45,61])for(const express of [0,1])for(let seed=1;seed<=30;seed++){
+    const roll=()=>{let calls=0;const rng=rngFor(seed);return {rng:()=>{calls++;return rng();},count:()=>calls};};
+    const a=roll(),b=roll(),c=roll(),upgrades={...E.EMPTY_UPGRADES,express};
+    configureScenario('v835-baseline');const original=E.makeOffers(floor,upgrades,false,a.rng);
+    configureScenario('v836-minimum-original-prices');const free=E.makeOffers(floor,upgrades,false,b.rng);
+    configureScenario('v836-local-ticket');const ticket=E.makeOffers(floor,upgrades,false,c.rng);
+    assert.equal(a.count(),b.count());assert.equal(b.count(),c.count());
+    for(let i=0;i<3;i++){
+     const {localFareRatio,...rest}=ticket[i];assert.deepEqual(rest,free[i]);
+     if(localFareRatio!==undefined){
+      changed++;assert(floor>=31&&localFareRatio>0&&localFareRatio<1);
+      assert.equal(Number(ticket[i].id.split('-')[1]),floor%3);
+      assert(R.riderProfile(ticket[i]).fare<=R.riderProfile(original[i]).fare);
+      const unexpressed={...upgrades,express:0};
+      const raw=E.makeOffers(floor,unexpressed,false,rngFor(seed));
+      assert.equal(localFareRatio,raw[i].localFareRatio,'Purchased Express does not incur a fare deduction');
+     }
+    }
+   }
+  }finally{configureScenario('baseline');}
+  assert(changed>0);assert.equal(B.JOURNEY_RULES.prorateLocalFare,true);
+ });
+ test('local ticket base fare agrees with public preview and preserves additive earnings, copying and sealed fares',()=>{
+  const r=fixtures.rider('commuter','local',31,3);r.localFareRatio=.5;r.fareBonus=2;r.stash=4;
+  const q=fixtures.rider('courier','friend',31,4),w=fixtures.sealed();w.state.cabin=[r,q,null,null,null,null];w.state.floor=31;w.state.stress=0;
+  const profile=R.riderProfile(r,w.state.cabin,0);assert.equal(profile.fare,Math.ceil(D.PASSENGERS.commuter.fare/2));
+  assert.equal(E.arrivalFare(r,w.state.cabin,0,3,0),profile.fare+2+4+B.COMMUTER_QUIET_BONUS+3);
+  assert.equal(observe(w,new Names()).cabin[0]?.baseFare,profile.fare);
+  assert.equal(P.passengerBrief(r,31,w.state.cabin,3,0,1,0).expectedFare,E.arrivalFare(r,w.state.cabin,0,3,0));
+  const mimic=fixtures.rider('mimic','copy',31,3);mimic.localFareRatio=.5;w.state.cabin[3]=mimic;
+  let copied=false;
+  for(let seed=0;seed<30;seed++){mimic.copySeed=seed;const p=R.riderProfile(mimic,w.state.cabin,3);if(p.copies[0]?.field==='fare'){assert.equal(p.fare,Math.ceil(profile.fare/2));copied=true;break;}}
+  assert(copied);
+  const mystery=fixtures.rider('mystery','sealed-local',31,3);mystery.localFareRatio=.5;w.state.cabin[0]=mystery;
+  assert.equal(observe(w,new Names()).cabin[0]?.baseFare,null);
+ });
  test('explicit openings are policy-independent, preserve defaults, and replay',()=>{
   for(const p of ['novice','operator','diverse'] as const){
    assert.equal(guidedOpening('guided',p),true);assert.equal(guidedOpening('ordinary',p),false);

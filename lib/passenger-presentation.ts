@@ -176,6 +176,7 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
  const bond=bondSummary(rider,cabin,bonus),name=PASSENGERS[rider.kind].name;
  const partners=bond.partners.replaceAll(' / ','或'),opponents=bond.opponents.replaceAll(' / ','或');
  const ability:PassengerRuleBlock={tone:'neutral',heading:'人物能力',lines:PASSENGER_RULES[rider.kind].map(rule=>pressureText(rule,multiplier))};
+ if(rider.localFareRatio)ability.lines.unshift('短途票价已计入基价；邻座奖励、小费和暂存收益不打折。');
  const cooperation:PassengerRuleBlock={
   tone:'good',heading:`协作：旁边有${partners}`,
   lines:[`${name}到站时，每位仍相邻的协作对象额外赚 ${bonus} 金币。`],
@@ -183,7 +184,7 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
  };
  if(rider.kind==='tourist') {
   cooperation.heading='游客自己的到站收入';
-  cooperation.lines=[`8基价 + 每位邻座2金币 + 每位相邻名人再加${bonus}金币；中躁动再加3金币。`, '只在游客本人下车时结算，不给邻座发钱。其他游客也算邻座；同层下车仍互算，先下车的以后不再算。', '例：两位游客相邻且同时下车，无其他加成，各得10金币，共20；中躁动各得13，共26。'];
+  cooperation.lines=[`卡面基价 + 每位邻座2金币 + 每位相邻名人再加${bonus}金币；中躁动再加3金币。`, '只在游客本人下车时结算，不给邻座发钱。其他游客也算邻座；同层下车仍互算，先下车的以后不再算。', '例：两位基价8的游客相邻且同时下车，无其他加成，各得10金币，共20；中躁动各得13，共26。'];
   cooperation.note='邻座奖励、中躁动奖励和名人协作奖励直接相加，不参与基价倍率。';
  }
  if(relief>0){

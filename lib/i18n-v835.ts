@@ -1,4 +1,10 @@
 export const V835_PAIRS:Array<[string,string]>=[
+ ['每层换属性；基价看卡面','Rerolls each floor; use the displayed base fare'],
+ ['每到一层重新抽取耗电1–2、自身躁动0–1、原始车费16–28与协作/冲突对象。短途再按固定比例折算基价。目的地不延长，关门前查看新状态。','Each floor rerolls power 1–2, agitation 0–1, raw fare 16–28 and relationships. A local ticket then scales the fare by its fixed ratio. Destination stays fixed; check the new values before departure.'],
+ ['短途基价','Local fare'],
+ ['短途票价已计入基价；邻座奖励、小费和暂存收益不打折。','The base fare includes the shorter trip. Neighbor rewards, tips and banked coins are not discounted.'],
+ ...[1,3].map(n=>[`卡面基价 + 每位邻座2金币 + 每位相邻名人再加${n}金币；中躁动再加3金币。`,`Displayed base + 2 per neighbor + ${n} more per Celebrity neighbor; add 3 at medium agitation.`] as [string,string]),
+ ['例：两位基价8的游客相邻且同时下车，无其他加成，各得10金币，共20；中躁动各得13，共26。','Example: two adjacent Tourists with base fare 8 arriving together, with no other bonuses, earn 10 each / 20 total; at medium agitation, 13 each / 26 total.'],
  ['旧乘客换位已用 · 仅新上客可调整 · ESC 取消','Existing-rider move used · only new riders can move · ESC to cancel'],
  ['节能 1/层','Save 1 power/floor'],
  ['本局4个永久安装位，每店最多选一项，已选能力不再出现。可随时充电；躁动仅在失控时允许最低抢救。','4 permanent slots per run; choose at most one ability per shop. Installed abilities never reappear. Charging stays available; agitation relief is emergency-only.'],

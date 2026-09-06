@@ -1,5 +1,15 @@
 # v8.36 research checkpoint — 2026-09-06
 
+## Current local candidate: ticket-scaled local trips
+
+Supersedes free-local candidate below. Frozen formula promoted after84 completed/replayed executions:48 development,32 fresh confirmation,4 selected historical challenges. Actual shortened trip base fare=ceil(base×short/original rolled trip), generated once before Express. Additive rewards retained; source/local Mimic ticket factors explicit; sealed fares remain sealed. Normal historical arms explicitly disable proration.
+
+Fresh opening/policy-stratified confirmation: common30–59 skips143→128, upgrades34→35. Above60 4/16→5/16, maximum124→77, no censor. Not universal:ordinary/operator boardings85→84 and longest11→12. Historical long cases now80/51/68/98, with137/106coins at two deaths; termination alone is not a solved economic loop or proof of extremely rare60+ human runs. Full protocol/tables in workspace player-lab/V836-LOCAL-TICKET-STUDY.md. Total496 whole-run synthetic executions +64 conditional continuations, repeated controls included.
+
+59 Lab checks,300 paired packet fixtures, old replay compatibility before adoption. Separate forced-muted layout QA passed2 languages×2 viewports with all three cards visible; no gameplay counted. Fixed stale Tourist/Bomb constant-fare descriptions, Shifter raw-fare wording, actual local card/accessible labels and explicit normal Tourist example. Local translation corpus includes adjusted cards. Owned QA browser closed. Complete continuous muted ticket game is next; no public deployment or goal completion claimed.
+
+Final full game verify, TypeScript and production build passed after wording/translation test updates; existing Node deprecation and bundle-size warnings remain non-fatal. No build/deployment process left pending.
+
 ## Latest: opening-stratified confirmation rejects short-trip-only acceptance
 
 Added explicit --opening policy-default|ordinary|guided, preserving prior defaults and recording actual opening in manifests/results.57 Lab checks and TypeScript pass.32 fresh executions:4 seeds193847501+i*97 ×operator/diverse ×ordinary/guided ×v835/minimum. Every action replayed. Ordinary/diverse control88/47/68/79 becomes160(censored)/47/159/160(censored), with366/653coins in the censored samples. Common30–59 skips36/97→18/85, boardings100→132: improved intake does not establish acceptable economy. Guided is not uniformly easier and cannot explain away this failure.

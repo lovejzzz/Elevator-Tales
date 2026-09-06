@@ -6,7 +6,11 @@ import { I18N_CORE_SAMPLES, translateGameText } from '../lib/i18n';
 import { planPlacement } from '../lib/game-interaction';
 import { PASSENGER_RULES, SHARED_SAVING_RULE, passengerBrief, passengerCardRules, passengerCardSections, passengerFace } from '../lib/passenger-presentation';
 
-if(!translateGameText(PASSENGERS.bomb.detail,'en').startsWith('Base fare 14,'))throw Error('Bomb detail must translate the current base fare, not the historical 20');
+if(!translateGameText(PASSENGERS.bomb.detail,'en').startsWith('Use the displayed base fare;'))throw Error('Bomb detail must use the card fare, including local tickets');
+for(const [ratio,fare] of [[1,14],[.5,7]]){
+ const rider:Rider={kind:'bomb',id:'local-bomb',destination:5,boardedAt:1,patience:0,fareBonus:0,fuse:4,localFareRatio:ratio};
+ if(passengerBrief(rider,1).coins!==fare)throw Error('Bomb card must show current normal/local fare, not historical 20');
+}
 
 const dynamicSamples = [
   '商店舒缓 −1 躁动，支付 8 金币。',
@@ -58,6 +62,8 @@ const detailCardSamples=PASSENGER_ORDER.flatMap((kind)=>{
   return [...blocks.flatMap(block=>[block.heading,...block.lines,block.note??'']),...brief.detailRules];
 });
 const corpus = [
+  '短途基价',
+  ...PASSENGER_ORDER.flatMap(kind=>passengerCardRules({kind,id:'local-copy-'+kind,destination:5,boardedAt:1,patience:0,fareBonus:0,localFareRatio:.5}).flatMap(block=>[block.heading,...block.lines,block.note??''])),
   ...I18N_CORE_SAMPLES,
   ...dynamicSamples,
   ...runtimeFaceSamples,

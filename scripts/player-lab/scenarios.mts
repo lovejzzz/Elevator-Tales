@@ -43,6 +43,7 @@ export const SCENARIOS={
  'v836-investment':{},
  'v836-investment-light':{},
  'v836-local':{},
+ 'v836-local-ticket':{},
  'v836-local-investment':{},
  'v836-local-minimum':{},
  'v836-minimum-original-prices':{},
@@ -120,6 +121,8 @@ export function configureScenario(name:string){
  if(name.startsWith('v836-')||name==='v835-baseline')B.JOURNEY_RULES.localFrom31=name==='v836-local'||name==='v836-local-investment'||name==='v836-local-minimum'||name==='v836-minimum-original-prices'||name==='v836-late-motor';
  if(name==='v836-local-minimum'||name==='v836-minimum-original-prices')B.JOURNEY_RULES.localExtra=0;
  if(name==='v836-local'||name==='v836-local-investment')B.JOURNEY_RULES.localExtra=1;
+ if(['v835-baseline','v836-local','v836-local-investment','v836-local-minimum','v836-minimum-original-prices'].includes(name))B.JOURNEY_RULES.prorateLocalFare=false;
+ if(name==='v836-local-ticket')Object.assign(B.JOURNEY_RULES,{localFrom31:true,localExtra:0,prorateLocalFare:true});
  if(name==='journey-one'||name==='journey-two')B.JOURNEY_RULES.localFrom31=false;
  Object.assign(B.GHOST_RULES,BASE_GHOST,name==='ghost-provider-cap'?{oneSavingPerExorcist:true}:{});
  Object.assign(B.MOTOR_RULES,BASE_MOTOR,name==='motor-upper'?{upperZone:true}:name==='motor-legacy'?{upperZone:false}:{});
