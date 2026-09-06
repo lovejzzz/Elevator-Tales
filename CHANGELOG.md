@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.33**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.34**. Publication status is tracked separately from the source version.
+
+## v8.34 — 2026-09-05 — Power before purchases / 先看电量，再做投资
+
+- 剩余电量移到商店顶部左侧，与金币并列固定显示，不随商品滚走；当前电量48px，窄屏/矮窗36px，上限20px/18px。耗尽状态用暖红色，充电和容量变化直接显示真实值。
+- Power and coins stay above the scrolling purchases. Power48px or36px on narrow/short windows; capacity20px/18px. Depleted power uses warm red. Charge/capacity changes show current values immediately.
+- 强制静音12个夹具：中英×1440×900、390×844、320×740×26/0电；数字边界与字号、实际+1电/−2币、滚动后固定位置均通过。12 injected, forced-muted fixtures validate number bounds, real charging and fixed positioning; not games.
+- 充电2币/电、抵达最多补5电及所有玩法数值不变。Charging2 coins/power, entry up to5 and all gameplay values unchanged. Watch extremely short-window space; next-shop motor references exclude rider costs.
 
 ## v8.33 — 2026-09-05 — Three offers at a glance / 三位候客，同时看清
 

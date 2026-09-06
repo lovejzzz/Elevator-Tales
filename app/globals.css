@@ -2176,6 +2176,31 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .game-shell .mobile-rule-button { width:72px; }
 }
 
+/* Shop resources stay outside the scrolling purchases: survival first. */
+.upgrade-dialog .shop-resources { display:grid; grid-template-columns:1fr 1fr; gap:12px; flex:none; min-width:0; }
+.upgrade-dialog .shop-power,.upgrade-dialog .shop-resources .shop-wallet { min-width:0; margin:0; padding:14px 18px; border:1px solid #8dbb9480; background:#142d25; }
+.upgrade-dialog .shop-resource-label { display:flex; align-items:center; gap:8px; font-size:16px; color:#cce8d7; }
+.upgrade-dialog .shop-resource-label svg { width:22px; height:22px; flex:none; }
+.upgrade-dialog .shop-power-value { display:flex; align-items:baseline; gap:5px; margin-top:6px; font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+.upgrade-dialog .shop-power-value b { font-size:48px; line-height:1; font-weight:700; color:#e2ffea; }
+.upgrade-dialog .shop-power-value > span { font-size:20px; color:#b5cbb8; }
+.upgrade-dialog .shop-power-empty { border-color:#e99676; background:#41261f; }
+.upgrade-dialog .shop-power-empty .shop-power-value b { color:#ffb596; }
+.upgrade-dialog .shop-resources .shop-wallet { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:6px; border-color:#92704480; background:#302a1b; }
+.upgrade-dialog .shop-resources .shop-wallet > span:first-child { display:grid; grid-template-columns:22px 1fr; gap:6px 8px; width:100%; }
+.upgrade-dialog .shop-resources .shop-wallet svg { width:22px; height:22px; }
+.upgrade-dialog .shop-resources .shop-wallet .shop-balance-label { font-size:16px; letter-spacing:0; }
+.upgrade-dialog .shop-resources .shop-wallet b { grid-column:1/-1; font-size:48px; line-height:1; animation:none; }
+.upgrade-dialog .shop-resources .shop-wallet > span:last-child { font-size:12px; }
+@media (max-width:700px), (max-height:750px) {
+ .upgrade-dialog .shop-resources { gap:8px; }
+ .upgrade-dialog .shop-power,.upgrade-dialog .shop-resources .shop-wallet { padding:10px 12px; }
+ .upgrade-dialog .shop-power-value b,.upgrade-dialog .shop-resources .shop-wallet b { font-size:36px; }
+ .upgrade-dialog .shop-power-value > span { font-size:18px; }
+ .upgrade-dialog .shop-resource-label,.upgrade-dialog .shop-resources .shop-wallet .shop-balance-label { font-size:14px; }
+ .upgrade-dialog .shop-resources .shop-wallet > span:last-child { display:none; }
+}
+
 /* v8.33: three offers, one glance. No nested scroll containers or clipped rules.
    Compact cards summarize abilities and link targets; Details retains all effects. */
 .game-shell .passenger-card { overflow:clip; }
