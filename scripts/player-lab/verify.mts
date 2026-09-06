@@ -16,6 +16,13 @@ import {investmentSample} from './investment-study.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('offline all-node diagnostic preserves normal enumeration and does not mutate the world',()=>{
+  const w=fixtures.sealed(),n=new Names(),before=hash(w);
+  const normal=enumerate(w,n,'allocator',new Set()),all=enumerate(w,n,'allocator',new Set(),undefined,true);
+  assert.equal(normal.enumerated,all.enumerated);assert(all.plans.length>=normal.plans.length);
+  const keys=new Set(all.plans.map(p=>hash(p.actions)));assert(normal.plans.every(p=>keys.has(hash(p.actions))));
+  assert.deepEqual(enumerate(w,n,'allocator',new Set()),normal);assert.equal(hash(w),before);
+ });
  test('allocator values shop investment room without changing shopping safety or public-only planning',()=>{
   const a=fixtures.sealed();Object.assign(a.state,{floor:10,status:'upgrade',energy:20,coins:90,stress:0,cabin:Array(6).fill(null),upgrades:{...E.EMPTY_UPGRADES}});a.offers=[];
   a.state.cabin[0]=fixtures.rider('commuter','a',10,2);

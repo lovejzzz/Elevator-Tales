@@ -18,6 +18,12 @@ Verification for this wording checkpoint: full npm verify, Player Lab49, TypeScr
 
 ## Archived earlier checkpoint
 
+### Offline finalist coverage audit
+
+Audited all four first operator/allocator divergences at28/26/27/9 using exact shared predecision replay. Evaluated728 already-generated legal candidate plans with additional independent sampled rollout work; not728 games or equal-budget improvement. Two best-under-model alternatives were omitted: floor26 Commuter relocation from four finalists (still in13-plan shortlist), floor9 single short Courier intake from shortlist itself. Other two best choices were already included. Actual world hashes unchanged and actual future never used.
+
+Keep diagnostic separate from production enumeration: optional all-node flag defaults false.55 Lab checks/TypeScript pass. Next bounded diversity experiment should retain intermediate intake counts at the same root/rollout budget, not increase terminal weights to compensate for missing plans. Research workspace `player-lab/V836-FINALIST-AUDIT.md` and results/v836-finalist-audit retain every score and limitation. No new full games, balance adoption or publication.
+
 ### Investment-room policy probe
 
 Added allocator as a separate internal research policy: same operator root/rollout budgets and shopping, plus1.2×sampled shop investment room (0–60), after known charging/repair/option costs, only with remaining permanent slots. No actual future income or RNG.54 Lab checks/TypeScript pass; original operator ranking unchanged.

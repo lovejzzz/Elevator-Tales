@@ -40,7 +40,7 @@ function localActions(w:World,names:Names,mode:PolicyName):Action[]{
  return actions;
 }
 const key=(w:World)=>w.state.cabin.map(r=>r?.id??'-').join('|')+'/'+w.state.coins+'/'+w.state.swapped+'/'+w.state.energy+'/'+Boolean(w.state.reserveCell);
-export function enumerate(base:World,names:Names,mode:PolicyName,seen:Set<string>,budgetOverride?:number){
+export function enumerate(base:World,names:Names,mode:PolicyName,seen:Set<string>,budgetOverride?:number,diagnosticAll=false){
  const budget=budgetOverride??({novice:18,minimalist:70,merchant:110,explorer:160,planner:180,opportunist:180,investor:180,operator:180,allocator:180}[mode]);
  type Node={w:World;actions:Action[];q:Preview;score:number};
  const q=quick(base,[],base.state.coins,names),root={w:base,actions:[],q,score:score(q,mode,seen)};
@@ -76,7 +76,7 @@ export function enumerate(base:World,names:Names,mode:PolicyName,seen:Set<string
  all.sort((a,b)=>b.score-a.score);
  const largest=all.find(n=>n.q.features.occupied===Math.max(...all.map(n=>n.q.features.occupied)));
  const dismissalDiversity=new Map<number,Node>();for(const n of all){const count=n.actions.filter(a=>a.type==='dismiss').length;if(!dismissalDiversity.has(count))dismissalDiversity.set(count,n);}
- const final=[...new Set([...all.slice(0,10),root,...(largest?[largest]:[]),...dismissalDiversity.values()])];
+ const final=diagnosticAll?all:[...new Set([...all.slice(0,10),root,...(largest?[largest]:[]),...dismissalDiversity.values()])];
  const plans=final.filter(n=>n.w.state.cabin.some(Boolean)).map(n=>previewWorld(base,n.actions,names)!).filter(Boolean);
  return {plans,enumerated:count};
 }
