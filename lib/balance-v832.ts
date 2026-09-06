@@ -12,7 +12,7 @@ export const MUSIC_RULES = { step: 2 };
 export const ECONOMY_RULES = { thiefTravel: 3, celebrityTravel: 2, conciergeTip: 2, conciergeCondition: 'any' as 'any'|'medium', tipReward: 4 };
 export const FARE_RULES = { baseOnlyMultipliers: true, coachNeighbour: 3 };
 export const GHOST_RULES = { oneSavingPerExorcist: false };
-export const JOURNEY_RULES = { extraFrom31: 0, extraFrom51: 0 };
+export const JOURNEY_RULES = { extraFrom31: 0, extraFrom51: 0, localFrom31: false };
 export const journeyExtension = (floor: number) => floor >= 51 ? JOURNEY_RULES.extraFrom51 : floor >= 31 ? JOURNEY_RULES.extraFrom31 : 0;
 export type AgitationBand = 'low' | 'medium' | 'high';
 export const agitationBand = (value: number): AgitationBand => value <= AGITATION_LOW_MAX ? 'low' : value < AGITATION_HIGH_MIN ? 'medium' : 'high';
@@ -25,9 +25,9 @@ export function musicBeatForAgitation(value: number) {
 }
 // Local playtest candidate, adopted after matched and unused-seed comparisons.
 // The old schedule remains available only as an explicit research scenario.
-export const MOTOR_RULES = { upperZone: true };
+export const MOTOR_RULES = { upperZone: true, midDiscount: 0 };
 export const motorCost = (destination: number) => MOTOR_RULES.upperZone && destination >= 41
-  ? destination <= 50 ? 4 : destination <= 60 ? 5 : 6
+  ? destination <= 50 ? 4-MOTOR_RULES.midDiscount : destination <= 60 ? 5-MOTOR_RULES.midDiscount : 6
   : destination <= 10 ? 1 : destination <= 30 ? 2 : destination <= 60 ? 3 : 4;
 export function nextMotorChange(floor:number) {
  const from=[11,31,41,51,61].find(n=>n>floor+1&&motorCost(n)!==motorCost(n-1));

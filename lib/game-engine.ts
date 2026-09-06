@@ -1,5 +1,5 @@
 import { BONDS, bondStatus, conflictLinks, profileWeight, randomTraits, riderProfile, type VariableTraits } from './rider-profile';
-import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, journeyExtension } from './balance-v832';
+import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
 import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, type PassengerKind, type UpgradeKey } from './game-data';
 import { agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
 import { rollShopRewards, shopFloorIncome, shopOpportunities } from './shop-effects';
@@ -219,7 +219,9 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
     : offerRiskChance(floor);
   const offers = kinds.map((kind, index): Rider => {
     const spec = PASSENGERS[kind];
-    const baseTrip = guided ? [5, 5, 2][index] : rand(spec.trip[0], spec.trip[1], rng) + journeyExtension(floor);
+    const rolledTrip = guided ? [5, 5, 2][index] : rand(spec.trip[0], spec.trip[1], rng) + journeyExtension(floor);
+    const baseTrip = JOURNEY_RULES.localFrom31 && floor>=31 && index===floor%3
+      ? Math.min(rolledTrip,spec.trip[0]+1) : rolledTrip;
     const traits = kind === 'mystery' || kind === 'shifter' ? randomTraits(kind, available, rng) : undefined;
     const volatile = !guided && index !== calmIndex && (index === rushIndex || rng() < chance);
     return { id: 'f' + floor + '-' + index + '-' + rng().toString(36).slice(2, 7), kind,
@@ -405,8 +407,8 @@ export function previewUpgrade(current: RunState, key: UpgradeKey): RunState {
   return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap };
 }
 
-const BASE_PRICES: Record<UpgradeKey, number> = { battery: 30, capacity: 35, calm: 35, concierge: 40, reinforced: 45, express: 45, tipjar: 30, relay: 30, crowd: 40, meter: 25 };
-export const upgradePrice = (key: UpgradeKey, _floor: number, _installed: number) => BASE_PRICES[key];
+export const UPGRADE_BASE_PRICES: Record<UpgradeKey, number> = { battery: 30, capacity: 35, calm: 35, concierge: 40, reinforced: 45, express: 45, tipjar: 30, relay: 30, crowd: 40, meter: 25 };
+export const upgradePrice = (key: UpgradeKey, _floor: number, _installed: number) => UPGRADE_BASE_PRICES[key];
 export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
   const card = current.shop.find((item) => item.key === key);
   if (current.status !== 'upgrade' || current.shopUpgradeBought || !card || card.purchased || current.coins < card.price || current.upgrades[key] > 0 || Object.values(current.upgrades).filter(Boolean).length >= UPGRADE_SLOTS) return current;

@@ -360,7 +360,9 @@ export function verify(){
  test('real prices and permanent single purchase / no repeat are enforced',()=>{
   const s={...E.initialRun(),status:'upgrade' as const,coins:500,energy:10,stress:4,shop:[{key:'calm' as const,price:E.upgradePrice('calm',10,0),purchased:false}]};
   const charged=E.chargeBattery(s,7);assert.equal(charged.coins,s.coins-7*E.CHARGE_PRICE);
-  const soothed=E.sootheAgitation(charged,2);assert.equal(soothed.coins,charged.coins-2*E.SOOTHE_PRICE);
+  assert.equal(E.sootheAgitation(charged,2),charged,'Routine soothing removed in v8.35');
+  const crisis={...charged,stress:charged.stressCap+1};
+  const soothed=E.sootheAgitation(crisis,2);assert.equal(soothed.coins,charged.coins-2*E.SOOTHE_PRICE);
   const bought=E.installUpgrade(soothed,'calm');assert.equal(E.installUpgrade(bought,'calm'),bought);
   assert(!E.upgradeChoices(bought.upgrades,rngFor(2)).includes('calm'));
  });
@@ -476,7 +478,7 @@ export function verify(){
   const o=observe(w,new Names()),actions=new Player('investor').shop(o).actions;
   assert(actions.findIndex(a=>a.type==='buy')<actions.findIndex(a=>a.type==='charge'));
   const next=applyPlan(w,actions.filter(a=>a.type!=='leave'),new Names())!;
-  assert.equal(next.state.upgrades.reinforced,1);assert.equal(next.state.energy,29);assert.equal(next.state.coins,0);
+  assert.equal(next.state.upgrades.reinforced,1);assert.equal(next.state.energy,33);assert.equal(next.state.coins,0);assert.equal(next.state.stress,6);
   w.state.energy=1;w.state.coins=50;
   assert(!new Player('investor').shop(observe(w,new Names())).actions.some(a=>a.type==='buy'));
  });
