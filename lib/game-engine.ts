@@ -423,7 +423,8 @@ export function leaveShop(current: RunState): RunState {
 export const CHARGE_PRICE = 2;
 export const SOOTHE_PRICE = 8;
 export function sootheAgitation(state: RunState, units: number): RunState {
-  if (state.status !== 'upgrade' || !Number.isSafeInteger(units) || units <= 0 || units > state.stress || state.coins < units * SOOTHE_PRICE) return state;
+  // Emergency-only: a shop cannot tune an otherwise safe agitation band.
+  if (state.status !== 'upgrade' || state.stress < state.stressCap || units !== state.stress - state.stressCap + 1 || !Number.isSafeInteger(units) || state.coins < units * SOOTHE_PRICE) return state;
   const cost = units * SOOTHE_PRICE;
   return { ...state, stress: state.stress - units, coins: state.coins - cost,
     message: `商店舒缓 −${units} 躁动，支付 ${cost} 金币。`,

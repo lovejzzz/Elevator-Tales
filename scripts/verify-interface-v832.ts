@@ -42,7 +42,7 @@ for(const a of PASSENGER_ORDER)for(const b of PASSENGER_ORDER){
 }
 const inspectorState={...initialRun(),floor:26};
 assert(passengerCardSections(rider('inspector'),inspectorState).red.some(row=>row.targets?.includes('ghost')&&row.effects.some(e=>e.tone==='energy')));
-assert(!passengerCardSections(rider('inspector'),{...inspectorState,floor:1}).red.some(row=>row.targets?.includes('ghost')),'Keep progressive disclosure for genuinely locked characters');
+assert(passengerCardSections(rider('inspector'),{...inspectorState,floor:1}).red.some(row=>row.targets?.includes('ghost')),'v8.35: show every relationship on the card; encounters still unlock progressively');
 for(const kind of PASSENGER_ORDER){
  const run=initialRun(),r=rider(kind);
  const blocks=passengerCardSections(r,run);

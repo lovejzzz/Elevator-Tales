@@ -78,7 +78,7 @@ export class Player {
  }
  shop(o:Observation,service?:Pick<PreviewService,'preview'>):{actions:Action[];reason:string}{
   let coins=o.coins,energy=o.energy,stress=o.stress,energyCap=o.energyCap,cap=o.stressCap,bought=false;const actions:Action[]=[];
-  const soothe=(units:number)=>{units=Math.min(units,Math.floor(coins/o.prices.soothe));if(units>0){actions.push({type:'soothe',units});coins-=units*o.prices.soothe;stress-=units;}};
+  const soothe=(units:number)=>{units=Math.max(0,stress-cap+1);if(units>0&&coins>=units*o.prices.soothe){actions.push({type:'soothe',units});coins-=units*o.prices.soothe;stress-=units;}};
   const charge=(target:number)=>{const units=Math.min(Math.max(0,Math.min(energyCap,target)-energy),Math.floor(coins/o.prices.charge));if(units>0){actions.push({type:'charge',units});coins-=units*o.prices.charge;energy+=units;}};
   const buy=(key:string)=>{const card=o.shop.find(c=>c.key===key);if(!card||card.price>coins||bought)return;
    actions.push({type:'buy',key});coins-=card.price;bought=true;energyCap+=card.effect.energyCap;cap+=card.effect.stressCap;energy+=card.effect.energy;stress+=card.effect.stress;};

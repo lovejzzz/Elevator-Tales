@@ -1,0 +1,16 @@
+export const V835_PAIRS:Array<[string,string]>=[
+ ['节能 1/层','Save 1 power/floor'],
+ ['本局4个永久安装位，每店最多选一项，已选能力不再出现。可随时充电；躁动仅在失控时允许最低抢救。','4 permanent slots per run; choose at most one ability per shop. Installed abilities never reappear. Charging stays available; agitation relief is emergency-only.'],
+ ['电量与躁动同时失控：底部最低抢救可恢复1电，并将躁动降至上限以下1点。','Both resources are critical: minimum rescue below restores 1 power and puts agitation 1 below its cap.'],
+ ['躁动失控：底部最低抢救每点8金币，只降至上限以下1点，不可继续购买舒缓。','Agitation is critical: minimum rescue below costs 8 coins per point and stops 1 below the cap. Further relief cannot be bought.'],
+ ['失控抢救','Emergency rescue'],
+ ['仅到达商店时已经失控才可抢救：每点8金币，只降至上限以下1点。日常躁动依靠乘客与站位管理。','Only critical agitation on arrival at a shop can be rescued: 8 coins per point, stopping 1 below the cap. Manage everyday agitation through riders and seating.'],
+ ['游客自己的到站收入','The Tourist’s own arrival income'],
+ ['只在游客本人下车时结算，不给邻座发钱。其他游客也算邻座；同层下车仍互算，先下车的以后不再算。','Paid only when this Tourist leaves; neighbors do not receive this payment. Other Tourists count. Same-floor arrivals count each other; riders who left earlier no longer count.'],
+ ['例：两位游客相邻且同时下车，无其他加成，各得10金币，共20；中躁动各得13，共26。','Example: two adjacent Tourists arriving together, with no other bonuses, earn 10 each / 20 total; at medium agitation, 13 each / 26 total.'],
+ ['邻座奖励、中躁动奖励和名人协作奖励直接相加，不参与基价倍率。','Neighbor, medium-agitation and Celebrity bond rewards add directly; base-fare multipliers do not multiply them.'],
+ ...[1,3].map(n=>[`8基价 + 每位邻座2金币 + 每位相邻名人再加${n}金币；中躁动再加3金币。`,`8 base + 2 per neighbor + ${n} more per Celebrity neighbor; add 3 at medium agitation.`] as [string,string]),
+ ['本人到站：每位邻座+2币；中躁动再+3','My arrival: +2 per neighbor; +3 at medium agitation'],
+ ['躁动上限 +1，并立即降低 2 躁动。本局限装一次；日常躁动由乘客与站位管理。','Agitation cap +1 and immediately reduce agitation by 2. Once per run; manage everyday agitation through riders and seating.'],
+ ['点击或拖入空位','Click or drag to board'],
+];

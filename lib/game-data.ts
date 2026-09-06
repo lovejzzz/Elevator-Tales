@@ -28,7 +28,7 @@ export const MECHANIC_SAVING = 2;
 
 export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   commuter: { kind: 'commuter', name: '通勤者', title: 'The Commuter', weight: 1, fare: 5, energy: 1, trip: [2, 5], patience: 3, rarity: 18, sheet: '01', cell: 0, tone: 'steady', short: '低躁动到站：额外+2金币', detail: '到站前关门时处于低躁动，额外支付2金币，不参与倍率。不消耗躁动，也不要求邻座。' },
-  tourist: { kind: 'tourist', name: '游客', title: 'The Tourist', weight: 2, fare: 8, energy: 1, trip: [4, 7], patience: 3, rarity: 10, sheet: '01', cell: 1, tone: 'steady', short: "每位邻座到站+2币；中躁动再+3", detail: "基价8；每位仍相邻的乘客让本人到站多赚2金币，包括游客与同层到站者。到站前关门时处于中躁动，再支付3金币；两项均不参与倍率。途中不产金币。" },
+  tourist: { kind: 'tourist', name: '游客', title: 'The Tourist', weight: 2, fare: 8, energy: 1, trip: [4, 7], patience: 3, rarity: 10, sheet: '01', cell: 1, tone: 'steady', short: "本人到站：每位邻座+2币；中躁动再+3", detail: "基价8；每位仍相邻的乘客让本人到站多赚2金币，包括游客与同层到站者。到站前关门时处于中躁动，再支付3金币；两项均不参与倍率。途中不产金币。" },
   courier: { kind: 'courier', name: '快递员', title: 'The Courier', weight: 1, fare: 3, energy: 1, trip: [1, 3], patience: 2, rarity: 4, sheet: '01', cell: 2, tone: 'support', short: '到站补充2电 · 短途周转', detail: '目的地很近；到站时为电梯补充2电（不超过电量上限），适合用短途周转换取续航。' },
   mechanic: { kind: 'mechanic', name: '维修工', title: 'The Mechanic', weight: 2, fare: 6, energy: 1, trip: [3, 7], patience: 3, rarity: 5, sheet: '01', cell: 3, tone: 'support', short: '低躁动检修2次：随后3层运转少耗1电', detail: '关门时处于低躁动，检修进度+1；其他状态暂停，不清空进度。完成2次后，随后3次上行运转少耗1电；每位维修工仅完成一次。多位延长时间，最多6层，不增加每层节能量。不消耗躁动。' },
   lover: { kind: 'lover', name: '恋人', title: 'The Lover', weight: 1, fare: 3, energy: 1, trip: [3, 7], patience: 4, rarity: 10, sheet: '01', cell: 4, tone: 'social', short: "每位邻座恋人：到站基价+100%", detail: "有未配对恋人时，每层全车统一25%概率呼唤1位恋人，不按人数叠加。成功时另两位为非恋人，仍可互相作用；未触发时按普通候客规则生成。每位相邻恋人让本人到站基价增加100%，线性叠加；途中不产金币。小费、默契和高危加价不参与倍率。" },
@@ -82,7 +82,7 @@ export type UpgradeKey = 'battery' | 'capacity' | 'calm' | 'concierge' | 'reinfo
 export const UPGRADES: Record<UpgradeKey, { name: string; label: string; description: string; strategy: string; tone: 'sustain' | 'control' | 'score' | 'capacity' | 'tempo' }> = {
   battery: { name: '默契契约', label: 'COOPERATION', description: '每条实际默契的本人到站奖励额外 +2 金币，多位默契对象分别叠加。本局限装一次。', strategy: '协作收益', tone: 'score' },
   capacity: { name: '扩容电池', label: 'BATTERY CAPACITY', description: '电量上限 +10。只扩容，不赠送电量；可在商店继续充电。本局限装一次。', strategy: '预先准备', tone: 'capacity' },
-  calm: { name: '舒缓系统', label: 'CALM SYSTEM', description: '躁动上限 +1，并立即降低 2 躁动。本局限装一次；商店按点舒缓服务始终可用。', strategy: '控场缓冲', tone: 'control' },
+  calm: { name: '舒缓系统', label: 'CALM SYSTEM', description: '躁动上限 +1，并立即降低 2 躁动。本局限装一次；日常躁动由乘客与站位管理。', strategy: '控场缓冲', tone: 'control' },
   concierge: { name: '礼宾服务', label: 'CONCIERGE', description: '此后新出现的乘客到站小费 +2，不参与车费倍率。本局限装一次。', strategy: '收入投资', tone: 'score' },
   reinforced: { name: '稳压模块', label: 'STABILIZER', description: '关门时至少3人，每站抵消1点人物耗电；不影响电梯运转耗电。本局限装一次。', strategy: '抵消耗电', tone: 'sustain' },
   express: { name: '快速电梯', label: 'EXPRESS', description: '此后新乘客原定路程至少 5 层时，目的地提前 1 层；每局限装一次。', strategy: '长途周转', tone: 'tempo' },

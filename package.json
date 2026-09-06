@@ -17,7 +17,7 @@
     "simulate:v831-archival": "tsx scripts/simulate-balance.ts",
     "audit:passengers:v831-archival": "tsx scripts/audit-all-passengers.ts",
     "audit:stacking": "tsx scripts/audit-stacking.ts",
-    "verify": "tsx scripts/verify-three-values.ts && tsx scripts/verify-stacking.ts && tsx scripts/verify-conflicts.ts && tsx scripts/verify-tourist.ts && tsx scripts/verify-bomb-timer.ts && tsx scripts/verify-audio.ts && tsx scripts/verify-music.ts && tsx scripts/verify-changelog.ts && tsx scripts/verify-i18n.ts && tsx scripts/verify-mimic-pairs.ts && tsx scripts/verify-v832.ts && tsx scripts/verify-interface-v832.ts && tsx scripts/audit-lover-offers.ts",
+    "verify": "tsx scripts/verify-v835.ts && tsx scripts/verify-three-values.ts && tsx scripts/verify-stacking.ts && tsx scripts/verify-conflicts.ts && tsx scripts/verify-tourist.ts && tsx scripts/verify-bomb-timer.ts && tsx scripts/verify-audio.ts && tsx scripts/verify-music.ts && tsx scripts/verify-changelog.ts && tsx scripts/verify-i18n.ts && tsx scripts/verify-mimic-pairs.ts && tsx scripts/verify-v832.ts && tsx scripts/verify-interface-v832.ts && tsx scripts/audit-lover-offers.ts",
     "verify:v831-archival": "tsx scripts/verify-browser-fixes.ts && tsx scripts/verify-checkpoint.ts && tsx scripts/verify-v831.ts",
     "verify:mimic": "tsx scripts/verify-mimic-pairs.ts",
     "verify:v830-archival": "tsx scripts/verify-design-v829.ts && tsx scripts/experiment-agitation-appetite.ts && tsx scripts/verify-shop-v830.ts",

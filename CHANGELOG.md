@@ -1,6 +1,14 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.34**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.35**. Publication status is tracked separately from the source version.
+
+## v8.35 — 2026-09-06 — Clear decisions, intact combinations / 把决定讲清楚，把组合留下来
+
+- 桌面三张候客并排，完整列出关系对象与效果；出场解锁节奏不变。左侧取消滚动和外侧变化数字，保留卡内动画和受静音控制的音效。
+- 充电滑杆默认50电，已有更高电量不放电；2金币/电不变，明确支付与余额。取消日常舒缓，只允许已失控商店按8金币/点抢救至上限以下1点。
+- 游客基价8、每邻座2、中躁动3、每位名人协作1（升级3）全部保留。明确本人收款、同层互算、先离开不再算；教练只放大基价。
+- 2166游客组合与1053抢救边界检查；28局合成策略抽样中2局超过60层，不是人类胜率或流派平衡认证。关注有钱无电、满载续航与中高躁动的可控性。
+- Three desktop offers expose all relationships. Instrument-local feedback, a50-power default charging slider at2 coins/power, and emergency-only agitation rescue at8 coins/point to1 below cap. Tourist/Celebrity/Coach combinations remain intact.2166 Tourist cases,1053 emergency cases,28 synthetic policy samples (2 above60); not human balance certification. Watch power planning and smaller-screen readability.
 
 ## v8.34 — 2026-09-05 — Power before purchases / 先看电量，再做投资
 

@@ -165,11 +165,9 @@ export function passengerCardSections(
  const redGroups=new Map<ConflictEffect,PassengerKind[]>();
  riderConflictRules(rider,state.cabin).forEach(rule=>redGroups.set(rule.effect,[...(redGroups.get(rule.effect)??[]),rule.target]));
  const red=[...redGroups.entries()].map(([kind,targets])=>({targets,effects:conflictEffects(kind)}));
- const visible = new Set(unlockedAt(state.floor));
- const filterRelations = (rows: PassengerCardRelation[]) => rows.map(row => ({...row, targets: row.targets?.filter(kind => visible.has(kind))})).filter(row => !row.targets || row.targets.length);
- const risk: PassengerCardRelation[] = passengerCategory(rider.kind) === 'bad' ? [{ targets: RISK_PARTNERS.filter(kind => visible.has(kind)), effects: [effect('coins','未受控相邻：每人暂存 +2金币/层；高躁动 +3'), effect('agitation','每条链接 +1躁动/层'), effect('neutral','送达兑现；请离全部放弃')] }] : [];
+ const risk: PassengerCardRelation[] = passengerCategory(rider.kind) === 'bad' ? [{ targets: RISK_PARTNERS, effects: [effect('coins','未受控相邻：每人暂存 +2金币/层；高躁动 +3'), effect('agitation','每条链接 +1躁动/层'), effect('neutral','送达兑现；请离全部放弃')] }] : [];
  if (rider.stash) self.push(effect('coins','已暂存 ' + rider.stash + ' · 送达兑现'));
- return {self,greenBonus,green:filterRelations(green),red:filterRelations(red),risk};
+ return {self,greenBonus,green,red,risk};
 }
 
 const pressureText=(text:string,m:number)=>text.replace(/躁动 \+(\d+)/g,(_,n)=>'躁动 +'+Number(n)*m).replace(/\+(\d+) 躁动/g,(_,n)=>'+'+Number(n)*m+' 躁动');
@@ -182,6 +180,11 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
   lines:[`${name}到站时，每位仍相邻的协作对象额外赚 ${bonus} 金币。`],
   note:'只有列出的对象有这项到站奖励；能力绿线不一定有奖励。到站那一刻仍相邻才算。',
  };
+ if(rider.kind==='tourist') {
+  cooperation.heading='游客自己的到站收入';
+  cooperation.lines=[`8基价 + 每位邻座2金币 + 每位相邻名人再加${bonus}金币；中躁动再加3金币。`, '只在游客本人下车时结算，不给邻座发钱。其他游客也算邻座；同层下车仍互算，先下车的以后不再算。', '例：两位游客相邻且同时下车，无其他加成，各得10金币，共20；中躁动各得13，共26。'];
+  cooperation.note='邻座奖励、中躁动奖励和名人协作奖励直接相加，不参与基价倍率。';
+ }
  if(relief>0){
   cooperation.lines.push(`契约生效：${name}协作到站，额外躁动 −${relief}。`);
   cooperation.note='到站时仍相邻才生效；同层送达多位协作乘客，可分别舒缓。';
