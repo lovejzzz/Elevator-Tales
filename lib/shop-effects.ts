@@ -8,7 +8,7 @@ export const RELAY_ENERGY = 4;
 export const CROWD_MINIMUM = 4;
 export const CROWD_COINS = 3;
 export const METER_START = 5;
-export const SHOP_TUNING={bufferBoost:0,finaleRemaining:1,bufferGap:0,bufferGapEnergy:4,bufferFlywheel:0,relayReliable:false};
+export const SHOP_TUNING={bufferBoost:0,finaleRemaining:1,bufferGap:0,bufferGapEnergy:4,bufferFlywheel:0,relayReliable:false,expressMinimum:5};
 export const relayEnergyBounds=():[number,number]=>SHOP_TUNING.relayReliable?[1,3]:[0,RELAY_ENERGY];
 export const relayExpectedEnergy=()=>{const [low,high]=relayEnergyBounds();return low+(high-low)*RELAY_CHANCE;};
 export function flywheelSaving(state:RunState,arrivals:number,motorHeadroom:number) {

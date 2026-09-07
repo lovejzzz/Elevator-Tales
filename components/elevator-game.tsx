@@ -175,12 +175,12 @@ function upgradeImpact(key: UpgradeKey, run: RunState): string {
     case 'reinforced': return '至少3人：每站抵消1点人物耗电';
     case 'capacity': return `容量 ${run.energyCap} → ${preview.energyCap}；仍需付费充电`;
     case 'concierge': return `新乘客到站小费 +${(run.upgrades.concierge + 1) * 2}`;
-    case 'express': return '新乘客原定 ≥5 层时，目的地提前 1 层 · 本局唯一';
+    case 'express': return '车内乘客不变；可能合并或拆开同站到达';
     case 'tipjar': case 'relay': return '本局唯一 · 概率只在实际结算时抽取';
     case 'retime': return '上行前手动改签 · 每十层一次';
     case 'reservation': return '上行前手动留座 · 每十层一次';
     case 'rails': return '换位时生效 · 每层旧乘客可换位2次';
-    case 'delay': return '仅影响安装后新出现的炸弹客';
+    case 'delay': return '多争取1站；仍需核对路程与倒计时';
     default: return '本局限装一次 · 按卡片条件触发';
   }
 }

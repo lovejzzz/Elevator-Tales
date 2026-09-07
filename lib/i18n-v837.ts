@@ -4,6 +4,8 @@ export const V837_PAIRS:Array<[string,string]>=[
  ['上行前手动留座 · 每十层一次','Reserve manually before departure · once per sector'],
  ['换位时生效 · 每层旧乘客可换位2次','Applies when moving · two old-rider moves per floor'],
  ['仅影响安装后新出现的炸弹客','Only affects Bomb riders appearing after installation'],
+ ['车内乘客不变；可能合并或拆开同站到达','Current riders are unchanged; arrivals may align or split'],
+ ['多争取1站；仍需核对路程与倒计时','One extra stop; still compare the trip with the countdown'],
  ['本局限装一次 · 按卡片条件触发','One installation per run · triggers under the conditions above'],
  ['每位受控幽灵每层抵1人物耗电；不抵运转','Each controlled Ghost offsets 1 rider power/floor; never motor power'],
  ['每层抵1人物耗电，不抵运转','Offset 1 rider power/floor, never motor power'],

@@ -37,6 +37,6 @@ export function investmentSample(before:World,after:World):InvestmentSample {
    meter:rides.filter(n=>n>=S.METER_START).length*4,
    // A deliberately rough turnover estimate; shortening also changes timing,
    // work and fares. It is not a promise of this saving on future arrivals.
-   express:arrived.reduce((n,i)=>n+Number(after.state.floor-s.cabin[i]!.boardedAt+s.upgrades.express>=5)*R.riderProfile(s.cabin[i]!,s.cabin,i).energy*E.CHARGE_PRICE,0),
+   express:arrived.reduce((n,i)=>n+Number(after.state.floor-s.cabin[i]!.boardedAt+s.upgrades.express>=S.SHOP_TUNING.expressMinimum)*R.riderProfile(s.cabin[i]!,s.cabin,i).energy*E.CHARGE_PRICE,0),
   }};
 }

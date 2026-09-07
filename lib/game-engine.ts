@@ -223,7 +223,7 @@ export function energyBreakdown(state: RunState) {
 export const totalEnergyCost = (state: RunState) => energyBreakdown(state).total;
 // Inspector judges the controllable load, not the route's unavoidable motor.
 export const inspectionLoad = (state: RunState) => { const cost = energyBreakdown(state); return cost.total - cost.motor; };
-export const expressTrip = (baseTrip: number, installed: number) => installed > 0 && baseTrip >= 5 ? baseTrip - 1 : baseTrip;
+export const expressTrip = (baseTrip: number, installed: number) => installed > 0 && baseTrip >= SHOP_TUNING.expressMinimum ? baseTrip - 1 : baseTrip;
 
 export function shuffle<T>(items: T[], rng: () => number = Math.random): T[] {
   const result = [...items];

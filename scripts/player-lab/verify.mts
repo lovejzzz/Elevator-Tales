@@ -18,6 +18,17 @@ import {guidedOpening} from './opening.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('experimental Express4 changes only four-stop eligibility and leaves short trips intact',()=>{
+  const old={...S.SHOP_TUNING};try{
+   for(const minimum of [4,5]){S.SHOP_TUNING.expressMinimum=minimum;
+    for(let trip=1;trip<=12;trip++)for(const owned of [0,1,2])assert.equal(E.expressTrip(trip,owned),trip-Number(owned>0&&trip>=minimum));
+   }
+   S.SHOP_TUNING.expressMinimum=4;
+   const state=E.initialRun();state.cabin[0]=fixtures.rider('commuter','long',1,4,false,false);
+   const after=E.resolveFloor({...state,floor:4},()=>.99);
+   assert.equal(investmentSample({state,offers:[]},{state:after,offers:[]}).gross.express,2);
+  }finally{Object.assign(S.SHOP_TUNING,old);}
+ });
  test('reliable relay preserves mean and draw count without rewarding ineligible arrivals',()=>{
   const old={...S.SHOP_TUNING};try{
    for(const reliable of [false,true]){
