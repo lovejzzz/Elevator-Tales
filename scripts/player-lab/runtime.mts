@@ -63,11 +63,12 @@ export function visibleRider(r:Rider,w:World,names:Names,slot=-1):PublicRider {
 }
 export function observe(w:World,names:Names,forecast=true):Observation {
  names.register(w);const s=w.state,ef=forecast&&s.status==='playing'?F.energyForecast(s):null,sf=ef?F.stressForecast(s):null;
- return {schema:2,version:GAME_VERSION,floor:s.floor,phase:s.status,energy:s.energy,energyCap:s.energyCap,stress:s.stress,stressCap:s.stressCap,coins:s.coins,...(S.SHOP_TUNING.bufferGap?{bufferGapTurns:s.bufferGapTurns??0,bufferGapRule:{turns:S.SHOP_TUNING.bufferGap,energy:S.SHOP_TUNING.bufferGapEnergy}}:{}),
+ return {schema:2,version:GAME_VERSION,floor:s.floor,phase:s.status,energy:s.energy,energyCap:s.energyCap,stress:s.stress,stressCap:s.stressCap,coins:s.coins,...(s.upgrades.buffer&&S.SHOP_TUNING.bufferFlywheel?{flywheelPower:S.SHOP_TUNING.bufferFlywheel}:{}),...(S.SHOP_TUNING.bufferGap?{bufferGapTurns:s.bufferGapTurns??0,bufferGapRule:{turns:S.SHOP_TUNING.bufferGap,energy:S.SHOP_TUNING.bufferGapEnergy}}:{}),
+  ...(s.upgrades.relay&&S.SHOP_TUNING.relayReliable?{relayReliable:true as const}:{}),
   bufferPower:s.bufferPower??0,punchCount:s.punchCount??0,retimeAvailable:Boolean(s.upgrades.retime&&s.retimeUsedSector!==Math.floor(s.floor/10)),reserved:s.reservedRider?visibleRider(s.reservedRider,w,names):null,oldMovesRemaining:E.oldMovesRemaining(s),calmCharge:Boolean(s.calmCharge),reservationAvailable:Boolean(s.upgrades.reservation&&!s.reservedRider&&s.reservationUsedSector!==Math.floor(s.floor/10)),oldMoveUsed:!E.oldMovesRemaining(s),failureCause:s.status!=='lost'?null:s.message.includes('炸弹')?'bomb':s.message.includes('电量')?'energy':'agitation',cabin:s.cabin.map((r,i)=>r?visibleRider(r,w,names,i):null),
   offers:w.offers.filter(r=>!s.cabin.some(p=>p?.id===r.id)).map(r=>visibleRider(r,w,names)),
   installed:(Object.keys(s.upgrades) as UpgradeKey[]).filter(k=>s.upgrades[k]>0),
-  shop:E.availableShopCards(s).map(c=>{const p=E.previewUpgrade(s,c.key);return {key:c.key,price:c.price,rule:D.UPGRADES[c.key].description,
+  shop:E.availableShopCards(s).map(c=>{const p=E.previewUpgrade(s,c.key);return {key:c.key,price:c.price,rule:c.key==='relay'&&S.SHOP_TUNING.relayReliable?'同层至少2人实际到站：回1电，50%额外回2电；每层一次。':D.UPGRADES[c.key].description,
    effect:{energyCap:p.energyCap-s.energyCap,stressCap:p.stressCap-s.stressCap,energy:p.energy-s.energy,stress:p.stress-s.stress}};}),prices:{charge:E.CHARGE_PRICE,soothe:E.SOOTHE_PRICE,reserve:B.RESERVE_CELL_PRICE},nextShop:E.nextShopFloor(s.floor),
   agitationBand:B.agitationBand(s.stress),serviceTurns:s.serviceTurns??0,reserveCell:Boolean(s.reserveCell),reserveCharge:B.RESERVE_CELL_CHARGE,
   arrivalReliefCap:B.AGITATION_RULES.arrivalReliefCap,
@@ -113,14 +114,17 @@ export function features(w:World,baseCoins:number):Features {
  // currently visible profiles, deliver existing riders on schedule and assume
  // one baseline passenger after the cabin empties. No unseen offers are used.
  // Ghost delays and future variable traits can invalidate this estimate.
- let committedEnergy=0,cumulativeCost=-(s.bufferPower??0),projected=s;
+ let committedEnergy=0,cumulativeCost=-(S.SHOP_TUNING.bufferFlywheel?0:s.bufferPower??0),projected=s;
  for(let floor=s.floor;floor<E.nextShopFloor(s.floor);floor++){
   const cabin=projected.cabin.map(r=>r&&r.destination>floor?r:null);
   projected={...projected,floor,cabin};
   cumulativeCost+=cabin.some(Boolean)?E.totalEnergyCost(projected):E.travelEnergyCost(floor+1)+1-E.serviceSaving(projected);
   cumulativeCost-=cabin.filter(r=>r?.kind==='courier'&&r.destination===floor+1).length*E.COURIER_ARRIVAL_CHARGE;
   const scheduledArrivals=cabin.filter(r=>r&&r.destination<=floor+1).length;
+  if(projected.upgrades.relay&&scheduledArrivals>=2)cumulativeCost-=Math.min(Math.max(0,cumulativeCost),S.relayEnergyBounds()[0]);
   const gap=S.deliveryGapCharge(projected,scheduledArrivals);
+  const cost=E.energyBreakdown(projected);
+  cumulativeCost-=Math.min(Math.max(0,cumulativeCost),S.flywheelSaving(projected,scheduledArrivals,cost.motor-cost.service));
   // Credit only current riders' scheduled arrival, never the assumed future
   // baseline passenger. Do not bank negative demand as an unlimited battery.
   if(gap.energy)cumulativeCost-=Math.min(gap.energy,Math.max(0,cumulativeCost));

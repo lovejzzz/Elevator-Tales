@@ -10,6 +10,8 @@ export type PublicRider = {
   progress:{repair:number;repairDone:boolean;inspection:number;stamped:boolean;care:number};
 };
 export type Observation = {
+  relayReliable?:true;
+  flywheelPower?:number;
   bufferGapTurns?:number;
   bufferGapRule?:{turns:number;energy:number};
   schema:2; version:string; floor:number; phase:'playing'|'upgrade'|'lost';

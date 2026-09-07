@@ -1,6 +1,6 @@
 import { COURIER_ARRIVAL_CHARGE, SHOP_ENTRY_CHARGE, settleBuffer, redAgitationProtection, arrivalRelief, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, type RunState } from './game-engine';
 import { conflictLinks } from './rider-profile';
-import { RELAY_ENERGY, shopOpportunities, naturalChargeBoost, SHOP_TUNING, deliveryGapCharge } from './shop-effects';
+import { relayEnergyBounds, shopOpportunities, naturalChargeBoost, SHOP_TUNING, deliveryGapCharge, flywheelSaving } from './shop-effects';
 import { experimentalRiskLinks, type RiskLinkTuning } from './risk-link-experiment';
 import { riskPartnerships } from './shift-rules';
 
@@ -68,7 +68,7 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
 }
 
 export function energyForecast(state: RunState, _legacyWeight?: number, _riskTuning?: RiskLinkTuning): EnergyForecast {
- const {motor,people,conflict,saved,total}=energyBreakdown(state);
+ const {motor,people,conflict,saved,total,service}=energyBreakdown(state);
  const nextFloor=state.floor+1;
  const shopCharge=nextFloor%10===0?SHOP_ENTRY_CHARGE:0;
  let relayPossible=false;
@@ -76,16 +76,16 @@ export function energyForecast(state: RunState, _legacyWeight?: number, _riskTun
   const slots=state.cabin.flatMap((rider,slot)=>rider&&destinations[slot]!==null&&destinations[slot]!<=nextFloor?[slot]:[]);
   const arriving=slots.map(slot=>state.cabin[slot]!);
   const natural=arriving.filter(rider=>rider.kind==='courier').length*COURIER_ARRIVAL_CHARGE;
-  const gap=deliveryGapCharge(state,slots.length).energy;
+  const gap=deliveryGapCharge(state,slots.length).energy+flywheelSaving(state,slots.length,motor-service);
   const charge=shopCharge+natural+naturalChargeBoost(state,natural)+gap;
   const relay=shopOpportunities(state,state.cabin,slots).relay;
   relayPossible ||= relay;
-  return relay ? [charge,shopCharge+natural+RELAY_ENERGY+naturalChargeBoost(state,natural+RELAY_ENERGY)+gap] : [charge];
+  return relay ? relayEnergyBounds().map(power=>shopCharge+natural+power+naturalChargeBoost(state,natural+power)+gap) : [charge];
  });
- const deltas=charges.map(charge=>settleBuffer(state.energy-total+charge,state.energyCap,state.bufferPower??0,Boolean(state.upgrades.buffer)&&!SHOP_TUNING.bufferGap).energy-state.energy);
+ const deltas=charges.map(charge=>settleBuffer(state.energy-total+charge,state.energyCap,state.bufferPower??0,Boolean(state.upgrades.buffer)&&!SHOP_TUNING.bufferGap&&!SHOP_TUNING.bufferFlywheel).energy-state.energy);
  const lowDelta=Math.min(...deltas),highDelta=Math.max(...deltas);
  const minCharge=Math.min(...charges),maxCharge=Math.max(...charges);
  const chargeNote=maxCharge?minCharge===maxCharge?`＋补电 ${maxCharge}`:`＋可能补电 ${minCharge}–${maxCharge}`:'';
  const range=lowDelta===highDelta?signedDelta(lowDelta):`${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
- return {range,summary:`下一站耗 ${total} 电＝运转 ${motor}＋人物 ${people}${conflict?`＋红线 ${conflict}`:''}−节能 ${saved}${chargeNote}${relayPossible ? '；并联回充50%，不保证续航' : ''}`,danger:state.energy+lowDelta<=0,lowDelta,highDelta};
+ return {range,summary:`下一站耗 ${total} 电＝运转 ${motor}＋人物 ${people}${conflict?`＋红线 ${conflict}`:''}−节能 ${saved}${chargeNote}${relayPossible ? SHOP_TUNING.relayReliable?'；满足同站条件保底回1电，50%额外回2电':'；并联回充50%，不保证续航' : ''}`,danger:state.energy+lowDelta<=0,lowDelta,highDelta};
 }

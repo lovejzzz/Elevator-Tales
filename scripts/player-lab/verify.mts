@@ -18,6 +18,94 @@ import {guidedOpening} from './opening.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('reliable relay preserves mean and draw count without rewarding ineligible arrivals',()=>{
+  const old={...S.SHOP_TUNING};try{
+   for(const reliable of [false,true]){
+    S.SHOP_TUNING.relayReliable=reliable;assert.equal(S.relayExpectedEnergy(),2);
+    for(const eligibleTips of [0,2])for(const relay of [false,true])for(const value of [.49,.5,.99]){
+     let calls=0;const result=S.rollShopRewards({eligibleTips,relay},()=>{calls++;return value;});
+     assert.equal(calls,eligibleTips+Number(relay));
+     assert.equal(result.energy,relay?(value<.5?(reliable?3:4):(reliable?1:0)):0);
+    }
+   }
+  }finally{Object.assign(S.SHOP_TUNING,old);}
+ });
+ test('reliable relay settlement forecast budget and investment share the same rule',()=>{
+  const old={...S.SHOP_TUNING};try{
+   S.SHOP_TUNING.relayReliable=true;
+   for(const floor of [1,8,9,31])for(const energy of [1,20,60])for(const due of [1,2]){
+    const state={...E.initialRun(),floor,energy,upgrades:{...E.initialRun().upgrades,relay:1}};
+    state.cabin[0]=fixtures.rider('commuter','a',floor,1,false,false);
+    state.cabin[1]=fixtures.rider('commuter','b',floor,due===2?1:3,false,false);
+    const original=hash(state),f=F.energyForecast(state);
+    for(const value of [.49,.5,.99]){
+     const after=E.resolveFloor(state,()=>value),amount=after.lastEnergy.sources.find(x=>x.label==='并联回充')?.amount??0;
+     assert.equal(amount,due===2?(value<.5?3:1):0);
+     assert(after.energy-state.energy>=f.lowDelta&&after.energy-state.energy<=f.highDelta);
+     assert.equal(investmentSample({state,offers:[]},{state:after,offers:[]}).gross.relay,due===2?4:0);
+    }
+    assert.equal(hash(state),original);
+   }
+   const w={state:E.initialRun(),offers:[]},n=new Names();const before=planningSeed(observe(w,n));
+   S.SHOP_TUNING.relayReliable=false;assert.equal(planningSeed(observe(w,n)),before,'Unowned relay must not perturb planning RNG');
+   w.state.floor=31;w.state.cabin[0]=fixtures.rider('commuter','a',31,1,false,false);w.state.cabin[1]=fixtures.rider('commuter','b',31,1,false,false);w.state.upgrades.relay=1;
+   const budget=features(w,w.state.coins).committedEnergy;
+   S.SHOP_TUNING.relayReliable=true;
+   assert.equal(features(w,w.state.coins).committedEnergy,budget-1,'Only guaranteed scheduled energy enters commitment');
+   assert.equal(observe(w,n).relayReliable,true);
+  }finally{Object.assign(S.SHOP_TUNING,old);}
+ });
+ test('flywheel2 caps combined maintenance saving and records actual two-power value',()=>{
+  const old={...S.SHOP_TUNING};try{
+   S.SHOP_TUNING.bufferFlywheel=2;
+   for(const floor of [1,20,31])for(const serviceTurns of [0,2]){
+    const s=E.initialRun();s.floor=floor;s.energy=30;s.serviceTurns=serviceTurns;s.upgrades.buffer=1;
+    s.cabin=[fixtures.rider('commuter','a',floor,4),fixtures.rider('commuter','b',floor,4),null,null,null,null];
+    const saving=Math.min(2,E.travelEnergyCost(floor+1)-E.serviceSaving(s));
+    const after=E.resolveFloor(s,rngFor(1)),forecast=F.energyForecast(s);
+    assert.equal(after.lastEnergy.sources.find(x=>x.label==='飞轮运转节能（实验）')?.amount??0,saving);
+    assert.equal(after.lastEnergy.delta,forecast.lowDelta);assert.equal(after.lastEnergy.delta,forecast.highDelta);
+    assert.equal(investmentSample({state:s,offers:[]},{state:after,offers:[]}).gross.buffer,saving*E.CHARGE_PRICE);
+    assert(saving+E.serviceSaving(s)<=E.travelEnergyCost(floor+1));
+   }
+  }finally{Object.assign(S.SHOP_TUNING,old);}
+ });
+ test('flywheel investment valuation uses observed waiting and cannot invent single-rider saving',()=>{
+  const old={...S.SHOP_TUNING};try {
+   S.SHOP_TUNING.bufferFlywheel=1;const w={state:E.initialRun(),offers:[]};
+   w.state.cabin=[fixtures.rider('commuter','a',1,4),fixtures.rider('commuter','b',1,4),null,null,null,null];
+   let after={state:E.resolveFloor(w.state,rngFor(1)),offers:[]};
+   assert.equal(investmentSample(w,after).gross.buffer,E.CHARGE_PRICE,'Unowned item can be valued from witnessed opportunities');
+   w.state.serviceTurns=2;after={state:E.resolveFloor(w.state,rngFor(1)),offers:[]};assert.equal(investmentSample(w,after).gross.buffer,0,'Maintenance already absorbs this floor motor');
+   w.state.serviceTurns=0;w.state.cabin[1]=null;after={state:E.resolveFloor(w.state,rngFor(1)),offers:[]};assert.equal(investmentSample(w,after).gross.buffer,0);
+   w.state.cabin[1]=fixtures.rider('commuter','b',1,1);after={state:E.resolveFloor(w.state,rngFor(1)),offers:[]};assert.equal(investmentSample(w,after).gross.buffer,0,'Actual arrival blocks flywheel');
+  }finally{Object.assign(S.SHOP_TUNING,old);}
+ });
+ test('experimental flywheel uses actual arrivals, remaining motor and forecast bounds without storage stacking',()=>{
+  const tuning={...S.SHOP_TUNING};
+  try {
+   S.SHOP_TUNING.bufferFlywheel=1;
+   for(const floor of [1,9,29,40])for(const serviceTurns of [0,2])for(const count of [1,2,3])for(const due of [false,true]){
+    const s=E.initialRun();s.floor=floor;s.energy=12;s.serviceTurns=serviceTurns;s.upgrades.buffer=1;s.bufferPower=4;
+    s.cabin=Array(6).fill(null);for(let i=0;i<count;i++)s.cabin[i]=fixtures.rider(i===2?'ghost':'commuter',`fw-${i}`,floor,due&&i===0?1:3);
+    const before=hash(s),prediction=F.energyForecast(s);
+    for(let seed=0;seed<4;seed++){
+     const after=E.resolveFloor(s,rngFor(seed));
+     assert(after.lastEnergy.delta>=prediction.lowDelta&&after.lastEnergy.delta<=prediction.highDelta);
+     const actual=after.lastEnergy.sources.find(x=>x.label==='飞轮运转节能（实验）')?.amount??0;
+     assert.equal(actual,S.flywheelSaving(s,(after.lastArrivals??[]).length,E.travelEnergyCost(floor+1)-E.serviceSaving(s)));
+     assert.equal(after.bufferPower,0);assert(!after.lastEnergy.sources.some(x=>x.label==='缓冲槽补电'));
+    }
+    assert.equal(hash(s),before);
+   }
+   const s=E.initialRun();s.upgrades.buffer=1;s.cabin=[fixtures.rider('commuter','a',1,3),fixtures.rider('commuter','b',1,3),null,null,null,null];
+   assert.equal(S.flywheelSaving(s,0,0),0);assert.equal(S.flywheelSaving(s,0,-1),0);assert.equal(S.flywheelSaving(s,0,4),1);assert.equal(S.flywheelSaving(s,1,4),0);
+   S.SHOP_TUNING.bufferBoost=5;S.SHOP_TUNING.bufferGap=2;s.bufferGapTurns=2;
+   assert.equal(S.naturalChargeBoost(s,2),0);assert.equal(S.deliveryGapCharge(s,1).energy,0);
+   const w={state:E.initialRun(),offers:[]};const n=new Names();const visible=observe(w,n),seed=planningSeed(visible);S.SHOP_TUNING.bufferFlywheel=0;
+   assert.equal(planningSeed(observe(w,n)),seed,'Unowned experiment must not change planning randomness');
+  } finally {Object.assign(S.SHOP_TUNING,tuning);}
+ });
  test('reserve-only candidate key preserves position, timing, dismissals and action order',()=>{
   const a=[{type:'place',rider:'p1',slot:0}] as const;
   assert.equal(departureActionKey(a),departureActionKey([...a,{type:'reserve-offer',rider:'p2'}]));

@@ -8,14 +8,20 @@ export const RELAY_ENERGY = 4;
 export const CROWD_MINIMUM = 4;
 export const CROWD_COINS = 3;
 export const METER_START = 5;
-export const SHOP_TUNING={bufferBoost:0,finaleRemaining:1,bufferGap:0,bufferGapEnergy:4};
+export const SHOP_TUNING={bufferBoost:0,finaleRemaining:1,bufferGap:0,bufferGapEnergy:4,bufferFlywheel:0,relayReliable:false};
+export const relayEnergyBounds=():[number,number]=>SHOP_TUNING.relayReliable?[1,3]:[0,RELAY_ENERGY];
+export const relayExpectedEnergy=()=>{const [low,high]=relayEnergyBounds();return low+(high-low)*RELAY_CHANCE;};
+export function flywheelSaving(state:RunState,arrivals:number,motorHeadroom:number) {
+ return state.upgrades.buffer&&SHOP_TUNING.bufferFlywheel&&state.cabin.filter(Boolean).length>=2&&arrivals===0
+  ? Math.max(0,Math.min(SHOP_TUNING.bufferFlywheel,motorHeadroom)):0;
+}
 export function deliveryGapCharge(state:RunState,arrivals:number) {
  const gap=SHOP_TUNING.bufferGap;
- if(!gap||!state.upgrades.buffer)return {progress:0,energy:0};
+ if(!gap||!state.upgrades.buffer||SHOP_TUNING.bufferFlywheel)return {progress:0,energy:0};
  const previous=Math.min(gap,state.bufferGapTurns??0);
  return arrivals>0?{progress:0,energy:previous>=gap?SHOP_TUNING.bufferGapEnergy:0}:{progress:Math.min(gap,previous+1),energy:0};
 }
-export const naturalChargeBoost=(state:RunState,naturalCharge:number)=>state.upgrades.buffer&&naturalCharge>0?SHOP_TUNING.bufferBoost:0;
+export const naturalChargeBoost=(state:RunState,naturalCharge:number)=>state.upgrades.buffer&&naturalCharge>0&&!SHOP_TUNING.bufferFlywheel?SHOP_TUNING.bufferBoost:0;
 export const finaleIncome=(state:RunState,arrivals:number,remaining:number)=>state.upgrades.finale&&arrivals>=2&&remaining<=SHOP_TUNING.finaleRemaining?6:0;
 /** Process-local experimental switches; production uses these defaults. */
 export const SHOP_RULES = { expanded: true, grouped: true, mixed: true, optionalCalm: true };
@@ -50,6 +56,7 @@ export function shopFloorIncome(_state: RunState) {
 export function rollShopRewards(opportunities: ReturnType<typeof shopOpportunities>, rng: () => number) {
   let tips = 0; const winningTipIndices:number[]=[];
   for (let i = 0; i < opportunities.eligibleTips; i++) if (rng() < TIP_CHANCE) { tips += ECONOMY_RULES.tipReward; winningTipIndices.push(i); }
-  const energy = opportunities.relay && rng() < RELAY_CHANCE ? RELAY_ENERGY : 0;
+  const [low,high]=relayEnergyBounds();
+  const energy = opportunities.relay ? (rng() < RELAY_CHANCE ? high : low) : 0;
   return { tips, energy, winningTipIndices };
 }

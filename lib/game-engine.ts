@@ -2,7 +2,7 @@ import { BONDS, bondStatus, conflictLinks, profileWeight, randomTraits, riderPro
 import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
 import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, type PassengerKind, type UpgradeKey } from './game-data';
 import { agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
-import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome } from './shop-effects';
+import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome, flywheelSaving } from './shop-effects';
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
 
@@ -395,6 +395,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const chargeBoost=naturalChargeBoost(state,arrivalSlots.filter(i=>effectCabin[i]?.kind==='courier').length*COURIER_ARRIVAL_CHARGE+shopRewards.energy);
   if(chargeBoost)adjustEnergy('自然回充增幅',chargeBoost);
   const gapCharge=deliveryGapCharge(state,arrivalSlots.length);
+  const flywheel=flywheelSaving(state,arrivalSlots.length,energyCost-serviceSaving(state));
+  if(flywheel)adjustEnergy('飞轮运转节能（实验）',flywheel);
   if(gapCharge.energy)adjustEnergy('等待到站回充（实验）',gapCharge.energy);
   const deliveredUpgrades=deliveryUpgradeIncome(state,effectCabin,arrivalSlots);
   if(deliveredUpgrades.crowd)addCoins(SHOP_RULES.mixed?'混乘票':'共乘票',deliveredUpgrades.crowd);
@@ -411,7 +413,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const relieved = Math.min(Math.max(0, stress), arrivalRelief(arrivals));
   if (relieved) adjustPressure('乘客到站舒缓', -relieved);
   if(checkpoint&&energy<state.energyCap)adjustEnergy('抵达商店补电',Math.min(SHOP_ENTRY_CHARGE,state.energyCap-energy));
-  const buffer=settleBuffer(energy,state.energyCap,state.bufferPower??0,Boolean(state.upgrades.buffer)&&!SHOP_TUNING.bufferGap);
+  const buffer=settleBuffer(energy,state.energyCap,state.bufferPower??0,Boolean(state.upgrades.buffer)&&!SHOP_TUNING.bufferGap&&!SHOP_TUNING.bufferFlywheel);
   if(buffer.released)adjustEnergy('缓冲槽补电',buffer.released);
   if(buffer.captured)adjustEnergy('存入缓冲槽',-buffer.captured);
   if (energy > state.energyCap) adjustEnergy('超额回充未储存', state.energyCap - energy);

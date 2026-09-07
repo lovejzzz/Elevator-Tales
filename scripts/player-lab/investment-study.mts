@@ -25,12 +25,14 @@ export function investmentSample(before:World,after:World):InvestmentSample {
    concierge:eligibleTips*B.ECONOMY_RULES.conciergeTip,
    battery:bondCount*oneBond,
    tipjar:chance.eligibleTips*S.TIP_CHANCE*B.ECONOMY_RULES.tipReward,
-   relay:Number(chance.relay)*S.RELAY_CHANCE*S.RELAY_ENERGY*E.CHARGE_PRICE,
+   relay:Number(chance.relay)*S.relayExpectedEnergy()*E.CHARGE_PRICE,
    crowd:Number(S.mixedTicketEligible(s.cabin)&&riders.length>0)*S.CROWD_COINS,
    single:Number(riders.length===1)*2,
    finale:S.finaleIncome({...s,upgrades:{...s.upgrades,finale:1}},riders.length,after.state.cabin.filter(Boolean).length),
    punchcard:arrived.reduce((n,i)=>{const p=R.riderProfile(s.cabin[i]!,s.cabin,i);return n+(p.hidden?16*(s.cabin[i]!.localFareRatio??1):p.fare)/5;},0), // Neutral cycle estimate, not known next lucky rider.
-   buffer:Math.min(4,after.state.lastEnergy.sources.filter(x=>x.label==='超额回充未储存'||x.label==='存入缓冲槽').reduce((n,x)=>n+Math.max(0,-x.amount),0))*2+S.naturalChargeBoost({...s,upgrades:{...s.upgrades,buffer:1}},after.state.lastEnergy.sources.filter(x=>x.label==='快递员电池包'||x.label==='并联回充').reduce((n,x)=>n+x.amount,0))*E.CHARGE_PRICE, // Capture opportunity, not realised future discharge.
+   buffer:S.SHOP_TUNING.bufferFlywheel
+    ? S.flywheelSaving({...s,upgrades:{...s.upgrades,buffer:1}},(after.state.lastArrivals??[]).length,Math.max(0,E.energyBreakdown(s).motor-E.serviceSaving(s)))*E.CHARGE_PRICE
+    : Math.min(4,after.state.lastEnergy.sources.filter(x=>x.label==='超额回充未储存'||x.label==='存入缓冲槽').reduce((n,x)=>n+Math.max(0,-x.amount),0))*2+S.naturalChargeBoost({...s,upgrades:{...s.upgrades,buffer:1}},after.state.lastEnergy.sources.filter(x=>x.label==='快递员电池包'||x.label==='并联回充').reduce((n,x)=>n+x.amount,0))*E.CHARGE_PRICE, // Observed opportunity only, not realised ROI.
    insulation:(E.totalEnergyCost({...s,upgrades:{...s.upgrades,insulation:0}})-E.totalEnergyCost({...s,upgrades:{...s.upgrades,insulation:1}}))*E.CHARGE_PRICE,
    meter:rides.filter(n=>n>=S.METER_START).length*4,
    // A deliberately rough turnover estimate; shortening also changes timing,
