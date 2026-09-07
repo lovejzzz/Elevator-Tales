@@ -8,7 +8,7 @@ export const RELAY_ENERGY = 4;
 export const CROWD_MINIMUM = 4;
 export const CROWD_COINS = 3;
 export const METER_START = 5;
-export const SHOP_TUNING={bufferBoost:0,finaleRemaining:1,bufferGap:0,bufferGapEnergy:4,bufferFlywheel:0,bufferFlywheelSectorCap:0,relayReliable:false,expressMinimum:5,insulationBroad:false,soundproofRisk:true};
+export const SHOP_TUNING={bufferBoost:0,finaleRemaining:1,bufferGap:0,bufferGapEnergy:4,bufferFlywheel:2,bufferFlywheelSectorCap:4,relayReliable:false,expressMinimum:5,insulationBroad:false,soundproofRisk:true};
 export function flywheelAllowance(state:RunState) {
  const cap=SHOP_TUNING.bufferFlywheelSectorCap;
  return cap>0?Math.max(0,cap-(state.flywheelSector===Math.floor(state.floor/10)?state.flywheelSpent??0:0)):Infinity;

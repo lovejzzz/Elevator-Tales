@@ -138,6 +138,11 @@ export function restrictIntake(w:World,excluded:readonly Rider['kind'][]=[]):Wor
  return {...w,offers:w.offers.filter(r=>!excluded.includes(r.kind)||w.state.cabin.some(p=>p?.id===r.id))};
 }
 export type JointContinuationOptions={
+ // Opt-in fine-grained public charging alternatives. Omission preserves the
+ // historical five budgets. Quantities are additional power, not targets.
+ chargeUnits?:readonly number[];
+ // Independent public belief batches; zero preserves historical samples.
+ sampleOffset?:number;
  futurePurchases?:boolean;
  memory?:{seen:readonly string[];successes:ReadonlyArray<readonly [string,number]>;investmentHistory:readonly import('./types.mts').InvestmentSample[]};
  onFutureShop?:(visit:{sample:number;key:string;entry:Observation;exit:Observation;actions:Action[]})=>void;
@@ -146,19 +151,25 @@ export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,
  if(base.state.status!=='upgrade')throw Error('Joint shopping requires shop state');
  if(!Number.isInteger(samples)||samples<1||samples>16)throw Error('Joint sample budget exceeded');
  if(![10,20].includes(depth))throw Error('Joint horizon budget exceeded');
+ if(options.sampleOffset!==undefined&&(!Number.isInteger(options.sampleOffset)||options.sampleOffset<0||options.sampleOffset>1000000))throw Error('Joint sample offset exceeded');
+ if(options.chargeUnits&&(!options.chargeUnits.length||options.chargeUnits.length>101||options.chargeUnits.some(n=>!Number.isInteger(n)||n<0||n>100)))throw Error('Joint charge budget exceeded');
  if(options.futurePurchases&&continuation==='greedy')throw Error('Future purchasing requires a reactive shop policy');
  const seed=planningSeed(observe(base,names)),trials:import('./types.mts').ShopTrial[]=[];
  // A focused study retains the full visible shop in the planning seed. It
  // filters evaluated purchases only; never remove the paid no-buy control.
  const keys=['none',...E.availableShopCards(base.state).map(c=>c.key).filter(key=>!includedKeys||includedKeys.includes(key))];
- for(const key of keys)for(const budget of ['fifty','full','minimum','commitment','reserve'] as const){
+ const budgets=options.chargeUnits??['fifty','full','minimum','commitment','reserve'] as const;
+ for(const key of keys)for(const budget of budgets){
   let root=clone(base);const actions:Action[]=[];
   const act=(a:Action)=>{const n=applyLocal(root,a,names);if(!n)return false;root=n;actions.push(a);return true;};
   if(key!=='none'&&!act({type:'buy',key}))continue;
   if(root.state.stress>=root.state.stressCap&&root.state.calmCharge)act({type:'use-calm'});
   const soothe=Math.max(0,root.state.stress-root.state.stressCap+1);
   if(soothe&&!act({type:'soothe',units:soothe}))continue;
-  const chargeTarget=jointChargeTargets(root)[budget];
+  const chargeTarget=typeof budget==='number'?root.state.energy+budget:jointChargeTargets(root)[budget];
+  // Explicit alternatives must be fully legal, not silently clamped into a
+  // different quantity. The traditional target budgets retain their behavior.
+  if(typeof budget==='number'&&(budget>root.state.energyCap-root.state.energy||budget*E.CHARGE_PRICE>root.state.coins))continue;
   const charge=Math.min(root.state.energyCap-root.state.energy,Math.max(0,chargeTarget-root.state.energy),Math.floor(root.state.coins/E.CHARGE_PRICE));
   if(charge>0)act({type:'charge',units:charge});
   const left=E.leaveShop(root.state);if(left.status!=='playing')continue;
@@ -167,7 +178,7 @@ export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,
   for(let sample=0;sample<samples;sample++){
    // Separate streams per floor/channel keep packet randomness matched even
    // when a purchase changes settlement trigger counts. Never use run seed.
-   const stream=(channel:string,floor:number)=>rngFor(seedFor(seed+'/joint-v3/'+sample+'/'+channel+'/'+floor));
+   const stream=(channel:string,floor:number)=>rngFor(seedFor(seed+'/joint-v3/'+(sample+(options.sampleOffset??0))+'/'+channel+'/'+floor));
    let w=beliefWorld({state:left,offers:[]},stream('belief',left.floor)),travelled=0;
    w=restrictIntake(E.nextOfferBatch(w.state,stream('offers',w.state.floor)),excluded);
    const reactive=continuation==='greedy'?null:new Player(continuation,'committed');

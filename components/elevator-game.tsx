@@ -20,6 +20,7 @@ import { metricChanges, type MetricChange, type MetricKey } from '@/lib/metric-f
 import { CHANGELOG, CHANGELOG_EN, GAME_VERSION } from '@/lib/changelog';
 import { localizeTree, translateGameText, type GameLocale } from '@/lib/i18n';
 import { UPGRADE_SLOTS, riskPartnerships } from '@/lib/shift-rules';
+import { flywheelAllowance } from '@/lib/shop-effects';
 import { offerReveal } from '@/lib/offer-reveal';
 import { shouldPreviewConnection } from '@/lib/connection-preview';
 import { AgitationGauge } from '@/components/agitation-gauge';
@@ -437,7 +438,7 @@ export default function ElevatorGame() {
         {run.upgrades.rails>0&&<p className="route-note">旧乘客换位剩余{oldMovesRemaining(run)}次</p>}
         {run.reservedRider&&<p className="route-note">已留座：{PASSENGERS[run.reservedRider.kind].name} · 下一批到来</p>}
         {run.reserveCell&&<button className="reserve-use" disabled={locked||run.energy>=run.energyCap} onClick={()=>{const next=consumeReserveCell(run);if(next!==run){setRun(next);reportMetrics(run,next,'使用应急电池');}}}><BatteryCharging aria-hidden="true"/>{`使用应急电池 +${Math.min(RESERVE_CELL_CHARGE,Math.max(0,run.energyCap-run.energy))}电`}</button>}
-        {run.upgrades.buffer>0&&<p>缓冲电量 {run.bufferPower??0}/4</p>}
+        {run.upgrades.buffer>0&&<p>{`飞轮本段可省 ${flywheelAllowance(run)}/4电 · 到商店重置`}</p>}
         {run.upgrades.punchcard>0&&<p>第五张票 {(run.punchCount??0)+1}/5 · 同层按1→6号位</p>}
         {run.upgrades.single>0&&<p>单人到站：整车+2币</p>}
         {run.upgrades.finale>0&&<p>至少2人到站，车内剩0–1人：+6币</p>}
@@ -542,7 +543,7 @@ export default function ElevatorGame() {
       <p className="dialog-kicker">DECISION RECEIPT</p><DialogHeader><DialogTitle>这次，改变了什么？</DialogTitle><DialogDescription>{metricEvent?.label}。以下是实际变化，不是下一层预测。</DialogDescription></DialogHeader>
       <div className="receipt-sections">{Boolean(run.lastArrivals?.length)&&<section className="receipt-section"><h3>本层到站乘客</h3>{run.lastArrivals?.map(entry=><p key={entry.riderId}><span>{entry.slot+1}号位 · {PASSENGERS[entry.kind].name}</span><b>+{entry.coins} 金币</b></p>)}<p>个人收入含实际小费与个人升级奖励；整车奖励及扣款另计。</p></section>}{metricEvent?.changes.map((change) => <section key={change.key} className={`receipt-section pulse-${change.tone}`}>
         <h3><span>{change.label}</span><b>{change.before} → {change.after}<em>{signedDelta(change.delta)}</em></b></h3>
-        {change.sources.map((source, index) => <p key={`${index}-${source.label}`}><span>{source.label}</span><b>{signedDelta(source.amount)}</b></p>)}
+        {change.sources.map((source, index) => <p key={`${index}-${source.label}`}><span>{source.label==='飞轮运转节能（实验）'?'飞轮节能':source.label}</span><b>{signedDelta(source.amount)}</b></p>)}
         {change.capDelta !== 0 && <p><span>{change.label}上限</span><b>{signedDelta(change.capDelta)}</b></p>}
       </section>)}</div>
     </DialogContent></Dialog>

@@ -1,4 +1,6 @@
 export const V837_PAIRS:Array<[string,string]>=[
+ ['惯性飞轮','Inertia Flywheel'],['长途续航','Long-trip endurance'],['飞轮本段可省','Flywheel allowance'],['到商店重置','Resets at shop'],['飞轮节能','Flywheel saving'],
+ ['关门时至少2人，且本层无人到站：运转最多少耗2电。每十层累计最多省4电，到商店重置，不累存；不抵消人物耗电，不储存回充。','With 2+ riders at departure and no arrivals this floor, save up to 2 motor power. Save up to 4 per sector; resets at each shop, with no carryover. Does not offset rider power or store recharge.'],
  ['每层抵消最多1点普通红线躁动；关门时为中/高躁动，再抵消最多1点坏人链接躁动。不降低已有躁动，不抵消人物自身或高危躁动。','Each floor, cancel up to 1 ordinary red-link agitation. At medium/high agitation on departure, also cancel up to 1 criminal-link agitation. Does not lower existing agitation or cancel rider or high-risk agitation.'],
  ['本局4个永久安装位，每店最多选一项，已选能力不再出现。仅在商店内可用金币充电；躁动仅在失控时允许最低抢救。','4 permanent slots per run; choose at most one ability per shop. Installed abilities never reappear. Spend coins on charging only inside shops; agitation relief is emergency-only.'],
  ['上行前手动改签 · 每十层一次','Rebook manually before departure · once per sector'],

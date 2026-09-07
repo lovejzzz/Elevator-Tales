@@ -254,7 +254,7 @@ export function verify(){
  test('gap commitment budget credits scheduled arrivals, not unseen riders or later rescue',()=>{
   const tuning={...S.SHOP_TUNING};
   try{
-   S.SHOP_TUNING.bufferGap=2;
+   S.SHOP_TUNING.bufferFlywheel=0;S.SHOP_TUNING.bufferGap=2;
    const w=fixtures.sealed();w.state.floor=10;w.state.stress=0;w.state.upgrades.buffer=1;
    w.state.cabin=[{id:'known',kind:'commuter',boardedAt:10,destination:13,patience:4,fareBonus:0},null,null,null,null,null];w.offers=[];
    const before=hash(w),withGap=features(w,w.state.coins).committedEnergy;
@@ -288,7 +288,7 @@ export function verify(){
  test('experimental delivery-gap charge is capped, arrival-only and forecast-consistent',()=>{
   const tuning={...S.SHOP_TUNING};
   try{
-   S.SHOP_TUNING.bufferGap=2;S.SHOP_TUNING.bufferGapEnergy=4;
+   S.SHOP_TUNING.bufferFlywheel=0;S.SHOP_TUNING.bufferGap=2;S.SHOP_TUNING.bufferGapEnergy=4;
    const s=E.initialRun();s.upgrades.buffer=1;
    assert.deepEqual(S.deliveryGapCharge(s,0),{progress:1,energy:0});
    s.bufferGapTurns=1;assert.deepEqual(S.deliveryGapCharge(s,1),{progress:0,energy:0});

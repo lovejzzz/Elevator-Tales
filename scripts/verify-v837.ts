@@ -66,12 +66,22 @@ test('offer bags cover all twenty, no repeats before each pool exhausts, owned n
   for(let n=0;n<5;n++){const drawn=E.drawUpgradeOffer(u,seen,rng);assert(drawn.keys.every(k=>!u[k]));seen=drawn.seen;}
  }
 });
-test('buffer stores genuine overflow then releases it once; purchased charging cannot fill it',()=>{
+test('legacy overflow mechanism remains reproducible only when flywheel is disabled',()=>{
+ const tuning={...S.SHOP_TUNING};try{S.SHOP_TUNING.bufferFlywheel=0;
  const s={...E.initialRun(),energy:60,upgrades:{...E.EMPTY_UPGRADES,buffer:1},cabin:Array.from({length:6},(_,i)=>rider('courier','c'+i,{destination:2}))};
  const n=E.resolveFloor(s,()=>.99);assert.equal(n.energy,60);assert.equal(n.bufferPower,4);
  const next={...n,cabin:[rider('commuter'),null,null,null,null,null]};const out=E.resolveFloor(next,()=>.99);
  assert.equal(out.energy,60);assert.equal(out.bufferPower,2);assert.equal(energyForecast(next).lowDelta,0);
  const shop={...s,status:'upgrade' as const,energy:58,coins:100};assert.equal(E.chargeBattery(shop,2).bufferPower,undefined);
+ }finally{Object.assign(S.SHOP_TUNING,tuning);}
+});
+test('candidate flywheel is priced8, caps actual motor savings and never stores recharge',()=>{
+ assert.equal(E.UPGRADE_BASE_PRICES.buffer,8);assert.equal(S.SHOP_TUNING.bufferFlywheel,2);assert.equal(S.SHOP_TUNING.bufferFlywheelSectorCap,4);
+ let s={...E.initialRun(),floor:20,energy:60,upgrades:{...E.EMPTY_UPGRADES,buffer:1},cabin:[rider('commuter','a',{destination:40}),rider('commuter','b',{destination:40}),null,null,null,null]};
+ const amounts=[];for(let i=0;i<3;i++){const next=E.resolveFloor(s,()=>.99);amounts.push(next.lastEnergy.sources.find(x=>x.label==='飞轮运转节能（实验）')?.amount??0);assert.equal(next.bufferPower,0);s=next;}
+ assert.deepEqual(amounts,[2,2,0]);assert.equal(S.flywheelAllowance(s),0);assert.equal(S.flywheelAllowance({...s,floor:30}),4);
+ assert(!/[\u3400-\u9fff]/u.test(translateGameText('飞轮本段可省 4/4电 · 到商店重置','en')));
+ assert.equal(translateGameText('飞轮节能','en'),'Flywheel saving');
 });
 test('soundproof preserves ordinary protection and adds conditional criminal-link protection',()=>{
  assert.equal(S.SHOP_TUNING.soundproofRisk,true);assert.equal(E.UPGRADE_BASE_PRICES.soundproof,24);

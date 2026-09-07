@@ -538,6 +538,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
   const direct = exact.get(core);
   if (direct) return `${leading}${direct}${trailing}`;
   let translated = value
+    .replace(/^飞轮本段可省 (\d+)\/4电 · 到商店重置$/u, 'Flywheel: $1/4 power left this sector · Resets at shop')
     .replace(/电量耗尽 · 本层总扣电 (\d+)（运转 (\d+)、人物与红线 (\d+)）；抵消与回电 \+(\d+)；净变化 (-?\d+)。/gu, 'Power depleted · Gross cost $1 (motor $2, riders and red links $3); offsets and recharge +$4; net change $5. ')
     .replace(/^(.+?)已购入，花费 (\d+) 金币。$/u, '$1 purchased for $2 coins.')
     .replace(/ · 已购入$/u, ' · Purchased')

@@ -494,7 +494,7 @@ export function previewUpgrade(current: RunState, key: UpgradeKey): RunState {
   return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap, calmCharge:key==='calm'&&SHOP_RULES.optionalCalm?true:current.calmCharge };
 }
 
-export const UPGRADE_BASE_PRICES: Record<UpgradeKey, number> = { battery: 30, capacity: 35, calm: 35, concierge: 40, reinforced: 45, express: 45, tipjar: 30, relay: 30, crowd: 24, meter: 25, rails:24, insulation:24, reservation:20, single:24, delay:24, buffer:20, soundproof:24, retime:24, punchcard:24, finale:24 };
+export const UPGRADE_BASE_PRICES: Record<UpgradeKey, number> = { battery: 30, capacity: 35, calm: 35, concierge: 40, reinforced: 45, express: 45, tipjar: 30, relay: 30, crowd: 24, meter: 25, rails:24, insulation:24, reservation:20, single:24, delay:24, buffer:8, soundproof:24, retime:24, punchcard:24, finale:24 };
 export const upgradePrice = (key: UpgradeKey, _floor: number, _installed: number) => UPGRADE_BASE_PRICES[key];
 export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
   const card = current.shop.find((item) => item.key === key);

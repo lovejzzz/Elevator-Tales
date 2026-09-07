@@ -19,6 +19,16 @@ assert.equal(budget.reserve,30+Math.floor(Math.max(0,20-dismiss)/E.CHARGE_PRICE)
 assert.equal(budget.minimum,30);assert.equal(budget.full,risky.state.energyCap);
 assert(budget.commitment>=1&&Number.isFinite(budget.commitment));
 assert.equal(hash(w),before,'Sampling cannot mutate actual game');
+// Tempo is not uniformly power-positive: shortening a controlled Ghost loses
+// its final turn of protection for the still-riding Warden.
+const ghostTempo=[0,1].map(express=>{
+ let s={...E.initialRun(),energy:60,upgrades:{...E.EMPTY_UPGRADES,express},cabin:[rider('ghost','tempo',1,E.expressTrip(5,express),false,false),rider('exorcist','warden',1,6,false,false),null,null,null,rider('ghost','anchor',1,9,false,false)]};
+ let delivered=0;
+ for(let step=0;step<5;step++){s=E.resolveFloor(s,rngFor(7301+step));assert.equal(s.status,'playing');if(s.lastArrivals?.some(r=>r.riderId==='tempo'))delivered=s.floor;}
+ return {energy:s.energy,delivered};
+});
+assert.equal(ghostTempo[1].delivered,ghostTempo[0].delivered-1);
+assert.equal(ghostTempo[1].energy,ghostTempo[0].energy-1,'Express may cost power by releasing a supporting Ghost early');
 assert(trials.some(t=>t.key==='none'),'No-buy control is mandatory');
 assert.equal(new Set(trials.map(t=>t.key)).size,4,'Every offered purchase must be evaluated');
 assert.deepEqual(trials,jointShopTrials(w,new Names(),1),'Reproducible independent beliefs');
@@ -29,6 +39,14 @@ const hidden=clone(w);hidden.state.cabin[0]=rider('mystery','sealed',30,2);
 const altered=clone(hidden);altered.state.cabin[0]!.traits!.fare=9999;
 assert.deepEqual(jointShopTrials(hidden,new Names(),1),jointShopTrials(altered,new Names(),1),'No sealed fare oracle');
 assert.throws(()=>jointShopTrials(w,names,0));
+const fine=jointShopTrials(w,new Names(),1,10,'greedy',[],[],{chargeUnits:[0,1,2,2,100]});
+assert.deepEqual(fine,jointShopTrials(w,new Names(),1,10,'greedy',[],[],{chargeUnits:[0,1,2,2,100],sampleOffset:0}),'Offset zero preserves historical beliefs');
+for(const sampleOffset of [-1,.5,1000001])assert.throws(()=>jointShopTrials(w,new Names(),1,10,'greedy',[],[],{sampleOffset}));
+assert.deepEqual(jointShopTrials(hidden,new Names(),1,10,'greedy',[],[],{chargeUnits:[0],sampleOffset:4}),jointShopTrials(altered,new Names(),1,10,'greedy',[],[],{chargeUnits:[0],sampleOffset:4}),'Independent batches still mask sealed fares');
+assert.deepEqual(fine.map(t=>{const charge=t.actions.find(a=>a.type==='charge');return charge?.type==='charge'?charge.units:0;}),[0,1,2],'Exact quantities retained, duplicates removed and illegal quantities rejected');
+assert.equal(hash(w),before);
+for(const chargeUnits of [[],[-1],[.5],[101],Array(102).fill(0)])assert.throws(()=>jointShopTrials(w,new Names(),1,10,'greedy',[],[],{chargeUnits}));
+assert.deepEqual(jointShopTrials(hidden,new Names(),1,10,'greedy',[],[],{chargeUnits:[0,1]}),jointShopTrials(altered,new Names(),1,10,'greedy',[],[],{chargeUnits:[0,1]}),'Fine charging does not expose hidden fares');
 const publicShop=observe(w,new Names()),none=trials.find(t=>t.key==='none')!;
 const visit:ShopVisit={entry:publicShop,exit:{...publicShop,energy:50,coins:100},actions:none.actions,trials:[{...none,survival:1}],spend:0,emptyPermanentPool:false,minimumRepair:0,fullServiceQuote:60};
 const dead={...publicShop,phase:'lost' as const,failureCause:'energy' as const,floor:39};
