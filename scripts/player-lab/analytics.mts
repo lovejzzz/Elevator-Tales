@@ -62,7 +62,10 @@ export function summarize(turns:Turn[],shops:ShopVisit[],final:Observation){
   decisionsMs:{mean:mean(turns.map(t=>t.elapsedMs)),p90:quantile(turns.map(t=>t.elapsedMs),.9)},
   shops:shops.length,byDecade,roles,flags,
   uncertainty:{tipOpportunities:tips,tipCoins:turns.reduce((n,t)=>n+t.tipCoins,0),relayOpportunities:relay,relayEnergy:turns.reduce((n,t)=>n+t.relayEnergy,0)},
-  deathReview:final.phase==='lost'?{window:turns.slice(-5).map(t=>({floor:t.before.floor,resources:{energy:t.before.energy,stress:t.before.stress,coins:t.before.coins},
+  deathReview:final.phase==='lost'?{terminalResourceBreaches:{energy:final.energy<=0,agitation:final.stress>=final.stressCap,simultaneous:final.energy<=0&&final.stress>=final.stressCap},terminalOptions:{dismissalsRemaining:final.dismissalsRemaining,oldMovesRemaining:final.oldMovesRemaining??null,reserveCell:final.reserveCell,calmCharge:final.calmCharge??false},window:turns.slice(-5).map(t=>({floor:t.before.floor,resources:{energy:t.before.energy,stress:t.before.stress,coins:t.before.coins,
+   dismissalsRemaining:t.before.dismissalsRemaining,oldMovesRemaining:t.before.oldMovesRemaining??null,reserveCell:t.before.reserveCell},
+   departureOptions:{dismissalsRemaining:t.departure.dismissalsRemaining,oldMovesRemaining:t.departure.oldMovesRemaining??null},
+   deadlines:t.departure.cabin.flatMap((r,slot)=>r?.kind==='bomb'?[{id:r.id,slot,remaining:r.remaining,fuse:r.fuse}]:[]),
    actions:t.decision.actions,reason:t.decision.reason,sampledSafePlans:t.decision.diagnostics.sampledSafePlans,alternatives:t.decision.alternatives})),
-   caveat:'最后五层的可见信息与已搜索替代方案；未找到安全方案不等于证明无解，也不据此将死亡归罪于抽牌。'}:null};
+   caveat:'最终资源越界可同时发生，不等于各项已被证明是独立死因。最后五层的可见信息与已搜索替代方案；未找到安全方案不等于证明无解，也不据此将死亡归罪于抽牌。'}:null};
 }

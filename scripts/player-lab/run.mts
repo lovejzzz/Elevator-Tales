@@ -7,8 +7,10 @@ import {summarize,type Turn,type ShopVisit} from './analytics.mts';
 import type {PolicyName,ShopStyle} from './types.mts';
 import {investmentSample} from './investment-study.mts';
 
-export function runOne(policy:PolicyName,seed:number,horizon:number,tutorial=false,shopStyle:ShopStyle='native',fixture?:World){
+export function runOne(policy:PolicyName,seed:number,horizon:number,tutorial=false,shopStyle:ShopStyle='native',fixture?:World,policyOptions:{diverseFinalists?:boolean;reserveFinalists?:boolean}={}){
  const session=new Session(seed,tutorial,fixture),player=new Player(policy,shopStyle),turns:Turn[]=[],shops:ShopVisit[]=[];
+ player.diverseFinalists=policyOptions.diverseFinalists??false;
+ player.reserveFinalists=policyOptions.reserveFinalists??false;
  const openingCoins=session.observation().coins;
  const start=performance.now();let guard=0;
  while(session.observation().phase!=='lost'&&session.observation().floor<horizon){
@@ -46,5 +48,5 @@ export function runOne(policy:PolicyName,seed:number,horizon:number,tutorial=fal
  }
  const summary=summarize(turns,shops,session.observation());
  if(openingCoins+summary.income-summary.spend!==summary.final.coins)throw Error('Ledger does not reconcile');
- return {policy,seed,horizon,tutorial,wallMs:performance.now()-start,summary,turns,shops,replay:session.replayRecord()};
+ return {policy,policyOptions:{diverseFinalists:player.diverseFinalists,reserveFinalists:player.reserveFinalists},seed,horizon,tutorial,wallMs:performance.now()-start,summary,turns,shops,replay:session.replayRecord()};
 }

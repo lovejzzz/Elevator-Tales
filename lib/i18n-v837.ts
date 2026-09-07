@@ -1,4 +1,10 @@
 export const V837_PAIRS:Array<[string,string]>=[
+ ['本局4个永久安装位，每店最多选一项，已选能力不再出现。仅在商店内可用金币充电；躁动仅在失控时允许最低抢救。','4 permanent slots per run; choose at most one ability per shop. Installed abilities never reappear. Spend coins on charging only inside shops; agitation relief is emergency-only.'],
+ ['上行前手动改签 · 每十层一次','Rebook manually before departure · once per sector'],
+ ['上行前手动留座 · 每十层一次','Reserve manually before departure · once per sector'],
+ ['换位时生效 · 每层旧乘客可换位2次','Applies when moving · two old-rider moves per floor'],
+ ['仅影响安装后新出现的炸弹客','Only affects Bomb riders appearing after installation'],
+ ['本局限装一次 · 按卡片条件触发','One installation per run · triggers under the conditions above'],
  ['每位受控幽灵每层抵1人物耗电；不抵运转','Each controlled Ghost offsets 1 rider power/floor; never motor power'],
  ['每层抵1人物耗电，不抵运转','Offset 1 rider power/floor, never motor power'],
  ['还有一份未使用的应急电池。关门前可用它补电。','An unused Reserve Cell remains. Use it before departure to restore power.'],

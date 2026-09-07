@@ -6,6 +6,15 @@ import {currentScenario} from './scenarios.mts';
 
 export type World={state:RunState; offers:Rider[]};
 export const clone=<T,>(x:T):T=>structuredClone(x);
+// Known fixed-seat protection only. Unknown future police never cover a debt.
+// Ghost extensions and future rearrangements still require live reassessment.
+export function bombDeadlineDeficits(s:RunState):Rider[]{
+ return s.cabin.flatMap((r,slot)=>{
+  if(r?.kind!=='bomb')return [];
+  const protectedTurns=Math.max(0,...E.neighbours(slot).map(i=>s.cabin[i]?.kind==='cop'?Math.max(0,s.cabin[i]!.destination-s.floor):0));
+  return r.destination-s.floor>(r.fuse??0)+protectedTurns?[r]:[];
+ });
+}
 // Engine IDs encode random output. Public IDs are stable encounter counters.
 export class Names {
  private names=new Map<string,string>();
@@ -129,7 +138,9 @@ export function features(w:World,baseCoins:number):Features {
  }
  committedEnergy=Math.max(0,committedEnergy-(s.reserveCell?B.RESERVE_CELL_CHARGE:0));
  const risk=U.riskPartnerships(s.cabin),bankedPerStep=risk.members.length*(2+Number(B.agitationBand(s.stress)==='high'));
- return {occupied:people.length,newCount:people.filter(r=>r.boardedAt===s.floor).length,
+ const bombDebts=bombDeadlineDeficits(s);
+ const unfundedBombs=bombDebts.length>E.dismissalsRemaining(s)||bombDebts.reduce((n,r)=>n+E.dismissalCost(s,r),0)>s.coins?bombDebts.length:0;
+ return {unfundedBombs,occupied:people.length,newCount:people.filter(r=>r.boardedAt===s.floor).length,
   flow,fareRate,payout,energyCost:E.totalEnergyCost(s),committedEnergy,rise:s.cabin.reduce((n,_,i)=>n+E.riderAgitation(s,i).low,0)+reds.filter(r=>r.effect==='agitation').length+risk.agitation+E.musicAgitation(s)-E.redAgitationProtection(s),
   stateValue,pendingRepair:Math.min(B.REPAIR_DURATION_CAP,pendingRepair),bankedPerStep,riskEdges:risk.edges.length,
   green,red:reds.length,due:people.filter(r=>r.destination<=s.floor+1).length,

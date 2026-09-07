@@ -2351,3 +2351,38 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .status-rail .run-tools,.game-shell .status-rail .receipt-button,.game-shell .status-rail .service-status { width:170px; }
 }
 @media (prefers-reduced-motion:reduce) { .arrival-exit * { animation:none!important; } }
+.upgrade-dialog .shop-choice-row,.upgrade-dialog .shop-service-column { display:grid; gap:12px; min-width:0; align-content:start; }
+.upgrade-dialog [data-slot='dialog-description'] { display:block; max-width:none; font-size:14px; line-height:1.45; }
+.upgrade-dialog .shop-motor-next { display:block; }
+@media (min-width:1100px) {
+ .story-dialog.upgrade-dialog { width:min(1240px,96vw); max-width:96vw!important; max-height:96dvh; padding:16px; gap:8px; }
+ .upgrade-dialog .shop-scroll-body { gap:6px; }
+ .upgrade-dialog .shop-motor-next { display:inline; margin-left:16px; }
+ .upgrade-dialog .shop-choice-row { grid-template-columns:minmax(0,2.1fr) minmax(320px,1fr); align-items:start; }
+ .upgrade-dialog .upgrade-grid { margin:0; gap:10px; grid-template-columns:repeat(3,minmax(0,1fr)); }
+ .upgrade-dialog .upgrade-grid button { min-height:0; height:auto; padding:14px; }
+ .upgrade-dialog .upgrade-grid button>p { font-size:14px; line-height:1.5; }
+ .upgrade-dialog .upgrade-grid button>em { font-size:14px; line-height:1.4; }
+ .upgrade-dialog .shop-power,.upgrade-dialog .shop-resources .shop-wallet { padding:10px 16px; }
+ .upgrade-dialog .shop-power-value b,.upgrade-dialog .shop-resources .shop-wallet b { font-size:40px; }
+ .upgrade-dialog .route-notice { margin:0; font-size:14px; line-height:1.4; }
+ .upgrade-dialog .dialog-kicker { margin:0; }
+ .upgrade-dialog [data-slot='dialog-header'] { gap:4px; }
+ .upgrade-dialog [data-slot='dialog-title'] { font-size:26px; line-height:1.1; }
+ .upgrade-dialog .shop-service-column .recharge-panel { margin:0; padding:10px; }
+ .upgrade-dialog .shop-service-column .recharge-panel>div { flex-wrap:wrap; gap:5px; }
+ .upgrade-dialog .shop-service-column p { margin:5px 0 0; font-size:14px; line-height:1.4; }
+ .upgrade-dialog .shop-service-column .reserve-panel>div { display:block; }
+ .upgrade-dialog .shop-service-column .reserve-panel span { display:block; font-size:14px; line-height:1.4; }
+}
+@media (min-width:1100px) and (max-height:800px) {
+ /* Preserve large resource figures while removing duplicated vertical framing. */
+ .story-dialog.upgrade-dialog { padding:12px; max-height:98dvh; }
+ .upgrade-dialog .shop-scroll-body { gap:4px; }
+ .upgrade-dialog .shop-power { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+ .upgrade-dialog .shop-power-value { margin:0; }
+ .upgrade-dialog .shop-resources .shop-wallet>span:first-child { display:flex; align-items:center; }
+ .upgrade-dialog .shop-resources .shop-wallet b { margin-left:auto; }
+ .upgrade-dialog .upgrade-card-head { display:none; }
+ .upgrade-dialog .upgrade-grid button { padding:10px; }
+}

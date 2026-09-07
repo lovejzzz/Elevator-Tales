@@ -2,6 +2,7 @@ import type {Preview,Observation,PolicyName,PreviewService,Decision,Action,ShopS
 // No runtime/engine imports: decisions receive public observations and a bounded
 // preview service. These are behavioral hypotheses, not calibrated humans.
 export const POLICIES:PolicyName[]=['novice','merchant','explorer','minimalist','planner','opportunist','investor','operator','allocator','diverse'];
+export const departureActionKey=(actions:readonly Action[])=>JSON.stringify(actions.filter(a=>a.type!=='reserve-offer'));
 export function gapOpportunityCount(history:ReadonlyArray<Pick<InvestmentSample,'arrivals'>>,required:number):number {
  let progress=0,triggers=0;
  for(const sample of history){if(sample.arrivals){if(progress>=required)triggers++;progress=0;}else progress=Math.min(required,progress+1);}
@@ -10,7 +11,7 @@ export function gapOpportunityCount(history:ReadonlyArray<Pick<InvestmentSample,
 export function score(p:Preview,mode:PolicyName,seen:Set<string>):number {
  const f=p.features,o=p.observation;
  if(!f.occupied)return -1e8;
- const unsafe=!(p.safety.resourceSafe&&p.safety.bombSafe);
+ const unsafe=!(p.safety.resourceSafe&&p.safety.bombSafe)||f.unfundedBombs>0;
  const room=o.stressCap-o.stress;
  const stressAfter=o.stress+(o.forecast?.stress[1]??f.rise-Math.min(o.arrivalReliefCap,f.due));
  const danger=unsafe?1e6:0;
@@ -60,6 +61,10 @@ export function score(p:Preview,mode:PolicyName,seen:Set<string>):number {
   -Math.max(0,f.committedEnergy-o.energy)*16;
 }
 export class Player {
+ // Research switch: reserve-only variations must not consume every rollout.
+ // Disabled until paired full-opening calibration establishes its tradeoffs.
+ diverseFinalists=false;
+ reserveFinalists=false;
  readonly seen=new Set<string>(); readonly successes=new Map<string,number>();
  readonly investmentHistory:InvestmentSample[]=[];
  investmentStudy:{key:string;gross:number;net:number;observations:number}[]=[];
@@ -73,10 +78,29 @@ export class Player {
   if(['planner','opportunist','investor'].includes(this.mode)||operates){
    const economical=ranked.filter(c=>c.p.safety.resourceSafe&&c.p.safety.bombSafe).sort((a,b)=>a.p.features.energyCost-b.p.features.energyCost||a.p.features.rise-b.p.features.rise)[0];
    let finalists=[...new Set([...ranked.slice(0,3),...(economical?[economical]:[])])];
+   if(this.diverseFinalists){
+    const cohorts=new Map<string,typeof ranked[number]>();
+    for(const c of ranked){
+     const o=c.p.observation,key=JSON.stringify([o.cabin.filter(Boolean).map(r=>r!.id).sort(),o.dismissalsRemaining]);
+     if(!cohorts.has(key))cohorts.set(key,c);
+    }
+    finalists=[...new Set([...cohorts.values(),...ranked])].slice(0,3);
+    if(economical&&!finalists.includes(economical))finalists.push(economical);
+   }
    if(this.mode==='diverse'){
     const offered=new Set(o.offers.map(r=>r.id)),representatives=new Map<number,typeof ranked[number]>();
     for(const c of ranked){const count=c.p.observation.cabin.filter(r=>r&&offered.has(r.id)).length;if(!representatives.has(count))representatives.set(count,c);}
     finalists=[...new Set([...representatives.values(),...ranked])].slice(0,4);
+   }
+   if(this.reserveFinalists){
+    // Keep exact action order and slots. Only reservation-only variants share
+    // a representative; their best pre-score survives and all remain generated.
+    const unique=new Map<string,typeof ranked[number]>();
+    for(const c of [...finalists,...ranked]){
+     const key=departureActionKey(c.p.actions);if(!unique.has(key))unique.set(key,c);
+    }
+    finalists=[...unique.values()].slice(0,3);
+    if(economical&&!finalists.some(c=>departureActionKey(c.p.actions)===departureActionKey(economical.p.actions)))finalists.push(economical);
    }
    for(const c of finalists){
     c.rollout=operates?service.imagine(c.p.actions,5,4,'operator'):service.imagine(c.p.actions,3,2);
@@ -85,7 +109,7 @@ export class Player {
       +c.rollout.meanEnergy*(operates?2:.8)-c.rollout.meanStress*((this.mode==='opportunist'||operates)?1:5);
     if(allocates)c.value+=(c.rollout.meanInvestmentRoom??0)*1.2;
    }
-   ranked=finalists.sort((a,b)=>Number(b.p.safety.resourceSafe&&b.p.safety.bombSafe)-Number(a.p.safety.resourceSafe&&a.p.safety.bombSafe)
+   ranked=finalists.sort((a,b)=>Number(b.p.safety.resourceSafe&&b.p.safety.bombSafe&&!b.p.features.unfundedBombs)-Number(a.p.safety.resourceSafe&&a.p.safety.bombSafe&&!a.p.features.unfundedBombs)
     ||b.rollout!.survivalFraction-a.rollout!.survivalFraction||b.rollout!.meanFloors-a.rollout!.meanFloors||b.value-a.value);
   }
   const chosen=ranked[0];
@@ -103,7 +127,7 @@ export class Player {
   for(const r of before.cabin)if(r&&!after.cabin.some(p=>p?.id===r.id))this.successes.set(r.kind,(this.successes.get(r.kind)??0)+1);
   if(sample){this.investmentHistory.push(structuredClone(sample));if(this.investmentHistory.length>20)this.investmentHistory.shift();}
  }
- shop(o:Observation,service?:Pick<PreviewService,'preview'|'jointShop'>):{actions:Action[];reason:string}{
+ shop(o:Observation,service?:Pick<PreviewService,'preview'|'jointShop'|'controlBudget'>):{actions:Action[];reason:string}{
   if(this.shopStyle==='joint'||this.shopStyle==='joint-long'){
    if(!service?.jointShop)throw Error('Joint shopping requires sampled public-information continuations');
    const trials=service.jointShop(4,this.shopStyle==='joint-long'?20:10);this.shopTrials=trials;
@@ -122,8 +146,12 @@ export class Player {
   // Public post-shop option budget, not a forecast of offers or a guarantee:
   // keep one known risky rider's removal affordable instead of spending the
   // last coin on power while an agitation/fuse crisis is visibly approaching.
-  const optionCash=this.mode==='operator'?Math.max(0,...o.cabin.flatMap(r=>r&&
-   ((o.stress>=o.stressCap-2&&(r.agitation>0||r.kind==='thief'))||(r.kind==='bomb'&&(r.fuse??0)<=2))
+  // Drunk/thief pressure is conditional and is not included in the public
+  // base agitation field. This is an option budget, not a forced dismissal or
+  // a claim that these riders are intrinsically unsafe. Opportunist needs the
+  // same ability to exit a risky investment as the operator.
+  let optionCash=['operator','opportunist'].includes(this.mode)?Math.max(0,...o.cabin.flatMap(r=>r&&
+   ((o.stress>=o.stressCap-2&&(r.agitation>0||r.kind==='thief'||r.kind==='drunk'))||(r.kind==='bomb'&&(r.fuse??0)<=2))
    ?[r.dismissalCost??0]:[])):0;
   const soothe=(units:number)=>{units=Math.max(0,stress-cap+1);if(units>0&&coins>=units*o.prices.soothe){actions.push({type:'soothe',units});coins-=units*o.prices.soothe;stress-=units;}};
   const charge=(target:number)=>{const units=Math.min(Math.max(0,Math.min(energyCap,target)-energy),Math.floor(coins/o.prices.charge));if(units>0){actions.push({type:'charge',units});coins-=units*o.prices.charge;energy+=units;}};
@@ -134,6 +162,10 @@ export class Player {
   if(stress>=cap)buy('calm');
   if((o.calmCharge||actions.some(a=>a.type==='buy'&&a.key==='calm'))&&stress>=cap){actions.push({type:'use-calm'});stress=Math.max(0,stress-2);}
   soothe(Math.max(0,stress-cap+1));charge(1);
+  if(['operator','opportunist'].includes(this.mode)&&service?.controlBudget){
+   const quote=service.controlBudget(actions);
+   if(quote!==null)optionCash=quote;
+  }
   this.investmentStudy=[];
   if(this.mode==='investor'||this.mode==='operator'||this.shopStyle==='committed'||this.shopStyle==='adaptive'){
    // R01 exposed a shop-order blind spot: charging to full first prevents early

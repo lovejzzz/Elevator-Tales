@@ -4,8 +4,9 @@ import {E,F,B,S,R,D,I,P,GAME_ROOT,type Rider,type RunState} from './game.mts';
 import {configureScenario,scenarioRecord} from './scenarios.mts';
 import {Session,Names,observe,previewWorld,applyPlan,clone,replay,features} from './runtime.mts';
 import {serviceFor,enumerate,planningSeed,shopInvestmentRoom,restrictIntake} from './search.mts';
-import {Player,score,gapOpportunityCount} from './policies.mts';
-import {flagBlock} from './analytics.mts';
+import {Player,score,gapOpportunityCount,departureActionKey} from './policies.mts';
+import {controlBudget} from './control-budget.mts';
+import {flagBlock,summarize} from './analytics.mts';
 import {runOne} from './run.mts';
 import * as fixtures from './fixtures.mts';
 import {hash,rngFor,quantile} from './util.mts';
@@ -17,6 +18,73 @@ import {guidedOpening} from './opening.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('reserve-only candidate key preserves position, timing, dismissals and action order',()=>{
+  const a=[{type:'place',rider:'p1',slot:0}] as const;
+  assert.equal(departureActionKey(a),departureActionKey([...a,{type:'reserve-offer',rider:'p2'}]));
+  assert.notEqual(departureActionKey(a),departureActionKey([{type:'place',rider:'p1',slot:1}]));
+  assert.notEqual(departureActionKey(a),departureActionKey([...a,{type:'dismiss',rider:'p3'}]));
+  assert.notEqual(departureActionKey(a),departureActionKey([...a,{type:'retime',rider:'p1',delta:1}]));
+  assert.notEqual(departureActionKey([...a,{type:'place',rider:'p2',slot:1}]),departureActionKey([{type:'place',rider:'p2',slot:1},...a]));
+  assert.equal(new Player('operator').reserveFinalists,false);
+ });
+ test('opt-in cohort finalists retain distinct intake options within four rollout calls',()=>{
+  const w=fixtures.sealed();w.state.energy=60;w.state.stress=0;w.state.coins=40;
+  w.offers=[fixtures.rider('courier','qa-courier',w.state.floor,2),fixtures.rider('nurse','qa-nurse',w.state.floor,4),fixtures.rider('commuter','qa-commuter',w.state.floor,3)];
+  const n=new Names(),svc=serviceFor(w,n),o=observe(w,n),p=new Player('opportunist','committed');
+  assert.equal(p.diverseFinalists,false,'Experimental selection must not silently replace validated baseline');
+  p.diverseFinalists=true;const keys:string[]=[];const before=hash(w);
+  p.decide(o,{...svc,imagine:(actions,...args)=>{const preview=svc.preview(actions);assert(preview);keys.push(JSON.stringify(preview.observation.cabin.filter(Boolean).map(r=>r!.id).sort()));return svc.imagine(actions,...args);}});
+  assert(keys.length<=4);assert(new Set(keys).size>=2,'Reserve variants cannot consume all finalist diversity');assert.equal(hash(w),before);
+ });
+ test('death review retains simultaneous resource breaches without labelling shop rescue as death',()=>{
+  const w=fixtures.sealed();w.state.status='lost';w.state.energy=0;w.state.stress=8;w.state.stressCap=8;
+  const summary=()=>summarize([],[],observe(w,new Names()));
+  assert.deepEqual(summary().deathReview!.terminalResourceBreaches,{energy:true,agitation:true,simultaneous:true});
+  w.state.energy=10;assert.deepEqual(summary().deathReview!.terminalResourceBreaches,{energy:false,agitation:true,simultaneous:false});
+  w.state.energy=-1;w.state.stress=7;assert.deepEqual(summary().deathReview!.terminalResourceBreaches,{energy:true,agitation:false,simultaneous:false});
+  w.state.stress=8;w.state.status='upgrade';assert.equal(summary().deathReview,null,'A payable shop rescue is not a death');
+ });
+ test('bomb deadlines require known protection or funded removal, not imaginary police',()=>{
+  const w=fixtures.sealed();w.state.floor=30;w.state.status='playing';w.state.energy=50;w.state.coins=0;w.state.stress=0;w.offers=[];
+  w.state.cabin=[{...fixtures.rider('bomb','b',29,6),destination:35,fuse:3},null,null,null,null,null];
+  assert.equal(features(w,0).unfundedBombs,1);
+  w.state.cabin[1]={...fixtures.rider('cop','c',29,5),destination:32};
+  assert.equal(features(w,0).unfundedBombs,0,'Two known protected ascents cover the deficit');
+  w.state.cabin[1]!.destination=31;assert.equal(features(w,0).unfundedBombs,1,'Police leaving too early cannot cover full trip');
+  w.state.cabin[1]=null;w.state.coins=E.dismissalCost(w.state,w.state.cabin[0]!);
+  assert.equal(features(w,0).unfundedBombs,0,'Actual funded escape remains a valid strategy');
+  w.state.status='upgrade';w.state.cabin[0]!.destination=33;w.state.cabin[0]!.fuse=2;
+  const n=new Names();assert.equal(controlBudget(w,[],n),E.dismissalCost(w.state,w.state.cabin[0]!),'A safe next ascent cannot erase a later bomb deadline');
+ });
+ test('control budget preserves stable high agitation and finds free care before paid removal',()=>{
+  const w=fixtures.sealed();w.state.floor=30;w.state.status='upgrade';w.state.energy=40;w.state.coins=50;w.state.stress=7;w.state.stressCap=8;w.state.shop=[];w.offers=[];
+  w.state.cabin=[fixtures.rider('drunk','d',29,5),null,null,null,null,null];
+  const n=new Names(),o=observe(w,n),cost=o.cabin[0]!.dismissalCost!;
+  assert.equal(controlBudget(w,[],n),cost,'Uncontrolled pressure has a paid quote');
+  w.state.cabin[5]=fixtures.rider('nurse','n',29,5);const before=hash(w);
+  assert.equal(controlBudget(w,[],n),0,'One legal free move can establish care');assert.equal(hash(w),before);
+  w.state.cabin[5]=null;w.state.cabin[0]!.destination=31;
+  assert.equal(controlBudget(w,[],n),0,'Due rider relief keeps a high band safe');
+  w.state.cabin[0]!.destination=34;w.state.coins=0;
+  assert.equal(controlBudget(w,[],n),null,'No imaginary financing for paid control');
+  const a=fixtures.sealed();a.state.floor=30;a.state.status='upgrade';a.state.energy=40;a.state.coins=50;a.state.stress=7;
+  const b=clone(a);for(const r of b.state.cabin)if(r?.traits)r.traits.fare=99;
+  assert.equal(controlBudget(a,[],new Names()),controlBudget(b,[],new Names()),'Sealed fares do not influence control quote');
+ });
+ test('opportunist reserves a visible control option without hoarding in a low band',()=>{
+  const w=fixtures.sealed();w.state.floor=30;w.state.status='upgrade';w.state.energy=1;w.state.coins=95;w.state.stress=7;w.state.stressCap=8;w.state.energyCap=60;w.state.shop=[];
+  w.state.cabin=[fixtures.rider('drunk','known-drunk',29,5),null,null,null,null,null];w.offers=[];
+  const n=new Names(),o=observe(w,n),before=hash(w),cost=o.cabin[0]!.dismissalCost!;assert(cost>0);
+  for(const mode of ['operator','opportunist'] as const){
+   const actions=new Player(mode,'committed').shop(o,serviceFor(w,n)).actions;
+   const settled=applyPlan(w,actions.filter(a=>a.type!=='leave'),n);assert(settled);
+   assert(settled.state.coins>=cost,'Do not spend the visible removal option on charging');
+   assert(!actions.some(a=>a.type==='soothe'),'Below-threshold soothing remains illegal');
+  }
+  assert.equal(hash(w),before);w.state.stress=0;
+  const actions=new Player('opportunist','committed').shop(observe(w,n),serviceFor(w,n)).actions;
+  const low=applyPlan(w,actions.filter(a=>a.type!=='leave'),n);assert(low);assert(low.state.coins<2,'No blanket cash floor in low agitation');
+ });
  test('gap commitment budget credits scheduled arrivals, not unseen riders or later rescue',()=>{
   const tuning={...S.SHOP_TUNING};
   try{

@@ -24,6 +24,7 @@ export type Observation = {
   receipt:{coins:number; energy:number; stress:number; coinSources:Array<{label:string;amount:number}>};
 };
 export type Features = {
+  unfundedBombs:number;
   occupied:number; newCount:number; flow:number; fareRate:number; payout:number;
   energyCost:number; committedEnergy:number; rise:number; green:number; red:number; due:number; shortest:number;
   hidden:number; newKinds:string[]; spent:number; uncertain:boolean;
@@ -41,6 +42,7 @@ export type ShopStyle = 'native' | 'committed' | 'adaptive' | 'joint' | 'joint-l
 export type InvestmentSample = {floor:number; arrivals:number; rideSum:number; nearLimit:boolean; gross:Record<string,number>};
 export type ShopTrial = {key:string; actions:Action[]; samples:number; depth:number; survival:number; floors:number; value:number; cash:number; power:number; stress:number};
 export type PreviewService = {
+  controlBudget?(actions:Action[]):number|null;
   jointShop?(samples?:number,depth?:10|20):ShopTrial[];
   preview(actions:Action[]):Preview|null;
   candidates(mode:PolicyName,seen:Set<string>):{plans:Preview[];enumerated:number};

@@ -177,7 +177,11 @@ function upgradeImpact(key: UpgradeKey, run: RunState): string {
     case 'concierge': return `新乘客到站小费 +${(run.upgrades.concierge + 1) * 2}`;
     case 'express': return '新乘客原定 ≥5 层时，目的地提前 1 层 · 本局唯一';
     case 'tipjar': case 'relay': return '本局唯一 · 概率只在实际结算时抽取';
-    default: return '本局唯一 · 只在实际上行时结算';
+    case 'retime': return '上行前手动改签 · 每十层一次';
+    case 'reservation': return '上行前手动留座 · 每十层一次';
+    case 'rails': return '换位时生效 · 每层旧乘客可换位2次';
+    case 'delay': return '仅影响安装后新出现的炸弹客';
+    default: return '本局限装一次 · 按卡片条件触发';
   }
 }
 
@@ -543,7 +547,7 @@ export default function ElevatorGame() {
       </section>)}</div>
     </DialogContent></Dialog>
     <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">TEMPORARY ASSIGNMENT · 00:17 AM</p><DialogHeader><DialogTitle>临时顶班。<br />这栋楼没有尽头。</DialogTitle><DialogDescription>今晚，你被临时派来这座古怪大楼开电梯。守住电量和躁动，安排每位乘客的位置。这里没有最后一层——活得越久，成绩越高。</DialogDescription></DialogHeader><p className="route-schedule">{motorScheduleText()}</p><div className="intro-rules"><span><b>01</b> 接客并安排站位</span><span><b>02</b> 守住电量与躁动</span><span><b>03</b> 尽可能生存下去</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始临时夜班 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
-    <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">ENDLESS SHIFT MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>这是一次没有终点的临时夜班。守住电量与躁动，活得越久，楼层成绩越高。</DialogDescription></DialogHeader><p className="route-schedule">{motorScheduleText()}</p><p>本局4个永久安装位，每店最多选一项，已选能力不再出现。可随时充电；躁动仅在失控时允许最低抢救。</p><div className="manual-grid">
+    <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">ENDLESS SHIFT MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>这是一次没有终点的临时夜班。守住电量与躁动，活得越久，楼层成绩越高。</DialogDescription></DialogHeader><p className="route-schedule">{motorScheduleText()}</p><p>本局4个永久安装位，每店最多选一项，已选能力不再出现。仅在商店内可用金币充电；躁动仅在失控时允许最低抢救。</p><div className="manual-grid">
       <div><b>拖拽安排</b><p>把人物拖进站位，或先点乘客再点空位。连线两端互为邻座。旧乘客每层只能换位一次；新上客移到空位或与新上客互换不消耗次数。</p></div>
       <div><b>还剩几站</b><p>每次关门上行算一站，人物身上的剩余站数会递减；幽灵可能延误邻座。</p></div>
       <div><b>三个值，六个站位</b><p>人物只看金钱、耗电和躁动。每站耗电＝电梯运转＋车内人物耗电＋红线耗电−节能；到站这一站也计费。电量耗尽或躁动达到上限，本班会结束；维修层有抢救窗口。</p></div><div><b>躁动只来自人物</b><p>躁动来自人物规则、红线和危险协作。没有拥挤惩罚或隐藏躁动倍率。每位正常到站乘客舒缓1点，每层最多2点；危险协作的额外躁动不能被护理抵消。</p></div>
@@ -565,15 +569,15 @@ export default function ElevatorGame() {
         <div className="shop-wallet"><span aria-label={`可用金币 ${run.coins}`}><Coins aria-hidden="true" /><span className="shop-balance-label">金币</span><b key={run.coins}>{run.coins}</b></span><span>收入 {run.earned} · 支出 {run.earned - run.coins}</span></div>
       </div>
       <div className="shop-scroll-body">
-      <p className="route-notice">运转 {travelEnergyCost(run.floor+1)} 电 / 层<br />{motorAdvanceNotice(run.floor)}</p>
-      <p className="dialog-kicker">FLOOR {run.floor} · SHOP</p><DialogHeader><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle><DialogDescription>本局4个永久安装位，每店最多选一项，已选能力不再出现。可随时充电；躁动仅在失控时允许最低抢救。</DialogDescription></DialogHeader>
+      <p className="route-notice">运转 {travelEnergyCost(run.floor+1)} 电 / 层<span className="shop-motor-next">{motorAdvanceNotice(run.floor)}</span></p>
+      <p className="dialog-kicker">FLOOR {run.floor} · SHOP</p><DialogHeader><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle><DialogDescription>本局4个永久安装位，每店最多选一项，已选能力不再出现。仅在商店内可用金币充电；躁动仅在失控时允许最低抢救。</DialogDescription></DialogHeader>
       {upgradeCrisis && <p className="shop-warning">{upgradeCrisis === 'both' ? '电量与躁动同时失控：底部最低抢救可恢复1电，并将躁动降至上限以下1点。' : upgradeCrisis === 'energy' ? '电量已耗尽：使用下方充电服务，将电量恢复到 0 以上才能继续。' : '躁动失控：底部最低抢救每点8金币，只降至上限以下1点，不可继续购买舒缓。'} 若无力修复，本班将在这里结束。</p>}
       <button className="shop-inventory-link" onClick={()=>setInventoryOpen(true)}><Layers />安装位 {upgradeCount} / {UPGRADE_SLOTS} · 查看已装升级</button>
       {!availableShopCards(run).length&&<p className="shop-receipt" role="status">{upgradeCount >= UPGRADE_SLOTS ? '四个安装位已满。本班保留当前能力，维修服务仍然可用。' : run.shopUpgradeBought?'本店能力已选购，下次商店再选。维修服务仍然可用。':'本店没有未安装的能力可选。维修服务仍然可用。'}</p>}
-      <div className="upgrade-grid">{availableShopCards(run).map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, run); const warning = purchaseRepairWarning(run,key,card.price); return <button key={key} className={rescue ? 'crisis-rescue' : ''} disabled={!affordable} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price} 金币${!affordable ? '，金币不足' : ''}`}>
+      <div className="shop-choice-row"><div className="upgrade-grid">{availableShopCards(run).map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, run); const warning = purchaseRepairWarning(run,key,card.price); return <button key={key} className={rescue ? 'crisis-rescue' : ''} disabled={!affordable} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price} 金币${!affordable ? '，金币不足' : ''}`}>
         <span className="upgrade-card-head"><small>{UPGRADES[key].label}</small></span><b>{UPGRADES[key].name}</b><p>{UPGRADES[key].description}</p><em>{upgradeImpact(key, run)}</em>{warning && <span className="reserve-warning">{warning === 'crisis' ? '购买后不足以修复当前失控' : '购买后无法补至参考电量；参考线不是离店要求'}</span>}<span className="shop-price"><Coins aria-hidden="true" /><strong>{card.price}</strong><span>{affordable ? '购买并安装' : `还差 ${card.price - run.coins}`}</span></span>
       </button>; })}</div>
-      <section className="recharge-panel charge-slider-panel">
+      <div className="shop-service-column"><section className="recharge-panel charge-slider-panel">
         <div><b>{language==='zh'?'充电至':'Charge to'} <output>{chargeTarget}/{run.energyCap}</output></b><span>{CHARGE_PRICE}{language==='zh'?'金币 / 电':' coins / power'}</span></div>
         <label className="charge-control"><span className="sr-only">{language==='zh'?'充电目标':'Charge target'}</span><Slider className="charge-slider" min={Math.min(run.energy,run.energyCap)} max={run.energyCap} step={1} value={[chargeTarget]} disabled={run.energy>=run.energyCap} onValueChange={value=>setChargeChoice({floor:run.floor,target:Array.isArray(value)?value[0]:value})}/></label>
         <div className="charge-scale"><span>{language==='zh'?'当前':'Now'} {run.energy}</span><span>{language==='zh'?'参考':'Reference'} {Math.min(50,run.energyCap)}</span><span>{run.energyCap}</span></div>
@@ -583,6 +587,7 @@ export default function ElevatorGame() {
       </section>
       {run.calmCharge&&<button className="reserve-use" disabled={run.stress<=0} onClick={()=>{const next=useCalmCharge(run);setRun(next);reportMetrics(run,next,'手动调节');}}>手动调节 −2躁动 · 一次</button>}
       <section className="recharge-panel reserve-panel"><div><b>应急电池 · {RESERVE_CELL_PRICE}金币</b><span>携带上限1份，不占安装位；离店后主动使用，补{RESERVE_CELL_CHARGE}电，不超过容量。</span></div><div className="recharge-actions"><button disabled={Boolean(run.reserveCell)||run.coins<RESERVE_CELL_PRICE} onClick={()=>{const next=buyReserveCell(run);if(next!==run){setRun(next);setLeaveArmed(false);reportMetrics(run,next,'购买应急电池');}}}>{run.reserveCell?'已携带1份':`购买应急电池 · ${RESERVE_CELL_PRICE}金币`}</button></div></section>
+      </div></div>
       {metricEvent && <p className="shop-receipt" aria-live="polite">{metricEvent.label}{metricEvent.changes.map((change) => ` · ${change.label} ${signedDelta(change.delta)}${change.capDelta ? `（上限 ${signedDelta(change.capDelta)}）` : ''}`).join('')}</p>}
       </div>
       <div className="shop-footer">{leaveArmed && !upgradeCrisis && <p className="shop-warning">当前电量低于下一段运转参考；人物耗电与途中回充另计。再点一次确认冒险。</p>}<Button className="story-primary" onClick={finishShopping}>{upgradeCrisis ? emergencyRepairPlan(run).affordable ? `最低抢救 · ${emergencyRepairPlan(run).cost} 金币` : leaveArmed ? '确认结束本班' : '无法支付抢救费 · 结束本班' : leaveArmed ? '确认冒险离开' : '继续上行'}<ArrowUp /></Button></div>

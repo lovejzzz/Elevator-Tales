@@ -1,6 +1,7 @@
 import {E,R,type Rider} from './game.mts';
 import {Names,applyLocal,applyPlan,previewWorld,features,observe,believed,clone,type World} from './runtime.mts';
 import {score,Player} from './policies.mts';
+import {controlBudget} from './control-budget.mts';
 import {rngFor,seedFor,mean} from './util.mts';
 import type {Action,Observation,PublicRider,Preview,PreviewService,PolicyName,Rollout} from './types.mts';
 
@@ -208,6 +209,7 @@ export function serviceFor(base:World,names:Names,options:{boardingHorizon?:'fix
  // This seed is derived exclusively from redacted, currently visible data.
  const publicSeed=planningSeed(observe(base,names));
  return {
+  controlBudget:actions=>controlBudget(base,actions,names),
   preview:actions=>previewWorld(base,actions,names),
   jointShop:(samples=4,depth=10)=>jointShopTrials(base,names,samples,depth,'greedy',excluded),
   candidates:(mode,seen)=>enumerate(base,names,mode,seen),
