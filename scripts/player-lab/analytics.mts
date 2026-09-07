@@ -5,6 +5,15 @@ export type Turn={before:Observation;decision:Decision;departure:Observation;aft
   income:number;spend:number;dismissed:number;arrivals:string[];tipEligible:number;tipCoins:number;relayEligible:boolean;relayEnergy:number;elapsedMs:number};
 export type ShopVisit={trials?:import('./types.mts').ShopTrial[];entry:Observation;exit:Observation;actions:Action[];study?:Array<{key:string;gross:number;net:number;observations:number}>;spend:number;emptyPermanentPool:boolean;minimumRepair:number;fullServiceQuote:number};
 export type Flag={code:string;floor:number;evidence:Record<string,unknown>;interpretation:string};
+export function lastShopLiquidity(shops:Array<Pick<ShopVisit,'entry'|'exit'>>,final:Observation){
+ const last=shops.filter(s=>s.exit.floor<=final.floor).at(-1);
+ if(!last)return null;
+ const room=Math.max(0,last.exit.energyCap-last.exit.energy);
+ const affordableExtraCharge=last.exit.prices.charge>0?Math.min(room,Math.floor(Math.max(0,last.exit.coins)/last.exit.prices.charge)):null;
+ return {shopFloor:last.entry.floor,exitCoins:last.exit.coins,exitEnergy:last.exit.energy,
+  terminalCoins:final.coins,netCoinsSinceExit:final.coins-last.exit.coins,affordableExtraCharge,
+  caveat:'离店后金币为净变化（不是总收入）；当时可买的额外电量不证明会存活，也可能挤占请离等预算。升级改买充电须另做合法分支，不能从终局余额推定经济过剩。'};
+}
 export function flagBlock(b:{floor:number;occupancy:number;skipFraction:number;income:number;spend:number;coins:number;fullServiceQuote:number;emptyPermanentPool:boolean}):Flag[]{
  const out:Flag[]=[];
  if(b.occupancy<=2&&b.skipFraction>=.5&&b.income>b.spend)out.push({code:'LOW_LOAD_STILL_ACCUMULATES',floor:b.floor,evidence:b,interpretation:'少载且多次不接新客仍有净积累；这是经济压力线索，不是已证明最优策略。'});
@@ -60,7 +69,7 @@ export function summarize(turns:Turn[],shops:ShopVisit[],final:Observation){
   noNewRiderAscents:turns.filter(t=>t.features.newCount===0).length,maxSkipWithSpaceStreak:maxStreak,
   income:turns.reduce((n,t)=>n+t.income,0),spend:turns.reduce((n,t)=>n+t.spend,0)+shops.reduce((n,s)=>n+s.spend,0),
   decisionsMs:{mean:mean(turns.map(t=>t.elapsedMs)),p90:quantile(turns.map(t=>t.elapsedMs),.9)},
-  shops:shops.length,byDecade,roles,flags,
+  shops:shops.length,byDecade,roles,flags,lastShopLiquidity:lastShopLiquidity(shops,final),
   uncertainty:{tipOpportunities:tips,tipCoins:turns.reduce((n,t)=>n+t.tipCoins,0),relayOpportunities:relay,relayEnergy:turns.reduce((n,t)=>n+t.relayEnergy,0)},
   deathReview:final.phase==='lost'?{terminalResourceBreaches:{energy:final.energy<=0,agitation:final.stress>=final.stressCap,simultaneous:final.energy<=0&&final.stress>=final.stressCap},terminalOptions:{dismissalsRemaining:final.dismissalsRemaining,oldMovesRemaining:final.oldMovesRemaining??null,reserveCell:final.reserveCell,calmCharge:final.calmCharge??false},window:turns.slice(-5).map(t=>({floor:t.before.floor,resources:{energy:t.before.energy,stress:t.before.stress,coins:t.before.coins,
    dismissalsRemaining:t.before.dismissalsRemaining,oldMovesRemaining:t.before.oldMovesRemaining??null,reserveCell:t.before.reserveCell},

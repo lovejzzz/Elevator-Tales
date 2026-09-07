@@ -356,7 +356,7 @@ const exactPairs: Array<[string, string]> = [
   ['每条绿线奖励都叠加；有绿线时免邻座冲突，人物技能另算。', 'Every green link stacks. Any green link blocks neighbor conflicts; rider abilities still resolve.'],
   ['每条绿线奖励都叠加；有绿线时免邻座冲突，人物技能另算', 'Every green link stacks. Any green link blocks neighbor conflicts; rider abilities still resolve'],
   ['每条绿线奖励都叠加；有绿线时免邻座冲突，人物技能另算；每位协作送达各舒缓一次。', 'Every green link stacks. Any green link blocks neighbor conflicts; each cooperative arrival also calms the cabin once.'],
-  ['点此撤回', 'Click to undo'], ['已选中 · 点空位', 'Selected · choose a position'], ['车厢已满', 'Cabin full'],
+  ['点此撤回', 'Click to undo'], ['已选中 · 点空位', 'Selected · pick slot'], ['车厢已满', 'Cabin full'],
   ['已上车', 'On board'], ['不可放置', 'Cannot place'], ['松手', 'Drop'], ['点击', 'Click'], ['联动', 'Link'], ['就位', 'Place'],
   ['选中人物 · 查看 / 请离', 'Select a rider · inspect / dismiss'], ['旧乘客换位已用 · 新上客仍可调整', 'Existing-rider move used · new riders may still move'],
   ['选择发光站位 · ESC 取消', 'Choose a glowing position · ESC to cancel'], ['再选一个站位完成调整 · ESC 取消', 'Choose another position to complete the move · ESC to cancel'],
@@ -538,6 +538,11 @@ export function translateGameText(value: string, locale: GameLocale): string {
   const direct = exact.get(core);
   if (direct) return `${leading}${direct}${trailing}`;
   let translated = value
+    .replace(/^照顾 (\d+)\/(\d+)/gu, 'Care $1/$2')
+    .replace(/签章 · 到站\+(\d+)币/gu, 'Stamped · +$1 on arrival')
+    .replace(/同层按1→6号位/gu, 'Same floor: seats 1→6')
+    .replace(/金币不足/gu, 'Not enough coins')
+    .replace(/^(.+?)与邻座联动已生效。$/u, '$1: neighbor links are active.')
     .replace(/^飞轮本段可省 (\d+)\/4电 · 到商店重置$/u, 'Flywheel: $1/4 power left this sector · Resets at shop')
     .replace(/电量耗尽 · 本层总扣电 (\d+)（运转 (\d+)、人物与红线 (\d+)）；抵消与回电 \+(\d+)；净变化 (-?\d+)。/gu, 'Power depleted · Gross cost $1 (motor $2, riders and red links $3); offsets and recharge +$4; net change $5. ')
     .replace(/^(.+?)已购入，花费 (\d+) 金币。$/u, '$1 purchased for $2 coins.')
@@ -573,6 +578,8 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/本人到站 −(\d+)\/人/gu, 'Own arrival −$1/person')
     .replace(/距商店 (\d+) 层/gu, 'Shop in $1 floors')
     .replace(/查看已装升级，共 (\d+) 次/gu, 'View installed upgrades: $1')
+    .replace(/协作邻座 ×(\d+) · 到站合计\+(\d+)币/gu, 'Linked neighbors ×$1 · +$2 total on arrival')
+    .replace(/等待邻座 · 每位到站\+2币/gu, 'Awaiting neighbors · +2 each on arrival')
     .replace(/任何邻座 ×(\d+) · 到站\+(\d+)币/gu, 'Any neighbor ×$1 · +$2 arrival coins')
     .replace(/任何邻座 ×(\d+) · \+(\d+)币\/层/gu, 'Any neighbor ×$1 · +$2 coins/floor')
     .replace(/每邻(.+?)：每层 \+(\d+) 躁动/gu, 'Each adjacent $1: +$2 agitation/floor')

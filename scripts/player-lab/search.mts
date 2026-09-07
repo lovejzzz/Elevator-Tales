@@ -138,6 +138,9 @@ export function restrictIntake(w:World,excluded:readonly Rider['kind'][]=[]):Wor
  return {...w,offers:w.offers.filter(r=>!excluded.includes(r.kind)||w.state.cabin.some(p=>p?.id===r.id))};
 }
 export type JointContinuationOptions={
+ // Diagnostics only: preserve per-belief outcomes without changing samples,
+ // scoring, actions or the real-run seed boundary. Off by default.
+ captureOutcomes?:boolean;
  // Opt-in fine-grained public charging alternatives. Omission preserves the
  // historical five budgets. Quantities are additional power, not targets.
  chargeUnits?:readonly number[];
@@ -235,12 +238,13 @@ export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,
    const pending=observe(w,new Names(),false).cabin.reduce((n,r)=>n+(r?.currentPayout??0),0);
    const value=Number(survived)*1000+travelled*20+s.coins+Math.max(0,s.energy+(s.bufferPower??0))*E.CHARGE_PRICE
      +Math.min(30,Math.max(0,pending)*.25)-repair;
-   outcomes.push({survived,travelled,value,cash:s.coins,power:s.energy,stress:s.stress});
+   outcomes.push({sample:sample+(options.sampleOffset??0),survived,travelled,value,cash:s.coins,power:s.energy,stress:s.stress});
   }
   trials.push({key,actions:[...actions,{type:'leave'}],samples,depth,
    survival:mean(outcomes.map(o=>Number(o.survived))),floors:mean(outcomes.map(o=>o.travelled)),
    value:mean(outcomes.map(o=>o.value)),cash:mean(outcomes.map(o=>o.cash)),
-   power:mean(outcomes.map(o=>o.power)),stress:mean(outcomes.map(o=>o.stress))});
+   power:mean(outcomes.map(o=>o.power)),stress:mean(outcomes.map(o=>o.stress)),
+   ...(options.captureOutcomes?{sampleOutcomes:outcomes}:{})});
  }
  return trials;
 }

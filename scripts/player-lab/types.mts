@@ -45,7 +45,8 @@ export type Decision = {actions:Action[]; reason:string; alternatives:Array<{act
 export type PolicyName = 'novice'|'merchant'|'explorer'|'minimalist'|'planner'|'opportunist'|'investor'|'operator'|'allocator'|'diverse';
 export type ShopStyle = 'native' | 'committed' | 'adaptive' | 'joint' | 'joint-long';
 export type InvestmentSample = {floor:number; arrivals:number; rideSum:number; nearLimit:boolean; gross:Record<string,number>};
-export type ShopTrial = {key:string; actions:Action[]; samples:number; depth:number; survival:number; floors:number; value:number; cash:number; power:number; stress:number};
+export type ShopTrial = {key:string; actions:Action[]; samples:number; depth:number; survival:number; floors:number; value:number; cash:number; power:number; stress:number;
+ sampleOutcomes?:Array<{sample:number;survived:boolean;travelled:number;value:number;cash:number;power:number;stress:number}>};
 export type PreviewService = {
   controlBudget?(actions:Action[]):number|null;
   jointShop?(samples?:number,depth?:10|20):ShopTrial[];

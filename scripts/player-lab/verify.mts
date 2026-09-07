@@ -7,7 +7,7 @@ import {Session,Names,observe,previewWorld,applyPlan,clone,replay,features} from
 import {serviceFor,enumerate,planningSeed,shopInvestmentRoom,restrictIntake,jointShopTrials,type JointContinuationOptions} from './search.mts';
 import {Player,score,gapOpportunityCount,departureActionKey,cappedFlywheelValue} from './policies.mts';
 import {controlBudget} from './control-budget.mts';
-import {flagBlock,summarize} from './analytics.mts';
+import {flagBlock,summarize,lastShopLiquidity} from './analytics.mts';
 import {runOne} from './run.mts';
 import * as fixtures from './fixtures.mts';
 import {hash,rngFor,quantile} from './util.mts';
@@ -19,6 +19,18 @@ import {guidedOpening} from './opening.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('death liquidity separates last-shop cash from post-shop net earnings',()=>{
+  const o=new Session(831).observation();
+  const exit={...o,floor:30,coins:1,energy:46},final={...o,floor:39,coins:149,energy:-2};
+  const shops=[{entry:{...o,floor:30,coins:113,energy:2},exit}];
+  const before=hash(shops),d=lastShopLiquidity(shops,final)!;
+  assert.equal(d.netCoinsSinceExit,148);assert.equal(d.affordableExtraCharge,0);assert.equal(hash(shops),before);
+  assert.equal(lastShopLiquidity([],final),null);
+  assert.equal(lastShopLiquidity([{entry:o,exit:{...exit,coins:100,energy:59}}],final)!.affordableExtraCharge,1);
+  assert.equal(lastShopLiquidity([{entry:o,exit:{...exit,coins:21,energy:40}}],final)!.affordableExtraCharge,10);
+  assert.equal(lastShopLiquidity([{entry:o,exit:{...exit,coins:200}}],final)!.netCoinsSinceExit,-51);
+  assert.equal(lastShopLiquidity([{entry:o,exit:{...exit,floor:40}}],final),null);
+ });
  test('sector-capped flywheel shares allowance across settlement, forecast and investment budget',()=>{
   const saved={...S.SHOP_TUNING};try{
    S.SHOP_TUNING.bufferFlywheel=2;S.SHOP_TUNING.bufferFlywheelSectorCap=4;
@@ -83,6 +95,10 @@ export function verify(){
   const focused=jointShopTrials(w,new Names(),1,10,'greedy',[],['rails']);
   assert.deepEqual(focused,all.filter(t=>t.key==='none'||t.key==='rails'));
   assert(focused.some(t=>t.key==='none'));assert(focused.some(t=>t.key==='rails'));
+  const detailed=jointShopTrials(w,new Names(),1,10,'greedy',[],['rails'],{captureOutcomes:true});
+  assert.deepEqual(detailed.map(({sampleOutcomes,...aggregate})=>aggregate),focused);
+  for(const trial of detailed){const outcomes=trial.sampleOutcomes!;assert.equal(outcomes.length,1);assert.equal(outcomes[0].sample,0);assert.equal(Number(outcomes[0].survived),trial.survival);assert.equal(outcomes[0].value,trial.value);}
+  assert(focused.every(t=>t.sampleOutcomes===undefined));
   assert.equal(hash(w),before);
  });
  test('experimental Express4 changes only four-stop eligibility and leaves short trips intact',()=>{

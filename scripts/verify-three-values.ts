@@ -52,7 +52,7 @@ for(let i=0;i<4000;i++){
   transitions++;
 }
 const ui=readFileSync(new URL('../components/elevator-game.tsx',import.meta.url),'utf8');
-assert.ok(ui.includes('本班失败'));assert.ok(ui.includes('至少接1人'));assert.ok(!ui.includes('人物躁动 ×2'));assert.ok(!ui.includes('空驶休整'));
+assert.ok(ui.includes('本班结束')&&ui.includes('result-details'),'compact ending preserves expandable diagnostics');assert.ok(ui.includes('至少接1人'));assert.ok(!ui.includes('人物躁动 ×2'));assert.ok(!ui.includes('空驶休整'));
 assert.ok(ui.includes('energyPreview.lowDelta <= 0'),'fatal energy warning must use the worst-case forecast');
 assert.ok(ui.includes('positiveEnergySummary'),'arrival feedback must preserve positive recharge sources');
 console.log(JSON.stringify({version:'v8.32',transitions,threeValues:true,deterministicAgitation:true,mandatoryRider:true,courierRecharge:true,arrivalReliefCap:2}));

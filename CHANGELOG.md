@@ -1,6 +1,14 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.37**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.38**. Publication status is tracked separately from the source version.
+
+## v8.38 — 2026-09-07 — A clearer ending / 充电与结算精简
+
+- Charging defaults to current power + floor(wallet / 2), capped at capacity; no automatic spending. Refresh after wallet/power changes, retain manual dragging. 充电仍为2金币/电，不改数值平衡。
+- End screen focuses on floor, cause, record and restart; expandable diagnosis and accounts. 失败页移除重复叙述，详细收支与死因仍可查看。
+- Include prior verified candidate layout, departure feedback, cabin name/risk/metrics and English text fixes; candidates right, cabin center. No gameplay parameter changes.
+- Muted browser:12 charging defaults,12 failure layouts, Chinese/English, desktop/narrow, three death causes; expandable details and restart. Type check, rules and build pass.
+- Prior128 frozen synthetic runs and full79-floor browser run retained; simulation evidence improved. Long-run and role/item value gaps remain; not a declaration of balance. 完整中英文记录见游戏内更新。
 
 ## v8.37 — 2026-09-07 — Public playtest checkpoint / 公开试玩，不是平衡完成
 

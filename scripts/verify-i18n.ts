@@ -1,10 +1,36 @@
 import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import { cooperationLabel } from '../lib/cooperation-label';
+import { compactRelationText } from '../lib/card-relation-text';
+import { arrivalFare } from '../lib/game-engine';
+import { bondStatus } from '../lib/rider-profile';
 import { CHANGELOG_EN } from '../lib/changelog';
 import { initialRun, type Rider } from '../lib/game-engine';
 import { PASSENGERS, PASSENGER_ORDER, UPGRADES } from '../lib/game-data';
 import { I18N_CORE_SAMPLES, translateGameText } from '../lib/i18n';
 import { planPlacement } from '../lib/game-interaction';
 import { PASSENGER_RULES, SHARED_SAVING_RULE, passengerBrief, passengerCardRules, passengerCardSections, passengerFace } from '../lib/passenger-presentation';
+
+assert.equal(compactRelationText('Each ascent costs 1 extra power'), '+1 power/floor');
+assert.equal(compactRelationText('Each ascent immediately −2'), '−2 coins/floor');
+assert.equal(compactRelationText('Each ascent +1 agitation'), '+1 agitation/floor');
+assert.equal(compactRelationText('Both use ×2 power per floor'), 'Both: power ×2');
+assert.equal(compactRelationText('Own arrival +1 coins/person'), 'Own arrival +1 coins/neighbor');
+assert.equal(compactRelationText('到站补充2电'), '到站补充2电');
+assert.equal(translateGameText('照顾 2/2 · 有人照顾', 'en'), 'Care 2/2 · Cared for');
+assert.equal(translateGameText('签章 · 到站+8币', 'en'), 'Stamped · +8 on arrival');
+assert.equal(translateGameText('同层按1→6号位', 'en'), 'Same floor: seats 1→6');
+assert.equal(translateGameText('金币不足', 'en'), 'Not enough coins');
+for (const count of [1, 2, 3]) for (const bonus of [1, 3]) {
+ const commuter:Rider={kind:'commuter',id:'label-commuter',destination:5,boardedAt:1,patience:0,fareBonus:0};
+ const cabin:Array<Rider|null>=[null,commuter,null,null,null,null];
+ for(const slot of [0,2,4].slice(0,count)) cabin[slot]={...commuter,kind:'courier',id:`label-courier-${slot}`};
+ const support=bondStatus(commuter,cabin,1).supportCount;
+ assert.equal(support,count);
+ assert.equal(arrivalFare(commuter,cabin,1,bonus)-arrivalFare(commuter,cabin,1,0),count*bonus);
+ assert.equal(cooperationLabel(support,bonus),`协作邻座 ×${count} · 到站合计+${count*bonus}币`);
+ assert.equal(translateGameText(cooperationLabel(support,bonus),'en'),`Linked neighbors ×${count} · +${count*bonus} total on arrival`);
+}
 
 if(!translateGameText(PASSENGERS.bomb.detail,'en').startsWith('Use the displayed base fare;'))throw Error('Bomb detail must use the card fare, including local tickets');
 for(const [ratio,fare] of [[1,14],[.5,7]]){
@@ -13,6 +39,9 @@ for(const [ratio,fare] of [[1,14],[.5,7]]){
 }
 
 const dynamicSamples = [
+  '通勤者与邻座联动已生效。',
+  '协作邻座 ×3 · 到站合计+9币',
+  '等待邻座 · 每位到站+2币',
   '商店舒缓 −1 躁动，支付 8 金币。',
   '商店舒缓 −6 躁动，支付 48 金币。',
   '修复至上限以下 · 24 金币',
