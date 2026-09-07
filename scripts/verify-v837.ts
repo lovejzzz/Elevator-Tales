@@ -73,11 +73,21 @@ test('buffer stores genuine overflow then releases it once; purchased charging c
  assert.equal(out.energy,60);assert.equal(out.bufferPower,2);assert.equal(energyForecast(next).lowDelta,0);
  const shop={...s,status:'upgrade' as const,energy:58,coins:100};assert.equal(E.chargeBattery(shop,2).bufferPower,undefined);
 });
-test('soundproof cancels only ordinary red-link agitation',()=>{
+test('soundproof preserves ordinary protection and adds conditional criminal-link protection',()=>{
+ assert.equal(S.SHOP_TUNING.soundproofRisk,true);assert.equal(E.UPGRADE_BASE_PRICES.soundproof,24);
  const s={...E.initialRun(),cabin:[rider('ghost'),rider('nurse'),null,null,null,null]};
  const n=E.resolveFloor({...s,upgrades:{...s.upgrades,soundproof:1}},()=>.99);assert.equal(n.stress,0);
  const bad={...s,cabin:[rider('thief'),rider('drunk'),null,null,null,null]};
  assert.equal(E.resolveFloor(bad,()=>.99).stress,E.resolveFloor({...bad,upgrades:{...bad.upgrades,soundproof:1}},()=>.99).stress);
+ for(const stress of [3,5,7]){
+  const unprotected={...bad,stress},protectedState={...unprotected,upgrades:{...bad.upgrades,soundproof:1}};
+  assert.equal(E.redAgitationProtection(protectedState),1);
+  assert.equal(E.resolveFloor(unprotected,()=>.99).stress-E.resolveFloor(protectedState,()=>.99).stress,1);
+ }
+ const quiet={...s,stress:5,upgrades:{...s.upgrades,soundproof:1},cabin:[rider('commuter'),null,null,null,null,null]};
+ assert.equal(E.redAgitationProtection(quiet),0);assert.equal(E.resolveFloor(quiet,()=>.99).stress,5);
+ const solo={...quiet,cabin:[rider('thief','solo',{volatile:true}),null,null,null,null,null]};assert.equal(E.redAgitationProtection(solo),0);
+ assert(!/[\u3400-\u9fff]/.test(translateGameText(D.UPGRADES.soundproof.description,'en')));
 });
 test('retiming is once per sector, retains fare/fuse and survives undo/reboarding',()=>{
  let s={...E.initialRun(),floor:31,upgrades:{...E.EMPTY_UPGRADES,retime:1},cabin:[rider('bomb','b',{boardedAt:31,destination:33,fuse:3}),null,null,null,null,null]};

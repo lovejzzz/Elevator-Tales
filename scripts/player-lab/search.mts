@@ -16,7 +16,7 @@ export function planningSeed(o:Observation):number {
  };
  const {schema:_schema,version:_version,receipt:_receipt,bufferGapRule,bufferGapTurns,cabin,offers,shop,...state}=o;
  const mechanics={...state,cabin:cabin.map(rider),offers:offers.map(rider),
-  shop:shop.map(({rule:_rule,...card})=>card),reserved:o.reserved?rider(o.reserved):null,
+  shop:shop.map(({rule:_rule,flywheelSectorCap:_prospectiveCap,...card})=>card),reserved:o.reserved?rider(o.reserved):null,
   ...(o.installed.includes('buffer')&&bufferGapRule?{bufferGapRule,bufferGapTurns:bufferGapTurns??0}:{})};
  return seedFor(JSON.stringify(mechanics)+'/planning-v2');
 }
@@ -233,7 +233,8 @@ export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,
  }
  return trials;
 }
-export function serviceFor(base:World,names:Names,options:{boardingHorizon?:'fixed'|'next-shop';excludedIntake?:readonly Rider['kind'][]}={}):PreviewService {
+export function serviceFor(base:World,names:Names,options:{boardingHorizon?:'fixed'|'next-shop'|'shop-bridge';postShopDepth?:3|10;excludedIntake?:readonly Rider['kind'][];onBoardingShop?:(visit:{sample:number;entry:Observation;exit:Observation;actions:Action[]})=>void}={}):PreviewService {
+ if(options.postShopDepth!==undefined&&(options.boardingHorizon!=='shop-bridge'||![3,10].includes(options.postShopDepth)))throw Error('Boarding bridge budget exceeded');
  const excluded=[...(options.excludedIntake??[])];base=restrictIntake(base,excluded);
  // This seed is derived exclusively from redacted, currently visible data.
  const publicSeed=planningSeed(observe(base,names));
@@ -246,18 +247,39 @@ export function serviceFor(base:World,names:Names,options:{boardingHorizon?:'fix
    const placed=applyPlan(base,actions,names);if(!placed)throw Error('Illegal imagined root plan');
    if(!Number.isInteger(depth)||depth<1||depth>5||!Number.isInteger(samples)||samples<1||samples>16)throw Error('Planning budget exceeded');
    const nextShop=options.boardingHorizon==='next-shop';
-   const actualDepth=nextShop?10-base.state.floor%10:depth;
+   const bridge=options.boardingHorizon==='shop-bridge';
+   // Three ascents or the entire next sector; at most twenty ascents. Never
+   // spend at the terminal shop to make the endpoint look healthier.
+   const postShopDepth=options.postShopDepth??3;
+   const actualDepth=bridge?10-base.state.floor%10+postShopDepth:nextShop?10-base.state.floor%10:depth;
    const outcomes=[];
    for(let n=0;n<samples;n++){
     const rng=rngFor(publicSeed+n*1009);let w=beliefWorld(placed,rng),travelled=0,minRoom=w.state.stressCap-w.state.stress;
+    let reachedFirstShop=false,postShopFloors=0;
+    const shopper=bridge?new Player('operator','committed'):null;
+    const bridgeNames=new Names();bridgeNames.register(w);
     const startCoins=w.state.coins;
     for(let t=0;t<actualDepth;t++){
      if(w.state.status!=='playing'||!w.state.cabin.some(Boolean))break;
-     const state=E.resolveFloor(clone(w.state),rng);travelled++;minRoom=Math.min(minRoom,state.stressCap-state.stress);
+     const departure=w;
+     const state=E.resolveFloor(clone(w.state),rng);travelled++;if(reachedFirstShop)postShopFloors++;minRoom=Math.min(minRoom,state.stressCap-state.stress);
      w={state,offers:[]};
-     if(state.status==='lost'||state.status==='upgrade')break;
+     if(shopper){bridgeNames.register(w);shopper.feedback(observe(departure,bridgeNames),observe(w,bridgeNames),investmentSample(departure,w));}
+     if(state.status==='lost')break;
+     if(state.status==='upgrade'){
+      if(!shopper||t+1===actualDepth)break;
+      const entry=observe(w,bridgeNames),decision=shopper.shop(entry,serviceFor(w,bridgeNames,{excludedIntake:excluded}));
+      for(const action of decision.actions){
+       if(action.type==='leave')w={state:E.leaveShop(w.state),offers:[]};
+       else{const next=applyLocal(w,action,bridgeNames);if(!next)throw Error('Illegal boarding bridge shop action '+JSON.stringify(action));w=next;}
+       bridgeNames.register(w);
+      }
+      options.onBoardingShop?.({sample:n,entry,exit:observe(w,bridgeNames),actions:clone(decision.actions)});
+      reachedFirstShop=w.state.status==='playing';
+      if(!reachedFirstShop)break;
+     }
      if(t+1<actualDepth){
-      w=restrictIntake(E.nextOfferBatch(state,rng),excluded);
+      w=restrictIntake(E.nextOfferBatch(w.state,rng),excluded);
       const localNames=new Names();localNames.register(w);
       const next=enumerate(w,localNames,continuation,new Set(),24).plans.sort((a,b)=>score(b,continuation,new Set())-score(a,continuation,new Set()))[0];
       if(next)w=applyPlan(w,next.actions,localNames)!;
@@ -265,12 +287,14 @@ export function serviceFor(base:World,names:Names,options:{boardingHorizon?:'fix
     }
     const s=w.state,repair=Math.max(0,1-s.energy)*E.CHARGE_PRICE+Math.max(0,s.stress-s.stressCap+1)*E.SOOTHE_PRICE;
     const survived=s.status!=='lost'&&(s.status!=='upgrade'||s.coins>=repair);
-    const reachedShop=s.status==='upgrade'&&s.coins>=repair;
-    outcomes.push({survived:nextShop?reachedShop:survived,reachedShop,censored:s.status==='playing',travelled,minRoom,net:s.coins-startCoins,energy:s.energy,stress:s.stress,investmentRoom:survived?shopInvestmentRoom(w):0});
+    const reachedShop=bridge?reachedFirstShop:s.status==='upgrade'&&s.coins>=repair;
+    const postShopSurvived=reachedFirstShop&&postShopFloors===postShopDepth&&survived;
+    outcomes.push({survived:bridge?postShopSurvived:nextShop?reachedShop:survived,reachedShop,postShopSurvived,postShopFloors,censored:s.status==='playing',travelled,minRoom,net:s.coins-startCoins,energy:s.energy,stress:s.stress,investmentRoom:survived?shopInvestmentRoom(w):0});
    }
    return {samples,depth:actualDepth,survivalFraction:mean(outcomes.map(v=>Number(v.survived))),shopArrivalFraction:mean(outcomes.map(v=>Number(v.reachedShop))),censoredFraction:mean(outcomes.map(v=>Number(v.censored))),minStressRoom:Math.min(...outcomes.map(v=>v.minRoom)),
+    ...(bridge?{postShopSurvivalFraction:mean(outcomes.map(v=>Number(v.postShopSurvived))),meanPostShopFloors:mean(outcomes.map(v=>v.postShopFloors))}:{}),
     meanFloors:mean(outcomes.map(v=>v.travelled)),meanNetCash:mean(outcomes.map(v=>v.net)),meanEnergy:mean(outcomes.map(v=>v.energy)),meanStress:mean(outcomes.map(v=>v.stress)),meanInvestmentRoom:mean(outcomes.map(v=>v.investmentRoom)),
-    hypothesis:`Independent sampled futures; ${continuation} reactive continuation; ${nextShop?'survival means reaching next shop and affording minimum repair':'fixed-depth survival may be censored before next shop'}. Not actual future / exhaustive survival probability.`};
+    hypothesis:`Independent sampled futures; ${continuation} reactive continuation; ${bridge?`operator paid shopping with simulated-only history; survival means ${postShopDepth===10?'reaching the following shop and affording minimum repair':'three ascents after first shop, still censored before the following shop'}`:nextShop?'survival means reaching next shop and affording minimum repair':'fixed-depth survival may be censored before next shop'}. Not actual future / exhaustive survival probability.`};
   }
  };
 }

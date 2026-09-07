@@ -2,7 +2,7 @@ import { BONDS, bondStatus, conflictLinks, profileWeight, randomTraits, riderPro
 import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
 import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, type PassengerKind, type UpgradeKey } from './game-data';
 import { agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
-import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome, flywheelSaving } from './shop-effects';
+import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome, flywheelSaving, consumeFlywheel } from './shop-effects';
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
 
@@ -23,6 +23,8 @@ export type RunState = {
   reservedIds?: string[];
   bufferPower?: number;
   bufferGapTurns?: number;
+  flywheelSector?: number;
+  flywheelSpent?: number;
   retimeUsedSector?: number;
   rebooked?: Record<string,number>;
   punchCount?: number;
@@ -45,7 +47,10 @@ export function settleBuffer(raw:number,cap:number,stored:number,enabled:boolean
   const captured=enabled?Math.min(4-stored,Math.max(0,raw-cap)):0;
   return {energy:Math.min(cap,raw+released),stored:enabled?stored-released+captured:0,released,captured};
 }
-export const redAgitationProtection=(state:RunState)=>state.upgrades.soundproof?Math.min(1,conflictLinks(state.cabin).filter(l=>l.effect==='agitation').length):0;
+export const redAgitationProtection=(state:RunState)=>state.upgrades.soundproof
+ ? Math.min(1,conflictLinks(state.cabin).filter(l=>l.effect==='agitation').length)
+   +Number(SHOP_TUNING.soundproofRisk&&agitationBand(state.stress)!=='low'&&riskPartnerships(state.cabin).agitation>0)
+ :0;
 export const oldMovesRemaining = (state:RunState) => Math.max(0,1+Number(Boolean(state.upgrades.rails))-(state.oldMovesUsed ?? Number(state.swapped)));
 export function useCalmCharge(state:RunState):RunState {
   if(!state.calmCharge||!state.upgrades.calm||state.status==='lost'||state.stress<=0)return state;
@@ -217,7 +222,7 @@ export function energyBreakdown(state: RunState) {
   });
   const multiplied=riderCosts.reduce((sum,rider)=>sum+rider.extra,0);
   const conflict=flat+multiplied;
-  const conflictProtection=state.upgrades.insulation ? Math.min(1,flat) : 0;
+  const conflictProtection=state.upgrades.insulation ? Math.min(SHOP_TUNING.insulationBroad?2:1,SHOP_TUNING.insulationBroad?conflict:flat) : 0;
   return {motor,people,stabilizer,shared,service,conflict,conflictProtection,riderCosts,saved:stabilizer+shared+service+conflictProtection,total:motor+people+conflict-stabilizer-shared-service-conflictProtection};
 }
 export const totalEnergyCost = (state: RunState) => energyBreakdown(state).total;
@@ -432,6 +437,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const drawn=status==='upgrade'?drawUpgradeOffer(state.upgrades,state.shopSeen??[],rng,nextFloor):{keys:[],seen:state.shopSeen};
   const shop = drawn.keys.map(key=>({key,price:upgradePrice(key,nextFloor,state.upgrades[key]),purchased:false}));
   if(SHOP_TUNING.bufferGap)state={...state,bufferGapTurns:gapCharge.progress};
+  state=consumeFlywheel(state,flywheel);
   return { ...state, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
 }
 

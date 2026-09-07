@@ -12,12 +12,14 @@ export type PublicRider = {
 export type Observation = {
   relayReliable?:true;
   flywheelPower?:number;
+  flywheelSectorCap?:number;
+  flywheelRemaining?:number;
   bufferGapTurns?:number;
   bufferGapRule?:{turns:number;energy:number};
   schema:2; version:string; floor:number; phase:'playing'|'upgrade'|'lost';
   energy:number; energyCap:number; stress:number; stressCap:number; coins:number;
   reserved?:PublicRider|null; bufferPower?:number; punchCount?:number; retimeAvailable?:boolean; oldMovesRemaining?:number; calmCharge?:boolean; reservationAvailable?:boolean; oldMoveUsed:boolean; failureCause:'bomb'|'energy'|'agitation'|null; cabin:Array<PublicRider|null>; offers:PublicRider[];
-  installed:string[]; shop:Array<{key:string; price:number; rule:string;effect:{energyCap:number;stressCap:number;energy:number;stress:number}}>;
+  installed:string[]; shop:Array<{key:string; price:number; rule:string;flywheelSectorCap?:number;effect:{energyCap:number;stressCap:number;energy:number;stress:number}}>;
   prices:{charge:number; soothe:number;reserve:number}; nextShop:number;
   agitationBand:'low'|'medium'|'high'; serviceTurns:number; reserveCell:boolean; reserveCharge:number;
   arrivalReliefCap:number;
@@ -36,6 +38,7 @@ export type Preview = {actions:Action[]; observation:Observation; features:Featu
   safety:{resourceSafe:boolean; bombSafe:boolean; shopWindow:boolean};
 };
 export type Rollout = {samples:number; depth:number; survivalFraction:number; shopArrivalFraction?:number; censoredFraction?:number; minStressRoom:number;
+  postShopSurvivalFraction?:number; meanPostShopFloors?:number;
   meanFloors:number; meanNetCash:number; meanEnergy:number; meanStress:number; meanInvestmentRoom?:number; hypothesis:string};
 export type Decision = {actions:Action[]; reason:string; alternatives:Array<{actions:Action[];score:number;safety:Preview['safety']}>;
   diagnostics:{enumerated:number; sampledSafePlans:number; horizon:Rollout|null; knowledge:string[]}};

@@ -3,6 +3,10 @@ import type {Preview,Observation,PolicyName,PreviewService,Decision,Action,ShopS
 // preview service. These are behavioral hypotheses, not calibrated humans.
 export const POLICIES:PolicyName[]=['novice','merchant','explorer','minimalist','planner','opportunist','investor','operator','allocator','diverse'];
 export const departureActionKey=(actions:readonly Action[])=>JSON.stringify(actions.filter(a=>a.type!=='reserve-offer'));
+export function cappedFlywheelValue(history:ReadonlyArray<InvestmentSample>,cap:number,price:number){
+ const sectors=new Map<number,number>();for(const sample of history){const sector=Math.floor(sample.floor/10);sectors.set(sector,Math.min(cap*price,(sectors.get(sector)??0)+Math.max(0,sample.gross.buffer??0)));}
+ return [...sectors.values()].reduce((a,b)=>a+b,0);
+}
 export function gapOpportunityCount(history:ReadonlyArray<Pick<InvestmentSample,'arrivals'>>,required:number):number {
  let progress=0,triggers=0;
  for(const sample of history){if(sample.arrivals){if(progress>=required)triggers++;progress=0;}else progress=Math.min(required,progress+1);}
@@ -188,6 +192,7 @@ export class Player {
      // Public observed delivery gaps, not overflow history or real future offers.
      // Start each rolling window unarmed: no invented progress before its first sample.
      if(card.key==='buffer'&&o.bufferGapRule)gross=steps?gapOpportunityCount(history,o.bufferGapRule.turns)/steps*horizon*o.bufferGapRule.energy*o.prices.charge:0;
+     if(card.key==='buffer'&&card.flywheelSectorCap)gross=steps?cappedFlywheelValue(history,card.flywheelSectorCap,o.prices.charge)/steps*horizon:0;
      // Capacity has no income; value it only when it uniquely lets the current
      // public commitment fit. Other long-term capacity uses remain unmodelled.
      if(card.key==='capacity')gross=prefix+2>energyCap&&prefix+2<=energyCap+card.effect.energyCap?card.price+(prefix+2-energyCap)*o.prices.charge:0;

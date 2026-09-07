@@ -8,12 +8,21 @@ export const RELAY_ENERGY = 4;
 export const CROWD_MINIMUM = 4;
 export const CROWD_COINS = 3;
 export const METER_START = 5;
-export const SHOP_TUNING={bufferBoost:0,finaleRemaining:1,bufferGap:0,bufferGapEnergy:4,bufferFlywheel:0,relayReliable:false,expressMinimum:5};
+export const SHOP_TUNING={bufferBoost:0,finaleRemaining:1,bufferGap:0,bufferGapEnergy:4,bufferFlywheel:0,bufferFlywheelSectorCap:0,relayReliable:false,expressMinimum:5,insulationBroad:false,soundproofRisk:true};
+export function flywheelAllowance(state:RunState) {
+ const cap=SHOP_TUNING.bufferFlywheelSectorCap;
+ return cap>0?Math.max(0,cap-(state.flywheelSector===Math.floor(state.floor/10)?state.flywheelSpent??0:0)):Infinity;
+}
+export function consumeFlywheel(state:RunState,saved:number):RunState {
+ if(!state.upgrades.buffer||!SHOP_TUNING.bufferFlywheel||!SHOP_TUNING.bufferFlywheelSectorCap)return state;
+ const sector=Math.floor(state.floor/10),spent=state.flywheelSector===sector?state.flywheelSpent??0:0;
+ return {...state,flywheelSector:sector,flywheelSpent:spent+Math.max(0,Math.min(saved,flywheelAllowance(state)))};
+}
 export const relayEnergyBounds=():[number,number]=>SHOP_TUNING.relayReliable?[1,3]:[0,RELAY_ENERGY];
 export const relayExpectedEnergy=()=>{const [low,high]=relayEnergyBounds();return low+(high-low)*RELAY_CHANCE;};
 export function flywheelSaving(state:RunState,arrivals:number,motorHeadroom:number) {
  return state.upgrades.buffer&&SHOP_TUNING.bufferFlywheel&&state.cabin.filter(Boolean).length>=2&&arrivals===0
-  ? Math.max(0,Math.min(SHOP_TUNING.bufferFlywheel,motorHeadroom)):0;
+  ? Math.max(0,Math.min(SHOP_TUNING.bufferFlywheel,motorHeadroom,flywheelAllowance(state))):0;
 }
 export function deliveryGapCharge(state:RunState,arrivals:number) {
  const gap=SHOP_TUNING.bufferGap;

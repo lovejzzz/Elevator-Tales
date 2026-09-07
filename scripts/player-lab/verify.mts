@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
+import type {Action} from './types.mts';
 import {readFileSync} from 'node:fs';
 import {E,F,B,S,R,D,I,P,GAME_ROOT,type Rider,type RunState} from './game.mts';
 import {configureScenario,scenarioRecord} from './scenarios.mts';
 import {Session,Names,observe,previewWorld,applyPlan,clone,replay,features} from './runtime.mts';
 import {serviceFor,enumerate,planningSeed,shopInvestmentRoom,restrictIntake,jointShopTrials,type JointContinuationOptions} from './search.mts';
-import {Player,score,gapOpportunityCount,departureActionKey} from './policies.mts';
+import {Player,score,gapOpportunityCount,departureActionKey,cappedFlywheelValue} from './policies.mts';
 import {controlBudget} from './control-budget.mts';
 import {flagBlock,summarize} from './analytics.mts';
 import {runOne} from './run.mts';
@@ -18,6 +19,41 @@ import {guidedOpening} from './opening.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('sector-capped flywheel shares allowance across settlement, forecast and investment budget',()=>{
+  const saved={...S.SHOP_TUNING};try{
+   S.SHOP_TUNING.bufferFlywheel=2;S.SHOP_TUNING.bufferFlywheelSectorCap=4;
+   const initial={...E.initialRun(),floor:10,energy:60,bufferPower:4};initial.upgrades.buffer=1;initial.cabin[0]=fixtures.rider('commuter','a',10,30);initial.cabin[1]=fixtures.rider('commuter','b',10,30);
+   let state=initial as RunState;const earned=[];
+   for(let i=0;i<3;i++){const before=hash(state),forecast=F.energyForecast(state),next=E.resolveFloor(state,()=>.9);earned.push(next.lastEnergy.sources.find(x=>x.label==='飞轮运转节能（实验）')?.amount??0);assert(next.lastEnergy.delta>=forecast.lowDelta&&next.lastEnergy.delta<=forecast.highDelta);assert.equal(hash(state),before);assert.equal(next.bufferPower,0);state=next;}
+   assert.deepEqual(earned,[2,2,0]);assert.equal(S.flywheelAllowance(state),0);
+   const boundary=E.resolveFloor({...state,floor:19,energy:60},()=>.9);assert.equal(boundary.floor,20);assert.equal(S.flywheelAllowance(boundary),4);
+   const ids=new Names(),w={state,offers:[]},o=observe(w,ids);assert.equal(o.flywheelRemaining,0);
+   assert.notEqual(planningSeed(o),planningSeed({...o,flywheelRemaining:1}));
+   const capped=features({state:initial,offers:[]},0).committedEnergy;S.SHOP_TUNING.bufferFlywheelSectorCap=0;
+   assert(capped>features({state:initial,offers:[]},0).committedEnergy);
+   const history=[10,11,12,20].map(floor=>({floor,arrivals:0,rideSum:0,nearLimit:false,gross:{buffer:4}}));assert.equal(cappedFlywheelValue(history,4,2),12);
+   const empty={state:E.initialRun(),offers:[]},n=new Names(),seed=planningSeed(observe(empty,n));S.SHOP_TUNING.bufferFlywheelSectorCap=4;assert.equal(planningSeed(observe(empty,n)),seed);
+  }finally{Object.assign(S.SHOP_TUNING,saved);}
+ });
+ test('experimental conflict protection is capped, conditional, and shared with forecasts',()=>{
+  const saved={...S.SHOP_TUNING};let broadCases=0,riskCases=0;
+  try{
+   for(const a of Object.keys(D.PASSENGERS))for(const b of Object.keys(D.PASSENGERS))for(const stress of [0,3,5]){
+    const state={...E.initialRun(),floor:22,energy:60,stress};state.cabin[0]=fixtures.rider(a as any,'a',22,4);state.cabin[1]=fixtures.rider(b as any,'b',22,4);state.upgrades.insulation=1;state.upgrades.soundproof=1;
+    S.SHOP_TUNING.insulationBroad=false;S.SHOP_TUNING.soundproofRisk=false;
+    const oldPower=E.energyBreakdown(state).conflictProtection,oldStress=E.redAgitationProtection(state);
+    S.SHOP_TUNING.insulationBroad=true;S.SHOP_TUNING.soundproofRisk=true;
+    const power=E.energyBreakdown(state),protection=E.redAgitationProtection(state);
+    assert(power.conflictProtection>=oldPower&&power.conflictProtection<=2&&power.conflictProtection<=power.conflict);
+    assert(protection>=oldStress&&protection<=oldStress+1);if(stress===0)assert.equal(protection,oldStress);
+    broadCases+=Number(power.conflictProtection>oldPower);riskCases+=Number(protection>oldStress);
+    const forecast=F.stressForecast(state),before=hash(state);
+    for(const roll of [.001,.999]){const next=E.resolveFloor(clone(state),()=>roll);assert(next.lastPressure.delta>=forecast.lowDelta&&next.lastPressure.delta<=forecast.highDelta);}
+    assert.equal(hash(state),before);
+   }
+   assert(broadCases>0&&riskCases>0);
+  }finally{Object.assign(S.SHOP_TUNING,saved);}
+ });
  test('joint continuation can use ordinary future shopping and copy public memory',()=>{
   const w={state:{...E.initialRun(),floor:10,status:'upgrade' as const,coins:500,energy:60},offers:[]};
   const memory={seen:['commuter'],successes:[['commuter',2]] as [string,number][],investmentHistory:[]};
@@ -296,6 +332,36 @@ export function verify(){
    const n=new Names();n.register(w);const service=serviceFor(w,n,{boardingHorizon:'next-shop'});
    assert.equal(service.imagine([],5,1).depth,10-floor%10);
    assert.throws(()=>service.imagine([],6,1),/budget/);assert.throws(()=>service.imagine([],5,17),/budget/);
+  }
+ });
+ test('boarding shop bridge pays real prices, is bounded and redacts hidden traits',()=>{
+  const a=fixtures.sealed(),b=clone(a);b.state.cabin[0]!.traits!.fare=8;
+  const na=new Names(),nb=new Names();na.register(a);nb.register(b);const before=hash(a);
+  const fixed=serviceFor(a,na).imagine([],5,2,'operator');
+  const bridge=serviceFor(a,na,{boardingHorizon:'shop-bridge'}).imagine([],5,2,'operator');
+  assert.deepEqual(bridge,serviceFor(b,nb,{boardingHorizon:'shop-bridge'}).imagine([],5,2,'operator'));
+  const long=serviceFor(a,na,{boardingHorizon:'shop-bridge',postShopDepth:10}).imagine([],5,2,'operator');
+  assert.deepEqual(long,serviceFor(b,nb,{boardingHorizon:'shop-bridge',postShopDepth:10}).imagine([],5,2,'operator'));
+  assert.equal(long.depth,20-a.state.floor%10);assert.equal(long.censoredFraction,0);
+  assert.throws(()=>serviceFor(a,na,{postShopDepth:10}),/budget/);
+  assert.throws(()=>serviceFor(a,na,{boardingHorizon:'shop-bridge',postShopDepth:11 as 10}),/budget/);
+  assert.equal(bridge.depth,13-a.state.floor%10);assert.equal(bridge.survivalFraction,bridge.postShopSurvivalFraction);
+  assert(bridge.meanPostShopFloors!<=3);assert.equal(hash(a),before);
+  assert.deepEqual(fixed,serviceFor(a,na).imagine([],5,2,'operator'));
+  const w=clone(a);w.state.floor=29;w.state.energy=40;w.state.coins=100;w.state.stress=0;
+  w.state.cabin=[fixtures.rider('commuter','bridge-rider',29,10),null,null,null,null,null];w.offers=[];
+  const ids=new Names();ids.register(w);const visits:any[]=[];
+  const r=serviceFor(w,ids,{boardingHorizon:'shop-bridge',onBoardingShop:v=>visits.push(v)}).imagine([],5,2,'operator');
+  assert.equal(visits.length,2);assert.equal(r.depth,4);assert.equal(r.shopArrivalFraction,1);
+  const longVisits:any[]=[];
+  const extended=serviceFor(w,ids,{boardingHorizon:'shop-bridge',postShopDepth:10,onBoardingShop:v=>longVisits.push(v)}).imagine([],5,2,'operator');
+  assert.equal(extended.depth,11);assert.equal(extended.censoredFraction,0);
+  assert.deepEqual(longVisits,visits,'Same initial futures and shopping; no terminal-shop spending');
+  for(const visit of visits){
+   assert.equal(visit.entry.floor,30);assert.equal(visit.exit.phase,'playing');
+   assert(visit.actions.some((a:Action)=>a.type==='leave'));
+   const spent=visit.actions.reduce((sum:number,a:Action)=>sum+(a.type==='charge'?a.units*visit.entry.prices.charge:a.type==='soothe'?a.units*visit.entry.prices.soothe:a.type==='buy'?visit.entry.shop.find((c:any)=>c.key===a.key)!.price:a.type==='buy-reserve'?visit.entry.prices.reserve:0),0);
+   assert.equal(visit.entry.coins-visit.exit.coins,spent);assert(visit.exit.coins>=0);
   }
  });
  test('local ticket experiment preserves packets and RNG, prorating only actual local shortening before Express',()=>{

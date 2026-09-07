@@ -96,7 +96,7 @@ export const UPGRADES: Record<UpgradeKey, { name: string; label: string; descrip
   single: { name: '单站检票器', label: 'SINGLE ARRIVAL', description: '本层恰好1位乘客正常到站，额外赚2金币，每层一次。幽灵延误后判断；请离不触发，不参与倍率。', strategy: '错峰到站', tone: 'score' },
   delay: { name: '延时保险', label: 'LONGER FUSE', description: '30层起出售。以后新出现的炸弹客倒计时+1；不改变路程、不重置旧炸弹。', strategy: '危险窗口', tone: 'control' },
   buffer: { name: '回充缓冲槽', label: 'OVERFLOW CELL', description: '到站回充溢出时暂存最多4电；以后上行结算缺电量时自动补入。不储存金币充电或应急电池。', strategy: '保存回充', tone: 'capacity' },
-  soundproof: { name: '隔音门', label: 'SOUNDPROOF DOOR', description: '每层抵消最多1点普通红线躁动。不抵消人物自身、高危或坏人链接躁动，不降低已有躁动。', strategy: '容忍冲突', tone: 'control' },
+  soundproof: { name: '隔音门', label: 'SOUNDPROOF DOOR', description: '每层抵消最多1点普通红线躁动；关门时为中/高躁动，再抵消最多1点坏人链接躁动。不降低已有躁动，不抵消人物自身或高危躁动。', strategy: '容忍冲突', tone: 'control' },
   retime: { name: '改签印章', label: 'REBOOKING STAMP', description: '每十层一次：选中本层新上客，路程缩短或延长1站，最短1站。车费、倒计时和随机属性不变；撤回不退次数。', strategy: '安排到站', tone: 'tempo' },
   punchcard: { name: '第五张票', label: 'FIFTH RIDER BONUS', description: '每送达第5位乘客，额外获得其基价100%。只算安装后的正常到站；同层按1→6号位计数，不放大其他奖励。', strategy: '安排顺序', tone: 'score' },
   finale: { name: '谢幕礼', label: 'CURTAIN CALL', description: '同层至少2人正常到站，且到站后车内最多剩1人，额外赚6金币，每层一次，不参与倍率。', strategy: '集中到站', tone: 'score' },
