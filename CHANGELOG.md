@@ -1,6 +1,20 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.36**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.37**. Publication status is tracked separately from the source version.
+
+## v8.37 — 2026-09-07 — Public playtest checkpoint / 公开试玩，不是平衡完成
+
+- Published at the player's explicit request from research checkpoint08. Gameplay frozen; only release documentation added. 玩家要求暂停研究公开试玩，完整平衡目标仍未达成。
+- Ability pool10→20, four slots, one purchase/shop, owned abilities excluded. New prices: Rails24, Insulation24, Reservation20, Single24, Longer Fuse24, Flywheel8, Soundproof24, Rebooking24, Fifth Ticket24, Curtain Call24.
+- 滑轨旧客换位1→2/层；绝缘抵最多1红线固定耗电，不抵翻倍/运转；留座每十层保留1人至下一批、不能连续；改签每十层新客±1站、最短1、不重抽或改倒计时。
+- Single:+2 for exactly1arrival. Fifth:100% base every5deliveries, slot1→6 order. Curtain:at least2arrivals and at most1remaining,+6. No dismissal or multiplication of other bonuses.
+- 延时保险30层起售，新炸弹倒计时+1。飞轮至少2人且无人到站，运转省最多2电，十层总上限4，到店重置、不累存/储存回电。隔音抵1普通红线躁动，中/高关门再抵1坏人链接躁动，不抵自身/高危。
+- Safety Margin35:cap+1 and saved manual−2, no automatic reduction. Mixed Ticket24, sold20+:all three categories at departure and a normal arrival,+3. Charge2/power unchanged; Express45,original5+ trips shortened1.
+- 下车人物淡出、名字和本人实际金币显示在门前，整车奖励分开；商店商品/充电布局、使用状态、条件说明调整；驱魔师明确只抵人物耗电。
+- Frozen128 synthetic runs,32/policy, replayed:108energy deaths,12agitation deaths,8alive100;4dual breaches. Above60:10/32,22/32,4/32,0/32. Tail gate fails; not human probabilities. Charge forks include both rescues and earlier losses; stranded cash is not automatically surplus.
+- Express45 paid8pairs:4earlier/4same endpoints; conditional gains and controlled-Ghost early-exit losses covered. No experimental price reductions or new default charging policy adopted.
+- 当前静音浏览器连续至40层，应玩家要求暂停公开；未完整结束，不作人类时长证明。观察到坏人暂存/教练放大/音乐家控场，也有两店放弃升级以充电。
+- Watch:死亡归因、兑现时机、Coach/Courier/Ghost强度、Inspector触发、投资空间、音乐家结算文案；20item/19role、完整实玩和时长验收未完成。Detailed bilingual in-game release record:lib/release-v837.ts.
 
 ## v8.36 — 2026-09-06 — Local trip tradeoffs / 短途也有取舍
 

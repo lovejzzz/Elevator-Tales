@@ -4,6 +4,7 @@ import {V833_EN, V833_ZH} from './release-v833';
 import {V834_EN, V834_ZH} from './release-v834';
 import {V835_EN, V835_ZH} from './release-v835';
 import {V836_EN, V836_ZH} from './release-v836';
+import {V837_EN, V837_ZH} from './release-v837';
 
 export type ChangelogEntry = {
   version: string;
@@ -15,9 +16,10 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '8.36';
+export const GAME_VERSION = '8.37';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  V837_ZH,
   V836_ZH,
   V835_ZH,
   V834_ZH,
@@ -570,6 +572,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  V837_EN,
   V836_EN,
   V835_EN,
   V834_EN,
