@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import {E,F,B,S,R,D,I,P,GAME_ROOT,type Rider,type RunState} from './game.mts';
 import {configureScenario,scenarioRecord} from './scenarios.mts';
 import {Session,Names,observe,previewWorld,applyPlan,clone,replay,features} from './runtime.mts';
-import {serviceFor,enumerate,planningSeed,shopInvestmentRoom,restrictIntake} from './search.mts';
+import {serviceFor,enumerate,planningSeed,shopInvestmentRoom,restrictIntake,jointShopTrials,type JointContinuationOptions} from './search.mts';
 import {Player,score,gapOpportunityCount,departureActionKey} from './policies.mts';
 import {controlBudget} from './control-budget.mts';
 import {flagBlock,summarize} from './analytics.mts';
@@ -18,6 +18,37 @@ import {guidedOpening} from './opening.mts';
 export function verify(){
  const checks:string[]=[];
  const test=(name:string,fn:()=>void)=>{fn();checks.push(name);};
+ test('joint continuation can use ordinary future shopping and copy public memory',()=>{
+  const w={state:{...E.initialRun(),floor:10,status:'upgrade' as const,coins:500,energy:60},offers:[]};
+  const memory={seen:['commuter'],successes:[['commuter',2]] as [string,number][],investmentHistory:[]};
+  const before=hash({w,memory}),visits:Parameters<NonNullable<JointContinuationOptions['onFutureShop']>>[0][]=[];
+  assert.throws(()=>jointShopTrials(w,new Names(),1,20,'greedy',[],[],{futurePurchases:true}),/reactive/);
+  const result=jointShopTrials(w,new Names(),1,20,'opportunist',[],[],{futurePurchases:true,memory,onFutureShop:v=>visits.push(v)});
+  assert(result.length>0&&visits.length>0);
+  assert(visits.every(v=>v.entry.phase==='upgrade'&&v.actions.some(a=>a.type==='leave')));
+  assert(visits.some(v=>v.actions.some(a=>a.type==='buy')));
+  assert.equal(hash({w,memory}),before);
+ });
+ test('read-only feature fast path accepts frozen states and still masks reserved Mystery fares',()=>{
+  const freeze=(value:any):any=>{if(value&&typeof value==='object'&&!Object.isFrozen(value)){Object.freeze(value);for(const child of Object.values(value))freeze(child);}return value;};
+  for(const w of [fixtures.rescueWindow(),fixtures.bombReplacement(),fixtures.sixSeats(),fixtures.appetite(),fixtures.careExpiry(),fixtures.sealed()]){
+   const expected=features(clone(w),w.state.coins),before=hash(w);freeze(w);
+   assert.deepEqual(features(w,w.state.coins),expected);assert.equal(hash(w),before);
+  }
+  const w=fixtures.sealed();w.state.reservedRider=w.state.cabin[0]!;w.state.cabin[0]=fixtures.rider('commuter','visible',42,1);
+  const low=clone(w),high=clone(w);low.state.reservedRider!.traits!.fare=8;high.state.reservedRider!.traits!.fare=24;
+  assert.deepEqual(features(freeze(low),low.state.coins),features(freeze(high),high.state.coins));
+ });
+ test('focused purchase trials preserve full-shop seeds and the no-buy control',()=>{
+  const state={...E.initialRun(),floor:10,status:'upgrade' as const,coins:100,energy:40,
+   shop:[{key:'rails' as const,price:24,purchased:false},{key:'tipjar' as const,price:22,purchased:false}]};
+  const w={state,offers:[]},before=hash(w);
+  const all=jointShopTrials(w,new Names(),1,10,'greedy');
+  const focused=jointShopTrials(w,new Names(),1,10,'greedy',[],['rails']);
+  assert.deepEqual(focused,all.filter(t=>t.key==='none'||t.key==='rails'));
+  assert(focused.some(t=>t.key==='none'));assert(focused.some(t=>t.key==='rails'));
+  assert.equal(hash(w),before);
+ });
  test('experimental Express4 changes only four-stop eligibility and leaves short trips intact',()=>{
   const old={...S.SHOP_TUNING};try{
    for(const minimum of [4,5]){S.SHOP_TUNING.expressMinimum=minimum;

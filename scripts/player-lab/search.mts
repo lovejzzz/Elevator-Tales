@@ -2,6 +2,7 @@ import {E,R,type Rider} from './game.mts';
 import {Names,applyLocal,applyPlan,previewWorld,features,observe,believed,clone,type World} from './runtime.mts';
 import {score,Player} from './policies.mts';
 import {controlBudget} from './control-budget.mts';
+import {investmentSample} from './investment-study.mts';
 import {rngFor,seedFor,mean} from './util.mts';
 import type {Action,Observation,PublicRider,Preview,PreviewService,PolicyName,Rollout} from './types.mts';
 
@@ -136,12 +137,20 @@ export function restrictIntake(w:World,excluded:readonly Rider['kind'][]=[]):Wor
  if(!excluded.length)return w;
  return {...w,offers:w.offers.filter(r=>!excluded.includes(r.kind)||w.state.cabin.some(p=>p?.id===r.id))};
 }
-export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,continuation:'greedy'|'operator'|'diverse'='greedy',excluded:readonly Rider['kind'][]=[]):import('./types.mts').ShopTrial[] {
+export type JointContinuationOptions={
+ futurePurchases?:boolean;
+ memory?:{seen:readonly string[];successes:ReadonlyArray<readonly [string,number]>;investmentHistory:readonly import('./types.mts').InvestmentSample[]};
+ onFutureShop?:(visit:{sample:number;key:string;entry:Observation;exit:Observation;actions:Action[]})=>void;
+};
+export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,continuation:'greedy'|'operator'|'diverse'|'opportunist'='greedy',excluded:readonly Rider['kind'][]=[],includedKeys?:readonly string[],options:JointContinuationOptions={}):import('./types.mts').ShopTrial[] {
  if(base.state.status!=='upgrade')throw Error('Joint shopping requires shop state');
  if(!Number.isInteger(samples)||samples<1||samples>16)throw Error('Joint sample budget exceeded');
  if(![10,20].includes(depth))throw Error('Joint horizon budget exceeded');
+ if(options.futurePurchases&&continuation==='greedy')throw Error('Future purchasing requires a reactive shop policy');
  const seed=planningSeed(observe(base,names)),trials:import('./types.mts').ShopTrial[]=[];
- const keys=['none',...E.availableShopCards(base.state).map(c=>c.key)];
+ // A focused study retains the full visible shop in the planning seed. It
+ // filters evaluated purchases only; never remove the paid no-buy control.
+ const keys=['none',...E.availableShopCards(base.state).map(c=>c.key).filter(key=>!includedKeys||includedKeys.includes(key))];
  for(const key of keys)for(const budget of ['fifty','full','minimum','commitment','reserve'] as const){
   let root=clone(base);const actions:Action[]=[];
   const act=(a:Action)=>{const n=applyLocal(root,a,names);if(!n)return false;root=n;actions.push(a);return true;};
@@ -162,6 +171,11 @@ export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,
    let w=beliefWorld({state:left,offers:[]},stream('belief',left.floor)),travelled=0;
    w=restrictIntake(E.nextOfferBatch(w.state,stream('offers',w.state.floor)),excluded);
    const reactive=continuation==='greedy'?null:new Player(continuation,'committed');
+   if(reactive&&options.memory){
+    for(const kind of options.memory.seen)reactive.seen.add(kind);
+    for(const [kind,n] of options.memory.successes)reactive.successes.set(kind,n);
+    reactive.investmentHistory.push(...clone(options.memory.investmentHistory));
+   }
    const persistentNames=new Names();persistentNames.register(w);
    for(let step=0;step<depth&&w.state.status==='playing';step++){
     const ids=reactive?persistentNames:new Names();ids.register(w);
@@ -170,13 +184,28 @@ export function jointShopTrials(base:World,names:Names,samples=4,depth:10|20=10,
      enumerate(w,ids,'diverse',new Set(),72).plans.sort((a,b)=>score(b,'operator',new Set())-score(a,'operator',new Set()))[0];
     if(!best)break;
     w=applyPlan(w,best.actions,ids)!;
+    const departure=w;
     const next=E.resolveFloor(clone(w.state),stream('settle',w.state.floor));travelled++;
     w=next.status==='playing'?restrictIntake(E.nextOfferBatch(next,stream('offers',next.floor)),excluded):{state:next,offers:[]};
-    if(reactive){ids.register(w);reactive.feedback(beforeObservation,observe(w,ids));}
-    // At the intermediate shop, pay real mandatory repair and charging.
-    // No further ability purchase: isolates the current investment while
-    // retaining its effect on the next packet, budget and ten-floor checkpoint.
+    if(reactive){ids.register(w);reactive.feedback(options.futurePurchases?observe(departure,ids):beforeObservation,observe(w,ids),options.futurePurchases?investmentSample(departure,w):undefined);}
+    // Ordinary future shopping is opt-in for policy calibration. The default
+    // isolates this investment with mandatory repair/charging and no later
+    // permanent purchases, while retaining the next packet and checkpoint.
     if(w.state.status==='upgrade'&&step+1<depth){
+     if(options.futurePurchases&&reactive){
+      const entry=observe(w,ids),decision=reactive.shop(entry,serviceFor(w,ids,{excludedIntake:excluded}));
+      for(const action of decision.actions){
+       if(action.type==='leave'){
+        const left=E.leaveShop(w.state);
+        w=left.status==='playing'?restrictIntake(E.nextOfferBatch(left,stream('offers',left.floor)),excluded):{state:left,offers:[]};
+       }else{
+        const next=applyLocal(w,action,ids);if(!next)throw Error('Illegal future shop action '+JSON.stringify(action));w=next;
+       }
+       ids.register(w);
+      }
+      options.onFutureShop?.({sample,key,entry,exit:observe(w,ids),actions:clone(decision.actions)});
+      continue;
+     }
      let serviced=w.state;
      if(serviced.stress>=serviced.stressCap&&serviced.calmCharge)serviced=E.useCalmCharge(serviced);
      const units=Math.max(0,serviced.stress-serviced.stressCap+1);

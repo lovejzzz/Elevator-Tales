@@ -84,7 +84,11 @@ export function believed(w:World,rng?:()=>number):World {
  return b;
 }
 export function features(w:World,baseCoins:number):Features {
- const s=believed(w).state;let payout=0,fareRate=0,green=0,hidden=0,stateValue=0,pendingRepair=0;
+ // Feature evaluation is read-only. A belief copy is needed only when a
+ // contributing Mystery fare must be masked; unboarded offers are not read
+ // below. Keep the general believed() helper cloning for mutable rollouts.
+ const s=[...w.state.cabin,w.state.reservedRider].some(r=>r?.kind==='mystery')?believed(w).state:w.state;
+ let payout=0,fareRate=0,green=0,hidden=0,stateValue=0,pendingRepair=0;
  for(let slot=0;slot<6;slot++){
   const r=s.cabin[slot];if(!r)continue;
   const worked=E.riderAfterWork(r,s.cabin,slot,s.stress);
