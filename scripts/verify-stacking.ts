@@ -26,12 +26,12 @@ assert.equal(energySavings(mechanics),0,'unfinished Mechanics no longer provide 
 assert.equal(resolveFloor(mechanics,()=>.9).lastEnergy.delta,-4,'three riders plus the motor are paid while the first work step is earned');
 
 const occult=state({cabin:[rider('ghost','g1'),rider('exorcist','e'),rider('ghost','g2'),rider('coach','load1'),rider('tourist','t'),rider('coach','load2')]});
-assert.equal(energySavings(occult),2,'each controlled ghost contributes its own one-point saving');
+assert.equal(energySavings(occult),1,'v9: one Exorcist offsets at most one controlled ghost');
 
 const lovers=state({floor:1,cabin:[rider('lover','l1'),rider('lover','l2',{destination:2}),rider('lover','l3'),null,null,null]});
 const loverResult=resolveFloor(lovers,()=>.9);
 assert.equal(loverResult.lastEarnings.sources.find(line=>line.label==='恋人连携')?.amount??0,0);
-assert.equal(loverResult.lastEarnings.sources.find(line=>line.label==='恋人到站')?.amount,11,'3 base times three, plus two unmultiplied bonds');
+assert.equal(loverResult.lastEarnings.sources.find(line=>line.label==='恋人到站')?.amount,17,'v9: 5 base times three, plus two unmultiplied bonds');
 
 const coaches=state({floor:1,cabin:[rider('coach','c1'),rider('tourist','t',{destination:2}),rider('coach','c2'),null,null,null]});
 assert.equal(resolveFloor(coaches,()=>.9).lastEarnings.sources.find(line=>line.label==='游客到站')?.amount,20,'two coaches linearly double a non-coach base fare');
@@ -47,7 +47,7 @@ const nurseFanout=state({cabin:[agitated('nurse-a'),rider('nurse','nurse'),agita
 assert.deepEqual([0,2,4].map(slot=>riderAgitation(nurseFanout,slot).low),[1,1,1],'one Nurse cancels one point from every adjacent rider');
 
 const inspectors=state({floor:1,cabin:[rider('inspector','i1',{quietStreak:1,destination:2}),rider('inspector','i2',{quietStreak:1,destination:2}),null,null,null,null]});
-assert.equal(resolveFloor(inspectors,()=>.9).lastEarnings.sources.find(line=>line.label==='检查员到站')?.amount,32,'two Inspectors independently finish stamps and pay 8 base +8 bonus each');
+assert.equal(resolveFloor(inspectors,()=>.9).lastEarnings.sources.find(line=>line.label==='检查员到站')?.amount,40,'v9: two Inspectors independently finish stamps and pay 8 base +12 bonus each');
 
 const controlledDrunks=state({floor:1,cabin:[rider('drunk','d1'),rider('nurse','n'),rider('drunk','d2'),null,null,null]});
 assert.equal(resolveFloor(controlledDrunks,()=>.9).lastEarnings.sources.find(line=>line.label==='醉汉安抚')?.amount??0,0,'calming no longer generates travel income');

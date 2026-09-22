@@ -364,6 +364,22 @@ export function riderAfterWork(rider: Rider, cabin: Array<Rider | null>, slot: n
   return next;
 }
 
+/** v9 cabin-wide agitation terms, shared by settlement and the forecast. */
+export function cabinPressureLines(state: RunState): ChangeLine[] {
+  const occupied = state.cabin.filter(Boolean).length, band = agitationBand(state.stress), red = conflictLinks(state.cabin).length;
+  const lines: ChangeLine[] = [];
+  if (occupied >= crowdingThreshold(state.floor + 1)) lines.push({ label: '车厢拥挤', amount: V9_AGITATION.crowding });
+  const noise = motorNoise(boxOf(state), occupied); if (noise) lines.push({ label: '电机噪音', amount: noise });
+  if (legendInCabin(state.cabin, 'don')) lines.push({ label: '教父的威压', amount: LEGEND_RULES.donAgitation });
+  if (legendInCabin(state.cabin, 'matchmaker') && red) lines.push({ label: '月老见不得争吵', amount: red });
+  if (legendInCabin(state.cabin, 'nightingale') && band === 'low') lines.push({ label: '夜莺要气氛', amount: 1 });
+  if (legendInCabin(state.cabin, 'matron')) lines.push({ label: '护士长巡房', amount: -LEGEND_RULES.matronCabinCalm });
+  return lines;
+}
+export const partnershipAgitation = (state: RunState) => { const a = riskPartnerships(state.cabin).agitation; return hasKeepsake(state, 'pocketWatch') ? Math.min(1, a) : a; };
+export const arrivalReliefCapFor = (state: RunState) => AGITATION_RULES.arrivalReliefCap + Number(legendInCabin(state.cabin, 'matron'));
+export const ROUNDS_LOG_SHOP_RELIEF = 3;
+
 export function resolveFloor(state: RunState, rng: () => number = Math.random, fareTuning: FareTuning = {}): RunState {
   if (state.status !== 'playing') return state;
   if (!state.cabin.some(Boolean)) return { ...state, message: '至少接一位乘客才能上行。' };
@@ -411,17 +427,12 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   }
   if(redAgitationProtection(state))adjustPressure('隔音门抵消',-redAgitationProtection(state));
   // v9 cabin-wide agitation: crowding, top-level motor noise and legends.
-  if (occupiedAtDeparture >= crowdingThreshold(nextFloor)) { adjustPressure('车厢拥挤', V9_AGITATION.crowding); stressReasons.push(`车厢拥挤：躁动 +${V9_AGITATION.crowding}`); }
-  if (motorNoise(boxOf(state), occupiedAtDeparture)) adjustPressure('电机噪音', motorNoise(boxOf(state), occupiedAtDeparture));
-  if (legendInCabin(state.cabin,'don')) adjustPressure('教父的威压', LEGEND_RULES.donAgitation);
-  if (legendInCabin(state.cabin,'matchmaker') && redLinks.length) adjustPressure('月老见不得争吵', redLinks.length);
-  if (legendInCabin(state.cabin,'nightingale') && departBand === 'low') adjustPressure('夜莺要气氛', 1);
-  if (legendInCabin(state.cabin,'matron')) adjustPressure('护士长巡房', -LEGEND_RULES.matronCabinCalm);
+  for (const line of cabinPressureLines(state)) { adjustPressure(line.label, line.amount); if (line.amount > 0 && line.label === '车厢拥挤') stressReasons.push(`车厢拥挤：躁动 +${line.amount}`); }
   const riskLinks = experimentalRiskLinks(state.cabin, fareTuning.riskLinks);
   if (riskLinks.agitation) adjustPressure('同伙躁动', riskLinks.agitation);
   const partnership = riskPartnerships(state.cabin);
   const watch = hasKeepsake(state,'pocketWatch');
-  if (partnership.agitation) adjustPressure('坏人链接躁动', watch ? Math.min(1, partnership.agitation) : partnership.agitation);
+  if (partnershipAgitation(state)) adjustPressure('坏人链接躁动', partnershipAgitation(state));
   const stashPerStep = RISK_STASH_PER_ASCENT + Number(agitationBand(state.stress) === 'high') + Number(watch);
   for (const slot of partnership.members) cabin[slot]!.stash = (cabin[slot]!.stash ?? 0) + stashPerStep;
   cabin.forEach(rider => { if (rider?.kind === 'don') rider.stash = (rider.stash ?? 0) + LEGEND_RULES.donStashPerFloor; });
@@ -511,7 +522,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const chargeBoost=naturalChargeBoost(state,arrivalSlots.filter(i=>effectCabin[i]?.kind==='courier').length*COURIER_ARRIVAL_CHARGE+shopRewards.energy);
   if(chargeBoost)adjustEnergy('自然回充增幅',chargeBoost);
   const gapCharge=deliveryGapCharge(state,arrivalSlots.length);
-  const flywheel=flywheelSaving(state,arrivalSlots.length,energyCost-serviceSaving(state));
+  // The flywheel only saves motor power still being paid after Old Zhou and repairs.
+  const flywheel=flywheelSaving(state,arrivalSlots.length,energyCost-serviceSaving(state)-operatorSaving(state));
   if(flywheel)adjustEnergy('飞轮节能',flywheel);
   if(gapCharge.energy)adjustEnergy('等待到站回充',gapCharge.energy);
   const deliveredUpgrades=deliveryUpgradeIncome(state,effectCabin,arrivalSlots);
@@ -535,9 +547,9 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if(redCoinLoss)addCoins('红线金币损失',-redCoinLoss);
   // Arriving on the same floor as fuse expiry is still safe.
   const bombFailed = cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0);
-  const relieved = Math.min(Math.max(0, stress), Math.min(arrivals, AGITATION_RULES.arrivalReliefCap + Number(legendInCabin(state.cabin,'matron'))));
+  const relieved = Math.min(Math.max(0, stress), Math.min(arrivals, arrivalReliefCapFor(state)));
   if (relieved) adjustPressure('乘客到站舒缓', -relieved);
-  if (checkpoint && hasKeepsake({keepsakes},'roundsLog') && stress > 0) adjustPressure('查房记录：进店舒缓', -Math.min(3, stress));
+  if (checkpoint && hasKeepsake({keepsakes},'roundsLog') && stress > 0) adjustPressure('查房记录：进店舒缓', -Math.min(ROUNDS_LOG_SHOP_RELIEF, stress));
   const entryCharge = shopEntryCharge(boxOf(state));
   if(checkpoint&&entryCharge&&energy<state.energyCap)adjustEnergy('抵达商店补电',Math.min(entryCharge,state.energyCap-energy));
   if(checkpoint&&hasKeepsake({keepsakes},'stock')){const interest=Math.min(LEGEND_RULES.stockCap,Math.floor(Math.max(0,coins)*LEGEND_RULES.stockRate));if(interest)addCoins('股票利息',interest);}

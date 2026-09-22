@@ -1,11 +1,10 @@
-import { COURIER_ARRIVAL_CHARGE, settleBuffer, redAgitationProtection, arrivalRelief, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, serviceSaving, type Rider, type RunState } from './game-engine';
+import { COURIER_ARRIVAL_CHARGE, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
 import { riderProfile } from './rider-profile';
 import { motorCost } from './balance-v832';
 import { boxedMotorCost, shopEntryCharge } from './power-box';
 import { conflictLinks } from './rider-profile';
 import { relayEnergyBounds, shopOpportunities, naturalChargeBoost, SHOP_TUNING, deliveryGapCharge, flywheelSaving } from './shop-effects';
 import { experimentalRiskLinks, type RiskLinkTuning } from './risk-link-experiment';
-import { riskPartnerships } from './shift-rules';
 
 export type StressForecast = {
   range: string;
@@ -31,7 +30,7 @@ function projectedDestinationVariants(state: RunState): Array<Array<number | nul
   let variants: Array<Array<number | null>> = [state.cabin.map((rider) => rider?.destination ?? null)];
   if (nextFloor % 3 !== 0) return variants;
   state.cabin.forEach((rider, slot) => {
-    if (rider?.kind !== 'ghost' || hasNeighbour(state.cabin, slot, ['exorcist'])) return;
+    if (rider?.kind !== 'ghost' || hasNeighbour(state.cabin, slot, ['exorcist', 'medium']) || hasKeepsake(state, 'bell')) return;
     const targets = neighbours(slot).filter((index) => state.cabin[index]);
     if (targets.length) variants = variants.flatMap((variant) => targets.map((target) => variant.map((destination, index) => index === target && destination !== null ? destination + 1 : destination)));
   });
@@ -44,23 +43,37 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
   const beat = musicAgitation(state);
   const passengerRise = effects.reduce((sum, effect) => sum + effect.low, 0) + beat;
   const linkRise = experimentalRiskLinks(state.cabin, riskTuning).agitation;
-  const redRise=conflictLinks(state.cabin).filter(link=>link.effect==='agitation').length - redAgitationProtection(state) + linkRise + riskPartnerships(state.cabin).agitation;
+  const cabinLines = cabinPressureLines(state);
+  const cabinRise = cabinLines.reduce((sum, line) => sum + line.amount, 0);
+  const redRise=conflictLinks(state.cabin).filter(link=>link.effect==='agitation').length - redAgitationProtection(state) + linkRise + partnershipAgitation(state) + cabinRise;
   const variants = projectedDestinationVariants(state).map((destinations) => {
     const arriving = state.cabin.flatMap((rider, slot) => rider && destinations[slot] !== null && nextFloor >= destinations[slot]! ? [slot] : []);
     return { arrivals: arriving.length };
   });
+  const cap = arrivalReliefCapFor(state);
+  const reliefFor = (value: number, arrivals: number) => Math.min(Math.max(0, value), Math.min(arrivals, cap));
   const minArrivals = Math.min(...variants.map((variant) => variant.arrivals)); const maxArrivals = Math.max(...variants.map((variant) => variant.arrivals));
   const available = Math.max(0, state.stress + passengerRise + redRise);
-  const minRelief = Math.min(available, arrivalRelief(minArrivals)); const maxRelief = Math.min(available, arrivalRelief(maxArrivals));
+  const minRelief = reliefFor(available, minArrivals); const maxRelief = reliefFor(available, maxArrivals);
   const arrivalReason = !maxRelief ? '' : minRelief === maxRelief ? `到站舒缓 −${maxRelief}` : `可能到站舒缓 −${minRelief}–${maxRelief}`;
-  const lows = variants.map((variant) => Math.max(0, state.stress + passengerRise + redRise - arrivalRelief(variant.arrivals)));
-  const highs = lows;
-  const low = Math.min(...lows); const high = Math.max(...highs);
+  // 13号房客 may calm the cabin by 1; the Rounds Log relieves up to 3 on reaching a shop (also when the Matron arrives there).
+  const strangerOptions = legendInCabin(state.cabin, 'stranger') ? [0, -1] : [0];
+  const shopRelief = nextFloor % 10 === 0 && (hasKeepsake(state, 'roundsLog') || state.cabin.some(r => r?.kind === 'matron' && r.destination <= nextFloor));
+  // 13号房客 arriving at a shop may hand over the Rounds Log at random.
+  const maybeShopRelief = !shopRelief && nextFloor % 10 === 0 && state.cabin.some(r => r?.kind === 'stranger' && r.destination <= nextFloor);
+  const outcomes = variants.flatMap((variant) => strangerOptions.map((calm) => {
+    const before = state.stress + passengerRise + redRise + calm;
+    const after = Math.max(0, before - reliefFor(before, variant.arrivals));
+    const relieved = after - Math.min(ROUNDS_LOG_SHOP_RELIEF, after);
+    return shopRelief ? [relieved] : maybeShopRelief ? [after, relieved] : [after];
+  }).flat());
+  const low = Math.min(...outcomes); const high = Math.max(...outcomes);
   const lowDelta = low - state.stress; const highDelta = high - state.stress;
   const range = lowDelta === highDelta ? signedDelta(lowDelta) : `${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
   const reasons = [
     ...effects.flatMap(effect => effect.fixed.map(line => `${line.label} ${signedDelta(line.amount)}`)),
     beat ? `音乐家节拍 ${signedDelta(beat)}` : '',
+    ...cabinLines.map(line => `${line.label} ${signedDelta(line.amount)}`),
     redRise?`红线躁动 +${redRise}`:'',
     arrivalReason,
   ].filter(Boolean);
@@ -86,7 +99,8 @@ export function energyForecast(state: RunState, _legacyWeight?: number, _riskTun
   return relay ? relayEnergyBounds().map(power=>shopCharge+natural+power+naturalChargeBoost(state,natural+power)+gap) : [charge];
  });
  const deltas=charges.map(charge=>settleBuffer(state.energy-total+charge,state.energyCap,state.bufferPower??0,Boolean(state.upgrades.buffer)&&!SHOP_TUNING.bufferGap&&!SHOP_TUNING.bufferFlywheel).energy-state.energy);
- const lowDelta=Math.min(...deltas),highDelta=Math.max(...deltas);
+ const strangerPower=legendInCabin(state.cabin,'stranger')?1:0;
+ const lowDelta=Math.min(...deltas),highDelta=Math.max(...deltas)+strangerPower;
  const minCharge=Math.min(...charges),maxCharge=Math.max(...charges);
  const chargeNote=maxCharge?minCharge===maxCharge?`＋补电 ${maxCharge}`:`＋可能补电 ${minCharge}–${maxCharge}`:'';
  const range=lowDelta===highDelta?signedDelta(lowDelta):`${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
