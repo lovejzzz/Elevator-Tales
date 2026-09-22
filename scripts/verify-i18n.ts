@@ -7,6 +7,8 @@ import { bondStatus } from '../lib/rider-profile';
 import { CHANGELOG_EN } from '../lib/changelog';
 import { initialRun, type Rider } from '../lib/game-engine';
 import { PASSENGERS, PASSENGER_ORDER, UPGRADES } from '../lib/game-data';
+import { KEEPSAKES } from '../lib/legends';
+import { BOX_LINE_LABELS } from '../lib/power-box';
 import { I18N_CORE_SAMPLES, translateGameText } from '../lib/i18n';
 import { planPlacement } from '../lib/game-interaction';
 import { PASSENGER_RULES, SHARED_SAVING_RULE, passengerBrief, passengerCardRules, passengerCardSections, passengerFace } from '../lib/passenger-presentation';
@@ -125,3 +127,20 @@ if (CHANGELOG_EN.some((entry) => cjk.test(JSON.stringify(entry).replaceAll('中�
 if (!fs.readFileSync('app/layout.tsx', 'utf8').includes('<html lang="en"')) throw new Error('Default document language must be English.');
 if (!fs.readFileSync('README.md', 'utf8').includes('The game opens in English.')) throw new Error('README must document the English default.');
 console.log(`English localization verified: ${corpus.length} rider, rule, upgrade, and interface samples; ${CHANGELOG_EN.length} releases.`);
+
+// v9: every rule text must carry the same numbers in English, so stale phrase matches
+// (an old +2 shown for a new +3) fail instead of shipping.
+{
+  const WORDS: Record<string, string> = { three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9', ten: '10', fifth: '5' };
+  // Compare values of 3 and above: small counts are routinely written as words or 两/一.
+  const digits = (t: string) => [...new Set((t.toLowerCase().replace(/(^|[^\d])十/g, '$110').replace(/\b(three|four|five|six|seven|eight|nine|ten|fifth)\b/g, w => WORDS[w]).replace(/\bsector\b/g, '10').match(/\d+(?:\.\d+)?/g) ?? []).filter(n => Number(n) >= 3))].sort().join(',');
+  const texts = [
+    ...Object.values(PASSENGERS).flatMap(p => [p.short, p.detail]),
+    ...Object.values(UPGRADES).map(u => u.description),
+    ...Object.values(KEEPSAKES).flatMap(k => [k.name, k.description]),
+    ...Object.values(BOX_LINE_LABELS).flatMap(b => b.levels),
+  ];
+  const stale = texts.filter(t => digits(t) !== digits(translateGameText(t, 'en')) || /[\u3400-\u9fff]/u.test(translateGameText(t, 'en')));
+  if (stale.length) { console.error(`English rule texts with missing or changed numbers: ${stale.length}`); for (const t of stale) console.error(`${t}\n  => ${translateGameText(t, 'en')}`); process.exit(1); }
+  console.log(JSON.stringify({ ruleTextNumberParity: texts.length }));
+}

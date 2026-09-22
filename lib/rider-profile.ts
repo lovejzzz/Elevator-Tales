@@ -26,11 +26,13 @@ export const BONDS: Record<PassengerKind,Bond> = {
  exorcist:{likes:['ghost'],avoids:['drunk','mystery']},
  coach:{likes:['commuter','courier'],avoids:['celebrity','musician']},
  celebrity:{likes:['tourist'],avoids:['inspector']},
- inspector:{likes:['mechanic'],avoids:['thief','mystery']},
+ inspector:{likes:['mechanic'],avoids:['thief']},
  bomb:{likes:['cop'],avoids:['child','mechanic']},
  mystery:{likes:['coach'],avoids:['inspector']},
  shifter:{likes:['nurse'],avoids:['cop']},
  mimic:{likes:['mimic'],avoids:['ghost','bomb']},
+ operator:{likes:[],avoids:[]}, matchmaker:{likes:[],avoids:[]}, don:{likes:[],avoids:[]}, matron:{likes:[],avoids:[]},
+ nightingale:{likes:[],avoids:[]}, medium:{likes:[],avoids:[]}, tycoon:{likes:[],avoids:[]}, stranger:{likes:[],avoids:[]},
 };
 const pairKey=(a:PassengerKind,b:PassengerKind)=>[a,b].sort().join(':');
 const effectPairs=(effect:ConflictEffect,pairs:Array<[PassengerKind,PassengerKind]>)=>pairs.map(([a,b])=>[pairKey(a,b),effect] as const);
@@ -52,16 +54,6 @@ export const CONFLICT_EFFECTS:Record<string,ConflictEffect>=Object.fromEntries([
  ...effectPairs('gamble', [['coach','celebrity']]),
 ]);
 const nearby=(slot:number)=>ADJACENT.flatMap(([a,b])=>a===slot?[b]:b===slot?[a]:[]);
-const hash=(text:string)=>{
- let n=2166136261;
- for(const ch of text)n=Math.imul(n^ch.charCodeAt(0),16777619);
- // Avalanche before choosing a binary field. Raw FNV's low bit is just input
- // parity, which couples all Mimics into two identical/inverse source maps.
- // No runtime RNG or mutable cache: the exact pair stays stable across moves.
- n=Math.imul(n^(n>>>16),0x85ebca6b);
- n=Math.imul(n^(n>>>13),0xc2b2ae35);
- return (n^(n>>>16))>>>0;
-};
 const randomInt=(min:number,max:number,rng:()=>number)=>min+Math.floor(rng()*(max-min+1));
 export function randomTraits(kind:'mystery'|'shifter', available:PassengerKind[], rng:()=>number, revision=0):VariableTraits {
  const pool=available.filter(k=>!['mystery','shifter','mimic',kind].includes(k));
@@ -85,7 +77,8 @@ export function riderProfile(rider:Rider,cabin:Array<Rider|null>=[],slot=cabin.f
  // floor, column, and all other neighbors. Preview/reseat never consumes RNG.
  const source = slot >= 3 ? cabin[slot-3] : null;
  if(source){
-   const field:CopyField=hash(JSON.stringify([rider.copySeed??0,rider.id,source.id]))%2===0?'energy':'fare';
+   // v9: deterministic — the Mimic always copies the base fare of the rider above.
+   const field=('fare' as CopyField);
    const profile=ownProfile(source);
    if(field==='energy')result.energy=profile.energy;
    if(field==='fare'){result.fare=ticketFare(source,profile.fare);result.hidden=profile.hidden;}

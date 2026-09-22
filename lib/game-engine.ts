@@ -1,7 +1,9 @@
 import { BONDS, bondStatus, conflictLinks, profileWeight, randomTraits, riderProfile, type VariableTraits } from './rider-profile';
 import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
-import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, type PassengerKind, type UpgradeKey } from './game-data';
-import { agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
+import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, isLegend, passengerCategory, type LegendKind, type PassengerKind, type UpgradeKey } from './game-data';
+import { BOX_MAX_LEVEL, BOX_PRICES, BOX_TOTAL_CAP, emergencySectorCap, EMPTY_BOX, affordableUnits, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, motorNoise, shopEntryCharge, storageCap, type BoxLine, type PowerBox } from './power-box';
+import { CHILD_CARERS, DRUNK_CARERS, GHOST_CONTROLLERS, KEEPSAKE_KEYS, LEGEND_DECLINE_COINS, LEGEND_DESTINATION, LEGEND_KEEPSAKE, LEGEND_POOL_DEFAULT, LEGEND_RULES, type KeepsakeKey } from './legends';
+import { V9_AGITATION, crowdingThreshold, agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
 import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome, flywheelSaving, consumeFlywheel } from './shop-effects';
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
@@ -31,41 +33,66 @@ export type RunState = {
   dismissalsUsed?: number;
   serviceTurns?: number;
   reserveCell?: boolean;
+  /** v9 power box, keepsakes, legends and in-transit emergency charging. */
+  box?: PowerBox;
+  boxBoughtFloor?: number;
+  freeBoxLevels?: number;
+  keepsakes?: KeepsakeKey[];
+  legendOffer?: LegendKind;
+  legendStatus?: 'offered' | 'boarded' | 'declined' | 'delivered' | 'dismissed';
+  emergencySector?: number;
+  dispatchSector?: number;
+  dispatchCount?: number;
+  stabilizerSector?: number;
+  stabilizerUsed?: number;
+  emergencyUsed?: number;
+  rerolledFloor?: number;
   shopUpgradeBought: boolean;
+  shopExtraBought?: boolean;
   status: 'playing' | 'upgrade' | 'lost'; message: string; log: string[];
   lastEarnings: { total: number; sources: ChangeLine[] }; lastPressure: { delta: number; sources: ChangeLine[] }; lastEnergy: { delta: number; sources: ChangeLine[] };
 };
 
-export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, capacity: 0, calm: 0, concierge: 0, reinforced: 0, express: 0, tipjar: 0, relay: 0, crowd: 0, meter: 0, rails: 0, insulation: 0, reservation: 0, single: 0, delay:0, buffer:0, soundproof:0, retime:0, punchcard:0, finale:0 };
+export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, capacity: 0, calm: 0, concierge: 0, reinforced: 0, express: 0, tipjar: 0, relay: 0, crowd: 0, meter: 0, rails: 0, insulation: 0, reservation: 0, single: 0, delay:0, buffer:0, soundproof:0, retime:0, punchcard:0, finale:0, dispatch:0 };
+export const boxOf = (state: Pick<RunState,'box'>): PowerBox => state.box ?? EMPTY_BOX;
+export const hasKeepsake = (state: Pick<RunState,'keepsakes'>, key: KeepsakeKey) => Boolean(state.keepsakes?.includes(key));
+export const legendInCabin = (cabin: Array<Rider|null>, kind: LegendKind) => cabin.some(r => r?.kind === kind);
+const sectorOf = (floor: number) => Math.floor(floor / 10);
+// Dispatch merges Reservation and Rebooking: one use per sector, either way.
+export const DISPATCH_USES_PER_SECTOR = 2;
+const dispatchUsed = (state: RunState, sector: number) => (state.dispatchSector === sector ? state.dispatchCount ?? 0 : 0) >= DISPATCH_USES_PER_SECTOR;
+const dispatchTick = (state: RunState, sector: number) => state.upgrades.dispatch ? { dispatchSector: sector, dispatchCount: (state.dispatchSector === sector ? state.dispatchCount ?? 0 : 0) + 1 } : {};
 export function retimeRider(state:RunState,id:string,delta:number):RunState {
   const r=state.cabin.find(r=>r?.id===id),sector=Math.floor(state.floor/10);
-  if(state.status!=='playing'||!state.upgrades.retime||!r||r.boardedAt!==state.floor||state.retimeUsedSector===sector||![-1,1].includes(delta)||r.destination+delta<=state.floor)return state;
-  return {...state,cabin:state.cabin.map(p=>p?.id===id?{...p,destination:p.destination+delta}:p),retimeUsedSector:sector,rebooked:{...state.rebooked,[id]:r.destination+delta},message:'改签完成：车费与倒计时不变，撤回不退次数。'};
+  if(state.status!=='playing'||!(state.upgrades.retime||state.upgrades.dispatch)||!r||r.boardedAt!==state.floor||(state.upgrades.dispatch?dispatchUsed(state,sector):state.retimeUsedSector===sector)||isLegend(r.kind)||![-1,1].includes(delta)||r.destination+delta<=state.floor)return state;
+  return {...state,...dispatchTick(state,sector),cabin:state.cabin.map(p=>p?.id===id?{...p,destination:p.destination+delta}:p),retimeUsedSector:state.upgrades.dispatch?state.retimeUsedSector:sector,rebooked:{...state.rebooked,[id]:r.destination+delta},message:'改签完成：车费与倒计时不变，撤回不退次数。'};
 }
 export function settleBuffer(raw:number,cap:number,stored:number,enabled:boolean) {
   const released=enabled?Math.min(stored,Math.max(0,cap-raw)):0;
   const captured=enabled?Math.min(4-stored,Math.max(0,raw-cap)):0;
   return {energy:Math.min(cap,raw+released),stored:enabled?stored-released+captured:0,released,captured};
 }
+export const SOUNDPROOF_RULES = { riskCap: Infinity };
 export const redAgitationProtection=(state:RunState)=>state.upgrades.soundproof
  ? Math.min(1,conflictLinks(state.cabin).filter(l=>l.effect==='agitation').length)
-   +Number(SHOP_TUNING.soundproofRisk&&agitationBand(state.stress)!=='low'&&riskPartnerships(state.cabin).agitation>0)
+   +(SHOP_TUNING.soundproofRisk?Math.min(SOUNDPROOF_RULES.riskCap,riskPartnerships(state.cabin).agitation):0)
  :0;
-export const oldMovesRemaining = (state:RunState) => Math.max(0,1+Number(Boolean(state.upgrades.rails))-(state.oldMovesUsed ?? Number(state.swapped)));
-export function useCalmCharge(state:RunState):RunState {
+export const oldMovesRemaining = (state:RunState) => Math.max(0,2-(state.oldMovesUsed ?? Number(state.swapped)));
+export const CALM_RULES = { relief: 3 };
+export function applyCalmCharge(state:RunState):RunState {
   if(!state.calmCharge||!state.upgrades.calm||state.status==='lost'||state.stress<=0)return state;
-  const delta=-Math.min(2,state.stress);
-  return {...state,stress:state.stress+delta,calmCharge:false,lastPressure:{delta,sources:[{label:'手动调节',amount:delta}]},message:'手动调节已使用：最多降低2躁动，不恢复电量。'};
+  const delta=-Math.min(CALM_RULES.relief,state.stress);
+  return {...state,stress:state.stress+delta,calmCharge:false,lastPressure:{delta,sources:[{label:'手动调节',amount:delta}]},message:'手动调节已使用：最多降低3躁动，不恢复电量。'};
 }
 export function reserveOffer(state:RunState,offers:Rider[],id:string):RunState {
   const rider=offers.find(r=>r.id===id),sector=Math.floor(state.floor/10);
-  if(state.status!=='playing'||!state.upgrades.reservation||!rider||state.reservedRider||state.reservationUsedSector===sector||state.reservedIds?.includes(id)||state.cabin.some(r=>r?.id===id))return state;
-  return {...state,reservedRider:{...rider,destination:state.rebooked?.[id]??rider.destination},reservationUsedSector:sector,reservedIds:[...(state.reservedIds??[]),id],message:'已留座：下一批占一个候客位，属性与剩余路程不变。'};
+  if(state.status!=='playing'||!(state.upgrades.reservation||state.upgrades.dispatch)||!rider||isLegend(rider.kind)||state.reservedRider||(state.upgrades.dispatch?dispatchUsed(state,sector):state.reservationUsedSector===sector)||state.reservedIds?.includes(id)||state.cabin.some(r=>r?.id===id))return state;
+  return {...state,reservedRider:{...rider,destination:state.rebooked?.[id]??rider.destination},reservationUsedSector:state.upgrades.dispatch?state.reservationUsedSector:sector,...dispatchTick(state,sector),reservedIds:[...(state.reservedIds??[]),id],message:'已留座：下一批占一个候客位，属性与剩余路程不变。'};
 }
 /** Consume a reservation at the next actual candidate batch, including shop exit.
  * Generate the ordinary packet first; the held rider replaces exactly one card. */
 export function nextOfferBatch(state:RunState,rng:()=>number=Math.random):{state:RunState;offers:Rider[]} {
-  const offers=makeOffers(state.floor,state.upgrades,false,rng,state.cabin);
+  const offers=makeOffers(state.floor,state.upgrades,false,rng,state.cabin,undefined,{},{keepsakes:state.keepsakes,legendPool:[]});
   if(!state.reservedRider)return {state,offers};
   const held=state.reservedRider;
   const rider={...held,destination:state.floor+held.destination-held.boardedAt,boardedAt:state.floor,calledByLover:false};
@@ -78,10 +105,12 @@ export const COURIER_ARRIVAL_CHARGE = 2;
 export const CONTROLLED_GHOST_SAVING = 1;
 export const SHOP_ENTRY_CHARGE = 5;
 export const INITIAL_ENERGY = 50;
+export const START_RULES = { energy: INITIAL_ENERGY };
 export const ENERGY_CAPACITY = 60;
 export const AGITATION_CAPACITY = BASE_AGITATION_CAP;
 export const ARRIVAL_RELIEF_CAP = 2;
 export const HIGH_RISK_BONUS = 4;
+export const RISK_RULES = { highRiskBonus: HIGH_RISK_BONUS };
 export const HIGH_RISK_START = 17;
 export const OFFER_PRESSURE_STEP = 40;
 export const MAX_FORCED_RISK_OFFERS = 1;
@@ -92,7 +121,14 @@ export const DRUNK_APPETITE_BONUS = 1;
 /** Explicit experiment overrides; normal play always uses the constants above. */
 export type FareTuning = { appetiteThreshold?: number; appetiteNeighbours?: number; appetiteBonus?: number; riskLinks?: RiskLinkTuning };
 export type OfferTuning = { highRiskStart?: number; pressureStep?: number; volatileSpan?: number };
-export const initialRun = (): RunState => ({ floor: 1, restStops: 0, shopUpgradeBought: false, energy: INITIAL_ENERGY, energyCap: ENERGY_CAPACITY, stress: 0, stressCap: AGITATION_CAPACITY, weightCap: 10, coins: 0, earned: 0, shop: [], cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 无尽班次开始'], lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] } });
+export const initialRun = (): RunState => ({ floor: 1, restStops: 0, shopUpgradeBought: false, energy: START_RULES.energy, energyCap: ENERGY_CAPACITY, stress: 0, stressCap: AGITATION_CAPACITY, weightCap: 10, coins: 0, earned: 0, shop: [], cabin: Array(6).fill(null), swapped: false, upgrades: { ...EMPTY_UPGRADES }, status: 'playing', message: '门已开启。把候选人物直接拖进指定站位。', log: ['01F · 无尽班次开始'], lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] } });
+/** Opening batch plus the legend on offer, if any. */
+export function startRun(tutorial = false, rng: () => number = Math.random, legendPool?: LegendKind[]): { state: RunState; offers: Rider[] } {
+  const state = initialRun();
+  const offers = makeOffers(1, state.upgrades, tutorial, rng, state.cabin, undefined, {}, { legendPool: tutorial ? [] : legendPool });
+  const legend = offers.find(r => isLegend(r.kind))?.kind as LegendKind | undefined;
+  return { state: legend ? { ...state, legendOffer: legend, legendStatus: 'offered' } : state, offers };
+}
 export const nextShopFloor = (floor: number) => (Math.floor(floor / 10) + 1) * 10;
 export const difficultyTier = (floor: number) => Math.floor(Math.max(0, floor - 1) / 30);
 export const agitationThreshold = (_cap: number) => AGITATION_HIGH_MIN;
@@ -101,7 +137,9 @@ export const arrivalRelief = (arrivals: number) => Math.min(AGITATION_RULES.arri
 export const patienceCost = (_state: RunState) => 0;
 export const eventPressureMultiplier = (_state: Pick<RunState, 'stress' | 'stressCap'>) => 1;
 export const passengerEnergy = (state: RunState) => state.cabin.reduce((sum,rider,slot)=>sum+(rider?riderProfile(rider,state.cabin,slot).energy:0),0);
-export const stabilizedEnergy = (state: RunState) => state.upgrades.reinforced > 0 && state.cabin.filter(Boolean).length >= 3 ? Math.min(1,passengerEnergy(state)) : 0;
+export const STABILIZER_SECTOR_CAP = 5;
+const stabilizerUsed = (state: RunState) => state.stabilizerSector === Math.floor(state.floor / 10) ? state.stabilizerUsed ?? 0 : 0;
+export const stabilizedEnergy = (state: RunState) => state.upgrades.reinforced > 0 && state.cabin.filter(Boolean).length >= 5 && stabilizerUsed(state) < STABILIZER_SECTOR_CAP ? Math.min(1,passengerEnergy(state)) : 0;
 export const crowdAgitation = (_occupied: number) => 0;
 export const REST_STOP_CAP = 0;
 export const shiftAgitation = (_floor: number, _occupied: number, _restStops = 0) => 0;
@@ -124,10 +162,12 @@ function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
   add(`${PASSENGERS[rider.kind].name}自身躁动`, riderProfile(rider,state.cabin,slot).agitation);
   if (rider.volatile) add(`${PASSENGERS[rider.kind].name}高危`, 1);
   switch (rider.kind) {
-    case 'thief': if (!hasNeighbour(state.cabin, slot, ['cop', 'lawyer'])) add('小偷未受控', 1); break;
-    case 'child': if (!hasNeighbour(state.cabin, slot, ['lover', 'nurse'])) add('儿童无人照顾', 1); break;
-    case 'drunk': if (!hasNeighbour(state.cabin, slot, ['nurse'])) add('醉汉未安抚', 1); break;
+    case 'thief': if (!hasNeighbour(state.cabin, slot, ['cop', 'lawyer', 'don'])) add('小偷未受控', 1); break;
+    case 'child': if (!hasNeighbour(state.cabin, slot, [...CHILD_CARERS])) add('儿童无人照顾', 1); break;
+    case 'drunk': if (!hasNeighbour(state.cabin, slot, [...DRUNK_CARERS])) add('醉汉未安抚', 1); break;
     case 'celebrity': if (neighbourCount(state.cabin, slot) > 1) add('名人被围', 1); break;
+    case 'tycoon': if (neighbourCount(state.cabin, slot) > 1) add('大亨嫌挤', 1); break;
+    case 'matron': add('坏人惊扰护士长', LEGEND_RULES.matronBadNeighbourAgitation * neighbours(slot).filter(i => state.cabin[i] && passengerCategory(state.cabin[i]!.kind) === 'bad').length); break;
   }
   return fixed;
 }
@@ -165,8 +205,11 @@ export function musicAgitation(state: RunState) {
   if (!state.cabin.some(r => r?.kind === 'musician')) return 0;
   return musicBeatForAgitation(state.stress);
 }
-export const serviceSaving = (state: RunState) => (state.serviceTurns ?? 0) > 0 ? Math.min(REPAIR_MOTOR_SAVING, motorCost(state.floor+1)) : 0;
-export const cooperationBonus = (state: RunState) => 1 + state.upgrades.battery * ECONOMY_RULES.cooperationIncrement;
+/** Motor cost for the coming ascent after the power box. Legends and service savings are itemized separately. */
+export const effectiveMotor = (state: Pick<RunState,'floor'|'box'>) => boxedMotorCost(motorCost(state.floor+1), boxOf(state), state.floor+1);
+export const operatorSaving = (state: RunState) => legendInCabin(state.cabin,'operator') && state.cabin.filter(Boolean).length < 6 ? Math.min(LEGEND_RULES.operatorMotorSaving, effectiveMotor(state)) : 0;
+export const serviceSaving = (state: RunState) => (state.serviceTurns ?? 0) > 0 ? Math.min(REPAIR_MOTOR_SAVING, effectiveMotor(state) - operatorSaving(state)) : 0;
+export const cooperationBonus = (state: RunState) => 1 + state.upgrades.battery * ECONOMY_RULES.cooperationIncrement + (hasKeepsake(state,'redString') ? LEGEND_RULES.redStringBond : 0);
 // One cabin-wide reward per travelled floor. Further contract levels improve
 // coins, not soothing; boarding, reseating and dismissing cannot trigger it.
 export const COOPERATION_RELIEF = 0;
@@ -198,10 +241,10 @@ export const travelEnergyCost = motorCost;
 export const energySavings = (state: RunState) => {
   let saved=0;
   state.cabin.forEach((rider,slot)=>{
-    if(rider?.kind==='ghost'&&hasNeighbour(state.cabin,slot,['exorcist']))saved+=CONTROLLED_GHOST_SAVING;
+    if(rider?.kind==='ghost'&&hasNeighbour(state.cabin,slot,[...GHOST_CONTROLLERS]))saved+=CONTROLLED_GHOST_SAVING;
   });
   if(GHOST_RULES.oneSavingPerExorcist){
-    const providers=state.cabin.filter((rider,slot)=>rider?.kind==='exorcist'&&hasNeighbour(state.cabin,slot,['ghost'])).length;
+    const providers=state.cabin.filter((rider,slot)=>(rider?.kind==='exorcist'||rider?.kind==='medium')&&hasNeighbour(state.cabin,slot,['ghost'])).length;
     saved=Math.min(saved,providers*CONTROLLED_GHOST_SAVING);
   }
   return Math.min(saved,Math.max(0,passengerEnergy(state)-stabilizedEnergy(state)));
@@ -209,8 +252,8 @@ export const energySavings = (state: RunState) => {
 // Compatibility export for archived callers: the remaining passenger cost.
 export const inspectionExtraEnergy = (state: RunState) => Math.max(0, passengerEnergy(state) - stabilizedEnergy(state) - energySavings(state));
 export function energyBreakdown(state: RunState) {
-  const motor=travelEnergyCost(state.floor+1),people=passengerEnergy(state),stabilizer=stabilizedEnergy(state),shared=energySavings(state);
-  const service=serviceSaving(state);
+  const motor=effectiveMotor(state),people=passengerEnergy(state),stabilizer=stabilizedEnergy(state),shared=energySavings(state);
+  const service=serviceSaving(state)+operatorSaving(state);
   const links=conflictLinks(state.cabin);
   const flat=links.filter(link=>link.effect==='energy').length;
   // Per-person multiplier costs are shared with the cabin display. Flat edge
@@ -222,7 +265,7 @@ export function energyBreakdown(state: RunState) {
   });
   const multiplied=riderCosts.reduce((sum,rider)=>sum+rider.extra,0);
   const conflict=flat+multiplied;
-  const conflictProtection=state.upgrades.insulation ? Math.min(SHOP_TUNING.insulationBroad?2:1,SHOP_TUNING.insulationBroad?conflict:flat) : 0;
+  const conflictProtection=state.upgrades.insulation ? conflict : 0;
   return {motor,people,stabilizer,shared,service,conflict,conflictProtection,riderCosts,saved:stabilizer+shared+service+conflictProtection,total:motor+people+conflict-stabilizer-shared-service-conflictProtection};
 }
 export const totalEnergyCost = (state: RunState) => energyBreakdown(state).total;
@@ -237,8 +280,7 @@ export function shuffle<T>(items: T[], rng: () => number = Math.random): T[] {
 }
 
 const INTRINSIC_RISK: PassengerKind[] = ['thief','drunk','child','celebrity','inspector','mystery','shifter'];
-function weightedKind(floor: number, rng: () => number, forcedRisk = false, excludeLover = false): PassengerKind {
-  const unlocked = unlockedAt(floor);
+function weightedKind(floor: number, rng: () => number, forcedRisk = false, excludeLover = false, unlocked: PassengerKind[] = unlockedAt(floor)): PassengerKind {
   const pool = unlocked.filter(kind => (!forcedRisk || INTRINSIC_RISK.includes(kind)) && (!excludeLover || kind !== 'lover'));
   const total = pool.reduce((sum, kind) => sum + PASSENGERS[kind].rarity, 0);
   let roll = rng() * total;
@@ -246,19 +288,32 @@ function weightedKind(floor: number, rng: () => number, forcedRisk = false, excl
   return pool[0];
 }
 
-export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, tutorial = false, rng: () => number = Math.random, cabin: Array<Rider | null> = [], loverCallChance = LOVER_CALL_CHANCE, tuning: OfferTuning = {}): Rider[] {
+export type OfferContext = { keepsakes?: KeepsakeKey[]; legendPool?: LegendKind[] };
+/** Early extra kinds: the Medium brings ghosts while aboard; the vinyl keepsake brings musicians. */
+export function availableKinds(floor: number, cabin: Array<Rider | null> = [], keepsakes: KeepsakeKey[] = []): PassengerKind[] {
+  const kinds = unlockedAt(floor);
+  // The Medium draws spirits: ghosts join early and are drawn at double weight while she rides.
+  if (legendInCabin(cabin, 'medium')) kinds.push(...(kinds.includes('ghost') ? ['ghost' as const] : ['ghost' as const, 'ghost' as const]));
+  if (keepsakes.includes('vinyl') && !kinds.includes('musician')) kinds.push('musician');
+  return kinds;
+}
+export function legendRider(kind: LegendKind, rng: () => number = Math.random): Rider {
+  return { id: 'legend-' + kind + '-' + rng().toString(36).slice(2, 7), kind, destination: LEGEND_DESTINATION, patience: 0, boardedAt: 1, fareBonus: 0, stash: 0, volatile: false };
+}
+export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, tutorial = false, rng: () => number = Math.random, cabin: Array<Rider | null> = [], loverCallChance?: number, tuning: OfferTuning = {}, context: OfferContext = {}): Rider[] {
   const guided = floor === 1 && tutorial;
-  const available = unlockedAt(floor);
+  const available = availableKinds(floor, cabin, context.keepsakes);
+  loverCallChance ??= legendInCabin(cabin, 'matchmaker') ? LEGEND_RULES.matchmakerLoverCall : context.keepsakes?.includes('redString') ? LEGEND_RULES.redStringLoverCall : LOVER_CALL_CHANCE;
   const waiting = cabin.some((rider, slot) => rider?.kind === 'lover' && !hasNeighbour(cabin, slot, ['lover']));
   const called = !tutorial && waiting && rng() < loverCallChance;
   // A call fills one slot, not the anchor's whole encounter packet. The other
   // two slots still introduce an interacting pair, without another Lover.
-  const anchor = weightedKind(floor, rng, false, called);
+  const anchor = weightedKind(floor, rng, false, called, available);
   const eligible = (kind: PassengerKind) => available.includes(kind) && (!called || kind !== 'lover');
   const tension = floor >= 21 && rng() < .3 ? BONDS[anchor].avoids.filter(eligible) : [];
   const partners = tension.length ? tension : OFFER_PARTNERS[anchor].filter(eligible);
   const partner = partners[rand(0, partners.length - 1, rng)] ?? 'tourist';
-  const kinds: PassengerKind[] = guided ? ['lover', 'lover', 'courier'] : [anchor, partner, called ? 'lover' : weightedKind(floor, rng)];
+  const kinds: PassengerKind[] = guided ? ['lover', 'lover', 'courier'] : [anchor, partner, called ? 'lover' : weightedKind(floor, rng, false, false, available)];
   // At least one non-high-risk card survives every packet, even after 60F.
   // Its role may still carry intrinsic risk. No player-resource-based rescue.
   const calmIndex = guided ? -1 : rand(0, 2, rng);
@@ -283,11 +338,16 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
   });
   // Variable riders bring one matching visible relation in their own packet.
   if (!guided && offers[0].traits) offers[0].traits.bond.likes = [offers[1].kind];
-  return guided ? offers : shuffle(offers, rng);
+  if (guided) return offers;
+  const shuffled = shuffle(offers, rng);
+  // A legend waits as a fourth card on floor 1 only; it never replaces an ordinary offer.
+  const pool = floor === 1 ? (context.legendPool ?? LEGEND_POOL_DEFAULT) : [];
+  if (pool.length) shuffled.push(legendRider(pool[rand(0, pool.length - 1, rng)], rng));
+  return shuffled;
 }
 
 /** Progress is earned on an actual ascent; quotes may project one ascent without mutation. */
-export function riderAfterWork(rider: Rider, cabin: Array<Rider | null>, slot: number, agitation: number): Rider {
+export function riderAfterWork(rider: Rider, cabin: Array<Rider | null>, slot: number, agitation: number, inspectionWork = INSPECTION_WORK): Rider {
   const next = { ...rider };
   const low = agitationBand(agitation) === 'low';
   if (next.kind === 'mechanic' && !next.repairDone && low) {
@@ -295,10 +355,10 @@ export function riderAfterWork(rider: Rider, cabin: Array<Rider | null>, slot: n
     next.repairDone = next.repairProgress >= REPAIR_WORK;
   }
   if (next.kind === 'inspector' && !next.complianceReady) {
-    next.quietStreak = low ? Math.min(INSPECTION_WORK, (next.quietStreak ?? 0) + 1) : 0;
-    next.complianceReady = next.quietStreak >= INSPECTION_WORK;
+    next.quietStreak = low ? Math.min(inspectionWork, (next.quietStreak ?? 0) + 1) : 0;
+    next.complianceReady = next.quietStreak >= inspectionWork;
   }
-  if (next.kind === 'child' && hasNeighbour(cabin, slot, ['lover', 'nurse'])) {
+  if (next.kind === 'child' && hasNeighbour(cabin, slot, [...CHILD_CARERS])) {
     next.careProgress = Math.min(CHILD_CARE_WORK, (next.careProgress ?? 0) + 1);
   }
   return next;
@@ -309,7 +369,9 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if (!state.cabin.some(Boolean)) return { ...state, message: '至少接一位乘客才能上行。' };
   const nextFloor = state.floor + 1;
   const checkpoint = nextFloor % 10 === 0;
-  const energyCost = travelEnergyCost(nextFloor);
+  const energyCost = effectiveMotor(state);
+  const departBand = agitationBand(state.stress);
+  const occupiedAtDeparture = state.cabin.filter(Boolean).length;
   let energy = state.energy; let stress = state.stress; let coins = state.coins;
   const earningSources: ChangeLine[] = []; const pressureSources: ChangeLine[] = []; const energySources: ChangeLine[] = [];
   const addCoins = (label: string, amount: number) => { coins += amount; const existing = earningSources.find((line) => line.label === label); if (existing) existing.amount += amount; else earningSources.push({ label, amount }); };
@@ -320,11 +382,13 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if (stabilizedEnergy(state)) adjustEnergy('稳压模块抵消', stabilizedEnergy(state));
   if (energySavings(state)) adjustEnergy('节能少耗', energySavings(state));
   if (serviceSaving(state)) adjustEnergy('检修运转节能', serviceSaving(state));
+  if (operatorSaving(state)) adjustEnergy('老周照看电机', operatorSaving(state));
   const redLinks=conflictLinks(state.cabin);
   const {conflict:redEnergy,conflictProtection}=energyBreakdown(state);
   if(redEnergy)adjustEnergy('红线额外耗电',-redEnergy);
   if(conflictProtection)adjustEnergy('绝缘衬层抵消',conflictProtection);
-  let cabin = state.cabin.map((rider,slot) => rider ? riderAfterWork(rider,state.cabin,slot,state.stress) : null);
+  const inspectionWork = hasKeepsake(state,'roundsLog') ? 1 : INSPECTION_WORK;
+  let cabin = state.cabin.map((rider,slot) => rider ? riderAfterWork(rider,state.cabin,slot,state.stress,inspectionWork) : null);
   const notes: string[] = []; const stressReasons: string[] = [];
   let serviceTurns = Math.max(0,(state.serviceTurns ?? 0)-1);
   // Work uses the visible departure band, not agitation spent or removed.
@@ -346,12 +410,42 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     stressReasons.push(`红线冲突：躁动 +${redAgitation}`);
   }
   if(redAgitationProtection(state))adjustPressure('隔音门抵消',-redAgitationProtection(state));
+  // v9 cabin-wide agitation: crowding, top-level motor noise and legends.
+  if (occupiedAtDeparture >= crowdingThreshold(nextFloor)) { adjustPressure('车厢拥挤', V9_AGITATION.crowding); stressReasons.push(`车厢拥挤：躁动 +${V9_AGITATION.crowding}`); }
+  if (motorNoise(boxOf(state), occupiedAtDeparture)) adjustPressure('电机噪音', motorNoise(boxOf(state), occupiedAtDeparture));
+  if (legendInCabin(state.cabin,'don')) adjustPressure('教父的威压', LEGEND_RULES.donAgitation);
+  if (legendInCabin(state.cabin,'matchmaker') && redLinks.length) adjustPressure('月老见不得争吵', redLinks.length);
+  if (legendInCabin(state.cabin,'nightingale') && departBand === 'low') adjustPressure('夜莺要气氛', 1);
+  if (legendInCabin(state.cabin,'matron')) adjustPressure('护士长巡房', -LEGEND_RULES.matronCabinCalm);
   const riskLinks = experimentalRiskLinks(state.cabin, fareTuning.riskLinks);
-  if (riskLinks.agitation) adjustPressure('同伙躁动（实验）', riskLinks.agitation);
+  if (riskLinks.agitation) adjustPressure('同伙躁动', riskLinks.agitation);
   const partnership = riskPartnerships(state.cabin);
-  if (partnership.agitation) adjustPressure('坏人链接躁动', partnership.agitation);
-  const stashPerStep = RISK_STASH_PER_ASCENT + Number(agitationBand(state.stress) === 'high');
+  const watch = hasKeepsake(state,'pocketWatch');
+  if (partnership.agitation) adjustPressure('坏人链接躁动', watch ? Math.min(1, partnership.agitation) : partnership.agitation);
+  const stashPerStep = RISK_STASH_PER_ASCENT + Number(agitationBand(state.stress) === 'high') + Number(watch);
   for (const slot of partnership.members) cabin[slot]!.stash = (cabin[slot]!.stash ?? 0) + stashPerStep;
+  cabin.forEach(rider => { if (rider?.kind === 'don') rider.stash = (rider.stash ?? 0) + LEGEND_RULES.donStashPerFloor; });
+  if (departBand === 'medium') {
+    const musicians = state.cabin.filter(r => r?.kind === 'musician').length;
+    if (musicians) addCoins('音乐家演出', musicians * (LEGEND_RULES.musicianMediumCoins + (hasKeepsake(state,'vinyl') ? LEGEND_RULES.vinylMusicianBonus : 0)));
+    if (legendInCabin(state.cabin,'nightingale')) addCoins('夜莺驻唱', LEGEND_RULES.nightingaleMediumCoins);
+  }
+  if (state.floor === 1 && legendInCabin(state.cabin,'tycoon')) addCoins('大亨预付', LEGEND_RULES.tycoonPrepay);
+  if (legendInCabin(state.cabin,'medium')) {
+    const seance = state.cabin.filter((r, i) => r?.kind === 'ghost' && hasNeighbour(state.cabin, i, [...GHOST_CONTROLLERS])).length;
+    if (seance) addCoins('灵媒降神会', seance * LEGEND_RULES.mediumSeanceCoins);
+  }
+  let legendStatus = state.legendStatus;
+  if (state.floor === 1 && state.legendOffer) {
+    if (legendInCabin(state.cabin, state.legendOffer)) legendStatus = 'boarded';
+    else { legendStatus = 'declined'; addCoins('谢绝传奇：当班补贴', LEGEND_DECLINE_COINS); }
+  }
+  if (legendInCabin(state.cabin,'stranger')) {
+    const roll = rand(0, 3, rng);
+    if (roll === 0) addCoins('13号房客', 2);
+    else if (roll === 1) adjustPressure('13号房客', -1);
+    else if (roll === 2) adjustEnergy('13号房客', 1);
+  }
   const shopIncome = shopFloorIncome(state);
   if (shopIncome.crowd) addCoins('共乘票', shopIncome.crowd);
   if (shopIncome.meter) addCoins('长途计价器', shopIncome.meter);
@@ -359,7 +453,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   effectCabin.forEach((rider, slot) => {
     if (!rider) return;
     const controlledThief = hasNeighbour(effectCabin, slot, ['cop', 'lawyer']);
-    const controlledGhost = hasNeighbour(effectCabin, slot, ['exorcist']);
+    const controlledGhost = hasNeighbour(effectCabin, slot, [...GHOST_CONTROLLERS]) || hasKeepsake(state,'bell');
     switch (rider.kind) {
       case 'mechanic': break; // Shared savings are itemized in lastEnergy.
       case 'tourist': break; // Companion rewards are paid on delivery only.
@@ -372,6 +466,9 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     }
   });
   let arrivals = 0;
+  let keepsakes = state.keepsakes ?? [];
+  let freeBoxLevels = state.freeBoxLevels ?? 0;
+  let stressCapBonus = 0;
   let punchCount=state.punchCount??0;
   const arrivalSlots: number[] = []; const lastArrivals:ArrivalReceipt[]=[];
   cabin = cabin.map((rider, slot) => {
@@ -379,8 +476,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     if (rider.kind === 'bomb' && (rider.fuse ?? 0) <= 0 && nextFloor < rider.destination) return rider;
     if (nextFloor < rider.destination) return rider;
     const spec = PASSENGERS[rider.kind]; const profile = riderProfile(rider, cabin, slot);
-    const fare = arrivalFare(rider, cabin, slot, cooperationBonus(state), state.stress, fareTuning);
-    const appetitePremium = rider.kind === 'drunk' ? fare - arrivalFare(rider, cabin, slot, cooperationBonus(state), state.stress, { ...fareTuning, appetiteBonus: 0 }) : 0;
+    const fare = arrivalFare(rider, cabin, slot, cooperationBonus(state), state.stress, fareTuning, hasKeepsake(state,'bell'));
+    const appetitePremium = rider.kind === 'drunk' ? fare - arrivalFare(rider, cabin, slot, cooperationBonus(state), state.stress, { ...fareTuning, appetiteBonus: 0 }, hasKeepsake(state,'bell')) : 0;
     if (profile.hidden) notes.push(`${spec.name}封存车费揭晓：${profile.fare} 金币`);
     if (rider.kind === 'courier') adjustEnergy('快递员电池包', COURIER_ARRIVAL_CHARGE);
     addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare - appetitePremium - (rider.stash ?? 0));
@@ -388,7 +485,21 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     if (appetitePremium) addCoins('醉汉躁动加价', appetitePremium);
     let punchBonus=0;
     if(state.upgrades.punchcard){punchCount=(punchCount+1)%5;if(punchCount===0){punchBonus=profile.fare;addCoins('第五位基价奖励',profile.fare);}}
-    lastArrivals.push({riderId:rider.id,kind:rider.kind,slot,coins:fare+punchBonus});
+    let extra = 0;
+    if (!isLegend(rider.kind)) {
+      if (departBand === 'medium') { const tip = V9_AGITATION.mediumTip + (hasKeepsake(state,'vinyl') ? 2 : 0); extra += tip; addCoins('热闹小费', tip); }
+      if (departBand === 'low') { const tip = V9_AGITATION.lowTip + (legendInCabin(state.cabin,'matron') ? LEGEND_RULES.matronQuietCoins : 0); extra += tip; addCoins('安静好评', tip); }
+      if (departBand === 'low' && hasKeepsake(state,'roundsLog')) { extra += 1; addCoins('查房记录', 1); }
+    } else {
+      legendStatus = 'delivered';
+      if (rider.kind === 'tycoon' && departBand === 'low' && !redLinks.some(l => l.first === slot || l.second === slot)) { extra += LEGEND_RULES.tycoonBalance; addCoins('大亨尾款', LEGEND_RULES.tycoonBalance); }
+      const gift = LEGEND_KEEPSAKE[rider.kind];
+      const owned = new Set(keepsakes);
+      const key = gift === 'random' ? KEEPSAKE_KEYS.filter(k => !owned.has(k))[rand(0, Math.max(0, KEEPSAKE_KEYS.filter(k => !owned.has(k)).length - 1), rng)] : gift;
+      if (key && !owned.has(key)) { keepsakes = [...keepsakes, key]; notes.push(`${spec.name}留下信物`); if (key === 'wrench') freeBoxLevels += 1; if (key === 'roundsLog') stressCapBonus += 2; }
+      if (gift === 'random') { const bonus = rand(0, LEGEND_RULES.strangerKeepsakeCoins, rng); if (bonus) { extra += bonus; addCoins('13号房客的馈赠', bonus); } }
+    }
+    lastArrivals.push({riderId:rider.id,kind:rider.kind,slot,coins:fare+punchBonus+extra});
     arrivals += 1; arrivalSlots.push(slot); return null;
   });
   const shopRewards = rollShopRewards(shopOpportunities(state, effectCabin, arrivalSlots), rng);
@@ -401,23 +512,35 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if(chargeBoost)adjustEnergy('自然回充增幅',chargeBoost);
   const gapCharge=deliveryGapCharge(state,arrivalSlots.length);
   const flywheel=flywheelSaving(state,arrivalSlots.length,energyCost-serviceSaving(state));
-  if(flywheel)adjustEnergy('飞轮运转节能（实验）',flywheel);
-  if(gapCharge.energy)adjustEnergy('等待到站回充（实验）',gapCharge.energy);
+  if(flywheel)adjustEnergy('飞轮节能',flywheel);
+  if(gapCharge.energy)adjustEnergy('等待到站回充',gapCharge.energy);
   const deliveredUpgrades=deliveryUpgradeIncome(state,effectCabin,arrivalSlots);
   if(deliveredUpgrades.crowd)addCoins(SHOP_RULES.mixed?'混乘票':'共乘票',deliveredUpgrades.crowd);
   if(deliveredUpgrades.single)addCoins('单站检票器',deliveredUpgrades.single);
   if(deliveredUpgrades.meter)addCoins('长途计价器',deliveredUpgrades.meter);
   const finale=finaleIncome(state,arrivalSlots.length,cabin.filter(Boolean).length);if(finale)addCoins('谢幕礼',finale);
+  if (departBand === 'high' && rng() < V9_AGITATION.incidentChance) {
+    const victims = cabin.flatMap((rider, slot) => rider && !isLegend(rider.kind) ? [slot] : []);
+    if (victims.length) {
+      const slot = victims[rand(0, victims.length - 1, rng)];
+      notes.unshift(`车厢事故：${PASSENGERS[cabin[slot]!.kind].name}受不了混乱，提前下车，未付车费`);
+      stressReasons.unshift(`车厢事故：${PASSENGERS[cabin[slot]!.kind].name}提前下车`);
+      cabin = cabin.map((rider, i) => i === slot ? null : rider);
+    }
+  }
   const riskIncome = rollExperimentalRiskIncome(state.cabin, fareTuning.riskLinks, rng);
-  if (riskIncome) addCoins('同伙收入（实验）', riskIncome);
-  const redCoinDemand=Math.max(0, redLinks.filter(link=>link.effect==='coins').length*2 - (state.cabin.some(r=>r?.kind==='lawyer') ? 2 : 0));
+  if (riskIncome) addCoins('同伙收入', riskIncome);
+  const redCoinDemand=Math.max(0, redLinks.filter(link=>link.effect==='coins').length*2 - (state.cabin.some(r=>r?.kind==='lawyer') ? 2 : 0) - (state.upgrades.insulation ? Infinity : 0));
   const redCoinLoss=Math.min(coins,redCoinDemand);
   if(redCoinLoss)addCoins('红线金币损失',-redCoinLoss);
   // Arriving on the same floor as fuse expiry is still safe.
   const bombFailed = cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0);
-  const relieved = Math.min(Math.max(0, stress), arrivalRelief(arrivals));
+  const relieved = Math.min(Math.max(0, stress), Math.min(arrivals, AGITATION_RULES.arrivalReliefCap + Number(legendInCabin(state.cabin,'matron'))));
   if (relieved) adjustPressure('乘客到站舒缓', -relieved);
-  if(checkpoint&&energy<state.energyCap)adjustEnergy('抵达商店补电',Math.min(SHOP_ENTRY_CHARGE,state.energyCap-energy));
+  if (checkpoint && hasKeepsake({keepsakes},'roundsLog') && stress > 0) adjustPressure('查房记录：进店舒缓', -Math.min(3, stress));
+  const entryCharge = shopEntryCharge(boxOf(state));
+  if(checkpoint&&entryCharge&&energy<state.energyCap)adjustEnergy('抵达商店补电',Math.min(entryCharge,state.energyCap-energy));
+  if(checkpoint&&hasKeepsake({keepsakes},'stock')){const interest=Math.min(LEGEND_RULES.stockCap,Math.floor(Math.max(0,coins)*LEGEND_RULES.stockRate));if(interest)addCoins('股票利息',interest);}
   const buffer=settleBuffer(energy,state.energyCap,state.bufferPower??0,Boolean(state.upgrades.buffer)&&!SHOP_TUNING.bufferGap&&!SHOP_TUNING.bufferFlywheel);
   if(buffer.released)adjustEnergy('缓冲槽补电',buffer.released);
   if(buffer.captured)adjustEnergy('存入缓冲槽',-buffer.captured);
@@ -433,22 +556,24 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const lastEarnings = { total: coins - state.coins, sources: earningSources }; const lastPressure = { delta: stress - state.stress, sources: pressureSources }; const lastEnergy = { delta: energy - state.energy, sources: energySources }; const incomeNote = lastEarnings.total ? `${lastEarnings.total>0?'+':''}${lastEarnings.total} 金币 · ` : '';
   cabin = cabin.map(rider => rider?.kind === 'shifter' ? { ...rider, traits: randomTraits('shifter', unlockedAt(nextFloor), rng, (rider.traits?.revision ?? 0) + 1) } : rider);
   if (cabin.some(rider => rider?.kind === 'shifter') && status === 'playing') message += ' 百变人已变化，关门前查看新属性。';
-  const crisis: UpgradeCrisis = energy <= 0 && stress >= state.stressCap ? 'both' : energy <= 0 ? 'energy' : stress >= state.stressCap ? 'stress' : null;
   const drawn=status==='upgrade'?drawUpgradeOffer(state.upgrades,state.shopSeen??[],rng,nextFloor):{keys:[],seen:state.shopSeen};
   const shop = drawn.keys.map(key=>({key,price:upgradePrice(key,nextFloor,state.upgrades[key]),purchased:false}));
   if(SHOP_TUNING.bufferGap)state={...state,bufferGapTurns:gapCharge.progress};
   state=consumeFlywheel(state,flywheel);
-  return { ...state, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
+  const stabilized = stabilizedEnergy(state);
+  return { ...state, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
 }
 
 export type UpgradeCrisis = 'energy' | 'stress' | 'both' | null;
 export const upgradeChoices = (upgrades: Record<UpgradeKey, number> = EMPTY_UPGRADES, rng: () => number = Math.random, _crisis: UpgradeCrisis = null): UpgradeKey[] => {
   return drawUpgradeOffer(upgrades,[],rng).keys;
 };
-export const UPGRADE_GROUPS:UpgradeKey[][]=[['calm','rails','insulation','reservation','delay','soundproof'],['battery','concierge','tipjar','crowd','single','punchcard','finale'],['capacity','reinforced','express','relay','meter','buffer','retime']];
+/** v9: capacity moved into the power box, rails into the base game; Longer Fuse retired; Reservation and Rebooking merged into Dispatch. */
+export const RETIRED_UPGRADES:UpgradeKey[]=['capacity','rails','delay','reservation','retime'];
+export const UPGRADE_GROUPS:UpgradeKey[][]=[['calm','insulation','soundproof','dispatch'],['battery','concierge','tipjar','crowd','single','punchcard','finale'],['reinforced','express','relay','meter','buffer']];
 export function drawUpgradeOffer(upgrades:Record<UpgradeKey,number>,history:UpgradeKey[],rng:()=>number,floor=Infinity) {
-  const added:UpgradeKey[]=['rails','insulation','reservation','single','delay','buffer','soundproof','retime','punchcard','finale'];
-  const pool=(Object.keys(UPGRADES) as UpgradeKey[]).filter(k=>!upgrades[k]&&(!SHOP_RULES.mixed||k!=='crowd'||floor>=20)&&(k!=='delay'||floor>=30)&&(SHOP_RULES.expanded||!added.includes(k)));
+  const added:UpgradeKey[]=['rails','insulation','reservation','single','delay','buffer','soundproof','retime','punchcard','finale','dispatch'];
+  const pool=(Object.keys(UPGRADES) as UpgradeKey[]).filter(k=>!upgrades[k]&&!RETIRED_UPGRADES.includes(k)&&(!SHOP_RULES.mixed||k!=='crowd'||floor>=20)&&(k!=='delay'||floor>=30)&&(SHOP_RULES.expanded||!added.includes(k)));
   if(Object.values(upgrades).filter(Boolean).length>=UPGRADE_SLOTS)return {keys:[] as UpgradeKey[],seen:[...history]};
   if(!SHOP_RULES.grouped)return {keys:shuffle(pool,rng).slice(0,3),seen:[...history]};
   let seen=history.filter(k=>pool.includes(k));const keys:UpgradeKey[]=[];
@@ -462,7 +587,9 @@ export function drawUpgradeOffer(upgrades:Record<UpgradeKey,number>,history:Upgr
   while(keys.length<Math.min(3,pool.length))pick(pool.filter(k=>!keys.includes(k)));
   return {keys:shuffle(keys,rng),seen};
 }
-export const availableShopCards = (state: RunState) => state.shopUpgradeBought || Object.values(state.upgrades).filter(Boolean).length >= UPGRADE_SLOTS ? [] : state.shop.filter(card => !card.purchased && !state.upgrades[card.key]);
+/** v9: the first ability of each shop is free; one of the remaining cards may then be bought. */
+export const SHOP_PRICES = { extraAbility: 40 };
+export const availableShopCards = (state: RunState) => state.shopExtraBought || Object.values(state.upgrades).filter(Boolean).length >= UPGRADE_SLOTS ? [] : state.shop.filter(card => !card.purchased && !state.upgrades[card.key]);
 
 export function failureLesson(state: RunState): string {
   if (state.status !== 'lost') return '';
@@ -475,7 +602,8 @@ export function failureLesson(state: RunState): string {
     const spent = state.lastEnergy.sources.reduce((sum,line)=>sum+Math.max(0,-line.amount),0);
     const ledger = `电量耗尽 · 本层总扣电 ${spent}（运转 ${motor}、人物与红线 ${people}）；抵消与回电 +${restored}；净变化 ${state.lastEnergy.delta}。`;
     if (state.reserveCell) return ledger+'还有一份未使用的应急电池。关门前可用它补电。';
-    return ledger+'途中不能直接充电；离店时要预留完整路程的电量。';
+    if (state.coins >= 8) return ledger+`你带着 ${state.coins} 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 20 电。`;
+    return ledger+'离店时要预留到下个商店的电量；电量栏会显示到店约剩多少。';
   }
   if (state.message.includes('躁动')) {
     const source = state.lastPressure.sources.filter((line) => line.amount > 0).sort((a, b) => b.amount - a.amount)[0];
@@ -490,17 +618,60 @@ export function failureLesson(state: RunState): string {
 export function previewUpgrade(current: RunState, key: UpgradeKey): RunState {
   if (current.upgrades[key] || Object.values(current.upgrades).filter(Boolean).length >= UPGRADE_SLOTS) return current;
   const upgrades = { ...current.upgrades, [key]: 1 }; const energyCap = current.energyCap + (key === 'capacity' ? CAPACITY_UPGRADE : 0); const energy = current.energy; let stressCap = current.stressCap; let stress = current.stress; const weightCap = current.weightCap;
-  if (key === 'calm') { stressCap += 1; if(!SHOP_RULES.optionalCalm)stress = Math.max(0, stress - 2); }
+  if (key === 'calm') { stressCap += 2; if(!SHOP_RULES.optionalCalm)stress = Math.max(0, stress - 2); }
   return { ...current, upgrades, energyCap, energy: Math.min(energyCap, energy), stressCap, stress, weightCap, calmCharge:key==='calm'&&SHOP_RULES.optionalCalm?true:current.calmCharge };
 }
 
-export const UPGRADE_BASE_PRICES: Record<UpgradeKey, number> = { battery: 30, capacity: 35, calm: 35, concierge: 40, reinforced: 45, express: 45, tipjar: 30, relay: 30, crowd: 24, meter: 25, rails:24, insulation:24, reservation:20, single:24, delay:24, buffer:8, soundproof:24, retime:24, punchcard:24, finale:24 };
-export const upgradePrice = (key: UpgradeKey, _floor: number, _installed: number) => UPGRADE_BASE_PRICES[key];
+/** Retained for archived research only. v9 abilities are a free choice of one per shop. */
+export const UPGRADE_BASE_PRICES: Record<UpgradeKey, number> = { battery: 30, capacity: 35, calm: 35, concierge: 40, reinforced: 45, express: 45, tipjar: 30, relay: 30, crowd: 24, meter: 25, rails:24, insulation:24, reservation:20, single:24, delay:24, buffer:8, soundproof:24, retime:24, punchcard:24, finale:24, dispatch:24 };
+export const upgradePrice = (_key: UpgradeKey, _floor: number, _installed: number) => 0;
+export const REROLL_PRICE = 10;
+export function rerollShop(current: RunState, rng: () => number = Math.random): RunState {
+  if (current.status !== 'upgrade' || current.shopUpgradeBought || current.rerolledFloor === current.floor || current.coins < REROLL_PRICE || !current.shop.length) return current;
+  const drawn = drawUpgradeOffer(current.upgrades, current.shopSeen ?? [], rng, current.floor);
+  return { ...current, coins: current.coins - REROLL_PRICE, rerolledFloor: current.floor, shopSeen: drawn.seen, shop: drawn.keys.map(key => ({ key, price: 0, purchased: false })), message: `重抽能力，支付 ${REROLL_PRICE} 金币。` };
+}
+export const boxLevelPrice = (state: RunState, line: BoxLine) => (state.freeBoxLevels ?? 0) > 0 ? 0 : (BOX_PRICES[boxOf(state)[line]] ?? Infinity) - (hasKeepsake(state,'wrench') ? LEGEND_RULES.wrenchDiscount : 0);
+export function canBuyBoxLevel(state: RunState, line: BoxLine) {
+  const box = boxOf(state), free = (state.freeBoxLevels ?? 0) > 0;
+  return state.status === 'upgrade' && box[line] < BOX_MAX_LEVEL && boxTotal(box) < BOX_TOTAL_CAP && (free || state.boxBoughtFloor !== state.floor) && state.coins >= boxLevelPrice(state, line);
+}
+export function buyBoxLevel(current: RunState, line: BoxLine): RunState {
+  if (!canBuyBoxLevel(current, line)) return current;
+  const free = (current.freeBoxLevels ?? 0) > 0, price = boxLevelPrice(current, line);
+  const box = { ...boxOf(current), [line]: boxOf(current)[line] + 1 };
+  const energyCap = storageCap(box);
+  return { ...current, box, energyCap, coins: current.coins - price, freeBoxLevels: free ? (current.freeBoxLevels ?? 1) - 1 : current.freeBoxLevels, boxBoughtFloor: free ? current.boxBoughtFloor : current.floor,
+    message: free ? '老周的扳手：配电箱免费升级。' : `配电箱升级，支付 ${price} 金币。`, log: [`${current.floor}F · 配电箱升级 −${price} 金币`, ...current.log].slice(0, 4) };
+}
+/** Emergency power still allowed this sector, ignoring the wallet. */
+export function emergencySectorLeft(state: RunState) {
+  const used = state.emergencySector === sectorOf(state.floor) ? state.emergencyUsed ?? 0 : 0;
+  return Math.max(0, emergencySectorCap(boxOf(state)) - used);
+}
+export function emergencyAllowance(state: RunState) {
+  const used = state.emergencySector === sectorOf(state.floor) ? state.emergencyUsed ?? 0 : 0;
+  return Math.max(0, Math.min(emergencySectorCap(boxOf(state)) - used, state.energyCap - state.energy, Math.floor(state.coins / emergencyUnitPrice(boxOf(state)))));
+}
+/** Paid mid-sector charging before departure: double the shop price, capped per sector. */
+export function emergencyCharge(state: RunState, units: number): RunState {
+  if (state.status !== 'playing' || !Number.isSafeInteger(units) || units <= 0 || units > emergencyAllowance(state)) return state;
+  const sector = sectorOf(state.floor), used = state.emergencySector === sector ? state.emergencyUsed ?? 0 : 0;
+  const cost = units * emergencyUnitPrice(boxOf(state));
+  return { ...state, energy: state.energy + units, coins: state.coins - cost, emergencySector: sector, emergencyUsed: used + units, message: `途中补电 +${units}，支付 ${cost} 金币。`,
+    lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: units, sources: [{ label: '途中补电', amount: units }] } };
+}
 export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
   const card = current.shop.find((item) => item.key === key);
-  if (current.status !== 'upgrade' || current.shopUpgradeBought || !card || card.purchased || current.coins < card.price || current.upgrades[key] > 0 || Object.values(current.upgrades).filter(Boolean).length >= UPGRADE_SLOTS) return current;
+  const price = current.shopUpgradeBought ? SHOP_PRICES.extraAbility : 0;
+  if (current.status !== 'upgrade' || current.shopExtraBought || !card || card.purchased || current.coins < price || current.upgrades[key] > 0 || Object.values(current.upgrades).filter(Boolean).length >= UPGRADE_SLOTS) return current;
   const preview = previewUpgrade(current, key);
-  return { ...preview, coins: current.coins - card.price, shopUpgradeBought: true, shop: [], message: `${UPGRADES[key].name}已购入，花费 ${card.price} 金币。`, lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] }, log: [`${current.floor}F · 购买${UPGRADES[key].name} −${card.price} 金币`, ...current.log].slice(0, 4) };
+  const extra = current.shopUpgradeBought;
+  const shop = extra ? [] : current.shop.map(item => item.key === key ? { ...item, purchased: true } : { ...item, price: SHOP_PRICES.extraAbility });
+  return { ...preview, coins: current.coins - price, shopUpgradeBought: true, shopExtraBought: extra, shop,
+    message: extra ? `${UPGRADES[key].name}已加购，花费 ${price} 金币。` : `${UPGRADES[key].name}已选取（本店免费一项）。`,
+    lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] },
+    log: [`${current.floor}F · ${extra ? `加购${UPGRADES[key].name} −${price} 金币` : `选取${UPGRADES[key].name}`}`, ...current.log].slice(0, 4) };
 }
 
 export function leaveShop(current: RunState): RunState {
@@ -524,11 +695,11 @@ export function sootheAgitation(state: RunState, units: number): RunState {
 export function chargingPlan(state: RunState) {
   const target = Math.min(state.energyCap, 50);
   const units = Math.max(0, target - state.energy);
-  return {target,units,cost:units*CHARGE_PRICE,baseline:(nextShopFloor(state.floor)-state.floor)*travelEnergyCost(state.floor+1)};
+  return {target,units,cost:chargeCost(boxOf(state),units),baseline:(nextShopFloor(state.floor)-state.floor)*travelEnergyCost(state.floor+1)};
 }
 export function affordableChargingPlan(state: RunState) {
-  const units=Math.max(0,Math.min(state.energyCap-state.energy,Math.floor(state.coins/CHARGE_PRICE)));
-  return {units,cost:units*CHARGE_PRICE,target:state.energy+units};
+  const units=Math.max(0,Math.min(state.energyCap-state.energy,affordableUnits(boxOf(state),state.coins)));
+  return {units,cost:chargeCost(boxOf(state),units),target:state.energy+units};
 }
 export function purchaseRepairWarning(state: RunState, key: UpgradeKey, price: number) {
   if (state.coins < price) return null;
@@ -538,8 +709,8 @@ export function purchaseRepairWarning(state: RunState, key: UpgradeKey, price: n
   return null;
 }
 export function chargeBattery(state: RunState, units: number): RunState {
-  if(state.status!=='upgrade'||!Number.isSafeInteger(units)||units<=0||state.energy+units>state.energyCap||state.coins<units*CHARGE_PRICE)return state;
-  const cost=units*CHARGE_PRICE;
+  const cost=chargeCost(boxOf(state),units);
+  if(state.status!=='upgrade'||!Number.isSafeInteger(units)||units<=0||state.energy+units>state.energyCap||state.coins<cost)return state;
   return {...state,energy:state.energy+units,coins:state.coins-cost,message:`充电 +${units}，支付 ${cost} 金币。`,lastEarnings:{total:0,sources:[]},lastEnergy:{delta:units,sources:[{label:'商店充电',amount:units}]},log:[`${state.floor}F · 充电 −${cost} 金币`,...state.log].slice(0,4)};
 }
 export function buyReserveCell(state: RunState): RunState {
@@ -553,15 +724,17 @@ export function consumeReserveCell(state: RunState): RunState {
 }
 // Compatibility for earlier research records; this is a pure action, not a React hook.
 export { consumeReserveCell as useReserveCell };
+// Compatibility for the current UI; new callers use applyCalmCharge (not a React hook).
+export { applyCalmCharge as useCalmCharge };
 export const dismissalsRemaining = (state: RunState) => Math.max(0, DISMISSALS_PER_SECTOR - (state.dismissalsUsed ?? 0));
-export const dismissalCost=(state: RunState,rider:Rider)=>4+Math.max(0,rider.destination-state.floor)*2;
+export const dismissalCost=(state: RunState,rider:Rider)=>isLegend(rider.kind)?0:4+Math.max(0,rider.destination-state.floor)*2;
 export function dismissRider(state: RunState, id: string): RunState {
   const slot=state.cabin.findIndex(r=>r?.id===id),rider=state.cabin[slot];
   if(state.status!=='playing'||!rider||rider.boardedAt>=state.floor||rider.destination<=state.floor)return state;
   const cost=dismissalCost(state,rider);
-  if(state.coins<cost || dismissalsRemaining(state) <= 0)return state;
+  if(state.coins<cost || (!isLegend(rider.kind) && dismissalsRemaining(state) <= 0))return state;
   const message=`已请离${PASSENGERS[rider.kind].name}，赔偿 ${cost} 金币；不结算到站收益。`;
-  return {...state,coins:state.coins-cost,dismissalsUsed:(state.dismissalsUsed ?? 0)+1,cabin:state.cabin.map((r,i)=>i===slot?null:r),message,log:[`${state.floor}F · ${message}`,...state.log].slice(0,4),lastEarnings:{total:0,sources:[]},lastEnergy:{delta:0,sources:[]},lastPressure:{delta:0,sources:[]}};
+  return {...state,legendStatus:isLegend(rider.kind)?'dismissed':state.legendStatus,coins:state.coins-cost,dismissalsUsed:(state.dismissalsUsed ?? 0)+(isLegend(rider.kind)?0:1),cabin:state.cabin.map((r,i)=>i===slot?null:r),message,log:[`${state.floor}F · ${message}`,...state.log].slice(0,4),lastEarnings:{total:0,sources:[]},lastEnergy:{delta:0,sources:[]},lastPressure:{delta:0,sources:[]}};
 }
 export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  const count=state.upgrades[key];
@@ -569,7 +742,7 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  switch(key){
   case 'battery':return `每条协作连接的到站加成 +${cooperationBonus(state)} 金币（基础1 + 升级${count*ECONOMY_RULES.cooperationIncrement}）。`;
   case 'capacity':return `电量上限${state.energyCap}；只扩容，不赠送电量，本局唯一。`;
-  case 'calm':return `躁动上限 ${state.stressCap}；${state.calmCharge?'手动调节可用：−2躁动':'手动调节已使用'}，本局唯一`;
+  case 'calm':return `躁动上限 ${state.stressCap}；${state.calmCharge?'手动调节可用：−3躁动':'手动调节已使用，下个商店补满'}，本局唯一`;
   case 'concierge':return `此后新乘客到站小费 +${count*ECONOMY_RULES.conciergeTip}；不参与车费倍率`;
   case 'reinforced':return '关门时至少3人，每站抵消1点人物耗电，不影响运转耗电；本局唯一。';
   case 'express':return '新乘客原定路程≥5站时少坐1站；本局唯一';
@@ -579,13 +752,15 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
 
 /** Exact arrival payout at this seating arrangement. UI must mask hidden fares. */
 export const arrivalTip = (rider: Rider, agitation: number) => ECONOMY_RULES.conciergeCondition === 'any' || agitationBand(agitation) === ECONOMY_RULES.conciergeCondition ? rider.fareBonus : 0;
-export function arrivalFare(rider: Rider, cabin: Array<Rider | null>, slot: number, bonus = 1, agitation = 0, tuning: FareTuning = {}) {
+export function arrivalFare(rider: Rider, cabin: Array<Rider | null>, slot: number, bonus = 1, agitation = 0, tuning: FareTuning = {}, bellFare = false) {
   let fare = riderProfile(rider, cabin, slot).fare;
   const baseFare = fare;
-  const companions = rider.kind === 'tourist' ? neighbourCount(cabin, slot) * 2 : 0;
+  const companions = rider.kind === 'tourist' ? (neighbourCount(cabin, slot) + Number(hasNeighbour(cabin, slot, ['nightingale']))) * 2 : 0;
+  const matchmaker = !isLegend(rider.kind) && hasNeighbour(cabin, slot, ['matchmaker']) ? LEGEND_RULES.matchmakerNeighbourCoins : 0;
   if (rider.kind === 'lover') fare *= 1 + neighbours(slot).filter(i => cabin[i]?.kind === 'lover').length;
   if (rider.kind === 'thief' && hasNeighbour(cabin, slot, ['cop', 'lawyer'])) fare += 5;
-  if (rider.kind === 'ghost' && hasNeighbour(cabin, slot, ['exorcist'])) fare += 2;
+  if (rider.kind === 'ghost' && (bellFare || hasNeighbour(cabin, slot, [...GHOST_CONTROLLERS]))) fare += 2;
+  if (rider.kind === 'ghost' && bellFare) fare += 3;
   const gamble = conflictLinks(cabin).filter(link => link.effect === 'gamble' && (link.first === slot || link.second === slot)).length;
   const coaches = neighbours(slot).filter(i => cabin[i]?.kind === 'coach').length;
   const multiplier = gamble + (rider.kind === 'coach' ? 0 : .5 * coaches + agitationAppetite(rider, cabin, slot, agitation, tuning));
@@ -593,7 +768,7 @@ export function arrivalFare(rider: Rider, cabin: Array<Rider | null>, slot: numb
   if (rider.kind === 'coach') fare += neighbourCount(cabin, slot) * FARE_RULES.coachNeighbour;
   const preference = rider.kind === 'commuter' && agitationBand(agitation)==='low' ? COMMUTER_QUIET_BONUS : rider.kind === 'tourist' && agitationBand(agitation)==='medium' ? TOURIST_MEDIUM_BONUS : 0;
   const accomplishment = rider.kind === 'inspector' && rider.complianceReady ? INSPECTION_BONUS : rider.kind === 'child' && (rider.careProgress ?? 0)>=CHILD_CARE_WORK ? CHILD_CARE_BONUS : 0;
-  return fare + companions + preference + accomplishment + arrivalTip(rider,agitation) + (rider.volatile ? HIGH_RISK_BONUS : 0) + (rider.stash ?? 0) + bonus * bondStatus(rider, cabin, slot).supportCount;
+  return fare + companions + matchmaker + preference + accomplishment + arrivalTip(rider,agitation) + (rider.volatile ? RISK_RULES.highRiskBonus : 0) + (rider.stash ?? 0) + bonus * bondStatus(rider, cabin, slot).supportCount;
 }
 
 export function agitationAppetite(rider: Rider, cabin: Array<Rider | null>, slot: number, agitation: number, tuning: FareTuning = {}) {
@@ -606,7 +781,7 @@ export function agitationAppetite(rider: Rider, cabin: Array<Rider | null>, slot
 export function emergencyRepairPlan(state: RunState) {
   const energy = Math.max(0, 1 - state.energy);
   const stress = Math.max(0, state.stress - state.stressCap + 1);
-  const cost = energy * CHARGE_PRICE + stress * SOOTHE_PRICE;
+  const cost = chargeCost(boxOf(state), energy) + stress * SOOTHE_PRICE;
   return { energy, stress, cost, affordable: state.coins >= cost };
 }
 export function repairEmergency(state: RunState): RunState {

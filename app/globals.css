@@ -2480,3 +2480,92 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .game-shell .seat-metrics>span { display:flex; flex-direction:column; gap:2px; font:600 14px/1.15 var(--font-mono); overflow:visible; }
 .game-shell .seat-metrics svg { width:12px; height:12px; }
 @media (min-height:801px) { .game-shell .seat-heading { padding-right:34px; } }
+
+/* v9 compact passenger card: name row, three numbers, one ability line, relation chips. */
+.game-shell .passenger-card > .compact-card { display:flex; flex-direction:column; align-items:stretch; gap:6px; width:100%; height:auto; min-height:0; font-size:14px; line-height:1.3; text-align:left; }
+.game-shell .compact-card .cc-head { display:flex; align-items:center; gap:10px; padding-right:84px; min-width:0; }
+.game-shell .compact-card .cc-head .portrait-window { width:40px; height:46px; flex:none; }
+.game-shell .compact-card .cc-title { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.game-shell .compact-card .cc-title strong { font-size:20px; line-height:1.1; color:#f3ead6; }
+.game-shell .compact-card .cc-sub { display:flex; flex-wrap:wrap; align-items:center; gap:3px 8px; font-size:12px; color:#b7b2a4; }
+.game-shell .compact-card .cc-tag { display:inline-flex; align-items:center; gap:3px; padding:0 6px; border:1px solid #c99d5266; border-radius:3px; color:#e6cf9b; line-height:1.6; }
+.game-shell .compact-card .cc-tag svg { width:11px; height:11px; }
+.game-shell .compact-card .cc-tag-risk { border-color:#c46a4f88; color:#f3a58c; }
+.game-shell .compact-card .cc-tag-legend { border-color:#e3bb62; color:#f6d98c; background:#3a2c1255; }
+.game-shell .compact-card .cc-values { display:flex; align-items:center; gap:16px; font:500 16px/1 var(--font-mono),monospace; }
+.game-shell .compact-card .cc-values > * { display:inline-flex; align-items:center; gap:5px; }
+.game-shell .compact-card .cc-values svg { width:15px; height:15px; }
+.game-shell .compact-card .cc-values small { font-size:11px; opacity:.8; margin-left:2px; }
+.game-shell .compact-card .cc-fare { color:#ecd39c; }
+.game-shell .compact-card .cc-energy { color:#9fd6c6; }
+.game-shell .compact-card .cc-agitation { color:#f2a58b; }
+.game-shell .compact-card .cc-line { color:#ebe3d0; font-size:14px; }
+.game-shell .compact-card .cc-line em { font-style:normal; margin-left:8px; padding:0 6px; border:1px solid #c99d5266; border-radius:3px; font:500 12px/1.6 var(--font-mono),monospace; color:#eed59b; white-space:nowrap; }
+.game-shell .compact-card .cc-chips { display:flex; flex-wrap:wrap; gap:4px; }
+.game-shell .compact-card .cc-chip { display:inline-flex; align-items:center; gap:3px; padding:0 7px; border:1px solid; border-radius:999px; font-size:12px; line-height:1.7; white-space:nowrap; }
+.game-shell .compact-card .cc-chip svg { width:11px; height:11px; }
+.game-shell .compact-card .chip-green { color:#a3e3bb; border-color:#3f8a5f; background:#11271d; }
+.game-shell .compact-card .chip-red { color:#ffb4a6; border-color:#a4504a; background:#2d1618; }
+.game-shell .compact-card .chip-risk { color:#f1c77e; border-color:#9a7032; background:#2b2113; }
+.game-shell .compact-card .cc-action { margin-top:auto; font-size:12px; color:#d9c28c; }
+.game-shell .passenger-card.grade-legendary { border-color:#e0b75f; box-shadow:inset 3px 0 #e0b75f,0 0 22px rgba(224,183,95,.14); background:radial-gradient(circle at 88% 8%,rgba(224,183,95,.16),transparent 40%),linear-gradient(110deg,rgba(46,37,19,.97),rgba(12,19,16,.95)); }
+.portrait-legend { display:grid!important; place-items:center; background:radial-gradient(circle at 50% 35%,#4a3a1a,#140f07 75%)!important; border-color:#e0b75f!important; }
+.portrait-legend .legend-monogram { font-family:var(--font-display),serif; font-size:24px; font-weight:700; color:#f6d98c; text-shadow:0 0 12px rgba(246,217,140,.35); line-height:1; }
+.portrait-legend.portrait-large .legend-monogram { font-size:44px; }
+@media (max-width:700px) {
+  .game-shell .compact-card .cc-head { padding-right:70px; }
+  .game-shell .compact-card .cc-title strong { font-size:18px; }
+  .game-shell .compact-card .cc-values { font-size:15px; gap:12px; }
+}
+.game-shell .compact-card .cc-legend-values { font:400 12px/1.4 var(--font-sans),sans-serif; color:#cdbb8a; }
+.game-shell .compact-card .chip-keepsake { color:#f6d98c; border-color:#c99d52; background:#33270f; }
+.game-shell .sector-forecast { margin:4px 0 0; font-size:12px; line-height:1.35; color:#a9d6c6; }
+.game-shell .sector-forecast.is-warn { color:#f0c878; }
+.game-shell .sector-forecast.is-danger { color:#ff9c86; font-weight:600; }
+.game-shell .emergency-charge { display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; margin-top:5px; }
+.game-shell .emergency-charge button { padding:3px 7px; border:1px solid #6fa89366; border-radius:3px; background:#0f2320; color:#bfe6d8; font-size:11px; line-height:1.3; cursor:pointer; }
+.game-shell .emergency-charge button.is-urgent { border-color:#e0795f; background:#3a1a14; color:#ffc0ad; }
+.game-shell .emergency-charge button:disabled { opacity:.45; cursor:not-allowed; }
+.game-shell .emergency-charge small { width:100%; font-size:10.5px; color:#8f9a90; }
+.game-shell .shop-reroll { display:inline-flex; align-items:center; gap:6px; margin:4px 0 8px; padding:5px 10px; border:1px solid #c99d5266; border-radius:3px; background:#1a1c14; color:#e6cf9b; font-size:12px; cursor:pointer; }
+.game-shell .shop-reroll svg { width:13px; height:13px; }
+.game-shell .shop-reroll:disabled { opacity:.45; cursor:not-allowed; }
+.keepsake-row { display:flex; flex-wrap:wrap; align-items:center; gap:5px; margin:4px 0 8px; font-size:12px; color:#cdbb8a; }
+.keepsake-chip { padding:1px 8px; border:1px solid #c99d52; border-radius:999px; background:#33270f; color:#f6d98c; font-size:12px; }
+.box-panel .box-line { display:grid; grid-template-columns:minmax(64px,auto) 1fr auto; align-items:center; gap:8px; padding:6px 0; border-top:1px solid #c99d5222; font-size:12px; }
+.box-panel .box-line-name { display:flex; flex-direction:column; gap:3px; color:#f0e3c2; font-weight:600; }
+.box-panel .box-pips { display:flex; gap:3px; }
+.box-panel .box-pips b { width:12px; height:4px; background:#3a3a2c; border-radius:1px; }
+.box-panel .box-pips b.on { background:#e0b75f; box-shadow:0 0 6px rgba(224,183,95,.5); }
+.box-panel .box-line-next { color:#c8c2b0; line-height:1.35; }
+.box-panel .box-line button { padding:4px 9px; border:1px solid #c99d5288; border-radius:3px; background:#2a2312; color:#f3dca2; font-size:12px; white-space:nowrap; cursor:pointer; }
+.box-panel .box-line button:disabled { opacity:.4; cursor:not-allowed; }
+.archive-subhead { margin:14px 0 6px; font-size:14px; letter-spacing:.06em; color:#e6cf9b; }
+.legend-unlock { color:#f6d98c!important; }
+/* Floor 1 may show a fourth (legend) card. */
+@media (min-width:701px) { .game-shell .passenger-list.has-four { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+@media (min-width:1101px) { .game-shell .passenger-list.has-four { grid-template-columns:minmax(0,1fr); grid-template-rows:repeat(4,minmax(0,1fr)); } }
+/* Medium widths: keep the receipt and run tools in the status rail; fixed placement covered the ascend button. */
+@media (min-width:701px) and (max-width:1100px) {
+  .game-shell .status-rail .receipt-button,.game-shell .status-rail .run-tools { position:static; width:100%; right:auto; bottom:auto; }
+}
+.upgrade-dialog .shop-scroll-body button.shop-reroll { display:inline-flex; flex-direction:row; width:auto; min-height:0; margin:4px 0 8px; padding:5px 10px; font-size:12px; }
+/* Compact cards need less height: let the candidate row size to its content and give the cabin the rest. */
+@media (min-width:701px) and (max-width:1100px) {
+  .game-shell .game-grid { grid-template-rows:auto minmax(0,1fr); }
+  .game-shell .candidate-panel,.game-shell .passenger-list { height:auto; }
+  .game-shell .passenger-card { height:100%; }
+}
+.game-shell .compact-card .cc-title { flex:1; min-width:0; }
+.game-shell .compact-card .cc-title strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* Phones: compact cards stack so every candidate is visible at once (no one-card carousel). */
+@media (max-width:700px) {
+  .game-shell .candidate-panel { height:auto; min-height:0; overflow:visible; }
+  .game-shell .passenger-list { flex:none; display:grid; grid-template-columns:1fr; gap:6px; height:auto; overflow:visible; scroll-snap-type:none; }
+  .game-shell .passenger-item { flex:none; width:100%; }
+  .game-shell .passenger-card { height:auto; min-height:0; overflow:visible; padding:8px 10px; }
+  .game-shell .compact-candidate-tabs { display:none; }
+  .game-shell .compact-card { gap:4px; }
+  .game-shell .compact-card .cc-head .portrait-window { width:32px; height:36px; }
+}
+@media (max-width:700px) and (max-height:740px) { .game-shell .game-grid { grid-template-rows:auto minmax(0,1fr) 65px; } }

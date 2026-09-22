@@ -3,6 +3,7 @@ import {V831_PAIRS} from './i18n-v831';
 import {V832_PAIRS} from './i18n-v832';
 import {V837_PAIRS} from './i18n-v837';
 import {V835_PAIRS} from './i18n-v835';
+import {V9_PAIRS} from './i18n-v9';
 
 export type GameLocale = 'en' | 'zh';
 
@@ -524,8 +525,8 @@ const phrasePairs: Array<[string, string]> = [
   ['或', ' or '], ['/条', '/link'], ['/站', '/floor'], ['/ 站', '/floor'], ['金币', 'Coins'], ['耗电', 'Power'], ['躁动', 'Agitation'], ['到站', 'Arrival'], ['车费', 'fare'],
 ];
 
-const exact = new Map([...exactPairs, ...V832_PAIRS, ...V835_PAIRS, ...V837_PAIRS]);
-const phrases = [...V837_PAIRS, ...V835_PAIRS, ...V832_PAIRS, ...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
+const exact = new Map([...exactPairs, ...V832_PAIRS, ...V835_PAIRS, ...V837_PAIRS, ...V9_PAIRS]);
+const phrases = [...V9_PAIRS, ...V837_PAIRS, ...V835_PAIRS, ...V832_PAIRS, ...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
 
 export function translateGameText(value: string, locale: GameLocale): string {
   if (locale === 'zh') return value;
@@ -538,6 +539,14 @@ export function translateGameText(value: string, locale: GameLocale): string {
   const direct = exact.get(core);
   if (direct) return `${leading}${direct}${trailing}`;
   let translated = value
+    // v9: motor notices and the schedule are generated from motorCost, so translate by pattern.
+    .replace(/^预告：(\d+)层起运转(\d+)电$/u, 'Ahead: motor $2 from floor $1')
+    .replace(/^(\d+)位邻座 · 到站\+(\d+)币$/u, '$1 neighbors · +$2 on arrival')
+    .replace(/你带着 (\d+) 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 20 电。/u, 'You left with $1 coins: when power runs short, use in-transit charging in the power panel, up to 20 per ten floors.')
+    .replace(/^运转：(.+)。每十层可维修，人物耗电另计。$/u, (_m, body: string) => `Motor: ${body
+      .replace(/(\d+)–(\d+)层(\d+)电/gu, 'floors $1–$2: $3')
+      .replace(/(\d+)层起(\d+)电封顶/gu, 'floor $1+: $2 (cap)')
+      .replaceAll('，', ', ')}. Maintenance every ten floors; passenger power is additional.`)
     .replace(/^照顾 (\d+)\/(\d+)/gu, 'Care $1/$2')
     .replace(/签章 · 到站\+(\d+)币/gu, 'Stamped · +$1 on arrival')
     .replace(/同层按1→6号位/gu, 'Same floor: seats 1→6')

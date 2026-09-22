@@ -1,4 +1,7 @@
-import { COURIER_ARRIVAL_CHARGE, SHOP_ENTRY_CHARGE, settleBuffer, redAgitationProtection, arrivalRelief, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, type RunState } from './game-engine';
+import { COURIER_ARRIVAL_CHARGE, settleBuffer, redAgitationProtection, arrivalRelief, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, serviceSaving, type Rider, type RunState } from './game-engine';
+import { riderProfile } from './rider-profile';
+import { motorCost } from './balance-v832';
+import { boxedMotorCost, shopEntryCharge } from './power-box';
 import { conflictLinks } from './rider-profile';
 import { relayEnergyBounds, shopOpportunities, naturalChargeBoost, SHOP_TUNING, deliveryGapCharge, flywheelSaving } from './shop-effects';
 import { experimentalRiskLinks, type RiskLinkTuning } from './risk-link-experiment';
@@ -70,7 +73,7 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
 export function energyForecast(state: RunState, _legacyWeight?: number, _riskTuning?: RiskLinkTuning): EnergyForecast {
  const {motor,people,conflict,saved,total,service}=energyBreakdown(state);
  const nextFloor=state.floor+1;
- const shopCharge=nextFloor%10===0?SHOP_ENTRY_CHARGE:0;
+ const shopCharge=nextFloor%10===0?shopEntryCharge(boxOf(state)):0;
  let relayPossible=false;
  const charges=projectedDestinationVariants(state).flatMap(destinations=>{
   const slots=state.cabin.flatMap((rider,slot)=>rider&&destinations[slot]!==null&&destinations[slot]!<=nextFloor?[slot]:[]);
@@ -88,4 +91,22 @@ export function energyForecast(state: RunState, _legacyWeight?: number, _riskTun
  const chargeNote=maxCharge?minCharge===maxCharge?`＋补电 ${maxCharge}`:`＋可能补电 ${minCharge}–${maxCharge}`:'';
  const range=lowDelta===highDelta?signedDelta(lowDelta):`${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
  return {range,summary:`下一站耗 ${total} 电＝运转 ${motor}＋人物 ${people}${conflict?`＋红线 ${conflict}`:''}−节能 ${saved}${chargeNote}${relayPossible ? SHOP_TUNING.relayReliable?'；满足同站条件保底回1电，50%额外回2电':'；并联回充50%，不保证续航' : ''}`,danger:state.energy+lowDelta<=0,lowDelta,highDelta};
+}
+
+/** Power at the next shop if the current riders ride out their trips and one
+ * minimum rider (1 power) is carried once the cabin empties. Deterministic:
+ * excludes random recharges, flywheel savings and future boarding. */
+export function sectorForecast(state: RunState): { shop: number; projected: number; failFloor: number | null } {
+  const shop = nextShopFloor(state.floor);
+  let energy = state.energy, failFloor: number | null = null;
+  for (let f = state.floor + 1; f <= shop; f++) {
+    const aboard = state.cabin.map((r, slot) => (r && r.destination >= f ? { r, slot } : null)).filter(Boolean) as Array<{ r: Rider; slot: number }>;
+    const riders = aboard.reduce((n, { r, slot }) => n + riderProfile(r, state.cabin, slot).energy, 0);
+    const motor = boxedMotorCost(motorCost(f), boxOf(state), f) - (f === state.floor + 1 ? operatorSaving(state) + serviceSaving(state) : 0);
+    energy -= Math.max(0, motor) + (aboard.length ? riders : 1);
+    energy += state.cabin.filter(r => r?.kind === 'courier' && r.destination === f).length * COURIER_ARRIVAL_CHARGE;
+    if (f === shop) energy = Math.min(state.energyCap, energy + shopEntryCharge(boxOf(state)));
+    if (failFloor === null && (energy < 0 || (f < shop && energy <= 0))) failFloor = f;
+  }
+  return { shop, projected: energy, failFloor };
 }

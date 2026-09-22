@@ -1,9 +1,9 @@
 import { ADJACENT, type PassengerKind } from './game-data';
 import type { Rider } from './game-engine';
 
-export const UPGRADE_SLOTS = 4;
+export const UPGRADE_SLOTS = 6;
 export const DISMISSALS_PER_SECTOR = 2;
-export const RISK_STASH_PER_ASCENT = 2;
+export const RISK_STASH_PER_ASCENT = 3;
 export const RISK_PARTNERS: PassengerKind[] = ['thief', 'drunk', 'bomb'];
 
 /** Public, local links. Care can keep a Thief quiet, but only control breaks
@@ -40,4 +40,5 @@ export const OFFER_PARTNERS: Record<PassengerKind, PassengerKind[]> = {
   nurse: ['drunk', 'child'], child: ['nurse', 'lover'], ghost: ['exorcist'], exorcist: ['ghost'],
   coach: ['commuter', 'courier', 'mystery'], celebrity: ['tourist', 'coach'], inspector: ['mechanic'],
   bomb: ['cop', 'thief', 'drunk'], mystery: ['coach'], shifter: ['nurse'], mimic: ['tourist'],
+  operator: ['mechanic'], matchmaker: ['lover'], don: ['thief'], matron: ['child'], nightingale: ['tourist'], medium: ['ghost'], tycoon: ['commuter'], stranger: ['tourist'],
 };

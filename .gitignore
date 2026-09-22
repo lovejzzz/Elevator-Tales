@@ -41,3 +41,4 @@ next-env.d.ts
 
 # Lossless music masters stay local; web-ready encodes live in public/audio/music.
 /source-audio/
+/.balance-sim/

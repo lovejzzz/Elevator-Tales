@@ -1,6 +1,6 @@
 import { PASSENGERS, passengerCategory, type PassengerKind } from './game-data';
 import { bondLines, bondSummary, riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
-import { arrivalFare, arrivalTip, HIGH_RISK_BONUS, riderAfterWork, riderAgitation, type Rider, unlockedAt, type RunState } from './game-engine';
+import { arrivalFare, arrivalTip, HIGH_RISK_BONUS, riderAfterWork, riderAgitation, type Rider, type RunState } from './game-engine';
 import { CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
 import { RISK_PARTNERS, RISK_STASH_PER_ASCENT, riskPartnerships } from './shift-rules';
 import { agitationBand } from './balance-v832';

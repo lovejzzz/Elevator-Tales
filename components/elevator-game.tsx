@@ -5,17 +5,23 @@ import { ChevronsUp, ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Chec
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, passengerCardGrade, passengerCategory, PASSENGER_CATEGORY_LABELS, type PassengerCardGrade, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
-import { availableShopCards, LOVER_CALL_CHANCE, emergencyRepairPlan, repairEmergency, dismissalsRemaining, energyBreakdown, purchaseRepairWarning } from '@/lib/game-engine';
-import { CHARGE_PRICE, INITIAL_ENERGY, ENERGY_CAPACITY, HIGH_RISK_BONUS, SHOP_ENTRY_CHARGE, travelEnergyCost, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, EMPTY_UPGRADES, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, makeOffers, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, touristCompanionCount, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
-import { energyForecast, stressForecast } from '@/lib/game-forecast';
+import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, isLegend, passengerCardGrade, passengerCategory, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
+import { cardSummary, riderName, type CardChip } from '@/lib/card-summary';
+import { KEEPSAKES_SEEN_KEY, LEGEND_UNLOCKS_KEY, LEGEND_UNLOCK_HINTS, loadKeepsakesSeen, loadUnlockedLegends, nextUnlocks, saveList } from '@/lib/legend-unlocks';
+import { KEEPSAKES, type KeepsakeKey } from '@/lib/legends';
+import { LEGEND_KINDS, type LegendKind } from '@/lib/game-data';
+import { availableShopCards, emergencyRepairPlan, repairEmergency, dismissalsRemaining, energyBreakdown, purchaseRepairWarning } from '@/lib/game-engine';
+import { HIGH_RISK_BONUS, travelEnergyCost, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, touristCompanionCount, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
+import { energyForecast, sectorForecast, stressForecast } from '@/lib/game-forecast';
+import { RETIRED_UPGRADES, emergencyAllowance, emergencySectorLeft, emergencyCharge, boxOf, buyBoxLevel, canBuyBoxLevel, boxLevelPrice, rerollShop, REROLL_PRICE, SHOP_PRICES } from '@/lib/game-engine';
+import { emergencyUnitPrice, BOX_LINES, BOX_LINE_LABELS, BOX_MAX_LEVEL, BOX_TOTAL_CAP, boxTotal, chargeCost as boxChargeCost, chargeUnitPrice, affordableUnits, shopEntryCharge, type BoxLine } from '@/lib/power-box';
 import { activeConnection, copyConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
 import { disposeGameMusic, musicSceneForView, setGameMusic, unlockGameMusic } from '@/lib/game-music';
 import { bondStatus, conflictLinks, type ConflictEffect } from '@/lib/rider-profile';
 import { portraitAsset } from '@/lib/passenger-assets';
 import { addDiscoveredPassengers, sanitizeDiscoveredPassengers } from '@/lib/passenger-discovery';
-import { passengerBrief, passengerCardSections, SHARED_SAVING_RULE, type PassengerCardEffect, type PassengerCardRelation, type PassengerRuleBlock } from '@/lib/passenger-presentation';
+import { passengerBrief, SHARED_SAVING_RULE, type PassengerRuleBlock } from '@/lib/passenger-presentation';
 import { metricChanges, type MetricChange, type MetricKey } from '@/lib/metric-feedback';
 import { CHANGELOG, CHANGELOG_EN, GAME_VERSION } from '@/lib/changelog';
 import { localizeTree, translateGameText, type GameLocale } from '@/lib/i18n';
@@ -25,9 +31,8 @@ import { offerReveal } from '@/lib/offer-reveal';
 import { shouldPreviewConnection } from '@/lib/connection-preview';
 import { AgitationGauge } from '@/components/agitation-gauge';
 import { cooperationLabel } from '@/lib/cooperation-label';
-import { compactRelationText } from '@/lib/card-relation-text';
 import { agitationBand, musicBeatForAgitation, motorAdvanceNotice, motorScheduleText, REPAIR_WORK, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE } from '@/lib/balance-v832';
-import { buyReserveCell, consumeReserveCell, nextOfferBatch, retimeRider, oldMovesRemaining, reserveOffer, useCalmCharge } from '@/lib/game-engine';
+import { buyReserveCell, consumeReserveCell, nextOfferBatch, retimeRider, oldMovesRemaining, reserveOffer, applyCalmCharge, startRun } from '@/lib/game-engine';
 
 type DragPayload = { type: 'offer'; id: string } | { type: 'slot'; slot: number };
 type Feedback = { id: number; tone: 'place' | 'combo' | 'error' | 'arrival'; label: string; slots: number[]; coins?: number; energy?: number; pressure?: number };
@@ -79,58 +84,60 @@ function MetricResponse({ metric, event, locale }: { metric: MetricKey; event: M
 }
 const shiftPhase = (floor: number) => floor <= 10 ? '临时夜班' : '无尽夜班';
 
+const LEGEND_MONOGRAM: Partial<Record<PassengerKind, string>> = { operator: '周', matchmaker: '月', don: '父', matron: '护', nightingale: '莺', medium: '灵', tycoon: '亨', stranger: '13' };
 function Portrait({ kind, large = false }: { kind: PassengerKind; large?: boolean }) {
+  // Legends have no painted portrait yet; a brass monogram stands in.
+  if (isLegend(kind)) return <span className={`portrait-window portrait-legend ${large ? 'portrait-large' : ''}`} aria-hidden="true"><span className="legend-monogram">{LEGEND_MONOGRAM[kind]}</span></span>;
   const asset = portraitAsset(kind); const x = asset.cell % asset.columns; const y = Math.floor(asset.cell / asset.columns);
   return <span className={`portrait-window ${large ? 'portrait-large' : ''}`} aria-hidden="true"><span className="portrait-sheet" style={{ backgroundImage: `url(${asset.src})`, backgroundSize: `${asset.columns * 100}% ${asset.rows * 100}%`, backgroundPosition: `${asset.columns > 1 ? x * 100 / (asset.columns - 1) : 50}% ${asset.rows > 1 ? y * 100 / (asset.rows - 1) : 50}%` }} /></span>;
 }
 
-const CARD_GRADE_LABELS: Record<PassengerCardGrade,string> = {
-  standard: '常规', fine: '精良', rare: '稀有', legendary: '传奇',
+const KEEPSAKE_EN: Record<KeepsakeKey, [string, string]> = {
+  wrench: ['Old Zhou’s Wrench', 'One free power-box level; every later level costs 5 coins less.'],
+  redString: ['Red String', 'Each bond pays +2 on arrival; unpaired Lovers call a partner 35% of the time.'],
+  pocketWatch: ['Pocket Watch', 'Criminal links bank 1 more coin per floor; their agitation is capped at 1 per floor.'],
+  roundsLog: ['Rounds Log', 'Agitation cap +2; −3 agitation at every shop; +1 per arrival after calm departures.'],
+  vinyl: ['Vinyl Record', 'Musicians from floor 1; at medium agitation Musicians earn +2 and each arrival tips +2.'],
+  bell: ['Spirit Bell', 'Ghosts always count as controlled and pay +5 in total on arrival.'],
+  stock: ['Share Certificate', 'At each shop, unspent coins earn 15% interest, up to +12.'],
 };
+const legendKeepsake = (kind: LegendKind): KeepsakeKey | null => ({ operator: 'wrench', matchmaker: 'redString', don: 'pocketWatch', matron: 'roundsLog', nightingale: 'vinyl', medium: 'bell', tycoon: 'stock', stranger: null } as Record<LegendKind, KeepsakeKey | null>)[kind];
+const keepsakeLabel = (key: KeepsakeKey, locale: GameLocale) => locale === 'zh' ? KEEPSAKES[key].name : KEEPSAKE_EN[key][0];
+const keepsakeText = (key: KeepsakeKey, locale: GameLocale) => locale === 'zh' ? KEEPSAKES[key].description : KEEPSAKE_EN[key][1];
+function keepsakeName(kind: LegendKind, locale: GameLocale) { const key = legendKeepsake(kind); return key ? keepsakeLabel(key, locale) : locale === 'zh' ? '随机一件' : 'A random one'; }
+function keepsakeTitle(kind: LegendKind, locale: GameLocale) { const key = legendKeepsake(kind); return key ? keepsakeText(key, locale) : locale === 'zh' ? '随机获得另一件传奇信物，再加 0–20 金币' : 'Another random keepsake plus 0–20 coins'; }
 
-function CardEffect({ effect, locale }: { effect: PassengerCardEffect; locale: GameLocale }) {
-  const Icon=effect.tone==='coins'?Coins:effect.tone==='energy'?BatteryCharging:effect.tone==='agitation'?Flame:effect.tone==='timer'?LockKeyhole:Sparkles;
-  return <span className={`card-effect effect-${effect.tone}`}><Icon aria-hidden="true" />{translateGameText(effect.text,locale)}</span>;
+function ChipIcon({ icon }: { icon: CardChip['icon'] }) {
+  if (icon === 'agitation') return <Flame aria-hidden="true" />;
+  if (icon === 'energy') return <BatteryCharging aria-hidden="true" />;
+  if (icon === 'coins') return <Coins aria-hidden="true" />;
+  if (icon === 'mixed') return <Sparkles aria-hidden="true" />;
+  return null;
 }
 
-// Full rules stay in the detail sheet; offers are a simultaneous comparison surface.
-function CandidateRelations({ rows, label, tone, locale }: { rows: PassengerCardRelation[]; label: string; tone: string; locale: GameLocale }) {
-  return <span className={`candidate-relation relation-${tone}`}>
-    <b>{label}</b><span>{rows.length ? rows.map((row,index)=><span className="candidate-relation-row" key={index}>
-      {row.targetLabel ? translateGameText(row.targetLabel,locale) : row.targets?.map(kind=>translateGameText(PASSENGERS[kind].name,locale)).join(' / ')}
-      <span className="candidate-link-effect">：{row.effects.map(effect=>compactRelationText(translateGameText(effect.text,locale))).join('；')}</span>
-    </span>) : '—'}</span>
-  </span>;
-}
-
+// Compact card: name row, three numbers, one ability line, relation chips. Full rules live in the sheet.
 export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider; run: RunState; action?: string; locale: GameLocale }) {
   const brief=passengerBrief(rider,run.floor,run.cabin,cooperationBonus(run),cooperationRelief(run),eventPressureMultiplier(run),run.stress);
-  const sections=passengerCardSections(rider,run,cooperationBonus(run),cooperationRelief(run));
-  const grade=passengerCardGrade(rider.kind);
-  const agitationText=`+${brief.agitation}/层`;
-  const work = ['mechanic', 'inspector', 'bomb', 'mimic'].includes(rider.kind) ? sections.self[0] : rider.kind === 'child' ? sections.self[1] : undefined;
-  const ability = rider.kind === 'lover'
-    ? (locale === 'zh' ? `每位恋人邻座：基价+100%；未配对时，全车${LOVER_CALL_CHANCE * 100}%呼唤1位` : `Per Lover neighbor: +100% base fare; ${LOVER_CALL_CHANCE * 100}% cabin call for 1 if unpaired`)
-    : translateGameText(PASSENGERS[rider.kind].short, locale);
-  return localizeTree(<span className="unified-passenger-summary candidate-summary">
-    <span className="card-self">
-      <span className="card-head"><Portrait kind={rider.kind}/><span><strong>{PASSENGERS[rider.kind].name}</strong><span className="card-meta"><span className={`card-category category-${passengerCategory(rider.kind)}`}>{PASSENGER_CATEGORY_LABELS[passengerCategory(rider.kind)]}</span><span className="card-trip">还剩 {brief.distance} 站</span><span className={`card-grade grade-${grade}`} title="卡牌稀有度">{CARD_GRADE_LABELS[grade]}</span>{rider.kind==='tourist'&&<span className="tourist-stamp">旅伴加成</span>}{rider.volatile&&<span className="high-risk-tag"><Flame aria-hidden="true" />高危 +{HIGH_RISK_BONUS}</span>}</span></span></span>
-      <span className="card-values">
-        <b className="card-fare" aria-label={brief.coins===null?'到站金币待揭晓':`${rider.localFareRatio?'短途基价':'基价'} ${brief.coins}${brief.tip?`，另有小费 ${brief.tip}`:''}`} title={rider.localFareRatio?'短途票价已计入基价；邻座奖励、小费和暂存收益不打折。':'高危加价、小费与暂存收益不参与倍率'}><Coins aria-hidden="true" />{brief.coins===null?'?':brief.coins}{brief.tip>0&&<small>+{brief.tip}</small>}<small>{rider.localFareRatio?'短途基价':'基价'}</small></b>
-        <span className="card-energy" aria-label={`每层耗电 ${brief.energy}`} title="每层耗电"><BatteryCharging aria-hidden="true" />{brief.energy}/层</span>
-        {brief.agitation>0&&<span className="card-agitation" aria-label={`每层自身躁动 ${brief.agitation}`} title="每层自身躁动"><Flame aria-hidden="true" />{agitationText}</span>}
-      </span>
-      {/* Bomb's precise timer below and shared bank rule already cover its short blurb. */}
-      {rider.kind !== 'bomb' && <span className="candidate-ability">{ability}</span>}
-      {work && <span className="candidate-work"><CardEffect effect={work} locale={locale}/></span>}
-    </span>
-    <span className="candidate-links">
-      <CandidateRelations rows={sections.green} label={locale === 'zh' ? '绿线' : 'Green'} tone="green" locale={locale}/>
-      <CandidateRelations rows={sections.red} label={locale === 'zh' ? '红线' : 'Red'} tone="red" locale={locale}/>
-    </span>
-    {sections.risk.length>0&&<span className="candidate-risk">{locale==='zh'?'同伙：小偷 / 醉汉 / 炸弹客。未受控相邻：每人每层暂存2币，高躁动3币；每条线+1躁动。送达兑现，请离作废。':'Thief / Drunk / Bomb Carrier: uncontrolled pairs bank 2 coins/rider/floor (high agitation: 3), +1 agitation/link. Arrival pays; dismissal forfeits.'}</span>}
-    <span className="card-action">{action || (locale === 'zh' ? '点击或拖入空位' : 'Click or drag to board')}</span>
-  </span>, locale);
+  const summary=cardSummary(rider,run,locale);
+  const zh=locale==='zh';
+  const legend=isLegend(rider.kind);
+  return <span className="unified-passenger-summary compact-card" data-no-translate>
+    <span className="cc-head"><Portrait kind={rider.kind}/><span className="cc-title"><strong>{riderName(rider.kind,locale)}</strong><span className="cc-sub">
+      <span className="cc-trip">{zh?`${brief.distance} 站`:`${brief.distance} stops`}</span>
+      {legend&&<span className="cc-tag cc-tag-legend">{zh?'传奇':'Legend'}</span>}
+      {rider.volatile&&<span className="cc-tag cc-tag-risk"><Flame aria-hidden="true" />{zh?`高危 +${HIGH_RISK_BONUS}`:`High risk +${HIGH_RISK_BONUS}`}</span>}
+      {rider.localFareRatio&&<span className="cc-tag">{zh?'短途':'Local'}</span>}
+    </span></span></span>
+    {legend ? <span className="cc-values cc-legend-values"><span>{zh?'不付车费 · 不耗电':'No fare · no power'}{rider.kind==='medium'?'':''}</span></span> : <span className="cc-values">
+      <b className="cc-fare" aria-label={brief.coins===null?(zh?'车费到站揭晓':'Fare sealed'):`${zh?'车费':'Fare'} ${brief.coins}`}><Coins aria-hidden="true" />{brief.coins===null?'?':brief.coins}{brief.tip>0&&<small>+{brief.tip}</small>}</b>
+      <span className="cc-energy" aria-label={`${zh?'每层耗电':'Power per floor'} ${brief.energy}`}><BatteryCharging aria-hidden="true" />{brief.energy}</span>
+      {brief.agitation>0&&<span className="cc-agitation" aria-label={`${zh?'每层躁动':'Agitation per floor'} +${brief.agitation}`}><Flame aria-hidden="true" />+{brief.agitation}</span>}
+    </span>}
+    <span className="cc-line">{summary.line}{summary.progress&&<em>{summary.progress}</em>}</span>
+    {legend&&<span className="cc-chips"><span className="cc-chip chip-keepsake" title={keepsakeTitle(rider.kind as LegendKind,locale)}>{zh?'信物 · ':'Keepsake · '}{keepsakeName(rider.kind as LegendKind,locale)}</span></span>}
+    {summary.chips.length>0&&<span className="cc-chips">{summary.chips.map((chip,index)=><span key={index} className={`cc-chip chip-${chip.tone}`} title={chip.title}>{chip.tone==='green'?'+':chip.tone==='risk'?'⛓':''}<ChipIcon icon={chip.icon}/>{chip.label}</span>)}</span>}
+    {action&&<span className="cc-action">{action}</span>}
+  </span>;
 }
 
 function riderState(cabin: Array<Rider | null>, slot: number, bonus: number, agitation: number): { label: string; tone: 'active' | 'warn' | 'neutral' } | null {
@@ -144,7 +151,7 @@ function riderState(cabin: Array<Rider | null>, slot: number, bonus: number, agi
   if(rider.kind==='mystery')return {label:bond.supported?cooperationLabel(bond.supportCount,bonus):'车费待揭晓',tone:bond.supported?'active':'neutral'};
   if(rider.kind==='shifter')return {label:`耗电 ${bond.energy} · 躁动 +${bond.agitation}`,tone:'warn'};
   switch (rider.kind) {
-    case 'tourist': { const count=touristCompanionCount(cabin,slot); return count ? { label: `任何邻座 ×${count} · 到站+${count*2}币`, tone: 'active' } : { label: '等待邻座 · 每位到站+2币', tone: 'neutral' }; }
+    case 'tourist': { const count=touristCompanionCount(cabin,slot)+Number(hasNeighbour(cabin,slot,['nightingale'])); return count ? { label: `${count}位邻座 · 到站+${count*2}币`, tone: 'active' } : { label: '等待邻座 · 每位到站+2币', tone: 'neutral' }; }
     case 'courier': return { label: '到站补充2电', tone: 'active' };
     case 'lover': return hasNeighbour(cabin, slot, ['lover']) ? { label: '已配对', tone: 'active' } : { label: '正在呼唤同伴', tone: 'neutral' };
     case 'thief': return hasNeighbour(cabin, slot, ['cop', 'lawyer']) ? { label: '已受控制', tone: 'active' } : { label: '未受控制', tone: 'warn' };
@@ -176,9 +183,9 @@ function upgradeImpact(key: UpgradeKey, run: RunState): string {
   switch (key) {
     case 'battery': return `每条协作连接 +${cooperationBonus(run)} → +${cooperationBonus(preview)} 金币。`;
     case 'calm': return `躁动 ${run.stress}/${run.stressCap} → ${preview.stress}/${preview.stressCap}`;
-    case 'reinforced': return '至少3人：每站抵消1点人物耗电';
+    case 'reinforced': return '每十层最多5次 · 关门至少5人：抵消1点人物耗电';
     case 'capacity': return `容量 ${run.energyCap} → ${preview.energyCap}；仍需付费充电`;
-    case 'concierge': return `新乘客到站小费 +${(run.upgrades.concierge + 1) * 2}`;
+    case 'concierge': return '此后新乘客到站小费 +1';
     case 'express': return '车内乘客不变；可能合并或拆开同站到达';
     case 'tipjar': case 'relay': return '本局唯一 · 概率只在实际结算时抽取';
     case 'retime': return '上行前手动改签 · 每十层一次';
@@ -188,6 +195,27 @@ function upgradeImpact(key: UpgradeKey, run: RunState): string {
     default: return '本局限装一次 · 按卡片条件触发';
   }
 }
+
+const MANUAL: Array<[string, string, string, string]> = [
+  ['安排站位', '点乘客再点空位，或直接拖拽。连线两端互为邻座。旧乘客每层可换位 2 次；刚上车的乘客可免费移动或撤回。', 'Seating', 'Click a rider then a seat, or drag. Linked seats are neighbors. Riders already aboard can move twice per floor; new riders move or withdraw freely.'],
+  ['三个数字', '每位乘客只看车费、每层耗电和躁动。每层耗电＝电梯运转＋乘客耗电＋红线额外耗电−节能。', 'Three numbers', 'Every rider has a fare, power per floor and agitation. Power per floor = motor + riders + red-link costs − savings.'],
+  ['电量', '电量耗尽即结束。商店充电 2 金币/电；两次商店之间可以途中补电，4 金币/电，每十层最多 20 电。', 'Power', 'Run out and the shift ends. Shops charge 2 coins per power; between shops you can charge in transit at 4 coins, up to 20 per ten floors.'],
+  ['躁动', '0–2 低、3–4 中、5 起高，到上限失控。低和中躁动时每位到站乘客多付 1 金币；高躁动每层 20% 可能出事故，一位乘客提前下车不付钱。', 'Agitation', 'Low 0–2, medium 3–4, high from 5; at the cap the shift is lost. Low and medium departures tip 1 coin per arrival; high departures risk a 20% incident where a rider leaves without paying.'],
+  ['十层商店', '每店免费选 1 项能力，可再花 40 金币加购 1 项，共 6 个安装位。配电箱每店升 1 级（蓄电 / 变压 / 电机），一局最多 5 级。', 'Shops every ten floors', 'Pick 1 ability free and buy 1 more for 40 coins; 6 slots in all. Upgrade the power box once per shop (Storage / Transformer / Motor), 5 levels per run.'],
+  ['传奇乘客', '第一层偶尔有一位传奇在等候。他们坐到第 10 层商店、不耗电，下车时留下一件永久信物。不载会得到 10 金币补贴。', 'Legends', 'A legend sometimes waits on floor 1. They ride to the floor-10 shop without using power and leave a permanent keepsake. Declining pays a 10-coin allowance.'],
+  ['请离', '每十层最多请离 2 位，赔偿 4＋剩余站数×2 金币，不结算车费和暂存。传奇可免费请离，但拿不到信物。', 'Dismissal', 'Dismiss up to 2 riders per ten floors for 4 + 2 per remaining stop; no fare or bank is paid. Legends leave free but take their keepsake with them.'],
+  ['邻座与叠加', '绿线是能力或默契，红线是代价（🔥躁动 ⚡耗电 🪙金币）。多条线逐条相加。', 'Neighbors', 'Green links are abilities or bonds; red links cost you (🔥 agitation ⚡ power 🪙 coins). Every link counts separately.'],
+];
+const PRESSURE_RISE: Array<[string, string, string, string]> = [
+  ['乘客自身', '卡面上的躁动数字；高危乘客再 +1。没人管的小偷、没人照顾的儿童、未安抚的醉汉、被围住的名人也会加躁动。', 'Riders', 'The agitation number on the card; high-risk riders add 1 more. Unguarded Thieves, uncared-for Children, unsoothed Drifters and crowded Celebrities add agitation too.'],
+  ['🔥 红线', '只有标 🔥 的红线加躁动。', '🔥 Red links', 'Only red links marked 🔥 add agitation.'],
+  ['车厢坐满', '关门时 6 人全满，每层 +1。', 'Full cabin', 'Departing with all 6 seats taken adds 1 per floor.'],
+];
+const PRESSURE_RELIEF: Array<[string, string, string, string]> = [
+  ['到站舒缓', '每位正常到站 −1，每层最多 −2。', 'Arrivals', 'Each normal arrival −1, at most −2 per floor.'],
+  ['护士与音乐家', '护士让每位邻座 −1/层；音乐家把躁动拉向中档，中档时每层 +2 金币。', 'Nurse and Musician', 'A Nurse gives each neighbor −1 per floor; a Musician pulls agitation toward medium and earns 2 per floor there.'],
+  ['每一档都有好处', '低：到站 +1 金币；中：到站 +1 金币；高：坏人链接多存 1 金币，醉汉车费翻倍——但有 20% 事故。', 'Every band pays', 'Low: +1 per arrival; medium: +1 per arrival; high: criminal links bank 1 more and Drifters pay double—with a 20% incident risk.'],
+];
 
 export default function ElevatorGame() {
   const [language, setLanguage] = useState<GameLocale>('en');
@@ -209,10 +237,15 @@ export default function ElevatorGame() {
   const [changelogOpen,setChangelogOpen]=useState(false);
   const [ejectArmed,setEjectArmed]=useState(false);
   const [leaveArmed,setLeaveArmed]=useState(false);
-  const [intro, setIntro] = useState(true); const [help, setHelp] = useState(false); const [pressureHelp, setPressureHelp] = useState(false); const [archive, setArchive] = useState(false); const [sound, setSound] = useState(false); const [music, setMusic] = useState(false);
+  const [intro, setIntroState] = useState(true);
+  const setIntro = useCallback((open: boolean) => { setIntroState(open); if (!open) { try { localStorage.setItem('elevator-tales-intro-seen-v1', 'yes'); } catch { /* storage unavailable */ } } }, []); const [help, setHelp] = useState(false); const [pressureHelp, setPressureHelp] = useState(false); const [archive, setArchive] = useState(false); const [sound, setSound] = useState(false); const [music, setMusic] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [highest, setHighest] = useState(1); const [bestFloor, setBestFloor] = useState(1); const [runStartBest, setRunStartBest] = useState(1); const [discovered, setDiscovered] = useState<PassengerKind[]>([]); const busyRef = useRef(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [unlockedLegends, setUnlockedLegends] = useState<LegendKind[]>([]);
+  const [keepsakesSeen, setKeepsakesSeen] = useState<KeepsakeKey[]>([]);
+  const [runDelivered, setRunDelivered] = useState<Partial<Record<PassengerKind, number>>>({});
+  const [newLegends, setNewLegends] = useState<LegendKind[]>([]);
   const [metricEvent, setMetricEvent] = useState<MetricEvent | null>(null);
   const soundEnabled = useRef(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
@@ -233,7 +266,7 @@ export default function ElevatorGame() {
   }, []);
   useEffect(() => () => { journeyTimers.current.forEach(clearTimeout); if (feedbackTimer.current) clearTimeout(feedbackTimer.current); disposeGameAudio(); disposeGameMusic(); }, []);
 
-  useEffect(() => { setFastReveal(localStorage.getItem('elevator-tales-fast-reveal-v1') === 'on'); }, []);
+  useEffect(() => { setFastReveal(localStorage.getItem('elevator-tales-fast-reveal-v1') === 'on'); try { if (localStorage.getItem('elevator-tales-intro-seen-v1') === 'yes') setIntroState(false); } catch { /* storage unavailable */ } }, []);
   useEffect(() => {
     const syncPreferences = () => {
       const nextMusic = localStorage.getItem(MUSIC_PREFERENCE_KEY) !== 'off';
@@ -279,7 +312,10 @@ export default function ElevatorGame() {
     setGameMusic(next, musicScene); if (next) unlockGameMusic();
   };
 
-  useEffect(() => { const frame=requestAnimationFrame(() => { const savedBest = Math.max(1, Number(localStorage.getItem('elevator-tales-endless-best-floor') || 1)); const savedHighest = Math.max(1, Number(localStorage.getItem('elevator-tales-highest') || 1)); const shouldGuide = savedBest <= 1 || new URLSearchParams(window.location.search).get('tutorial') === '1'; let savedDiscovered: PassengerKind[] = []; try { savedDiscovered=sanitizeDiscoveredPassengers(JSON.parse(localStorage.getItem(DISCOVERED_PASSENGERS_KEY) || '[]')); } catch {} setHighest(savedHighest); setBestFloor(savedBest); setRunStartBest(savedBest); setDiscovered(savedDiscovered); discoveredRef.current = savedDiscovered; setGuidedShift(shouldGuide); presentOffers(makeOffers(1, EMPTY_UPGRADES, shouldGuide), savedDiscovered); });return()=>cancelAnimationFrame(frame); }, []);
+  useEffect(() => { const frame=requestAnimationFrame(() => { const savedBest = Math.max(1, Number(localStorage.getItem('elevator-tales-endless-best-floor') || 1)); const savedHighest = Math.max(1, Number(localStorage.getItem('elevator-tales-highest') || 1)); const shouldGuide = savedBest <= 1 || new URLSearchParams(window.location.search).get('tutorial') === '1'; let savedDiscovered: PassengerKind[] = []; try { savedDiscovered=sanitizeDiscoveredPassengers(JSON.parse(localStorage.getItem(DISCOVERED_PASSENGERS_KEY) || '[]')); } catch {} setHighest(savedHighest); setBestFloor(savedBest); setRunStartBest(savedBest); setDiscovered(savedDiscovered); discoveredRef.current = savedDiscovered; setGuidedShift(shouldGuide); const legends = loadUnlockedLegends(savedBest > 1); setUnlockedLegends(legends); setKeepsakesSeen(loadKeepsakesSeen()); const opening = startRun(shouldGuide, Math.random, legends);
+      // Development-only QA shortcut: ?qa=shop starts on floor 9 with coins, one ascent from the first shop.
+      if (process.env.NODE_ENV !== 'production' && new URLSearchParams(window.location.search).get('qa') === 'shop') { const qa = nextOfferBatch({ ...opening.state, floor: 9, coins: 140, earned: 140, energy: 30, legendOffer: undefined, legendStatus: undefined }); setGuidedShift(false); setIntroState(false); setRun(qa.state); presentOffers(qa.offers, savedDiscovered); return; }
+      setRun(opening.state); presentOffers(opening.offers, savedDiscovered); });return()=>cancelAnimationFrame(frame); }, []);
   useEffect(() => { const frame=requestAnimationFrame(()=>{ if (run.floor > highest) { setHighest(run.floor); localStorage.setItem('elevator-tales-highest', String(run.floor)); } if (run.floor > bestFloor) { setBestFloor(run.floor); localStorage.setItem('elevator-tales-endless-best-floor', String(run.floor)); } });return()=>cancelAnimationFrame(frame); }, [run.floor, highest, bestFloor]);
   useEffect(() => { const frame=requestAnimationFrame(()=>{ const visibleKinds=[...offers,...run.cabin.filter((rider): rider is Rider => Boolean(rider))].map(rider=>rider.kind); if(!visibleKinds.length)return; setDiscovered(current=>{ const next=addDiscoveredPassengers(current,visibleKinds); if(next.length===current.length)return current; localStorage.setItem(DISCOVERED_PASSENGERS_KEY,JSON.stringify(next)); discoveredRef.current = next; return next; }); }); return()=>cancelAnimationFrame(frame); }, [offers, run.cabin]);
 
@@ -299,6 +335,10 @@ export default function ElevatorGame() {
   const outlook = shiftOutlook(run.floor, occupied, run.restStops);
   const pressurePreview = useMemo(() => stressForecast(run), [run]); const energyPreview = useMemo(() => energyForecast(run), [run]);
   const energyFatal = run.energy + energyPreview.lowDelta <= 0;
+  const sector = useMemo(() => sectorForecast(run), [run]);
+  const emergencyLeft = run.status === 'playing' ? emergencyAllowance(run) : 0;
+  const emergencyPrice = emergencyUnitPrice(boxOf(run));
+  const emergencyNeed = run.status === 'playing' ? Math.min(emergencyLeft, Math.max(0, 1 - sector.projected, energyFatal ? 1 - (run.energy + energyPreview.lowDelta) : 0)) : 0;
   const stressFatal = run.stress + pressurePreview.highDelta >= run.stressCap;
   const forecastTone = energyFatal || stressFatal ? 'danger' : pressurePreview.tone;
   const phase = shiftPhase(run.floor); const upgradeCount = Object.values(run.upgrades).reduce((sum, count) => sum + count, 0); const nextShop = nextShopFloor(run.floor); const nextIsShop = (run.floor + 1) % 10 === 0; const agitated = run.stress >= agitationThreshold(run.stressCap);
@@ -322,9 +362,9 @@ export default function ElevatorGame() {
   const chargePlan=chargingPlan(run);
   const [chargeChoice,setChargeChoice]=useState<{context:string;target:number}|null>(null);
   const chargeContext=`${run.floor}:${run.energy}:${run.energyCap}:${run.coins}`;
-  const affordableChargeTarget=Math.min(run.energyCap,run.energy+Math.floor(Math.max(0,run.coins)/CHARGE_PRICE));
+  const affordableChargeTarget=Math.min(run.energyCap,run.energy+affordableUnits(boxOf(run),Math.max(0,run.coins)));
   const chargeTarget=Math.max(run.energy,Math.min(run.energyCap,chargeChoice?.context===chargeContext?chargeChoice.target:affordableChargeTarget));
-  const chargeUnits=Math.max(0,chargeTarget-run.energy),chargeCost=chargeUnits*CHARGE_PRICE;
+  const chargeUnits=Math.max(0,chargeTarget-run.energy),chargeCost=boxChargeCost(boxOf(run),chargeUnits);
   const seatEnergyCosts=energyBreakdown(run).riderCosts;
   const detailRider=passengerDetails ? run.cabin.find(r=>r?.id===passengerDetails.id) ?? offers.find(r=>r.id===passengerDetails.id) ?? passengerDetails : null;
   const detailBrief=detailRider ? passengerBrief(detailRider,run.floor,run.cabin,cooperationBonus(run),cooperationRelief(run),eventPressureMultiplier(run),run.stress) : null;
@@ -332,7 +372,7 @@ export default function ElevatorGame() {
   const canDismiss=Boolean(detailRider&&detailOnboard&&detailRider.boardedAt<run.floor&&run.status==='playing'&&doors==='open');
   const penalty=detailRider?dismissalCost(run,detailRider):0;
 
-  const reset = useCallback(() => { journeyTimers.current.forEach(clearTimeout); journeyTimers.current = []; if (feedbackTimer.current) clearTimeout(feedbackTimer.current); setFeedback(null); setArriving([]); setMetricEvent(null); setReceiptOpen(false); setInventoryOpen(false); setChangelogOpen(false); setPassengerDetails(null); setEjectArmed(false); setLeaveArmed(false); disposeGameAudio(); const fresh = initialRun(); setRunStartBest(bestFloor); setRun(fresh); presentOffers(makeOffers(1, fresh.upgrades)); setGuidedShift(false); setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setDoors('open'); setIntro(false); busyRef.current = false; }, [bestFloor, presentOffers]);
+  const reset = useCallback(() => { journeyTimers.current.forEach(clearTimeout); journeyTimers.current = []; if (feedbackTimer.current) clearTimeout(feedbackTimer.current); setFeedback(null); setArriving([]); setMetricEvent(null); setReceiptOpen(false); setInventoryOpen(false); setChangelogOpen(false); setPassengerDetails(null); setEjectArmed(false); setLeaveArmed(false); disposeGameAudio(); const opening = startRun(false, Math.random, unlockedLegends); setRunStartBest(bestFloor); setRun(opening.state); presentOffers(opening.offers); setRunDelivered({}); setNewLegends([]); setGuidedShift(false); setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setDoors('open'); setIntro(false); busyRef.current = false; }, [bestFloor, presentOffers, unlockedLegends]);
   const commitPlacement = (result: PlacementResult) => {
     if (result.ok && result.changed) reportMetrics(run, result.next, result.label);
     setRun(result.next);
@@ -390,6 +430,9 @@ export default function ElevatorGame() {
       setTimeout(() => {
         const resolved = resolveFloor(run); let delivered = resolved;
         if (resolved.status === 'playing') { const batch=nextOfferBatch(resolved); delivered=batch.state; presentOffers(batch.offers); if (batch.offers.some((rider) => rider.calledByLover) && resolved.lastPressure.delta <= 0) delivered = { ...delivered, message: '恋人的呼唤得到了回应。把两人安排在相邻站位。' }; }
+        const deliveredNow = { ...runDelivered }; for (const a of resolved.lastArrivals ?? []) deliveredNow[a.kind] = (deliveredNow[a.kind] ?? 0) + 1; setRunDelivered(deliveredNow);
+        const seen = [...new Set([...keepsakesSeen, ...(resolved.keepsakes ?? [])])]; if (seen.length !== keepsakesSeen.length) { setKeepsakesSeen(seen); saveList(KEEPSAKES_SEEN_KEY, seen); }
+        if (resolved.status === 'lost') { const unlocks = nextUnlocks(unlockedLegends, { floor: resolved.floor, delivered: deliveredNow, keepsakes: resolved.keepsakes ?? [] }, seen); const fresh = unlocks.filter(k => !unlockedLegends.includes(k)); if (fresh.length) { setUnlockedLegends(unlocks); saveList(LEGEND_UNLOCKS_KEY, unlocks); setNewLegends(fresh); } }
         setRun(delivered); setArriving(resolved.lastArrivals??[]); setDoors('opening');
         journeyTimers.current.push(setTimeout(()=>{setArriving([]);setDoors('open');busyRef.current=false;if(!document.querySelector('[role="dialog"]'))scrollMobileTarget('.candidate-panel','start');},resolved.lastArrivals?.length?(reduced?800:1600):(reduced?40:260)));
         reportMetrics(run, resolved, `${resolved.floor} 层 · 到站结算`);
@@ -398,7 +441,7 @@ export default function ElevatorGame() {
       }, reduced ? 70 : 470),
 
     ];
-  }, [locked, sound, run, flash, reportMetrics, fastReveal, presentOffers]);
+  }, [locked, sound, run, flash, reportMetrics, fastReveal, presentOffers, runDelivered, keepsakesSeen, unlockedLegends]);
   useEffect(() => { const onKey = (event: KeyboardEvent) => {
     if (intro || help || pressureHelp || archive || receiptOpen || passengerDetails || inventoryOpen || changelogOpen || event.repeat) return;
     if (event.key === 'Escape') { setPendingOfferId(null); setSelectedSlot(null); setDragged(null); setDragOverSlot(null); return; }
@@ -407,12 +450,14 @@ export default function ElevatorGame() {
   const chooseUpgrade = (key: UpgradeKey) => {
     setLeaveArmed(false);
     const updated = installUpgrade(run, key); if (updated === run) return;
-    reportMetrics(run, updated, `购买${UPGRADES[key].name}`);
-    setRun(updated); flash({ tone: 'combo', label: `${UPGRADES[key].name} · 已购入`, slots: [] }); playTone(sound, 'upgrade');
+    const extra = run.shopUpgradeBought;
+    reportMetrics(run, updated, `${extra ? '加购' : '选取'}${UPGRADES[key].name}`);
+    setRun(updated); flash({ tone: 'combo', label: `${UPGRADES[key].name} · ${extra ? '已加购' : '已选取'}`, slots: [] }); playTone(sound, 'upgrade');
   };
 
-  const finishShopping = () => { if (upgradeCrisis) { const repaired = repairEmergency(run); if (repaired !== run) { setLeaveArmed(false); reportMetrics(run,repaired,'紧急维修'); setRun(repaired); return; } if (!leaveArmed) { setLeaveArmed(true); return; } } if(!upgradeCrisis && run.energy < chargePlan.baseline && !leaveArmed) {setLeaveArmed(true);return;} setLeaveArmed(false); const next = leaveShop(run); if (next === run) return; if(next.status==='lost'){setRun(next);playTone(sound,'danger');} if (next.status === 'playing') {const batch=nextOfferBatch(next);setRun(batch.state);presentOffers(batch.offers);} };
+  const finishShopping = () => { if (upgradeCrisis) { const repaired = repairEmergency(run); if (repaired !== run) { setLeaveArmed(false); reportMetrics(run,repaired,'紧急维修'); setRun(repaired); return; } if (!leaveArmed) { setLeaveArmed(true); return; } } if(!upgradeCrisis && run.energy < chargePlan.baseline && !leaveArmed) {setLeaveArmed(true);return;} setLeaveArmed(false); const next = leaveShop(run); if (next === run) return; if(next.status==='lost'){const unlocks=nextUnlocks(unlockedLegends,{floor:next.floor,delivered:runDelivered,keepsakes:next.keepsakes??[]},keepsakesSeen);const fresh=unlocks.filter(k=>!unlockedLegends.includes(k));if(fresh.length){setUnlockedLegends(unlocks);saveList(LEGEND_UNLOCKS_KEY,unlocks);setNewLegends(fresh);}setRun(next);playTone(sound,'danger');} if (next.status === 'playing') {const batch=nextOfferBatch(next);setRun(batch.state);presentOffers(batch.offers);} };
 
+  const emergency = (units:number) => {const next=emergencyCharge(run,units);if(next===run)return;reportMetrics(run,next,language==='zh'?'途中补电':'In-transit charging');setRun(next);playTone(sound,'upgrade');};
   const recharge = (units:number) => {const next=chargeBattery(run,units);if(next===run)return;setLeaveArmed(false);reportMetrics(run,next,'商店充电');setRun(next);playTone(sound,'upgrade');};
   const confirmDismiss = () => {
     if(!detailRider||!canDismiss)return;
@@ -428,7 +473,14 @@ export default function ElevatorGame() {
     <section className="game-grid">
       <aside className="status-rail">
         <div className="floor-plaque"><span>当前楼层 · BEST {bestFloor}</span><strong>{String(run.floor).padStart(2, '0')}</strong><small>{phase}</small><span className="route-power">运转 {travelEnergyCost(run.floor+1)} 电 / 层</span><span className="route-notice">{motorAdvanceNotice(run.floor)}</span><progress className="floor-progress" aria-label={`距离 ${nextShop} 层商店还有 ${nextShop - run.floor} 站`} max={10} value={run.floor % 10} /></div>
-        <div data-metric="energy" className={`meter-card energy ${energyFatal ? 'meter-danger' : ''}`} title={energyPreview.summary}><div><BatteryCharging aria-hidden="true" /><span className="rail-metric-name">电量</span><b><AnimatedNumber value={run.energy} /><span className="metric-cap">/{run.energyCap}</span></b></div><MetricResponse metric="energy" event={metricEvent} locale={language} /><div className="meter-track"><i style={{ width: `${Math.max(0, Math.min(100, run.energy / run.energyCap * 100))}%` }} /></div><small className="rail-forecast"><span>下一站 <b className={energyFatal ? 'forecast-fatal' : ''}>{energyPreview.range}</b></span></small><p className="route-notice">运转 {travelEnergyCost(run.floor+1)} 电 / 层<br />{nextIsShop ? (language==='zh'?`本次预测含到店补电 +${SHOP_ENTRY_CHARGE}`:`Forecast includes shop +${SHOP_ENTRY_CHARGE}`) : motorAdvanceNotice(run.floor)}</p></div>
+        <div data-metric="energy" className={`meter-card energy ${energyFatal ? 'meter-danger' : ''}`} title={energyPreview.summary}><div><BatteryCharging aria-hidden="true" /><span className="rail-metric-name">电量</span><b><AnimatedNumber value={run.energy} /><span className="metric-cap">/{run.energyCap}</span></b></div><MetricResponse metric="energy" event={metricEvent} locale={language} /><div className="meter-track"><i style={{ width: `${Math.max(0, Math.min(100, run.energy / run.energyCap * 100))}%` }} /></div><small className="rail-forecast"><span>下一站 <b className={energyFatal ? 'forecast-fatal' : ''}>{energyPreview.range}</b></span></small>
+          {run.status==='playing'&&<p className={`sector-forecast ${sector.failFloor!==null?'is-danger':sector.projected<8?'is-warn':''}`} data-no-translate>{language==='zh'?(sector.failFloor!==null?`照现在：${sector.failFloor} 层断电`:`到 ${sector.shop} 层商店约剩 ${sector.projected} 电`):(sector.failFloor!==null?`At this rate: out of power at ${sector.failFloor}F`:`About ${sector.projected} power at the ${sector.shop}F shop`)}</p>}
+          {run.status==='playing'&&(sector.failFloor!==null||sector.projected<12||energyFatal)&&<div className="emergency-charge" data-no-translate>
+            <button disabled={locked||emergencyLeft<=0||run.coins<emergencyPrice} onClick={()=>emergency(1)}>{language==='zh'?`途中补电 +1 · ${emergencyPrice}币`:`Charge +1 · ${emergencyPrice}c`}</button>
+            {emergencyNeed>0&&<button className="is-urgent" disabled={locked||run.coins<emergencyNeed*emergencyPrice} onClick={()=>emergency(emergencyNeed)}>{language==='zh'?`补足 +${emergencyNeed} · ${emergencyNeed*emergencyPrice}币`:`Top up +${emergencyNeed} · ${emergencyNeed*emergencyPrice}c`}</button>}
+            <small>{language==='zh'?`本段还可补 ${emergencySectorLeft(run)} 电 · 途中价 ${emergencyPrice} 币/电`:`${emergencySectorLeft(run)} left this sector · ${emergencyPrice} coins each`}</small>
+          </div>}
+          <p className="route-notice">运转 {travelEnergyCost(run.floor+1)} 电 / 层<br />{nextIsShop ? (language==='zh'?`本次预测含到店补电 +${shopEntryCharge(boxOf(run))}`:`Forecast includes shop +${shopEntryCharge(boxOf(run))}`) : motorAdvanceNotice(run.floor)}</p></div>
         <div data-metric="stress" className={`meter-card pressure ${agitated || pressurePreview.tone === 'danger' ? 'meter-danger' : ''}`} title={pressurePreview.summary}>
           <div><Flame aria-hidden="true" /><span className="meter-label"><span className="rail-metric-name">躁动</span><button className="meter-help" onClick={() => setPressureHelp(true)} aria-label="查看躁动规则"><HelpCircle /></button></span><b><AnimatedNumber value={run.stress} /><span className="metric-cap">/{run.stressCap}</span></b></div>
           <MetricResponse metric="stress" event={metricEvent} locale={language} />
@@ -439,14 +491,14 @@ export default function ElevatorGame() {
 
         {(run.serviceTurns??0)>0&&<p className="service-status">{`检修生效 · 余${run.serviceTurns}层`}<br/>运转少耗1电/层</p>}
         <div className="run-tools">
-        {run.calmCharge&&<button className="reserve-use" disabled={locked||run.stress<=0} onClick={()=>{const next=useCalmCharge(run);setRun(next);reportMetrics(run,next,'手动调节');}}>手动调节 −2躁动 · 一次</button>}
-        {run.upgrades.rails>0&&<p className="route-note">旧乘客换位剩余{oldMovesRemaining(run)}次</p>}
+        {run.calmCharge&&<button className="reserve-use" disabled={locked||run.stress<=0} onClick={()=>{const next=applyCalmCharge(run);setRun(next);reportMetrics(run,next,'手动调节');}}>{language==='zh'?'手动调节 −3躁动 · 每店补满':'Manual relief −3 · refills at shops'}</button>}
+        {oldMovesRemaining(run)<2&&<p className="route-note">旧乘客换位剩余{oldMovesRemaining(run)}次</p>}
         {run.reservedRider&&<p className="route-note">已留座：{PASSENGERS[run.reservedRider.kind].name} · 下一批到来</p>}
         {run.reserveCell&&<button className="reserve-use" disabled={locked||run.energy>=run.energyCap} onClick={()=>{const next=consumeReserveCell(run);if(next!==run){setRun(next);reportMetrics(run,next,'使用应急电池');}}}><BatteryCharging aria-hidden="true"/>{`使用应急电池 +${Math.min(RESERVE_CELL_CHARGE,Math.max(0,run.energyCap-run.energy))}电`}</button>}
         {run.upgrades.buffer>0&&<p>{`飞轮本段可省 ${flywheelAllowance(run)}/4电 · 到商店重置`}</p>}
         {run.upgrades.punchcard>0&&<p>第五张票 {(run.punchCount??0)+1}/5 · 同层按1→6号位</p>}
         {run.upgrades.single>0&&<p>单人到站：整车+2币</p>}
-        {run.upgrades.finale>0&&<p>至少2人到站，车内剩0–1人：+6币</p>}
+        {run.upgrades.finale>0&&<p>至少2人到站，车内剩0–1人：+8币</p>}
         {run.upgrades.retime>0&&<div className="retime-controls"><p>改签 · 每十层一次</p>{[-1,1].map(delta=><button key={delta} disabled={locked||!activeRider||activeRider.boardedAt!==run.floor||!run.cabin.some(r=>r?.id===activeRider.id)||run.retimeUsedSector===Math.floor(run.floor/10)||(delta<0&&activeRider.destination<=run.floor+1)} onClick={()=>{if(activeRider){const next=retimeRider(run,activeRider.id,delta);setRun(next);}}}>{delta<0?'提前1站':'延后1站'}</button>)}</div>}
         </div>
         {metricEvent && <button className="receipt-button" onClick={() => setReceiptOpen(true)}><BookOpen /> 本次变化明细 <span>↗</span></button>}
@@ -494,7 +546,7 @@ export default function ElevatorGame() {
       <aside className="arrival-panel">
         <div className={`arrival-heading ${loverResponse || firstPairLesson ? 'lover-response' : ''}`}><div><span>{loverResponse ? 'LOVER SIGNAL · RESPONSE' : firstPairLesson ? 'FIRST LINK · GUIDED SHIFT' : doors === 'open' ? 'DOORS OPEN' : 'IN TRANSIT'}</span><h2>{loverResponse ? '有人回应了呼唤' : firstPairLesson ? firstPairActive ? '绿色协作已生效' : '试着连出一条绿线' : '谁要上楼？'}</h2></div><div className="arrival-count">{offers.length} 位</div></div>
         <p className="arrival-explainer"><span>每次开门，都是新机会</span><span className="category-legend"><i className="category-good">好人</i><i className="category-bad">坏人</i><i className="category-special">特殊</i></span></p>
-        <div className="candidate-panel"><div className={`passenger-list ${!intro && !fastReveal && run.status === 'playing' ? 'offer-revealing' : ''}`} key={run.floor} role="list" aria-label="本层候客乘客">
+        <div className="candidate-panel"><div className={`passenger-list ${offers.length > 3 ? 'has-four' : ''} ${!intro && !fastReveal && run.status === 'playing' ? 'offer-revealing' : ''}`} key={run.floor} role="list" aria-label="本层候客乘客">
           {offers.map((offer, offerIndex) => {
             const spec = PASSENGERS[offer.kind];
             const currentRider=run.cabin.find((rider)=>rider?.id===offer.id);
@@ -504,16 +556,16 @@ export default function ElevatorGame() {
             const unavailable = full; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id;
             const partner = unavailable ? null : readyPartner(offer.kind, run.cabin, offer.id, offer);
             const grade=passengerCardGrade(offer.kind);
-            return <div className="passenger-item" style={{ animationDelay: `${offerIndex * 90}ms` }} role="listitem" key={offer.id}><button className={`passenger-card category-${passengerCategory(offer.kind)} kind-${offer.kind} grade-${grade} tone-${spec.tone} ${offer.volatile?'volatile':''} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
+            return <div className="passenger-item" style={{ animationDelay: `${offerIndex * 90}ms` }} role="listitem" key={offer.id}><button className={`passenger-card category-${passengerCategory(offer.kind)} kind-${offer.kind} grade-${grade} tone-${spec.tone} ${offer.volatile?'volatile':''} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} aria-label={language==='zh'?`候选：${spec.name}，车费${displayedOffer.kind==='mystery'?'待揭晓':passengerBrief(displayedOffer,run.floor,run.cabin).coins}，每层耗电${passengerBrief(displayedOffer,run.floor,run.cabin).energy}，还剩${Math.max(0,displayedOffer.destination-run.floor)}站${boarded?'，已上车':''}`:`Candidate: ${riderName(offer.kind,'en')}, fare ${displayedOffer.kind==='mystery'?'sealed':passengerBrief(displayedOffer,run.floor,run.cabin).coins}, power ${passengerBrief(displayedOffer,run.floor,run.cabin).energy} per floor, ${Math.max(0,displayedOffer.destination-run.floor)} stops${boarded?', aboard':''}`} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
               {boarded && <span className="boarded-status" aria-hidden="true"><Check />已上车</span>}
               {offerDebuts.includes(offer.id) && <span className="offer-debut">初次见面</span>}
-              <PassengerCardFace rider={displayedOffer} run={run} action={boarded?'点此撤回':pending?'已选中 · 点空位':full?'车厢已满':partner?`${offer.kind==='mimic'?'可复制正上方':'可连绿线'} · ${PASSENGERS[partner].name}`:undefined} locale={language}/>
+              <PassengerCardFace rider={displayedOffer} run={run} action={language==='zh'?(boarded?'已上车 · 再点撤回':pending?'已选中 · 点一个空位':full?'车厢已满':partner?`${offer.kind==='mimic'?'可复制':'可连绿线'} · ${PASSENGERS[partner].name}`:undefined):(boarded?'Aboard · click to withdraw':pending?'Selected · pick a seat':full?'Cabin full':partner?`${offer.kind==='mimic'?'Can copy':'Green link'} · ${riderName(partner,'en')}`:undefined)} locale={language}/>
             </button>{run.upgrades.reservation>0&&!boarded&&<button className="reservation-button" disabled={locked||Boolean(run.reservedRider)||run.reservationUsedSector===Math.floor(run.floor/10)||run.reservedIds?.includes(offer.id)} onClick={()=>{const next=reserveOffer(run,offers,offer.id);if(next!==run){setRun(next);setOffers(current=>current.filter(r=>r.id!==offer.id));setPendingOfferId(null);setDragged(null);}}}>{run.reservedIds?.includes(offer.id)?'已保留过 · 不可续订':'留到下一批 · 每十层一次'}</button>}<button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(displayedOffer);}} aria-label={`查看${spec.name}规则`}><BookOpen /><span>{language === 'en' ? 'Details' : '完整规则'}</span></button></div>;
           })}
-        </div><div className="candidate-notes"><span className="route-note">运转 {travelEnergyCost(run.floor+1)} 电/层 · 下段 {travelEnergyCost(nextShop+1)} 电/层</span><span>每层＝上行后立即结算 · 到站＝下车时结算 · 邻座逐人叠加</span>{run.upgrades.single>0&&<span>车费不含整车奖励：单人到站+2币</span>}{run.upgrades.crowd>0&&<span>车费不含整车奖励：三类齐全且有人到站+3币</span>}{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
+        </div><div className="candidate-notes"><span className="route-note">运转 {travelEnergyCost(run.floor+1)} 电/层 · 下段 {travelEnergyCost(nextShop+1)} 电/层</span><span>每层＝上行后立即结算 · 到站＝下车时结算 · 邻座逐人叠加</span>{run.upgrades.single>0&&<span>车费不含整车奖励：单人到站+2币</span>}{run.upgrades.crowd>0&&<span>车费不含整车奖励：三类齐全且有人到站+6币</span>}{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
         <div className="departure-controls">
           <button className="mobile-inspect-button" disabled={!activeRider || locked} onClick={() => {if(activeRider){setEjectArmed(false);setPassengerDetails(activeRider);}}} aria-label="查看选中人物规则"><BookOpen /><span>人物/请离</span></button>
-          <button className="depart-button" onClick={depart} disabled={locked || occupied===0}><span>{doors === 'open' ? occupied===0?'至少接1人':'关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
+          <button className="depart-button" onClick={depart} disabled={locked || occupied===0} aria-label={language==='zh'?`关门上行 · 下一站电量 ${energyPreview.range}，躁动 ${pressurePreview.range}`:`Close doors and ascend`}><span>{doors === 'open' ? occupied===0?'至少接1人':'关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
           {(pendingOfferId || selectedSlot !== null || firstPairLesson && !firstPairActive) && <p className={`mobile-departure-note forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? `已选${activeRider ? PASSENGERS[activeRider.kind].name : '乘客'} · 点下方空位` : selectedSlot !== null ? run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : '点另一站位换位 · 再点原位取消' : '新手示例：让两位恋人成为邻座，观察绿色协作线'}</p>}
           <p className={`panel-hint forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : firstPairLesson && !firstPairActive ? '新手示例 · 让两位恋人成为邻座，观察绿色协作线' : departureForecast}</p>
         </div>
@@ -526,7 +578,7 @@ export default function ElevatorGame() {
       {detailRider && detailBrief && <><p className="dialog-kicker">PASSENGER NOTES</p><DialogHeader><DialogTitle>{PASSENGERS[detailRider.kind].name}</DialogTitle><DialogDescription>还剩 {detailBrief.distance} 站 · 耗电 {detailBrief.energy} /站{detailRider.fuse !== undefined ? ` · 炸弹倒计时 ${detailRider.fuse}` : ''}</DialogDescription></DialogHeader>
         <div className="passenger-detail-reward">基础车费：{detailBrief.coins === null ? '？封存中，到站揭晓' : `+${detailBrief.coins} 金币`}{detailBrief.tip ? ` · 升级小费 +${detailBrief.tip}` : ''}</div>
         {detailBrief.seated && <p className="detail-footnote">按当前站位到站：{detailBrief.expectedFare === null ? '？封存中，到站揭晓' : `+${detailBrief.expectedFare} 金币`}。包括倍率、联动和小费；下一站到站时包含本次工作进度。不含概率奖励；未来站位、躁动和进度变化会改变收益。</p>}
-        {run.upgrades.tipjar>0&&<p className="detail-footnote">小费盒另算：到站时有至少2位邻座，50%概率再得4金币。上方车费不含这项概率奖励。</p>}
+        {run.upgrades.tipjar>0&&<p className="detail-footnote">小费盒另算：到站时有至少2位邻座，35%概率再得4金币。上方车费不含这项概率奖励。</p>}
         {run.upgrades.meter>0&&<p className="detail-footnote">{UPGRADES.meter.description}</p>}
         <div className="passenger-detail-rules"><PassengerRuleBlocks rules={detailBrief.cardRules} locale={language} /><h3>补充说明</h3>{detailBrief.detailRules.map(rule=><p key={rule}>{rule}</p>)}</div>
         {canDismiss && <section className="dismiss-panel"><b>提前请离 · 赔偿 {penalty} 金币</b><p>不结算车费、暂存收益或到站舒缓。每十层最多请离2人，抵达商店恢复；不接候客不扣次数。赔偿 = 4 + 剩余站数 ×2。</p><p>本段请离剩余 {dismissalsRemaining(run)} 次{detailRider?.stash ? ` · 放弃暂存 ${detailRider.stash} 金币` : ''}</p>
@@ -540,7 +592,9 @@ export default function ElevatorGame() {
     <Dialog open={inventoryOpen} onOpenChange={setInventoryOpen}><DialogContent className="story-dialog inventory-dialog">
       <p className="dialog-kicker">INSTALLED SYSTEMS · THIS SHIFT</p><DialogHeader><DialogTitle>这台电梯，升级了什么？</DialogTitle><DialogDescription>本班已安装 {upgradeCount} 次。以下是当前累计效果，不是下一次购买的预告。</DialogDescription></DialogHeader>
       <div className="inventory-summary"><span>电量上限 <b>{run.energyCap}</b></span><span>站位 <b>6 个</b></span><span>躁动上限 <b>{run.stressCap}</b></span></div>
-      <div className="inventory-list">{(Object.keys(UPGRADES) as UpgradeKey[]).map(key=><section key={key} className={run.upgrades[key] ? 'installed' : 'not-installed'}><div><b>{UPGRADES[key].name}</b><span>{run.upgrades[key] ? `已装 ×${run.upgrades[key]}` : '未安装'}</span></div><p>{run.upgrades[key] ? installedUpgradeSummary(run,key) : UPGRADES[key].description}</p></section>)}</div>
+      <div className="inventory-summary" data-no-translate>{BOX_LINES.map(line=><span key={line}>{language==='zh'?BOX_LINE_LABELS[line].name:({storage:'Storage',transformer:'Transformer',motor:'Motor'} as Record<BoxLine,string>)[line]} <b>{boxOf(run)[line]}/{BOX_MAX_LEVEL}</b></span>)}</div>
+      {(run.keepsakes?.length??0)>0&&<p className="keepsake-row" data-no-translate>{language==='zh'?'信物：':'Keepsakes: '}{run.keepsakes!.map(k=><span key={k} className="keepsake-chip" title={keepsakeText(k,language)}>{keepsakeLabel(k,language)} · {keepsakeText(k,language)}</span>)}</p>}
+      <div className="inventory-list">{(Object.keys(UPGRADES) as UpgradeKey[]).filter(key=>!RETIRED_UPGRADES.includes(key)).map(key=><section key={key} className={run.upgrades[key] ? 'installed' : 'not-installed'}><div><b>{UPGRADES[key].name}</b><span>{run.upgrades[key] ? `已装 ×${run.upgrades[key]}` : '未安装'}</span></div><p>{run.upgrades[key] ? installedUpgradeSummary(run,key) : UPGRADES[key].description}</p></section>)}</div>
       <Button className="story-primary" onClick={()=>setInventoryOpen(false)}>返回本班</Button>
     </DialogContent></Dialog>
 
@@ -548,23 +602,20 @@ export default function ElevatorGame() {
       <p className="dialog-kicker">DECISION RECEIPT</p><DialogHeader><DialogTitle>这次，改变了什么？</DialogTitle><DialogDescription>{metricEvent?.label}。以下是实际变化，不是下一层预测。</DialogDescription></DialogHeader>
       <div className="receipt-sections">{Boolean(run.lastArrivals?.length)&&<section className="receipt-section"><h3>本层到站乘客</h3>{run.lastArrivals?.map(entry=><p key={entry.riderId}><span>{entry.slot+1}号位 · {PASSENGERS[entry.kind].name}</span><b>+{entry.coins} 金币</b></p>)}<p>个人收入含实际小费与个人升级奖励；整车奖励及扣款另计。</p></section>}{metricEvent?.changes.map((change) => <section key={change.key} className={`receipt-section pulse-${change.tone}`}>
         <h3><span>{change.label}</span><b>{change.before} → {change.after}<em>{signedDelta(change.delta)}</em></b></h3>
-        {change.sources.map((source, index) => <p key={`${index}-${source.label}`}><span>{source.label==='飞轮运转节能（实验）'?'飞轮节能':source.label}</span><b>{signedDelta(source.amount)}</b></p>)}
+        {change.sources.map((source, index) => <p key={`${index}-${source.label}`}><span>{source.label}</span><b>{signedDelta(source.amount)}</b></p>)}
         {change.capDelta !== 0 && <p><span>{change.label}上限</span><b>{signedDelta(change.capDelta)}</b></p>}
       </section>)}</div>
     </DialogContent></Dialog>
     <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">TEMPORARY ASSIGNMENT · 00:17 AM</p><DialogHeader><DialogTitle>临时顶班。<br />这栋楼没有尽头。</DialogTitle><DialogDescription>今晚，你被临时派来这座古怪大楼开电梯。守住电量和躁动，安排每位乘客的位置。这里没有最后一层——活得越久，成绩越高。</DialogDescription></DialogHeader><p className="route-schedule">{motorScheduleText()}</p><div className="intro-rules"><span><b>01</b> 接客并安排站位</span><span><b>02</b> 守住电量与躁动</span><span><b>03</b> 尽可能生存下去</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始临时夜班 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button></DialogContent></Dialog>
-    <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">ENDLESS SHIFT MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>这是一次没有终点的临时夜班。守住电量与躁动，活得越久，楼层成绩越高。</DialogDescription></DialogHeader><p className="route-schedule">{motorScheduleText()}</p><p>本局4个永久安装位，每店最多选一项，已选能力不再出现。仅在商店内可用金币充电；躁动仅在失控时允许最低抢救。</p><div className="manual-grid">
-      <div><b>拖拽安排</b><p>把人物拖进站位，或先点乘客再点空位。连线两端互为邻座。旧乘客每层只能换位一次；新上客移到空位或与新上客互换不消耗次数。</p></div>
-      <div><b>还剩几站</b><p>每次关门上行算一站，人物身上的剩余站数会递减；幽灵可能延误邻座。</p></div>
-      <div><b>三个值，六个站位</b><p>人物只看金钱、耗电和躁动。每站耗电＝电梯运转＋车内人物耗电＋红线耗电−节能；到站这一站也计费。电量耗尽或躁动达到上限，本班会结束；维修层有抢救窗口。</p></div><div><b>躁动只来自人物</b><p>躁动来自人物规则、红线和危险协作。没有拥挤惩罚或隐藏躁动倍率。每位正常到站乘客舒缓1点，每层最多2点；危险协作的额外躁动不能被护理抵消。</p></div>
-      <div><b>护理与节拍</b><p>护士抵消每位邻座新增的1躁动，多位可叠加。音乐家将整车躁动向中档靠近最多2点：低档向3，高档向4，中档不变；每层一次，不叠加。</p></div>
-      <div><b>十层商店</b><p>{`初始${INITIAL_ENERGY}电、容量${ENERGY_CAPACITY}。抵达商店先补 ${SHOP_ENTRY_CHARGE} 电，再用金币充电或买升级。高危乘客到站另加 ${HIGH_RISK_BONUS} 金币，不参与倍率；每层多 +1 躁动。`}</p></div><div><b>邻座与叠加</b><p>绿线表示能力或默契，红线表示额外交易，不一定只有损失。只有卡片列出的默契对象，才给本人到站 +{cooperationBonus(run)} 金币；双方分别判断。</p></div><div><b>到层请离</b><p>每十层最多请离2位，进店恢复。选中旧客并打开详情后请离；赔偿4+剩余站数×2金币，不结算到站奖励和暂存。本层刚上车仍可免费撤回。</p></div>
-    </div></DialogContent></Dialog>
-    <Dialog open={pressureHelp} onOpenChange={setPressureHelp}><DialogContent className="story-dialog pressure-dialog"><p className="dialog-kicker">CABIN AGITATION</p><DialogHeader><DialogTitle>低、中、高：躁动是一种状态。</DialogTitle><DialogDescription>低0–2，中3–4，高5及以上；达到 {run.stressCap} 失控。人物按关门时的档位工作，躁动不兑换电量。虚线指针是下站预测，不是当前数值。</DialogDescription></DialogHeader><div className="pressure-rule-grid">
-      <section className="pressure-rise"><small>会增加躁动</small><b>人物自身</b><p>人物卡明确显示每层 0、+1 或 +2；高危乘客固定再 +1。</p><b>人物事件</b><p>未受控的小偷、无人照顾的儿童、未安抚的醉汉和被围住的名人，会按卡片规则增加躁动。检查员不再因耗电增加躁动。</p><b>🔥 红线</b><p>只有标有 🔥 的红线增加躁动；⚡ 和 🪙 分别影响电量与金币。绿色协作不会消除红线。</p></section>
-      <section className="pressure-relief"><small>可以主动缓解</small><b>安抚所有邻座</b><p>护士抵消每位邻座新增的1躁动，多位可叠加。音乐家将整车躁动向中档靠近最多2点：低档向3，高档向4，中档不变；每层一次，不叠加。</p><b>完成短程</b><p>每位正常到站的乘客让本层躁动 −1，同层最多 −2。</p><b>失控抢救</b><p>仅到达商店时已经失控才可抢救：每点8金币，只降至上限以下1点。日常躁动依靠乘客与站位管理。</p></section>
+    <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">ENDLESS SHIFT MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>这是一次没有终点的临时夜班。守住电量与躁动，活得越久，楼层成绩越高。</DialogDescription></DialogHeader><p className="route-schedule">{motorScheduleText()}</p><div className="manual-grid" data-no-translate>{MANUAL.map(([zhTitle,zhBody,enTitle,enBody])=><div key={zhTitle}><b>{language==='zh'?zhTitle:enTitle}</b><p>{language==='zh'?zhBody:enBody}</p></div>)}</div></DialogContent></Dialog>
+    <Dialog open={pressureHelp} onOpenChange={setPressureHelp}><DialogContent className="story-dialog pressure-dialog"><p className="dialog-kicker">CABIN AGITATION</p><DialogHeader><DialogTitle>低、中、高：躁动是一种状态。</DialogTitle><DialogDescription>低0–2，中3–4，高5及以上；达到 {run.stressCap} 失控。人物按关门时的档位工作，躁动不兑换电量。虚线指针是下站预测，不是当前数值。</DialogDescription></DialogHeader><div className="pressure-rule-grid" data-no-translate>
+      <section className="pressure-rise"><small>{language==='zh'?'会增加躁动':'Raises agitation'}</small>{PRESSURE_RISE.map(([zt,zb,et,eb])=><span key={zt}><b>{language==='zh'?zt:et}</b><p>{language==='zh'?zb:eb}</p></span>)}</section>
+      <section className="pressure-relief"><small>{language==='zh'?'可以缓解 · 也有收益':'Relief · and upsides'}</small>{PRESSURE_RELIEF.map(([zt,zb,et,eb])=><span key={zt}><b>{language==='zh'?zt:et}</b><p>{language==='zh'?zb:eb}</p></span>)}</section>
     </div><div className="pressure-footer"><div className={`pressure-now forecast-${pressurePreview.tone}`}><small>按现在的站位</small><b>{pressurePreview.summary}</b></div><Button className="story-primary pressure-start-button" onClick={() => setPressureHelp(false)}>开始游戏 <ArrowUp /></Button></div></DialogContent></Dialog>
-    <Dialog open={archive} onOpenChange={setArchive}><DialogContent className="story-dialog archive-dialog"><p className="dialog-kicker">PASSENGER ARCHIVE</p><DialogHeader><DialogTitle>午夜乘客档案</DialogTitle><DialogDescription>遇见过的乘客会录入档案。最高抵达 {highest}F。</DialogDescription></DialogHeader><div className="archive-grid">{PASSENGER_ORDER.map((kind) => { const open = discovered.includes(kind); const spec = PASSENGERS[kind]; return <div className={`archive-item ${open ? '' : 'locked'}`} key={kind}>{open ? <Portrait kind={kind} /> : <LockKeyhole />}<span><b>{open ? spec.name : '尚未遇见'}</b><small>{open ? spec.short : '继续向上，等待相遇'}</small></span></div>; })}</div></DialogContent></Dialog>
+    <Dialog open={archive} onOpenChange={setArchive}><DialogContent className="story-dialog archive-dialog"><p className="dialog-kicker">PASSENGER ARCHIVE</p><DialogHeader><DialogTitle>午夜乘客档案</DialogTitle><DialogDescription>遇见过的乘客会录入档案。最高抵达 {highest}F。</DialogDescription></DialogHeader><div className="archive-grid">{PASSENGER_ORDER.map((kind) => { const open = discovered.includes(kind); const spec = PASSENGERS[kind]; return <div className={`archive-item ${open ? '' : 'locked'}`} key={kind}>{open ? <Portrait kind={kind} /> : <LockKeyhole />}<span><b>{open ? spec.name : '尚未遇见'}</b><small>{open ? spec.short : '继续向上，等待相遇'}</small></span></div>; })}</div>
+      <h3 className="archive-subhead" data-no-translate>{language==='zh'?`传奇乘客 · ${unlockedLegends.length}/${LEGEND_KINDS.length}`:`Legends · ${unlockedLegends.length}/${LEGEND_KINDS.length}`}</h3>
+      <div className="archive-grid" data-no-translate>{LEGEND_KINDS.map(kind=>{const open=unlockedLegends.includes(kind);return <div className={`archive-item ${open?'':'locked'}`} key={kind}>{open?<Portrait kind={kind}/>:<LockKeyhole/>}<span><b>{open?riderName(kind,language):(language==='zh'?'未解锁':'Locked')}</b><small>{open?`${language==='zh'?'信物：':'Keepsake: '}${keepsakeName(kind,language)}`:(language==='zh'?LEGEND_UNLOCK_HINTS[kind][0]:LEGEND_UNLOCK_HINTS[kind][1])}</small></span></div>;})}</div>
+    </DialogContent></Dialog>
     <Dialog open={changelogOpen} onOpenChange={setChangelogOpen}><DialogContent className="story-dialog changelog-dialog"><p className="dialog-kicker">SHIFT REVISION ARCHIVE</p><DialogHeader><DialogTitle>版本 v{GAME_VERSION}</DialogTitle><DialogDescription>每次更新都记录玩法变化、数值依据、测试结论与仍需观察的问题。</DialogDescription></DialogHeader><div className="changelog-list">{(language === 'en' ? CHANGELOG_EN : CHANGELOG).map((entry,index)=><article className={index===0?'current-release':''} key={entry.version}><header><div><span>VERSION {entry.version}</span><h3>{entry.title}</h3></div><time>{entry.date}</time></header><p>{entry.summary}</p><div className="changelog-columns"><section><b>改进</b><ul>{entry.changes.map(item=><li key={item}>{item}</li>)}</ul></section><section><b>试验与结论</b><ul>{entry.experiments.map(item=><li key={item}>{item}</li>)}</ul></section><section><b>继续观察</b><ul>{entry.watch.map(item=><li key={item}>{item}</li>)}</ul></section></div></article>)}</div></DialogContent></Dialog>
     <Dialog open={run.status === 'upgrade' && doors === 'open'}><DialogContent className={`story-dialog upgrade-dialog ${upgradeCrisis ? 'upgrade-crisis' : ''}`} showCloseButton={false}>
       <div className="shop-resources">
@@ -576,26 +627,36 @@ export default function ElevatorGame() {
       </div>
       <div className="shop-scroll-body">
       <p className="route-notice">运转 {travelEnergyCost(run.floor+1)} 电 / 层<span className="shop-motor-next">{motorAdvanceNotice(run.floor)}</span></p>
-      <p className="dialog-kicker">FLOOR {run.floor} · SHOP</p><DialogHeader><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle><DialogDescription>本局4个永久安装位，每店最多选一项，已选能力不再出现。仅在商店内可用金币充电；躁动仅在失控时允许最低抢救。</DialogDescription></DialogHeader>
+      <p className="dialog-kicker">FLOOR {run.floor} · SHOP</p><DialogHeader><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle><DialogDescription>{language==='zh'?`每店免费选 1 项能力，可再花 ${SHOP_PRICES.extraAbility} 金币加购 1 项；共 6 个安装位。配电箱每店可升 1 级。`:`Pick 1 ability free per shop and buy 1 more for ${SHOP_PRICES.extraAbility} coins; 6 slots in all. Upgrade the power box once per shop.`}</DialogDescription></DialogHeader>
       {upgradeCrisis && <p className="shop-warning">{upgradeCrisis === 'both' ? '电量与躁动同时失控：底部最低抢救可恢复1电，并将躁动降至上限以下1点。' : upgradeCrisis === 'energy' ? '电量已耗尽：使用下方充电服务，将电量恢复到 0 以上才能继续。' : '躁动失控：底部最低抢救每点8金币，只降至上限以下1点，不可继续购买舒缓。'} 若无力修复，本班将在这里结束。</p>}
       <button className="shop-inventory-link" onClick={()=>setInventoryOpen(true)}><Layers />安装位 {upgradeCount} / {UPGRADE_SLOTS} · 查看已装升级</button>
-      {!availableShopCards(run).length&&<p className="shop-receipt" role="status">{upgradeCount >= UPGRADE_SLOTS ? '四个安装位已满。本班保留当前能力，维修服务仍然可用。' : run.shopUpgradeBought?'本店能力已选购，下次商店再选。维修服务仍然可用。':'本店没有未安装的能力可选。维修服务仍然可用。'}</p>}
-      <div className="shop-choice-row"><div className="upgrade-grid">{availableShopCards(run).map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, run); const warning = purchaseRepairWarning(run,key,card.price); return <button key={key} className={rescue ? 'crisis-rescue' : ''} disabled={!affordable} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price} 金币${!affordable ? '，金币不足' : ''}`}>
-        <span className="upgrade-card-head"><small>{UPGRADES[key].label}</small></span><b>{UPGRADES[key].name}</b><p>{UPGRADES[key].description}</p><em>{upgradeImpact(key, run)}</em>{warning && <span className="reserve-warning">{warning === 'crisis' ? '购买后不足以修复当前失控' : '购买后无法补至参考电量；参考线不是离店要求'}</span>}<span className="shop-price"><Coins aria-hidden="true" /><strong>{card.price}</strong><span>{affordable ? '购买并安装' : `还差 ${card.price - run.coins}`}</span></span>
+      {!availableShopCards(run).length&&<p className="shop-receipt" role="status">{upgradeCount >= UPGRADE_SLOTS ? '六个安装位已满。本班保留当前能力，维修服务仍然可用。' : run.shopExtraBought?'本店已选取并加购能力，下次商店再选。':'本店没有未安装的能力可选。维修服务仍然可用。'}</p>}
+      {!run.shopUpgradeBought&&availableShopCards(run).length>0&&run.rerolledFloor!==run.floor&&<button className="shop-reroll" data-no-translate disabled={run.coins<REROLL_PRICE} onClick={()=>{const next=rerollShop(run);if(next!==run){reportMetrics(run,next,language==='zh'?'重抽能力':'Reroll abilities');setRun(next);playTone(sound,'select');}}}><RotateCcw aria-hidden="true" />{language==='zh'?`重抽能力 · ${REROLL_PRICE} 金币（每店一次）`:`Reroll abilities · ${REROLL_PRICE} coins (once per shop)`}</button>}
+      {run.shopUpgradeBought&&!run.shopExtraBought&&availableShopCards(run).length>0&&<p className="shop-receipt" data-no-translate>{language==='zh'?`已免费选取 1 项。还可以加购剩下的 1 项（${SHOP_PRICES.extraAbility} 金币），或直接充电。`:`Free pick taken. You may buy one of the remaining cards (${SHOP_PRICES.extraAbility} coins) or spend on power.`}</p>}
+      {(run.keepsakes?.length??0)>0&&<p className="keepsake-row" data-no-translate>{language==='zh'?'信物：':'Keepsakes: '}{run.keepsakes!.map(k=><span key={k} className="keepsake-chip" title={keepsakeText(k,language)}>{keepsakeLabel(k,language)}</span>)}</p>}
+      <div className="shop-choice-row"><div className="upgrade-grid">{availableShopCards(run).map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, run); const warning = card.price > 0 ? purchaseRepairWarning(run,key,card.price) : null; return <button key={key} className={rescue ? 'crisis-rescue' : ''} disabled={!affordable} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price === 0 ? '免费选取' : `加购 ${card.price} 金币`}${!affordable ? '，金币不足' : ''}`}>
+        <span className="upgrade-card-head"><small>{UPGRADES[key].label}</small></span><b>{UPGRADES[key].name}</b><p>{UPGRADES[key].description}</p><em>{upgradeImpact(key, run)}</em>{warning && <span className="reserve-warning">{warning === 'crisis' ? '购买后不足以修复当前失控' : '购买后无法补至参考电量；参考线不是离店要求'}</span>}<span className="shop-price" data-no-translate>{card.price===0?<><Check aria-hidden="true" /><strong>{language==='zh'?'免费选取':'Free pick'}</strong></>:<><Coins aria-hidden="true" /><strong>{card.price}</strong><span>{affordable ? (language==='zh'?'加购':'Buy extra') : (language==='zh'?`还差 ${card.price - run.coins}`:`Need ${card.price - run.coins}`)}</span></>}</span>
       </button>; })}{!availableShopCards(run).length&&<section className="shop-installed-summary" role="status">
         <h3>{language==='zh'?(run.shopUpgradeBought?'本店选购完成':'已安装能力'):(run.shopUpgradeBought?'Upgrade installed':'Installed upgrades')}</h3>
         <p>{language==='zh'?'本班能力保留生效，仍可充电后离店。':'Your upgrades remain active. You can still charge before leaving.'}</p>
         <ul>{(Object.keys(UPGRADES) as UpgradeKey[]).filter(key=>run.upgrades[key]>0).map(key=><li key={key}><Check aria-hidden="true"/><span>{translateGameText(UPGRADES[key].name,language)}</span></li>)}</ul>
       </section>}</div>
-      <div className="shop-service-column"><section className="recharge-panel charge-slider-panel">
-        <div><b>{language==='zh'?'充电至':'Charge to'} <output>{chargeTarget}/{run.energyCap}</output></b><span>{CHARGE_PRICE}{language==='zh'?'金币 / 电':' coins / power'}</span></div>
+      <div className="shop-service-column"><section className="recharge-panel box-panel">
+        <div><b>{language==='zh'?`配电箱 · ${boxTotal(boxOf(run))}/${BOX_TOTAL_CAP} 级`:`Power box · ${boxTotal(boxOf(run))}/${BOX_TOTAL_CAP}`}</b><span>{(run.freeBoxLevels??0)>0?(language==='zh'?'老周的扳手：本次免费升 1 级':'Old Zhou’s Wrench: next level free'):(language==='zh'?'每店升 1 级 · 一局最多 5 级':'1 level per shop · 5 per run')}</span></div>
+        {BOX_LINES.map((line:BoxLine)=>{const level=boxOf(run)[line];const price=boxLevelPrice(run,line);const can=canBuyBoxLevel(run,line);return <div key={line} className="box-line">
+          <span className="box-line-name">{BOX_LINE_LABELS[line].name}<i className="box-pips" aria-label={`${level}/${BOX_MAX_LEVEL}`}>{Array.from({length:BOX_MAX_LEVEL},(_,i)=><b key={i} className={i<level?'on':''} />)}</i></span>
+          <span className="box-line-next">{level<BOX_MAX_LEVEL?BOX_LINE_LABELS[line].levels[level]:(language==='zh'?'已满级':'Maxed')}</span>
+          <button disabled={!can} onClick={()=>{const next=buyBoxLevel(run,line);if(next!==run){setLeaveArmed(false);reportMetrics(run,next,language==='zh'?'配电箱升级':'Power box upgrade');setRun(next);playTone(sound,'upgrade');}}}>{level>=BOX_MAX_LEVEL?(language==='zh'?'满级':'Max'):price===0?(language==='zh'?'免费升级':'Free'):`${price} ${language==='zh'?'金币':'coins'}`}</button>
+        </div>;})}
+      </section><section className="recharge-panel charge-slider-panel">
+        <div><b>{language==='zh'?'充电至':'Charge to'} <output>{chargeTarget}/{run.energyCap}</output></b><span>{chargeUnitPrice(boxOf(run))}{language==='zh'?'金币 / 电':' coins / power'}</span></div>
         <label className="charge-control"><span className="sr-only">{language==='zh'?'充电目标':'Charge target'}</span><Slider className="charge-slider" min={Math.min(run.energy,run.energyCap)} max={run.energyCap} step={1} value={[chargeTarget]} disabled={run.energy>=run.energyCap} onValueChange={value=>setChargeChoice({context:chargeContext,target:Array.isArray(value)?value[0]:value})}/></label>
         <div className="charge-scale"><span>{language==='zh'?'当前':'Now'} {run.energy}</span><span>{language==='zh'?'参考':'Reference'} {Math.min(50,run.energyCap)}</span><span>{run.energyCap}</span></div>
         <button className="charge-confirm" disabled={!chargeUnits||run.coins<chargeCost} onClick={()=>recharge(chargeUnits)}>{language==='zh'?`充入 ${chargeUnits} 电 · ${chargeCost} 金币`:`Add ${chargeUnits} power · ${chargeCost} coins`}</button>
         <p aria-live="polite">{language==='zh'?(chargeCost>run.coins?`还差 ${chargeCost-run.coins} 金币；拖低目标即可少充。`:`充电后剩余 ${run.coins-chargeCost} 金币。`):(chargeCost>run.coins?`Need ${chargeCost-run.coins} more coins; lower the target to buy less.`:`${run.coins-chargeCost} coins left after charging.`)}</p>
-        <p>{language==='zh'?`到店补电最多 ${SHOP_ENTRY_CHARGE} 电，计入本层结算后再判断缺电。下段运转需 ${chargePlan.baseline} 电，人物另计；每次上行至少1人在车内，50电只是参考。`:`Shop power (up to ${SHOP_ENTRY_CHARGE}) counts before the power-loss check. Next motor segment: ${chargePlan.baseline}, plus riders; every ascent needs a rider aboard. 50 is only a reference.`}</p>
+        <p>{language==='zh'?`到店补电最多 ${shopEntryCharge(boxOf(run))} 电，计入本层结算后再判断缺电。下段运转需 ${chargePlan.baseline} 电，人物另计；每次上行至少1人在车内，50电只是参考。`:`Shop power (up to ${shopEntryCharge(boxOf(run))}) counts before the power-loss check. Next motor segment: ${chargePlan.baseline}, plus riders; every ascent needs a rider aboard. 50 is only a reference.`}</p>
       </section>
-      {run.calmCharge&&<button className="reserve-use" disabled={run.stress<=0} onClick={()=>{const next=useCalmCharge(run);setRun(next);reportMetrics(run,next,'手动调节');}}>手动调节 −2躁动 · 一次</button>}
+      {run.calmCharge&&<button className="reserve-use" disabled={run.stress<=0} onClick={()=>{const next=applyCalmCharge(run);setRun(next);reportMetrics(run,next,'手动调节');}}>{language==='zh'?'手动调节 −3躁动 · 每店补满':'Manual relief −3 · refills at shops'}</button>}
       <section className="recharge-panel reserve-panel"><div><b>应急电池 · {RESERVE_CELL_PRICE}金币</b><span>携带上限1份，不占安装位；离店后主动使用，补{RESERVE_CELL_CHARGE}电，不超过容量。</span></div><div className="recharge-actions"><button disabled={Boolean(run.reserveCell)||run.coins<RESERVE_CELL_PRICE} onClick={()=>{const next=buyReserveCell(run);if(next!==run){setRun(next);setLeaveArmed(false);reportMetrics(run,next,'购买应急电池');}}}>{run.reserveCell?'已携带1份':`购买应急电池 · ${RESERVE_CELL_PRICE}金币`}</button></div></section>
       </div></div>
       {metricEvent && <p className="shop-receipt" aria-live="polite">{metricEvent.label}{metricEvent.changes.map((change) => ` · ${change.label} ${signedDelta(change.delta)}${change.capDelta ? `（上限 ${signedDelta(change.capDelta)}）` : ''}`).join('')}</p>}
@@ -606,6 +667,7 @@ export default function ElevatorGame() {
       <p className="dialog-kicker">{language==='zh'?'本班结束':'SHIFT ENDED'}</p>
       <DialogHeader><DialogTitle>{run.floor}<small>{language==='zh'?'层':'F'}</small></DialogTitle><DialogDescription className="failure-cause">{run.message.includes('炸弹倒计时') ? '炸弹倒计时归零' : run.energy<=0 && run.stress>=run.stressCap ? '电量耗尽 · 躁动失控' : run.energy<=0 ? '电量耗尽' : '躁动失控'}</DialogDescription></DialogHeader>
       <p className="compact-record">{run.floor>runStartBest ? (language==='zh'?'新纪录': 'NEW BEST') : (language==='zh'?`最高纪录 ${bestFloor} 层`:`Best: floor ${bestFloor}`)}</p>
+      {newLegends.length>0&&<p className="compact-record legend-unlock" data-no-translate>{language==='zh'?`新传奇加入：${newLegends.map(k=>riderName(k,'zh')).join('、')}`:`New legends: ${newLegends.map(k=>riderName(k,'en')).join(', ')}`}</p>}
       <Button className="story-primary" onClick={reset}><RotateCcw />{language==='zh'?'再来一局':'Play again'}</Button>
       <details className="result-details"><summary>{language==='zh'?'本局详情':'Run details'}</summary><p>{resultChallenge}</p><dl>
         <div><dt>{language==='zh'?'收入 / 支出':'Earned / spent'}</dt><dd>{run.earned} / {run.earned-run.coins}</dd></div>

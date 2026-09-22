@@ -2,13 +2,14 @@ import { ADJACENT, passengerCategory } from './game-data';
 import { ECONOMY_RULES } from './balance-v832';
 import type { Rider, RunState } from './game-engine';
 
-export const TIP_CHANCE = .5;
+export const TIP_CHANCE = .35;
 export const RELAY_CHANCE = .5;
-export const RELAY_ENERGY = 4;
+export const RELAY_ENERGY = 3;
 export const CROWD_MINIMUM = 4;
-export const CROWD_COINS = 3;
+export const CROWD_COINS = 6;
 export const METER_START = 5;
-export const SHOP_TUNING={bufferBoost:0,finaleRemaining:1,bufferGap:0,bufferGapEnergy:4,bufferFlywheel:2,bufferFlywheelSectorCap:4,relayReliable:false,expressMinimum:5,insulationBroad:false,soundproofRisk:true};
+export const METER_COINS = 4;
+export const SHOP_TUNING={bufferBoost:0,finaleRemaining:1,bufferGap:0,bufferGapEnergy:4,bufferFlywheel:2,bufferFlywheelSectorCap:4,relayReliable:false,expressMinimum:5,insulationBroad:true,soundproofRisk:true};
 export function flywheelAllowance(state:RunState) {
  const cap=SHOP_TUNING.bufferFlywheelSectorCap;
  return cap>0?Math.max(0,cap-(state.flywheelSector===Math.floor(state.floor/10)?state.flywheelSpent??0:0)):Infinity;
@@ -31,7 +32,8 @@ export function deliveryGapCharge(state:RunState,arrivals:number) {
  return arrivals>0?{progress:0,energy:previous>=gap?SHOP_TUNING.bufferGapEnergy:0}:{progress:Math.min(gap,previous+1),energy:0};
 }
 export const naturalChargeBoost=(state:RunState,naturalCharge:number)=>state.upgrades.buffer&&naturalCharge>0&&!SHOP_TUNING.bufferFlywheel?SHOP_TUNING.bufferBoost:0;
-export const finaleIncome=(state:RunState,arrivals:number,remaining:number)=>state.upgrades.finale&&arrivals>=2&&remaining<=SHOP_TUNING.finaleRemaining?6:0;
+export const FINALE_COINS = 8;
+export const finaleIncome=(state:RunState,arrivals:number,remaining:number)=>state.upgrades.finale&&arrivals>=2&&remaining<=SHOP_TUNING.finaleRemaining?FINALE_COINS:0;
 /** Process-local experimental switches; production uses these defaults. */
 export const SHOP_RULES = { expanded: true, grouped: true, mixed: true, optionalCalm: true };
 export function mixedTicketEligible(cabin: Array<Rider|null>) {
@@ -41,7 +43,7 @@ export function deliveryUpgradeIncome(state:RunState,cabin:Array<Rider|null>,slo
   return {
     crowd: state.upgrades.crowd && slots.length && mixedTicketEligible(cabin) ? CROWD_COINS : 0,
     single: state.upgrades.single && slots.length === 1 ? 2 : 0,
-    meter: state.upgrades.meter ? slots.filter(i=>state.floor+1-cabin[i]!.boardedAt>=METER_START).length*4 : 0,
+    meter: state.upgrades.meter ? slots.filter(i=>state.floor+1-cabin[i]!.boardedAt>=METER_START).length*METER_COINS : 0,
   };
 }
 
