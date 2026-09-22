@@ -1,6 +1,18 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v8.38**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.0**. Publication status is tracked separately from the source version.
+
+## v9.0 — 2026-09-23 — Legends, the power box, and a shift that never feels rich / 传奇、配电箱，和永远不宽裕的夜班
+
+- All 21 riders (Counsel 16F, Inspector 21F with stamp +12, Shifter 41F). Commuter 6 (+3 calm), Lover 5, Ghost 3 (trips 5–10), Coach neighbors +2, Mechanic repair 4 floors, Mimic always copies the fare above.
+- Eight floor-1 legends ride to the 10F shop without power and leave permanent keepsakes; declining pays 10. Four unlock after the first shift, four via achievements.
+- Shops: first ability free, second 40 coins, 6 slots, reroll 10. Two old-rider moves per floor; Capacity → power box; Longer Fuse retired; Reservation + Rebooking → Dispatch (twice per sector).
+- Power box: Storage / Transformer / Motor, 3 levels at 15/35/60, one per shop, five per run. Charging 2 coins (Transformer 1.75/1.5/1.25); in-transit 4 coins, 20 per sector. Motor 1/3/4/5 to 45F, then +1 every 7 floors from 46F to 13 at 88F.
+- Agitation: full cabin +1/floor; low and medium departures tip +1 per arrival; high departures 20% incident. Ability rework: Safety Margin, Soundproof, Insulation, Stabilizer, Concierge, Tip Jar, Relay, Meter, Mixed Ticket, Curtain Call (exact values in lib/release-v9.ts).
+- Districts every ten floors, 29 rider stories, daily shift (?daily), copy result / run record. Compact cards, next-shop power forecast, power box panel, keepsakes; fixed the receipt button covering Ascend at 701–1100px; phones show all candidates.
+- New scripts/balance-sim (8 archetype bots on the production rules). Final acceptance on fresh seeds, 3,900 runs: rider styles within 89.9%, signature packages 90–96% of generic, 95.2% runs with ≥2 escapes, 7.6% affluent shops, 0% alive at 150F. All 16 abilities +2.9 to +10 floors; legends +4.9 to +9.0.
+- Fixes: flywheel stacking with Old Zhou; agitation forecast missing v9 sources (4,000 random transitions); ~20 stale English numbers, now guarded by a parity check.
+- Watch: optimizer median 88 (target ≤85), agitation deaths 19.9% (≥20), weakest legend +4.9 (≥+5); human playtests pending; legend portraits pending. Details: docs/design/2026-09-22-v9-balance-simulation.md.
 
 ## v8.38 — 2026-09-07 — A clearer ending / 充电与结算精简
 

@@ -2,6 +2,7 @@ import { BONDS, bondStatus, conflictLinks, profileWeight, randomTraits, riderPro
 import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
 import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, isLegend, passengerCategory, type LegendKind, type PassengerKind, type UpgradeKey } from './game-data';
 import { BOX_MAX_LEVEL, BOX_PRICES, BOX_TOTAL_CAP, emergencySectorCap, EMPTY_BOX, affordableUnits, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, motorNoise, shopEntryCharge, storageCap, type BoxLine, type PowerBox } from './power-box';
+import { districtWeight } from './districts';
 import { CHILD_CARERS, DRUNK_CARERS, GHOST_CONTROLLERS, KEEPSAKE_KEYS, LEGEND_DECLINE_COINS, LEGEND_DESTINATION, LEGEND_KEEPSAKE, LEGEND_POOL_DEFAULT, LEGEND_RULES, type KeepsakeKey } from './legends';
 import { V9_AGITATION, crowdingThreshold, agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
 import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome, flywheelSaving, consumeFlywheel } from './shop-effects';
@@ -282,9 +283,11 @@ export function shuffle<T>(items: T[], rng: () => number = Math.random): T[] {
 const INTRINSIC_RISK: PassengerKind[] = ['thief','drunk','child','celebrity','inspector','mystery','shifter'];
 function weightedKind(floor: number, rng: () => number, forcedRisk = false, excludeLover = false, unlocked: PassengerKind[] = unlockedAt(floor)): PassengerKind {
   const pool = unlocked.filter(kind => (!forcedRisk || INTRINSIC_RISK.includes(kind)) && (!excludeLover || kind !== 'lover'));
-  const total = pool.reduce((sum, kind) => sum + PASSENGERS[kind].rarity, 0);
+  // District themes draw their riders at 1.5×; duplicates in the pool (Medium's ghosts) stack.
+  const weight = (kind: PassengerKind) => PASSENGERS[kind].rarity * districtWeight(floor, kind);
+  const total = pool.reduce((sum, kind) => sum + weight(kind), 0);
   let roll = rng() * total;
-  for (const kind of pool) { roll -= PASSENGERS[kind].rarity; if (roll <= 0) return kind; }
+  for (const kind of pool) { roll -= weight(kind); if (roll <= 0) return kind; }
   return pool[0];
 }
 
@@ -380,14 +383,14 @@ export const partnershipAgitation = (state: RunState) => { const a = riskPartner
 export const arrivalReliefCapFor = (state: RunState) => AGITATION_RULES.arrivalReliefCap + Number(legendInCabin(state.cabin, 'matron'));
 export const ROUNDS_LOG_SHOP_RELIEF = 3;
 
-export function resolveFloor(state: RunState, rng: () => number = Math.random, fareTuning: FareTuning = {}): RunState {
+/** `shopRng` draws the next shop's cards on its own stream (the daily shift keeps them identical for everyone). */
+export function resolveFloor(state: RunState, rng: () => number = Math.random, fareTuning: FareTuning = {}, shopRng: () => number = rng): RunState {
   if (state.status !== 'playing') return state;
   if (!state.cabin.some(Boolean)) return { ...state, message: '至少接一位乘客才能上行。' };
   const nextFloor = state.floor + 1;
   const checkpoint = nextFloor % 10 === 0;
   const energyCost = effectiveMotor(state);
   const departBand = agitationBand(state.stress);
-  const occupiedAtDeparture = state.cabin.filter(Boolean).length;
   let energy = state.energy; let stress = state.stress; let coins = state.coins;
   const earningSources: ChangeLine[] = []; const pressureSources: ChangeLine[] = []; const energySources: ChangeLine[] = [];
   const addCoins = (label: string, amount: number) => { coins += amount; const existing = earningSources.find((line) => line.label === label); if (existing) existing.amount += amount; else earningSources.push({ label, amount }); };
@@ -568,7 +571,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const lastEarnings = { total: coins - state.coins, sources: earningSources }; const lastPressure = { delta: stress - state.stress, sources: pressureSources }; const lastEnergy = { delta: energy - state.energy, sources: energySources }; const incomeNote = lastEarnings.total ? `${lastEarnings.total>0?'+':''}${lastEarnings.total} 金币 · ` : '';
   cabin = cabin.map(rider => rider?.kind === 'shifter' ? { ...rider, traits: randomTraits('shifter', unlockedAt(nextFloor), rng, (rider.traits?.revision ?? 0) + 1) } : rider);
   if (cabin.some(rider => rider?.kind === 'shifter') && status === 'playing') message += ' 百变人已变化，关门前查看新属性。';
-  const drawn=status==='upgrade'?drawUpgradeOffer(state.upgrades,state.shopSeen??[],rng,nextFloor):{keys:[],seen:state.shopSeen};
+  const drawn=status==='upgrade'?drawUpgradeOffer(state.upgrades,state.shopSeen??[],shopRng,nextFloor):{keys:[],seen:state.shopSeen};
   const shop = drawn.keys.map(key=>({key,price:upgradePrice(key,nextFloor,state.upgrades[key]),purchased:false}));
   if(SHOP_TUNING.bufferGap)state={...state,bufferGapTurns:gapCharge.progress};
   state=consumeFlywheel(state,flywheel);

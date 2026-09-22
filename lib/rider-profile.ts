@@ -61,7 +61,7 @@ export function randomTraits(kind:'mystery'|'shifter', available:PassengerKind[]
  const rest=pool.filter(k=>k!==liked);
  const avoided=rest[randomInt(0,rest.length-1,rng)]??'drunk';
  const conflictEffect=(['agitation','energy','coins'] as ConflictEffect[])[randomInt(0,2,rng)];
- return {weight:0,energy:randomInt(1,2,rng),agitation:randomInt(0,1,rng),fare:randomInt(kind==='shifter'?16:8,kind==='shifter'?28:24,rng),bond:{likes:[liked],avoids:[avoided]},conflictEffect,revision};
+ return {weight:0,energy:kind==='shifter'?1:randomInt(1,2,rng),agitation:randomInt(0,1,rng),fare:randomInt(kind==='shifter'?16:8,kind==='shifter'?28:24,rng),bond:{likes:[liked],avoids:[avoided]},conflictEffect,revision};
 }
 function ownProfile(rider:Rider){
  const spec=PASSENGERS[rider.kind];

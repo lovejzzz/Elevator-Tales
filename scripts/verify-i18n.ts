@@ -140,7 +140,9 @@ console.log(`English localization verified: ${corpus.length} rider, rule, upgrad
     ...Object.values(KEEPSAKES).flatMap(k => [k.name, k.description]),
     ...Object.values(BOX_LINE_LABELS).flatMap(b => b.levels),
   ];
-  const stale = texts.filter(t => digits(t) !== digits(translateGameText(t, 'en')) || /[\u3400-\u9fff]/u.test(translateGameText(t, 'en')));
+  // Ranges and percentages must match exactly, however small (1–2 vs 0–1, 25% vs 35%).
+  const signed = (t: string) => (t.match(/\d+[–-]\d+|\d+(?:\.\d+)?%/g) ?? []).map(x => x.replace('-', '–')).sort().join(',');
+  const stale = texts.filter(t => digits(t) !== digits(translateGameText(t, 'en')) || signed(t) !== signed(translateGameText(t, 'en')) || /[\u3400-\u9fff]/u.test(translateGameText(t, 'en')));
   if (stale.length) { console.error(`English rule texts with missing or changed numbers: ${stale.length}`); for (const t of stale) console.error(`${t}\n  => ${translateGameText(t, 'en')}`); process.exit(1); }
   console.log(JSON.stringify({ ruleTextNumberParity: texts.length }));
 }

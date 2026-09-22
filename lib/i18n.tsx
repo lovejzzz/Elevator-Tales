@@ -542,6 +542,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     // v9: motor notices and the schedule are generated from motorCost, so translate by pattern.
     .replace(/^预告：(\d+)层起运转(\d+)电$/u, 'Ahead: motor $2 from floor $1')
     .replace(/^(\d+)位邻座 · 到站\+(\d+)币$/u, '$1 neighbors · +$2 on arrival')
+    .replace(/^遇见过的乘客会录入档案；第一次把人送到站，就能读到他的故事。最高抵达 (\d+)F · 故事 (\d+)\/(\d+)。$/u, 'Riders you meet join the archive; deliver someone once to read their story. Best floor $1F · Stories $2/$3.')
     .replace(/你带着 (\d+) 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 20 电。/u, 'You left with $1 coins: when power runs short, use in-transit charging in the power panel, up to 20 per ten floors.')
     .replace(/^运转：(.+)。每十层可维修，人物耗电另计。$/u, (_m, body: string) => `Motor: ${body
       .replace(/(\d+)–(\d+)层(\d+)电/gu, 'floors $1–$2: $3')

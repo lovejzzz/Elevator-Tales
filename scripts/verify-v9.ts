@@ -183,8 +183,20 @@ console.log('PASS mimic fare copy, motor schedule, medium ghost draw');
   assert.equal(sectorForecast(run(12, [rider('commuter', 12, 8)], { energy: 10 })).failFloor, 15);
 }
 console.log('PASS sector power forecast equals settlement with no new boarding');
+// Daily shift: seeded streams reproduce the opening and the shop draw regardless of seating.
+{
+  const { stream, dailySeed } = await import('../lib/seeded');
+  const seed = dailySeed('2026-09-22');
+  const a = E.startRun(false, stream(seed, 'offers', 1)), b = E.startRun(false, stream(seed, 'offers', 1));
+  assert.deepEqual(a.offers.map(r => [r.kind, r.destination]), b.offers.map(r => [r.kind, r.destination]));
+  const pre = run(9, [rider('commuter', 9, 1), rider('tourist', 9, 3)]);
+  const x = E.resolveFloor(pre, stream(seed, 'resolve', 9), {}, stream(seed, 'shop-draw', 10));
+  const y = E.resolveFloor({ ...pre, cabin: [rider('courier', 9, 1), null, rider('thief', 9, 1), rider('ghost', 9, 4), null, null] }, stream(seed, 'resolve', 9), {}, stream(seed, 'shop-draw', 10));
+  assert.deepEqual(x.shop.map(c => c.key), y.shop.map(c => c.key), 'same shop cards for different cabins');
+}
+console.log('PASS daily shift streams reproduce openings and shop draws');
 // Generated motor texts translate by pattern, whatever the numbers.
 assert.equal(translateGameText(motorAdvanceNotice(1), 'en'), 'Ahead: motor 3 from floor 11');
 assert.ok(!/[\u3400-\u9fff]/u.test(translateGameText(motorScheduleText(), 'en')), translateGameText(motorScheduleText(), 'en'));
 console.log('PASS generated motor notice and schedule translate');
-console.log(JSON.stringify({ version: 'v9', checks: 12, passed: true }));
+console.log(JSON.stringify({ version: 'v9', checks: 13, passed: true }));
