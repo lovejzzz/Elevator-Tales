@@ -2914,3 +2914,17 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 @keyframes legend-glow { from { box-shadow:0 0 14px #e0b75f2a, inset 0 0 0 1px #f3d38f55; } to { box-shadow:0 0 20px #f3d38f44, inset 0 0 0 1px #f3d38f88; } }
 .game-shell .passenger-list .passenger-card { transition:rotate 220ms ease-out, box-shadow 220ms ease, translate 220ms ease; }
 .game-shell .passenger-list .passenger-card:hover:not(:disabled) { translate:0 -2px; }
+
+/* v9.9.2 no hover flash: no 3D rotation, no blend modes, no animation swap on hover. The pointer only moves the light. */
+.game-shell .passenger-list { perspective:none; }
+.game-shell .passenger-list .passenger-card { rotate:none!important; transform-style:flat; transition:box-shadow 220ms ease, translate 220ms ease; }
+.game-shell .passenger-card .card-foil { mix-blend-mode:normal!important; }
+.game-shell .passenger-card.grade-rare .card-foil { opacity:.07; }
+.game-shell .passenger-card.grade-rare:hover .card-foil { opacity:.12; }
+.game-shell .passenger-card.grade-legendary .card-foil { opacity:.35; }
+.game-shell .passenger-card.grade-legendary:hover .card-foil { opacity:.45; }
+@media (prefers-reduced-motion:no-preference) {
+  .game-shell .passenger-list .passenger-card:hover:not(:disabled) { animation:card-deal 420ms var(--deal-delay, 0ms) backwards cubic-bezier(.2,.8,.3,1)!important; }
+  .game-shell .passenger-list .passenger-card.grade-legendary:hover:not(:disabled) { animation:card-deal 420ms var(--deal-delay, 0ms) backwards cubic-bezier(.2,.8,.3,1), legend-glow 6s 500ms ease-in-out infinite alternate!important; }
+  .game-shell .passenger-card.grade-fine:hover .card-foil, .game-shell .passenger-card.grade-rare:hover .card-foil, .game-shell .passenger-card.grade-legendary:hover .card-foil { animation-play-state:paused; }
+}

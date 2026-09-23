@@ -54,15 +54,14 @@ function scrollMobileTarget(selector:string,block:ScrollLogicalPosition='nearest
   document.querySelector(selector)?.scrollIntoView({block,behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'});
 }
 
-/** v9.9 card feel: the card tilts toward the pointer and its foil follows it (pure DOM, no React state). */
+/** v9.9.2 card feel: the foil's light follows the pointer (pure DOM, no React state; no 3D tilt, which flashed black). */
 function tiltCard(event: ReactPointerEvent<HTMLElement>) {
   if (event.pointerType !== 'mouse') return;
   const el = event.currentTarget, r = el.getBoundingClientRect(), x = (event.clientX - r.left) / r.width, y = (event.clientY - r.top) / r.height;
   el.style.setProperty('--mx', x.toFixed(3)); el.style.setProperty('--my', y.toFixed(3));
-  el.style.setProperty('--tilt', `${(0.5 - y).toFixed(3)} ${(x - 0.5).toFixed(3)} 0 ${(Math.hypot(x - .5, y - .5) * 7).toFixed(2)}deg`);
 }
 function untiltCard(event: ReactPointerEvent<HTMLElement>) {
-  const el = event.currentTarget; el.style.removeProperty('--tilt'); el.style.removeProperty('--mx'); el.style.removeProperty('--my');
+  const el = event.currentTarget; el.style.removeProperty('--mx'); el.style.removeProperty('--my');
 }
 
 /** v9.8 end screen: the floor reached counts up with a soft tick. */

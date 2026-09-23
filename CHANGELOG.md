@@ -1,6 +1,10 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.9.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.9.2**. Publication status is tracked separately from the source version.
+
+## v9.9.2 — 2026-09-23 — Hover flash fix / 修复悬停闪黑
+
+- No 3D tilt, no blend-mode foil, no animation swap on hover (the repaint flashed black); hover lifts 2 px and the sheen follows the pointer. Brightness check over four hovered cards: steady 35–38. No rule changes.
 
 ## v9.9.1 — 2026-09-23 — Calmer motion / 动画收敛
 

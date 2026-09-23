@@ -713,3 +713,27 @@ export const V991_EN: ChangelogEntry = {
   experiments: ['Frame captures at 0.15 / 0.25 / 0.35 s show no dark frames during the deal; verify and build pass. No rule or value changes.'],
   watch: ['If it still feels busy, the next step is showing the hologram drift only on hover.'],
 };
+
+export const V992_ZH: ChangelogEntry = {
+  version: '9.9.2', date: '2026-09-23', title: '修复：鼠标移到卡片上闪黑',
+  summary: '去掉卡片的 3D 倾斜和混合模式光泽层，悬停时也不再切换动画，避免浏览器重绘造成的闪黑。',
+  changes: [
+    '卡片悬停只轻轻上抬 2 像素，光泽跟着鼠标位置移动；不再做 3D 倾斜。',
+    '全息与流光改为普通半透明叠加（不再用颜色减淡 / 柔光混合），稀有、传奇材质保留金边、放射纹和流光。',
+    '悬停时材质动画只是暂停，不再移除或重启卡片动画。',
+  ],
+  experiments: ['浏览器中依次悬停四张卡（含传奇），每张连续截图 3 帧，卡片区域平均亮度 35–38，没有变暗的帧。规则与数值不变。'],
+  watch: ['如果在别的浏览器上仍有闪烁，把具体浏览器告诉我。'],
+};
+
+export const V992_EN: ChangelogEntry = {
+  version: '9.9.2', date: '2026-09-23', title: 'Fix: black flash when hovering a card',
+  summary: 'Removed the cards’ 3D tilt and blend-mode foil layers, and hover no longer swaps animations, avoiding the browser repaint that flashed black.',
+  changes: [
+    'Hovering a card lifts it 2 px and moves its sheen with the pointer; no more 3D tilt.',
+    'Hologram and sheen are plain translucent overlays (no colour-dodge / soft-light blending); rare and legendary keep their gold edges, rays and sheen.',
+    'On hover the material animation just pauses instead of the card animation being removed or restarted.',
+  ],
+  experiments: ['Hovered four cards in turn (including a legendary), three frames each: average card brightness 35–38 with no darkened frame. No rule or value changes.'],
+  watch: ['If another browser still flickers, report which one.'],
+};
