@@ -1,6 +1,10 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.2**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.2.1**. Publication status is tracked separately from the source version.
+
+## v9.2.1 — 2026-09-23 — Fix frozen intro / 修复开场说明卡住
+
+- Returning players could see the intro frozen on screen with Start doing nothing: the intro opened, then closed one frame later during its entrance animation. It now opens only after storage is read and only for players who have not seen it. Present since v9.0; verified with real clicks for returning and new saves; new verify check.
 
 ## v9.2 — 2026-09-23 — Voltmeter and cash register / 电压表与收银机
 

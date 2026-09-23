@@ -293,3 +293,29 @@ export const V92_EN: ChangelogEntry = {
     'The voltmeter zones follow the next floor’s worst-case cost and are only a hint; the real safeguard remains the ascend confirmation.',
   ],
 };
+
+export const V921_ZH: ChangelogEntry = {
+  version: '9.2.1', date: '2026-09-23', title: '修复：老玩家点“开始”没有反应',
+  summary: '玩过的玩家打开游戏时，开场说明会卡在屏幕上，点“开始临时夜班”没有反应。',
+  changes: [
+    '开场说明改为读取本地记录之后才决定是否显示：新玩家照常看到并可点开始；玩过的玩家直接进入游戏，不再出现卡住的说明。',
+  ],
+  experiments: [
+    '原因：页面先把说明打开，下一帧读到“已看过”再关闭；关闭发生在弹窗入场动画进行中，弹窗停在屏幕上但已不响应，点击“开始”不会改变任何状态。v9.0 引入“开场说明只出现一次”时就存在。',
+    '浏览器复现与验证（真实点击）：老玩家存档打开后无弹窗、可上客并上行到 2 层；清空存档后说明出现、点开始关闭、刷新后不再出现。verify 新增一条检查防止回退。',
+  ],
+  watch: ['新玩家在第一帧里（说明出现之前）能看到候客卡片闪一下；不影响操作，如果明显再处理。'],
+};
+
+export const V921_EN: ChangelogEntry = {
+  version: '9.2.1', date: '2026-09-23', title: 'Fix: Start did nothing for returning players',
+  summary: 'For anyone who had played before, the intro could freeze on screen and “Start the Temporary Shift” did nothing.',
+  changes: [
+    'The intro now decides whether to show only after reading local storage: new players see it and can start as before; returning players go straight into the game with no frozen intro.',
+  ],
+  experiments: [
+    'Cause: the page opened the intro and closed it one frame later on reading “already seen”; closing during the dialog’s entrance animation left it on screen but inert, so Start changed nothing. Present since v9.0 introduced the show-once intro.',
+    'Reproduced and verified in the browser with real clicks: a returning save opens with no dialog and can board and ascend to 2F; a cleared save shows the intro, Start closes it and it stays closed on reload. A new verify check guards against regression.',
+  ],
+  watch: ['New players may glimpse the offer cards for one frame before the intro appears; harmless, revisit if noticeable.'],
+};

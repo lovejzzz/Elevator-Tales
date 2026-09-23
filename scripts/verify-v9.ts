@@ -240,4 +240,10 @@ console.log('PASS lover share stays below 13% on 11-20F without a waiting Lover'
   assert.equal(E.INSULATION_RULES.cap, 3);
 }
 console.log('PASS insulation friction tip');
-console.log(JSON.stringify({ version: 'v9', checks: 16, passed: true }));
+// v9.2.1 the intro must not open before storage is read: opening then closing a frame later froze it for returning players.
+{
+  const ui = readFileSync(new URL('../components/elevator-game.tsx', import.meta.url), 'utf8');
+  assert.ok(ui.includes('useState<boolean | null>(null)') && ui.includes('setIntroState(current => current ?? !seen)'), 'intro starts unknown and opens only for unseen players');
+}
+console.log('PASS intro opens only after storage is read');
+console.log(JSON.stringify({ version: 'v9', checks: 17, passed: true }));

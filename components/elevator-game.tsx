@@ -243,7 +243,9 @@ export default function ElevatorGame() {
   const [changelogOpen,setChangelogOpen]=useState(false);
   const [ejectArmed,setEjectArmed]=useState(false);
   const [leaveArmed,setLeaveArmed]=useState(false);
-  const [intro, setIntroState] = useState(true);
+  // Unknown until storage is read: opening first and closing a frame later left the dialog stuck mid-animation for returning players.
+  const [introState, setIntroState] = useState<boolean | null>(null);
+  const intro = introState === true;
   const setIntro = useCallback((open: boolean) => { setIntroState(open); if (!open) { try { localStorage.setItem('elevator-tales-intro-seen-v1', 'yes'); } catch { /* storage unavailable */ } } }, []); const [help, setHelp] = useState(false); const [pressureHelp, setPressureHelp] = useState(false); const [archive, setArchive] = useState(false); const [sound, setSound] = useState(false); const [music, setMusic] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [highest, setHighest] = useState(1); const [bestFloor, setBestFloor] = useState(1); const [runStartBest, setRunStartBest] = useState(1); const [discovered, setDiscovered] = useState<PassengerKind[]>([]); const busyRef = useRef(false);
@@ -279,7 +281,7 @@ export default function ElevatorGame() {
   }, []);
   useEffect(() => () => { journeyTimers.current.forEach(clearTimeout); if (feedbackTimer.current) clearTimeout(feedbackTimer.current); disposeGameAudio(); disposeGameMusic(); }, []);
 
-  useEffect(() => { setFastReveal(localStorage.getItem('elevator-tales-fast-reveal-v1') === 'on'); try { if (localStorage.getItem('elevator-tales-intro-seen-v1') === 'yes') setIntroState(false); } catch { /* storage unavailable */ } }, []);
+  useEffect(() => { setFastReveal(localStorage.getItem('elevator-tales-fast-reveal-v1') === 'on'); let seen = false; try { seen = localStorage.getItem('elevator-tales-intro-seen-v1') === 'yes'; } catch { /* storage unavailable */ } setIntroState(current => current ?? !seen); }, []);
   useEffect(() => {
     const syncPreferences = () => {
       const nextMusic = localStorage.getItem(MUSIC_PREFERENCE_KEY) !== 'off';
