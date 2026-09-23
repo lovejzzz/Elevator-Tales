@@ -1,5 +1,5 @@
 // Portraits are static card illustrations; gameplay and connections never live in the bitmap.
-import { PASSENGERS, type PassengerKind } from './game-data';
+import { PASSENGERS, isLegend, type PassengerKind } from './game-data';
 
 const publicBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 const publicAsset = (path: string) => `${publicBasePath}${path}`;
@@ -17,6 +17,8 @@ export const PASSENGER_ART = {
   },
 } as const;
 export function portraitAsset(kind: PassengerKind) {
+  // v9 legends: single painted portraits generated in the same style as the v6 riders.
+  if (isLegend(kind)) return {src:publicAsset(`/assets/legend-${kind}.jpg`),columns:1,rows:1,cell:0};
   if (kind === 'mystery' || kind === 'shifter' || kind === 'mimic') return {src:PASSENGER_ART.newer[kind],columns:1,rows:1,cell:0};
   const spec=PASSENGERS[kind]; return {src:publicAsset(`/assets/passengers-${spec.sheet}.png`),columns:3,rows:2,cell:spec.cell};
 }

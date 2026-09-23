@@ -2581,3 +2581,4 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .changelog-player { grid-template-columns:1fr!important; }
 .changelog-dev { margin-top:8px; font-size:12px; color:#b7b2a4; }
 .changelog-dev summary { cursor:pointer; color:#d9c28c; }
+.portrait-legend-art { border-color:#e0b75f!important; box-shadow:0 0 10px rgba(224,183,95,.25); }

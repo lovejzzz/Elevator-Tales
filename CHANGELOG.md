@@ -1,6 +1,12 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.0**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.0.1**. Publication status is tracked separately from the source version.
+
+## v9.0.1 — 2026-09-23 — Legend portraits / 传奇画像
+
+- The eight legends (Old Zhou, Matchmaker, Don, Matron, Nightingale, Medium, Tycoon, Stranger in 13) get 640×640 portraits in the existing rider style, replacing monograms; legend cards get a gold frame. No rule or balance changes.
+- Generated with an image model using passengers-03 as the style reference; each checked by hand for text artifacts and prop fidelity. Type check, verify, build and browser card check pass.
+- Watch: v9.0 marginal misses and human playtests still open.
 
 ## v9.0 — 2026-09-23 — Legends, the power box, and a shift that never feels rich / 传奇、配电箱，和永远不宽裕的夜班
 

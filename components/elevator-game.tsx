@@ -88,12 +88,9 @@ function MetricResponse({ metric, event, locale }: { metric: MetricKey; event: M
 }
 const shiftPhase = (floor: number) => floor <= 10 ? '临时夜班' : '无尽夜班';
 
-const LEGEND_MONOGRAM: Partial<Record<PassengerKind, string>> = { operator: '周', matchmaker: '月', don: '父', matron: '护', nightingale: '莺', medium: '灵', tycoon: '亨', stranger: '13' };
 function Portrait({ kind, large = false }: { kind: PassengerKind; large?: boolean }) {
-  // Legends have no painted portrait yet; a brass monogram stands in.
-  if (isLegend(kind)) return <span className={`portrait-window portrait-legend ${large ? 'portrait-large' : ''}`} aria-hidden="true"><span className="legend-monogram">{LEGEND_MONOGRAM[kind]}</span></span>;
   const asset = portraitAsset(kind); const x = asset.cell % asset.columns; const y = Math.floor(asset.cell / asset.columns);
-  return <span className={`portrait-window ${large ? 'portrait-large' : ''}`} aria-hidden="true"><span className="portrait-sheet" style={{ backgroundImage: `url(${asset.src})`, backgroundSize: `${asset.columns * 100}% ${asset.rows * 100}%`, backgroundPosition: `${asset.columns > 1 ? x * 100 / (asset.columns - 1) : 50}% ${asset.rows > 1 ? y * 100 / (asset.rows - 1) : 50}%` }} /></span>;
+  return <span className={`portrait-window ${large ? 'portrait-large' : ''} ${isLegend(kind) ? 'portrait-legend-art' : ''}`} aria-hidden="true"><span className="portrait-sheet" style={{ backgroundImage: `url(${asset.src})`, backgroundSize: `${asset.columns * 100}% ${asset.rows * 100}%`, backgroundPosition: `${asset.columns > 1 ? x * 100 / (asset.columns - 1) : 50}% ${asset.rows > 1 ? y * 100 / (asset.rows - 1) : 50}%` }} /></span>;
 }
 
 const KEEPSAKE_EN: Record<KeepsakeKey, [string, string]> = {
