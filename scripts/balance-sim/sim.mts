@@ -1,3 +1,4 @@
+import { netValue } from '../../lib/net-value.ts';
 import { activeConnection } from '../../lib/game-interaction.ts';
 import { ADJACENT } from '../../lib/game-data.ts';
 // v9 balance simulator. Archetype bots play the production engine (no second rule set)
@@ -7,7 +8,7 @@ import * as E from '../../lib/game-engine.ts';
 import { PASSENGERS, isLegend, type LegendKind, type PassengerKind, type UpgradeKey } from '../../lib/game-data.ts';
 import { riderProfile } from '../../lib/rider-profile.ts';
 import { motorCost, agitationBand } from '../../lib/balance-v832.ts';
-import { BOX_LINES, BOX_PRICES, BOX_TOTAL_CAP, boxTotal, boxedMotorCost, chargeCost, chargeUnitPrice, emergencyUnitPrice, type BoxLine } from '../../lib/power-box.ts';
+import { BOX_LINES, BOX_PRICES, BOX_TOTAL_CAP, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, type BoxLine } from '../../lib/power-box.ts';
 import type { Rider, RunState } from '../../lib/game-engine.ts';
 
 // ---------- deterministic streams ----------
@@ -122,14 +123,8 @@ function evaluate(state: RunState, bot: Bot): number {
 
 const place = (state: RunState, rider: Rider, slot: number): RunState => ({ ...state, cabin: state.cabin.map((r, i) => (i === slot ? rider : r)) });
 
-/** What a "net" line on the card would show: fare minus trip power valued at the current shop charge price. */
-export const NET_AGITATION_COINS = 3;
-export function cardNet(o: Rider, state: RunState) {
-  const trip = Math.max(1, o.destination - state.floor);
-  const fare = isLegend(o.kind) ? 0 : o.kind === 'mystery' ? 16 : PASSENGERS[o.kind].fare;
-  const p = riderProfile(o, state.cabin), price = chargeUnitPrice(E.boxOf(state));
-  return fare - trip * p.energy * price + (o.kind === "courier" ? 2 * price : 0) - trip * ((p.agitation ?? 0) + (['thief', 'drunk', 'child'].includes(o.kind) ? 1 : 0) + (o.volatile ? 1 : 0)) * NET_AGITATION_COINS;
-}
+/** The same net value the cards show (lib/net-value.ts). */
+export const cardNet = (o: Rider, state: RunState) => netValue(o, state) ?? 0;
 function chooseBoarding(state: RunState, offers: Rider[], bot: Bot, mode: LegendMode): RunState {
   let pool = offers.filter(o => !isLegend(o.kind) || mode === 'auto' || mode === 'board');
   let cur = state;

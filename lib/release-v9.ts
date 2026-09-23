@@ -401,3 +401,37 @@ export const V931_EN: ChangelogEntry = {
     'The optimizer boards Ghosts 66.2% of the time, just over the 65% bound.',
   ],
 };
+
+export const V94_ZH: ChangelogEntry = {
+  version: '9.4', date: '2026-09-23', title: '人物卡显示“净值”（试用）',
+  summary: '每张候客卡在数字行右侧显示净值：单独带这位乘客大约赚还是亏。',
+  changes: [
+    '净值＝车费 − 全程耗电 × 当前充电价 − 全程自身躁动 × 3（快递员加上到站回的 2 电）；不含邻座加成（恋人配对、游客邻座、教练等），所以绿色表示单独带也划算，红色表示要靠组合才值得。传奇不显示。',
+    '悬停净值可看到计算方式。',
+  ],
+  experiments: [
+    '模拟（每类 300 局，种子 777）：按卡面车费上客的“休闲”机器人中位 28 层、p10 19；改按净值上客后中位 49、p10 46。熟练型（均衡）85 不受影响。卡片和模拟器使用同一个计算函数（lib/net-value.ts）。',
+    'verify 新增净值计算检查；规则与数值不变。',
+  ],
+  watch: [
+    '试用：看真人玩家是否因为净值为负而完全不带恋人、游客等靠组合赚钱的乘客；如果是，考虑显示“配对后净值”。',
+    '净值会让新手明显变强，需要试玩判断难度是否仍然合适。',
+  ],
+};
+
+export const V94_EN: ChangelogEntry = {
+  version: '9.4', date: '2026-09-23', title: 'Net value on rider cards (trial)',
+  summary: 'Each offer card shows a net value at the end of its number row: roughly whether carrying this rider alone gains or loses coins.',
+  changes: [
+    'Net = fare − trip power × current charge price − trip agitation × 3 (Couriers add back their 2-power refund); neighbour bonuses (paired Lovers, Tourist neighbours, Coaches…) are left out, so green means worth carrying alone and red means it pays only in a combination. Legends show none.',
+    'Hover the net value to see how it is computed.',
+  ],
+  experiments: [
+    'Simulation (300 runs per bot, seed 777): the casual bot boarding by printed fare reaches median 28 (p10 19); boarding by net value, median 49 (p10 46). The optimizer stays at 85. Cards and simulator share one function (lib/net-value.ts).',
+    'New verify check for the net computation; no rule or value changes.',
+  ],
+  watch: [
+    'Trial: watch whether players stop carrying Lovers, Tourists and other combination riders because their net is negative; if so, consider showing a “paired” net.',
+    'Net value makes new players noticeably stronger; playtests should confirm the difficulty still feels right.',
+  ],
+};

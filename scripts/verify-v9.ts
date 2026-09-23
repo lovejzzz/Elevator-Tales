@@ -11,6 +11,7 @@ import { translateGameText } from '../lib/i18n';
 import { sectorForecast } from '../lib/game-forecast';
 import { motorAdvanceNotice, motorScheduleText } from '../lib/balance-v832';
 import { departureRisk, rescuePlan, sectorNeed } from '../lib/departure-guard';
+import { netValue } from '../lib/net-value';
 import { readFileSync } from 'node:fs';
 import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
@@ -257,4 +258,13 @@ console.log('PASS intro opens only after storage is read');
   assert.ok(plan && plan.remove.length === 1 && plan.remove[0].paid === 0 && plan.charge > 0, `withdraw the new rider, then charge: ${JSON.stringify(plan)}`);
 }
 console.log('PASS rescue plans are real or the floor is declared lost');
-console.log(JSON.stringify({ version: 'v9', checks: 18, passed: true }));
+// v9.4 card net value: fare − trip power × charge price (+ courier refund) − trip agitation × 3; legends show none.
+{
+  const s = run(15, []);
+  assert.equal(netValue(rider('commuter', 15, 3, { boardedAt: 15 }), s), 0);
+  assert.equal(netValue(rider('courier', 15, 1, { boardedAt: 15 }), s), 5);
+  assert.equal(netValue(rider('thief', 15, 2, { boardedAt: 15 }), s), 5 - 4 - 6);
+  assert.equal(netValue(rider('operator', 15, 9, { boardedAt: 15 }), s), null);
+}
+console.log('PASS card net value');
+console.log(JSON.stringify({ version: 'v9', checks: 19, passed: true }));

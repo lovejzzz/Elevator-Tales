@@ -2718,3 +2718,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .power-alert-rescue { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
 .power-alert-rescue button { min-height:32px; padding:0 10px; border:1px solid #d9a24f; background:#d9a24f22; color:#f7e2b6; font-weight:700; cursor:pointer; }
 .power-alert .power-alert-doomed { color:#ffb4a2; }
+/* v9.4 net value on offer cards. */
+.cc-net { margin-left:auto; padding:1px 7px; border:1px solid #c99d5255; border-radius:99px; font:700 12px/1.5 var(--font-mono); color:#d8cfb6; white-space:nowrap; }
+.cc-net.is-pos { color:#9ee3b5; border-color:#5a9e7c88; background:#5a9e7c1a; }
+.cc-net.is-neg { color:#ffab96; border-color:#c8574b88; background:#c8574b1a; }

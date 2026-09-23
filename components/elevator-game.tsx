@@ -31,6 +31,7 @@ import { CHANGELOG, CHANGELOG_EN, GAME_VERSION } from '@/lib/changelog';
 import { localizeTree, translateGameText, type GameLocale } from '@/lib/i18n';
 import { UPGRADE_SLOTS, riskPartnerships } from '@/lib/shift-rules';
 import { flywheelAllowance } from '@/lib/shop-effects';
+import { netValue } from '@/lib/net-value';
 import { departureRisk, rescuePlan, sectorNeed, SECTOR_NEED_RIDERS } from '@/lib/departure-guard';
 import { offerReveal } from '@/lib/offer-reveal';
 import { shouldPreviewConnection } from '@/lib/connection-preview';
@@ -124,6 +125,7 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
   const summary=cardSummary(rider,run,locale);
   const zh=locale==='zh';
   const legend=isLegend(rider.kind);
+  const net=netValue(rider,run);
   return <span className="unified-passenger-summary compact-card" data-no-translate>
     <span className="cc-head"><Portrait kind={rider.kind}/><span className="cc-title"><strong>{riderName(rider.kind,locale)}</strong><span className="cc-sub">
       <span className="cc-trip">{zh?`${brief.distance} 站`:`${brief.distance} stops`}</span>
@@ -135,6 +137,7 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
       <b className="cc-fare" aria-label={brief.coins===null?(zh?'车费到站揭晓':'Fare sealed'):`${zh?'车费':'Fare'} ${brief.coins}`}><Coins aria-hidden="true" />{brief.coins===null?'?':brief.coins}{brief.tip>0&&<small>+{brief.tip}</small>}</b>
       <span className="cc-energy" aria-label={`${zh?'每层耗电':'Power per floor'} ${brief.energy}`}><BatteryCharging aria-hidden="true" />{brief.energy}</span>
       {brief.agitation>0&&<span className="cc-agitation" aria-label={`${zh?'每层躁动':'Agitation per floor'} +${brief.agitation}`}><Flame aria-hidden="true" />+{brief.agitation}</span>}
+      {net!==null&&<span className={`cc-net ${net>0?'is-pos':net<0?'is-neg':''}`} title={zh?'净值≈车费 − 全程耗电×充电价 − 全程躁动×3；不含邻座加成。正数表示单独带也划算。':'Net ≈ fare − trip power × charge price − trip agitation × 3, before neighbour bonuses. Positive means worth carrying even alone.'}>{zh?'净':'Net'} {net>0?'+':''}{net}</span>}
     </span>}
     <span className="cc-line">{summary.line}{summary.progress&&<em>{summary.progress}</em>}</span>
     {legend&&<span className="cc-chips"><span className="cc-chip chip-keepsake" title={keepsakeTitle(rider.kind as LegendKind,locale)}>{zh?'信物 · ':'Keepsake · '}{keepsakeName(rider.kind as LegendKind,locale)}</span></span>}

@@ -1,6 +1,12 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.3.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.4**. Publication status is tracked separately from the source version.
+
+## v9.4 — 2026-09-23 — Net value on cards (trial) / 人物卡净值（试用）
+
+- Offer cards show net = fare − trip power × charge price (+ courier refund) − trip agitation × 3, excluding neighbour bonuses; green/red pill, formula on hover; none for legends.
+- Simulation: casual bot 28 → 49 median (p10 19 → 46) when boarding by net; optimizer unchanged at 85. Cards and sim share lib/net-value.ts.
+- Watch: whether players abandon combination riders (Lovers, Tourists) with negative net.
 
 ## v9.3.1 — 2026-09-23 — Real rescue plans / 上行保护给出真实出路
 
