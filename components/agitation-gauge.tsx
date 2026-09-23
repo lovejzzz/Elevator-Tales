@@ -32,7 +32,5 @@ export function AgitationGauge({ value, cap, nextLow, nextHigh, locale }: Props)
       </svg>
     </div>
     <strong className="gauge-state">{label}</strong>
-    <div className="gauge-legend">{ranges.map(range=><span key={range.band} className={`legend-${range.band}`}><b>{en ? {low:'Low',medium:'Mid',high:'High'}[range.band] : range.label}</b><span>{range.min}–{range.max}</span></span>)}</div>
-    <span className="gauge-limit">{en ? `Loss at ${cap}` : `${cap} 起失控`}</span>
   </div>;
 }

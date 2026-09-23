@@ -18,7 +18,7 @@ assert.equal(placeFirst.ok, true); assert.equal(placeFirst.tone, 'place');
 assert.equal(emptyPlacement.cabin[0], null, 'hover previews must never mutate live cabin state');
 const placeSecond = planPlacement(placeFirst.next, rider('lover', 'second-lover'), 1);
 assert.equal(placeSecond.tone, 'combo'); assert.equal(activeConnection(placeSecond.next.cabin, 0, 1), true);
-assert.deepEqual(placeSecond.slots, [1, 0], 'both members of a newly formed pair should receive feedback');
+assert.deepEqual(placeSecond.slots, [1], 'v9.3: only the newly placed rider reacts; the new link draws in instead of flashing the seated partner');
 const invalidPlacement = planPlacement(placeFirst.next, rider('nurse', 'blocked-nurse'), 0);
 assert.equal(invalidPlacement.ok, false); assert.equal(invalidPlacement.tone, 'error');
 assert.equal(invalidPlacement.next.cabin, placeFirst.next.cabin, 'a rejected drop must preserve the cabin');

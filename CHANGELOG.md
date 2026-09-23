@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.2.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.3**. Publication status is tracked separately from the source version.
+
+## v9.3 — 2026-09-23 — Full pass, cleaner interface / 全面检查、界面精简
+
+- Seated partners no longer flash when a new link forms (only the placed rider animates); cabin status text overlays the portrait so all seat portraits match; phone seats use the portrait as a dimmed backdrop.
+- Offer cards: 76 px portraits, centred, no "first encounter" tag, Details as an icon. Rail: agitation = dial + state + next; one motor line; charge fine print as a hover hint. Cabin title removed.
+- Agitation help button "Got it"; archive scrolls as a whole (legends no longer overflow), locked entries show "???"; kit lists installed abilities only.
+- Checked every screen at 1440×900 and 390×844, plus an English scan. No rule changes.
 
 ## v9.2.1 — 2026-09-23 — Fix frozen intro / 修复开场说明卡住
 

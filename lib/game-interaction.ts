@@ -91,7 +91,7 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
     celebrate=false;
   }
   const slots = new Set(source >= 0 ? [source, target] : [target]);
-  if (combo) ADJACENT.forEach(([a, b]) => { if (activeConnection(cabin, a, b) && !before.has([cabin[a]!.id, cabin[b]!.id].sort().join(':'))) { slots.add(a); slots.add(b); } });
+  // Only the moved rider reacts; a new link announces itself by drawing in, so seated partners do not flash.
   if(source>=0&&oldMovesUsed>(state.oldMovesUsed??Number(state.swapped)))message+=` 旧乘客换位剩余${Math.max(0,1+Number(Boolean(state.upgrades.rails))-oldMovesUsed)}次。`;
   return { ok: true, changed: true, next: { ...state, cabin, swapped, oldMovesUsed, message }, tone: celebrate ? 'combo' : 'place', label, slots: [...slots] };
 }

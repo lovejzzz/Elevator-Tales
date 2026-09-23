@@ -71,4 +71,5 @@ export const V9_PAIRS: Array<[string, string]> = [
   ['大亨预付', 'Tycoon prepayment'], ['大亨尾款', 'Tycoon balance'], ['灵媒降神会', 'Séance'], ['13号房客的馈赠', 'Gift from the Stranger in 13'],
   ['股票利息', 'Share interest'], ['查房记录：进店舒缓', 'Rounds Log: shop relief'], ['电机噪音', 'Motor noise'], ['音乐家演出', 'Musician performance'], ['夜莺驻唱', 'Nightingale residency'],
   ['大亨嫌挤', 'The Tycoon feels crowded'], ['坏人惊扰护士长', 'Criminals upset the Matron'], ['老周的扳手：配电箱免费升级。', 'Old Zhou’s Wrench: free power-box level.'],
+  ['知道了', 'Got it'], ['？？？', '???'],
 ];

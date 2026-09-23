@@ -319,3 +319,45 @@ export const V921_EN: ChangelogEntry = {
   ],
   watch: ['New players may glimpse the offer cards for one frame before the intro appears; harmless, revisit if noticeable.'],
 };
+
+export const V93_ZH: ChangelogEntry = {
+  version: '9.3', date: '2026-09-23', title: '全面检查：更干净的界面',
+  summary: '修掉放人时已就位人物也闪一下、车厢画像大小不一；把界面上重复和次要的文字拿掉。',
+  changes: [
+    '动画：新乘客连上绿线时，只有新放下的人有落位动画，已经坐好的邻座不再闪一下；新连线自己从一端画到另一端。',
+    '车厢画像：状态文字（已配对、检修进度、暂存、炸弹倒计时）改为叠在画像底部，不再挤压画像，每个座位的人物一样大。手机上座位用人物画像做暗色底图。',
+    '候客卡：人物画像放大到 76 像素、内容居中；去掉“初次见面”标签；“完整规则”改为右上角小图标。',
+    '侧栏：躁动只保留表盘、状态和下一站（低 / 中 / 高分档、失控线和到站规则在问号说明里）；电量的运转耗电合成一行；途中补电的小字改为悬停提示。',
+    '车厢：去掉装饰性的“CAR № 07 / 0/6 OCCUPIED”。',
+    '说明与档案：躁动说明的按钮从“开始游戏”改为“知道了”；乘客档案整体滚动，传奇部分不再溢出窗口；未遇见的人物只显示锁和“？？？”。',
+    '本班装备：只列已安装的能力，去掉无意义的“站位 6 个”；未安装时显示一行提示。',
+  ],
+  experiments: [
+    '逐屏检查：开场、教学首层、选中、放置、到站、人物详情、躁动说明、更新记录、档案、传奇首层、商店、本班装备、上行保护、结算，桌面 1440×900 与手机 390×844 各一遍；英文界面扫描无遗留中文。',
+    '规则与数值不变；verify（放置反馈测试改为只反馈新放下的座位）、类型检查和构建通过。',
+  ],
+  watch: [
+    '手机上候客区和车厢仍需上下滚动；如果试玩觉得来回滚动麻烦，再考虑把候客改为横向滑动。',
+  ],
+};
+
+export const V93_EN: ChangelogEntry = {
+  version: '9.3', date: '2026-09-23', title: 'Full pass: a cleaner interface',
+  summary: 'Fixed seated riders flashing when a neighbour is placed and uneven cabin portrait sizes; removed duplicated and secondary text across the interface.',
+  changes: [
+    'Animation: when a new rider forms a green link, only the new rider plays the settle animation; seated neighbours no longer flash, and the new link draws itself in.',
+    'Cabin portraits: status text (paired, repair progress, banked coins, bomb timer) now overlays the bottom of the portrait instead of squeezing it, so every seat shows the same size. On phones each seat uses the portrait as a dimmed backdrop.',
+    'Offer cards: portraits enlarged to 76 px with centred content; the “first encounter” tag is gone; Details is a small icon in the corner.',
+    'Rail: agitation keeps only the dial, state and next floor (bands, loss line and arrival relief live behind the ? help); the motor note is one line; the charging fine print became a hover hint.',
+    'Cabin: the decorative “CAR № 07 / 0/6 OCCUPIED” is gone.',
+    'Help and archive: the agitation help button now says “Got it” instead of “Start game”; the archive scrolls as a whole so the legends no longer spill out; unmet riders show just a lock and “???”.',
+    'Kit: lists only installed abilities and drops the meaningless “6 seats”; a single line when nothing is installed.',
+  ],
+  experiments: [
+    'Screen-by-screen pass: intro, tutorial floor, selection, placement, arrival, rider details, agitation help, changelog, archive, legend floor, shop, kit, ascend guard and result, at 1440×900 and 390×844; English scan shows no leftover Chinese.',
+    'No rule or value changes; verify (placement feedback test now expects only the placed seat), type check and build pass.',
+  ],
+  watch: [
+    'On phones the offers and cabin still need vertical scrolling; if playtests find it tiresome, consider a horizontal offer strip.',
+  ],
+};
