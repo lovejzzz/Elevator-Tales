@@ -59,7 +59,7 @@ function tiltCard(event: ReactPointerEvent<HTMLElement>) {
   if (event.pointerType !== 'mouse') return;
   const el = event.currentTarget, r = el.getBoundingClientRect(), x = (event.clientX - r.left) / r.width, y = (event.clientY - r.top) / r.height;
   el.style.setProperty('--mx', x.toFixed(3)); el.style.setProperty('--my', y.toFixed(3));
-  el.style.setProperty('--tilt', `${(0.5 - y).toFixed(3)} ${(x - 0.5).toFixed(3)} 0 ${(Math.hypot(x - .5, y - .5) * 16).toFixed(2)}deg`);
+  el.style.setProperty('--tilt', `${(0.5 - y).toFixed(3)} ${(x - 0.5).toFixed(3)} 0 ${(Math.hypot(x - .5, y - .5) * 7).toFixed(2)}deg`);
 }
 function untiltCard(event: ReactPointerEvent<HTMLElement>) {
   const el = event.currentTarget; el.style.removeProperty('--tilt'); el.style.removeProperty('--mx'); el.style.removeProperty('--my');
@@ -451,9 +451,9 @@ export default function ElevatorGame() {
       const from = placingFrom.current; placingFrom.current = null;
       const target = result.slots[result.slots.length - 1];
       const slotEl = typeof target === 'number' ? document.querySelectorAll('.standing-slot')[target] ?? null : null;
-      if (from?.el) { flyPortrait(from.el, slotEl, portraitAsset(from.kind).src); playSfx(soundEnabled.current, 'board', { pitch: randomPitch() }); if (chance(.35)) window.setTimeout(() => bubble(slotEl, quip(from.kind, 'board', language === 'zh')), 380); }
-      if (result.tone === 'combo') { playSfx(soundEnabled.current, 'link', { delay: .12, pitch: Math.min(7, conflictLinks(result.next.cabin).length) }); window.setTimeout(() => burstAt(slotEl, 'green', 12, 60), 330); }
-      if (conflictLinks(result.next.cabin).length > conflictLinks(run.cabin).length) { playSfx(soundEnabled.current, 'conflict', { delay: .1 }); window.setTimeout(() => burstAt(slotEl, 'red', 8, 40), 330); }
+      if (from?.el) { flyPortrait(from.el, slotEl, portraitAsset(from.kind).src); playSfx(soundEnabled.current, 'board', { pitch: randomPitch() }); if (chance(.15)) window.setTimeout(() => bubble(slotEl, quip(from.kind, 'board', language === 'zh')), 380); }
+      if (result.tone === 'combo') { playSfx(soundEnabled.current, 'link', { delay: .12, pitch: Math.min(7, conflictLinks(result.next.cabin).length) }); window.setTimeout(() => burstAt(slotEl, 'green', 7, 40), 330); }
+      if (conflictLinks(result.next.cabin).length > conflictLinks(run.cabin).length) { playSfx(soundEnabled.current, 'conflict', { delay: .1 }); window.setTimeout(() => burstAt(slotEl, 'red', 5, 30), 330); }
     }
     setRun(result.next);
     if (!result.ok || result.changed) { flash({ tone: result.tone, label: result.label, slots: result.slots }); playTone(sound, result.ok ? result.tone === 'combo' ? 'combo' : 'place' : 'danger'); }
@@ -519,7 +519,7 @@ export default function ElevatorGame() {
     const arrivals = after.lastArrivals ?? [];
     streakRef.current = arrivals.length ? streakRef.current + 1 : 0;
     window.setTimeout(() => {
-      document.querySelectorAll('.arrival-exit').forEach((el, i) => { if (i < 2 && arrivals[i]) bubble(el, quip(arrivals[i].kind, 'arrive', zh), 1500); });
+      document.querySelectorAll('.arrival-exit').forEach((el, i) => { if (i < 1 && arrivals[i]) bubble(el, quip(arrivals[i].kind, 'arrive', zh), 1500); });
       if (streakRef.current >= 3) popText(document.querySelector('.floor-indicator'), zh ? `连送 ×${streakRef.current}` : `Streak ×${streakRef.current}`, 'green');
     }, 140);
     if (after.status === 'lost') return;

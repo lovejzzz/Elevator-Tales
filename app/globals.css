@@ -2896,3 +2896,21 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 @media (prefers-reduced-motion:no-preference) { .game-shell .passenger-card.grade-rare .card-foil { animation:holo-drift 7s ease-in-out infinite alternate; } }
 .game-shell .passenger-card.grade-legendary .card-foil { opacity:.75; }
 .game-shell .passenger-card.grade-legendary:hover .card-foil { opacity:1; }
+
+/* v9.9.1 calmer cards: no flip (it exposed the dark card back mid-turn), no idle sway, gentler tilt and foil. */
+@media (prefers-reduced-motion:no-preference) {
+  .game-shell .passenger-list .passenger-card,
+  .game-shell .offer-revealing .passenger-card { animation:card-deal 420ms var(--deal-delay, 0ms) backwards cubic-bezier(.2,.8,.3,1)!important; }
+  .game-shell .passenger-list .passenger-card.grade-legendary,
+  .game-shell .offer-revealing .passenger-card.grade-legendary { animation:card-deal 420ms var(--deal-delay, 0ms) backwards cubic-bezier(.2,.8,.3,1), legend-glow 6s 500ms ease-in-out infinite alternate!important; }
+  .game-shell .passenger-list .passenger-card:hover:not(:disabled) { animation:none!important; }
+  .game-shell .passenger-card.grade-fine .card-foil { animation:foil-sweep 11s ease-in-out infinite; }
+  .game-shell .passenger-card.grade-rare .card-foil { animation:holo-drift 14s ease-in-out infinite alternate; }
+  .game-shell .passenger-card.grade-legendary .card-foil { animation:legend-drift 16s ease-in-out infinite alternate; }
+  .game-shell .passenger-card .card-glints i { animation:glint 7s ease-in-out infinite; }
+  .game-shell .passenger-card.grade-rare .card-glints i:nth-child(n+3) { display:none; }
+}
+@keyframes card-deal { from { opacity:0; translate:0 10px; scale:.985; } to { opacity:1; translate:0 0; scale:1; } }
+@keyframes legend-glow { from { box-shadow:0 0 14px #e0b75f2a, inset 0 0 0 1px #f3d38f55; } to { box-shadow:0 0 20px #f3d38f44, inset 0 0 0 1px #f3d38f88; } }
+.game-shell .passenger-list .passenger-card { transition:rotate 220ms ease-out, box-shadow 220ms ease, translate 220ms ease; }
+.game-shell .passenger-list .passenger-card:hover:not(:disabled) { translate:0 -2px; }

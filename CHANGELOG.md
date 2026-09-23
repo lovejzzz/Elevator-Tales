@@ -1,6 +1,10 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.9**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.9.1**. Publication status is tracked separately from the source version.
+
+## v9.9.1 — 2026-09-23 — Calmer motion / 动画收敛
+
+- Deal is a fade-and-rise (the flip exposed the dark card back as a black flash). No idle sway, half tilt, slower foil/holo/sheen, sparser glints, softer legendary glow, fewer boarding lines (15%) and link sparks. No rule changes.
 
 ## v9.9 — 2026-09-23 — Card materials / 人物卡材质
 

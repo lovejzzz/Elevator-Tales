@@ -689,3 +689,27 @@ export const V99_EN: ChangelogEntry = {
     'Fine cards (Thief, Officer, Nurse, Drifter, Child) were not in the screenshots; check them in play.',
   ],
 };
+
+export const V991_ZH: ChangelogEntry = {
+  version: '9.9.1', date: '2026-09-23', title: '动画收敛，修复翻牌闪黑',
+  summary: '候客卡不再翻转（翻到侧面时会露出深色背面，看起来像闪黑），改为轻轻浮现；整体动效放慢放轻，材质保持华丽。',
+  changes: [
+    '修复：发牌时卡片翻过 90° 会露出深色背面，造成闪黑；改为淡入并上浮 10 像素。',
+    '收敛：去掉卡片静止时的摇摆；鼠标倾斜角度减半；银光扫过、全息流动、传奇流光都放慢一倍以上；星光闪烁更稀疏，稀有卡只保留两颗；传奇外发光更柔和。',
+    '收敛：上车台词概率 35% → 15%，下车每层只说一句；绿线/红线火花粒子减少约一半。',
+  ],
+  experiments: ['浏览器逐帧截图（0.15 / 0.25 / 0.35 秒）确认发牌过程无深色帧；verify、构建通过。规则与数值不变。'],
+  watch: ['如果仍觉得热闹，下一步可以关掉静止状态下的全息流动，只在悬停时显示。'],
+};
+
+export const V991_EN: ChangelogEntry = {
+  version: '9.9.1', date: '2026-09-23', title: 'Calmer motion, no black flash on the deal',
+  summary: 'Offer cards no longer flip (edge-on they showed their dark back, which read as a black flash) and fade in instead; motion overall is slower and quieter while the materials stay ornate.',
+  changes: [
+    'Fix: dealing turned cards past 90°, briefly exposing the dark back; they now fade in and rise 10 px.',
+    'Calmer: no idle sway; half the pointer tilt; silver sheen, hologram drift and legendary sheen all run at less than half speed; sparser glints, only two on rare cards; a softer legendary glow.',
+    'Calmer: boarding lines 35% → 15%, one arrival line per floor; about half as many link sparks.',
+  ],
+  experiments: ['Frame captures at 0.15 / 0.25 / 0.35 s show no dark frames during the deal; verify and build pass. No rule or value changes.'],
+  watch: ['If it still feels busy, the next step is showing the hologram drift only on hover.'],
+};
