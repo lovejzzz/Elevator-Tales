@@ -108,7 +108,7 @@ export const UPGRADES: Record<UpgradeKey, { name: string; label: string; descrip
   crowd: { name: '混乘票', label: 'MIXED TICKET', description: '20层起出售。关门时好人、坏人、特殊三类齐全，且本层有人正常到站，额外赚6金币，每层一次。请离不触发，不参与倍率。', strategy: '载客收入', tone: 'score' },
   meter: { name: '长途计价器', label: 'LONG-RIDE METER', description: '实际乘坐至少5次上行的乘客，正常到站额外支付4金币，每人一次。幽灵延误计入行程，途中和请离不支付。本局限装一次。', strategy: '乘坐时长', tone: 'tempo' },
   rails: { name: '滑轨底座', label: 'SLIDING RAILS', description: '每层旧乘客换位可用2次，原为1次。新上客仍可免费调整；复制人与同一人物的抽签不重抽。', strategy: '调整站位', tone: 'control' },
-  insulation: { name: '绝缘衬层', label: 'INSULATION', description: '红线不再造成额外耗电（含耗电翻倍）和金币损失；红线躁动仍然生效。不抵消人物本身耗电或运转耗电，不产生额外电量。', strategy: '容忍冲突', tone: 'sustain' },
+  insulation: { name: '绝缘衬层', label: 'INSULATION', description: '红线不再造成额外耗电（含耗电翻倍）和金币损失，且每条红线每层付1金币“冲突小费”（每层最多3）；红线躁动仍然生效。不抵消人物本身耗电或运转耗电。', strategy: '容忍冲突', tone: 'sustain' },
   reservation: { name: '留座牌', label: 'RESERVATION', description: '每十层可保留1位未上车候客到下一批，占一个候客位。属性与剩余路程不变，不能连续保留同一人。', strategy: '等待时机', tone: 'control' },
   single: { name: '单站检票器', label: 'SINGLE ARRIVAL', description: '本层恰好1位乘客正常到站，额外赚2金币，每层一次。幽灵延误后判断；请离不触发，不参与倍率。', strategy: '错峰到站', tone: 'score' },
   delay: { name: '延时保险', label: 'LONGER FUSE', description: '30层起出售。以后新出现的炸弹客倒计时+1；不改变路程、不重置旧炸弹。', strategy: '危险窗口', tone: 'control' },

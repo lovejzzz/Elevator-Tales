@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.0.2**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.0.3**. Publication status is tracked separately from the source version.
+
+## v9.0.3 — 2026-09-23 — Shop icons, Insulation friction tip / 商店图标、绝缘衬层冲突小费
+
+- Painted object icons for all 16 abilities and the 3 power-box lines (shop cards, power box, ability list).
+- Insulation also pays 1 coin per red link per floor (cap 3): ability value +2.7 → +5.6 floors (600 pairs); 2 coins tested at +9.0 and rejected.
+- New exploratory bots (`npm run balance:explore`): Tempo 64, Gamble 67, Mixed 60, alongside the five styles at 57–64. Acceptance unchanged (styles 91.3%, agitation deaths 23.1%, optimizer median 86 vs target ≤85).
+- Watch: style-committed bots trail the optimizer by ~20 floors; optimizer median 86.
 
 ## v9.0.2 — 2026-09-23 — Ascend guard, fewer Lovers, three-step shop / 上行保护、恋人减少、三步商店
 

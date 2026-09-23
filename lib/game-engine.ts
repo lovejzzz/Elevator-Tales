@@ -548,6 +548,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const redCoinDemand=Math.max(0, redLinks.filter(link=>link.effect==='coins').length*2 - (state.cabin.some(r=>r?.kind==='lawyer') ? 2 : 0) - (state.upgrades.insulation ? Infinity : 0));
   const redCoinLoss=Math.min(coins,redCoinDemand);
   if(redCoinLoss)addCoins('红线金币损失',-redCoinLoss);
+  const insulatedIncome=state.upgrades.insulation?Math.min(INSULATION_RULES.cap,redLinks.length*INSULATION_RULES.coinsPerLink):0;
+  if(insulatedIncome)addCoins('绝缘衬层：冲突小费',insulatedIncome);
   // Arriving on the same floor as fuse expiry is still safe.
   const bombFailed = cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0);
   const relieved = Math.min(Math.max(0, stress), Math.min(arrivals, arrivalReliefCapFor(state)));
@@ -584,6 +586,8 @@ export const upgradeChoices = (upgrades: Record<UpgradeKey, number> = EMPTY_UPGR
   return drawUpgradeOffer(upgrades,[],rng).keys;
 };
 /** v9: capacity moved into the power box, rails into the base game; Longer Fuse retired; Reservation and Rebooking merged into Dispatch. */
+/** Insulation turns each red link into a small income while it rides (tuned in scripts/balance-sim). */
+export const INSULATION_RULES = { coinsPerLink: 1, cap: 3 };
 export const RETIRED_UPGRADES:UpgradeKey[]=['capacity','rails','delay','reservation','retime'];
 export const UPGRADE_GROUPS:UpgradeKey[][]=[['calm','insulation','soundproof','dispatch'],['battery','concierge','tipjar','crowd','single','punchcard','finale'],['reinforced','express','relay','meter','buffer']];
 export function drawUpgradeOffer(upgrades:Record<UpgradeKey,number>,history:UpgradeKey[],rng:()=>number,floor=Infinity) {

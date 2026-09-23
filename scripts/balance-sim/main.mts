@@ -28,7 +28,8 @@ if (cmd === 'shard') {
   console.log(logs[0]?.tag?.startsWith('legend') ? legendReport(logs) : report(logs));
 } else {
   const runs = Number(opt('runs', cmd === 'legends' ? '30' : '60')), horizon = Number(opt('horizon', '150')), seed0 = Number(opt('seed', '9001'));
-  const bots = (opt('bots', 'all') === 'all' ? Object.keys(BOTS) : opt('bots', '').split(',')) as BotId[];
+  const EXPLORATORY = ['tempo', 'gamble', 'mixed'];
+  const bots = (opt('bots', 'all') === 'all' ? Object.keys(BOTS).filter(b => !EXPLORATORY.includes(b)) : opt('bots', '').split(',')) as BotId[];
   const jobs: Job[] = [];
   for (const bot of bots) for (let i = 0; i < runs; i++) {
     const seed = seed0 + i * 7919;

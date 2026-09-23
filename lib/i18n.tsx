@@ -434,7 +434,7 @@ const exactPairs: Array<[string, string]> = [
   ['高躁动：人物引起的正向躁动 ×2', 'High agitation: positive rider agitation ×2'], ['人物正向躁动已按 ×2 计算', 'Positive rider agitation already calculated at ×2'],
   ['电梯运转', 'Elevator motor'], ['稳压模块抵消', 'Stabilizer'], ['节能少耗', 'Power savings'], ['宽松轿厢', 'Uncrowded cabin'], ['班次压力', 'Shift pressure'],
   ['快递员电池包', 'Courier battery pack'], ['快递补电', 'Courier recharge'], ['可能快递补电', 'possible Courier recharge'],
-  ['红线躁动', 'Red-link agitation'], ['红线额外耗电', 'Red-link extra power'], ['红线金币损失', 'Red-link coin loss'], ['抵达商店补电', 'Shop-entry recharge'],
+  ['红线躁动', 'Red-link agitation'], ['红线额外耗电', 'Red-link extra power'], ['红线金币损失', 'Red-link coin loss'], ['绝缘衬层：冲突小费', 'Insulation: friction tip'], ['抵达商店补电', 'Shop-entry recharge'],
   ['乘客到站舒缓', 'Arrival relief'], ['商店充电', 'Shop charge'], ['补给站充电', 'Supply-station charge'], ['请离赔偿', 'Dismissal compensation'], ['电量上限截取', 'Power capped'], ['躁动下限修正', 'Agitation floor adjustment'],
   ['恋人连携', 'Lover link'], ['受控小偷', 'Controlled Thief'], ['小偷', 'Thief'], ['醉汉安抚', 'Calmed Drunk'],
   ['名人关注', 'Celebrity attention'], ['检查员合规奖励', 'Inspector compliance'], ['揭晓车费', ' revealed fare'],

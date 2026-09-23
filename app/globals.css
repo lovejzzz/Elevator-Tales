@@ -2612,3 +2612,15 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .upgrade-dialog .sector-need { margin:0 0 8px; font-size:12px; line-height:1.5; color:#bcd3c3; }
 .upgrade-dialog .sector-need.is-short { color:#f0c07a; }
 @media (max-width:700px) { .power-alert:not(.is-fatal) { display:none; } }
+
+/* v9.0.3 painted object icons for shop abilities and power-box lines. */
+.shop-icon { display:block; flex:none; object-fit:cover; border:1px solid #c99d5255; background:#0d1f19; }
+.upgrade-dialog .shop-item-head { display:flex; align-items:center; gap:12px; }
+.upgrade-dialog .shop-item-head .shop-icon { width:64px; height:64px; border-radius:6px; }
+.upgrade-dialog .box-panel .box-line-name { display:grid; grid-template-columns:36px auto; grid-template-rows:auto auto; column-gap:8px; row-gap:3px; align-items:center; }
+.upgrade-dialog .box-line-name .box-icon { grid-row:1 / span 2; width:36px; height:36px; border-radius:4px; }
+.inventory-list .inventory-icon { width:36px; height:36px; border-radius:4px; }
+.inventory-list section>div { display:flex; align-items:center; gap:10px; }
+.inventory-list section>div>span { margin-left:auto; }
+.inventory-list section.not-installed .inventory-icon { filter:grayscale(.8) brightness(.7); }
+@media (max-width:700px) { .upgrade-dialog .shop-item-head .shop-icon { width:52px; height:52px; } }

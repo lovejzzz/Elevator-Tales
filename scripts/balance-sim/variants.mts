@@ -2,11 +2,13 @@
 // A shard applies exactly one variant before running; nothing here changes the shipped game.
 import { AGITATION_RULES, FARE_RULES, MOTOR_RULES, V9_AGITATION } from '../../lib/balance-v832.ts';
 import { BOX_PRICES, CHARGE_PRICES, EMERGENCY_PRICES } from '../../lib/power-box.ts';
-import { CALM_RULES, RISK_RULES, SHOP_PRICES, SOUNDPROOF_RULES, START_RULES } from '../../lib/game-engine.ts';
+import { CALM_RULES, INSULATION_RULES, RISK_RULES, SHOP_PRICES, SOUNDPROOF_RULES, START_RULES } from '../../lib/game-engine.ts';
 import { LEGEND_RULES } from '../../lib/legends.ts';
 
 export const VARIANTS: Record<string, () => void> = {
   baseline: () => {},
+  insul1: () => { INSULATION_RULES.coinsPerLink = 1; },
+  insul2: () => { INSULATION_RULES.coinsPerLink = 2; INSULATION_RULES.cap = 4; },
   late51: () => { MOTOR_RULES.lateStart = 51; },
   slope4: () => { MOTOR_RULES.lateSlope = 4; },
   l51s6: () => { MOTOR_RULES.lateStart = 51; MOTOR_RULES.lateSlope = 6; },

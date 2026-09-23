@@ -22,3 +22,6 @@ export function portraitAsset(kind: PassengerKind) {
   if (kind === 'mystery' || kind === 'shifter' || kind === 'mimic') return {src:PASSENGER_ART.newer[kind],columns:1,rows:1,cell:0};
   const spec=PASSENGERS[kind]; return {src:publicAsset(`/assets/passengers-${spec.sheet}.png`),columns:3,rows:2,cell:spec.cell};
 }
+
+/** Object icons for shop abilities and power-box lines (one painted item each). */
+export const shopIcon = (key: string) => publicAsset(`/assets/shop/${key}.jpg`);

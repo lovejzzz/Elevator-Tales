@@ -17,7 +17,7 @@ const stream = (seed: number, channel: string, floor: number) => rngFor(hash(`${
 const previewRng = () => { const seq = [0.5, 0.73, 0.41, 0.9, 0.62, 0.55]; let i = 0; return () => seq[i++ % seq.length]; };
 
 // ---------- archetypes ----------
-export type BotId = 'coop' | 'crime' | 'occult' | 'quiet' | 'lively' | 'investor' | 'balanced' | 'novice';
+export type BotId = 'coop' | 'crime' | 'occult' | 'quiet' | 'lively' | 'investor' | 'balanced' | 'novice' | 'tempo' | 'gamble' | 'mixed';
 export type Bot = {
   id: BotId; name: string; favored: PassengerKind[]; favor: number;
   band: 'low' | 'medium' | 'high' | null; abilities: UpgradeKey[]; box: BoxLine[]; boxEager: boolean; legends: LegendKind[]; fixedBox?: boolean;
@@ -32,6 +32,10 @@ export const BOTS: Record<BotId, Bot> = {
   lively: { id: 'lively', name: '热闹', favored: ['musician', 'tourist', 'drunk', 'celebrity', 'child', 'coach'], favor: 1.3, band: 'medium', abilities: ['tipjar', 'concierge'], box: ['transformer', 'motor', 'storage'], boxEager: false, legends: ['nightingale', 'matchmaker'] },
   investor: { id: 'investor', name: '电箱投资', favored: [], favor: 0, band: null, abilities: ['relay', 'reinforced'], box: ['motor', 'transformer', 'storage'], boxEager: true, legends: ['tycoon', 'operator'] },
   balanced: { id: 'balanced', name: '均衡', favored: [], favor: 0, band: null, abilities: GENERIC_ABILITIES, box: ['transformer', 'motor', 'storage'], boxEager: false, legends: [] },
+  // Exploratory styles (npm run balance:explore): not acceptance gates, used to look for new viable builds.
+  tempo: { id: 'tempo', name: '快进快出', favored: ['courier', 'commuter', 'mechanic', 'child', 'musician'], favor: 1.3, band: null, abilities: ['finale', 'single', 'express'], box: ['transformer', 'storage', 'motor'], boxEager: false, legends: ['operator', 'tycoon'] },
+  gamble: { id: 'gamble', name: '豪赌', favored: ['mystery', 'shifter', 'mimic', 'bomb', 'celebrity', 'cop'], favor: 1.4, band: null, abilities: ['insulation', 'meter'], box: ['storage', 'transformer', 'motor'], boxEager: false, legends: ['stranger', 'don'] },
+  mixed: { id: 'mixed', name: '混搭', favored: ['thief', 'cop', 'ghost', 'exorcist', 'tourist', 'nurse', 'drunk'], favor: 1.1, band: null, abilities: ['crowd', 'insulation', 'soundproof'], box: ['transformer', 'motor', 'storage'], boxEager: false, legends: ['medium', 'don'] },
   novice: { id: 'novice', name: '新手', favored: [], favor: 0, band: null, abilities: [], box: [], boxEager: false, legends: [] },
 };
 

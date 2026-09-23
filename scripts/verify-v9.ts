@@ -229,4 +229,15 @@ assert.ok(!districtFor(15).themed.includes('lover'));
   assert.ok(lovers / total < .13, `lover share 11-20F ${(lovers / total * 100).toFixed(1)}%`);
 }
 console.log('PASS lover share stays below 13% on 11-20F without a waiting Lover');
-console.log(JSON.stringify({ version: 'v9', checks: 15, passed: true }));
+// v9.0.3 Insulation pays 1 coin per red link per floor, capped at 3, and still removes red-link coin loss.
+{
+  const cab = [rider('commuter', 12, 5), rider('celebrity', 12, 5)];
+  const plain = E.resolveFloor(run(12, cab), fixed(0.99));
+  const insulated = E.resolveFloor(run(12, cab, { upgrades: { ...E.initialRun().upgrades, insulation: 1 } }), fixed(0.99));
+  assert.equal(lines(insulated, 'lastEarnings')['绝缘衬层：冲突小费'], 1);
+  assert.equal(lines(insulated, 'lastEarnings')['红线金币损失'], undefined);
+  assert.ok(lines(plain, 'lastEarnings')['红线金币损失'] < 0);
+  assert.equal(E.INSULATION_RULES.cap, 3);
+}
+console.log('PASS insulation friction tip');
+console.log(JSON.stringify({ version: 'v9', checks: 16, passed: true }));
