@@ -3011,3 +3011,13 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 .cc-net-flame { width:12px; height:12px; }
 .cc-net + .cc-net-paired { margin-left:6px; }
 .cc-net-paired { border-style:dashed!important; }
+
+/* v9.15 bomb timer states: locked by an adjacent Officer / counting down / will not make it. */
+.game-shell .rider-visual .fuse { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:4px; }
+.game-shell .rider-visual .fuse svg { width:13px; height:13px; flex:none; }
+.game-shell .rider-visual .fuse.fuse-live { color:#ffb396; background:#2c100df2; border:1px solid #864b39; }
+.game-shell .rider-visual .fuse.fuse-locked { color:#cfe6ff; background:#12263af2; border:1px solid #7fb2e0; box-shadow:0 0 10px #7fb2e033; }
+.game-shell .rider-visual .fuse.fuse-late { color:#fff0ea; background:#8c2414f2; border:1px solid #ff9a86; }
+@media (prefers-reduced-motion:no-preference) { .game-shell .rider-visual .fuse.fuse-late { animation:fuse-alarm 1s ease-in-out infinite; } }
+@keyframes fuse-alarm { 50% { box-shadow:0 0 14px #ff6b4f; } }
+.upgrade-dialog .calm-reserve-hint { margin:0 0 8px; font-size:12px; line-height:1.5; color:#ffb4a2; }

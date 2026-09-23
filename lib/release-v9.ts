@@ -951,3 +951,31 @@ export const V9143_EN: ChangelogEntry = {
   experiments: ['Measured all 8 legends at 4 window sizes: no clipping or scrolling at 1366×768 and above; at 1280×720 the list scrolls but no text is cut. New verify checks for pairing potential (Lover, Nurse → Child, hidden when the partner is aboard, none for the Commuter). No rule or value changes.'],
   watch: ['Two numbers per card may be busy; if so, show the paired value on hover only.'],
 };
+
+export const V915_ZH: ChangelogEntry = {
+  version: '9.15', date: '2026-09-23', title: '炸弹锁定一眼可见；进入夜深前提醒留钱安抚',
+  summary: '炸弹倒计时分三种状态显示（已锁住 / 倒计时 / 来不及）；商店在夜深人躁开始前提示建议留多少金币安抚，默认充电也会留出这笔钱。',
+  changes: [
+    '炸弹：警察在旁边时，倒计时标签变成蓝色带锁的“已锁住 · 5”；没人锁住时是红色“倒计时 5”；倒计时少于剩余站数时变成闪烁的“来不及！”，提醒让警察站到旁边或请离。',
+    '商店：下一段有夜深人躁时，充电一栏显示“41–50 层夜深人躁约 +4 躁动 · 安抚 14 币/点 · 建议留 28 币”（约为躁动点数一半的安抚费用），充电量会让余额低于建议时再注明；默认充电量会先留出这笔钱，想多充仍可拖满。',
+  ],
+  experiments: [
+    '试玩记录（9.14.3，44 层，躁动失控，全程收入 614）：前 30 层靠恋人、游客和夜莺打得很稳；40 层商店把 128 金币里的 126 花在充电（20 → 83），带着 2 金币进入 41 层的夜深人躁；41–43 层车厢一直坐满 6 人（每层拥挤 +1）并带两位神秘人，躁动 2 → 4 → 6 → 7 → 9 失控，死时还剩 56 电、40 金币。四个能力（计价器、稳压、并联、飞轮）都偏电量和收入，没有安全余量或隔音门。',
+    'verify 新增：炸弹三种显示状态与结算一致（被锁住时倒计时不减）；浏览器中确认 40 层商店显示留钱提示。规则与数值不变。',
+  ],
+  watch: ['夜深之后仍然主要死于躁动，看留钱提示能否改变选择；如果不够，考虑在上车时提示“第 6 人会让车厢拥挤 +1”。'],
+};
+
+export const V915_EN: ChangelogEntry = {
+  version: '9.15', date: '2026-09-23', title: 'Bomb locks you can see; keep coins before the late night',
+  summary: 'Bomb timers show three states (locked / counting / too late); before late-night unrest the shop suggests how many coins to keep for calming, and the default charge leaves them.',
+  changes: [
+    'Bomb: with an Officer beside them the timer tag turns blue with a padlock, “Locked · 5”; otherwise it is red, “Timer 5”; when the timer is shorter than the stops left it flashes “Too late!” so you move an Officer beside them or dismiss.',
+    'Shop: when the next sector has late-night unrest, the charging step reads “Late-night unrest on 41–50F: about +4 · calming 14c each · keep 28 coins” (calming for about half the unrest), noting when the chosen charge leaves less; the default charge keeps that reserve, and you can still drag to full.',
+  ],
+  experiments: [
+    'Playtest record (9.14.3, 44F, agitation, 614 earned): a steady first 30 floors on Lovers, Tourists and the Nightingale; at the 40F shop 126 of 128 coins went on charging (20 → 83), entering 41F’s late-night unrest with 2 coins; on 41–43F the cabin stayed at 6 (crowding +1 each floor) with two Mysteries, agitation went 2 → 4 → 6 → 7 → 9 and the run ended with 56 power and 40 coins left. All four abilities (Meter, Stabilizer, Relay, Flywheel) were power or income; no Safety Margin or Soundproof.',
+    'New verify check: the three bomb states match settlement (a locked timer does not tick); the 40F shop shows the reserve hint in the browser. No rule or value changes.',
+  ],
+  watch: ['Late runs still end mostly in agitation; see whether the reserve hint changes choices, and if not, warn that a sixth rider adds crowding +1.'],
+};

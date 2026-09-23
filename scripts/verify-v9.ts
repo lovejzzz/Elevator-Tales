@@ -13,6 +13,7 @@ import { motorAdvanceNotice, motorScheduleText, nightUnrest } from '../lib/balan
 import { calmRescuePlan, departureRisk, rescuePlan, sectorNeed } from '../lib/departure-guard';
 import { stressForecast } from '../lib/game-forecast';
 import { boardNet, netValue, pairedNet } from '../lib/net-value';
+import { fuseState } from '../lib/bomb-state';
 import { drawLegend } from '../lib/legend-unlocks';
 import { QUIPS, quip } from '../lib/quips';
 import { playSfx, SAMPLES } from '../lib/game-sfx';
@@ -378,4 +379,14 @@ console.log('PASS cabin-aware card value');
   assert.equal(pairedNet(rider('commuter', 15, 5, { boardedAt: 15 }), empty), null, 'no hint when pairing adds little');
 }
 console.log('PASS partner potential on cards');
-console.log(JSON.stringify({ version: 'v9', checks: 27, passed: true }));
+// v9.15 bomb timer display: locked beside an Officer (settlement pauses it), late when it cannot arrive in time.
+{
+  const bomb = (fuse: number, trip: number) => rider('bomb', 30, trip, { fuse });
+  assert.equal(fuseState([rider('cop', 30, 4), bomb(2, 4)], 1, 30), 'locked');
+  assert.equal(fuseState([null, bomb(2, 4)], 1, 30), 'late');
+  assert.equal(fuseState([null, bomb(4, 4)], 1, 30), 'live', 'expiring on the arrival floor is safe');
+  const locked = E.resolveFloor(run(30, [rider('cop', 30, 4), bomb(2, 4)]), fixed());
+  assert.equal(locked.cabin[1]?.fuse, 2, 'settlement agrees: a locked timer does not tick');
+}
+console.log('PASS bomb timer display matches settlement');
+console.log(JSON.stringify({ version: 'v9', checks: 28, passed: true }));
