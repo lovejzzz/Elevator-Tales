@@ -655,3 +655,37 @@ export const V98_EN: ChangelogEntry = {
     'Volume and frequency need a human ear: if it feels busy, soften the coin clinks or lower the boarding-line chance (35%).',
   ],
 };
+
+export const V99_ZH: ChangelogEntry = {
+  version: '9.9', date: '2026-09-23', title: '人物卡有了材质',
+  summary: '候客卡按稀有度换材质：普通哑光纸、精良银箔、稀有金箔全息、传奇流光；卡片发牌翻入、轻轻摇摆、跟着鼠标倾斜和反光。',
+  changes: [
+    '四种材质：普通——哑光纸纹和古铜细边；精良——银边，定时扫过一道银光；稀有——金边，彩虹全息随鼠标位置流动，并有星光闪烁；传奇——金色双线框、放射纹和缓慢流动的彩色光泽，外发光呼吸。',
+    '名字旁的小菱形宝石标出稀有度（古铜 / 银 / 金 / 彩虹）。',
+    '动作：新一层候客像发牌一样依次翻入（带纸牌声，传奇卡多一声闪光音）；静止时轻轻摇摆；鼠标悬停时卡片抬起、朝鼠标倾斜，全息和光泽跟着鼠标走。',
+    '系统设置“减少动态效果”时只保留静态材质，不翻、不摇、不倾斜。',
+  ],
+  experiments: [
+    '浏览器检查：15、45、52、63 层的普通 / 稀有卡与 1 层传奇卡截图；悬停倾斜与发牌动画生效，控制台无错误。规则与数值不变。',
+  ],
+  watch: [
+    '精良卡（小偷、警察、护士、醉汉、儿童）出现较少，截图中未覆盖，需要试玩时看效果。',
+  ],
+};
+
+export const V99_EN: ChangelogEntry = {
+  version: '9.9', date: '2026-09-23', title: 'Rider cards get materials',
+  summary: 'Offer cards change material with rarity — matte common, silver-foil fine, gold holographic rare, polychrome legendary — and are dealt in, sway gently, and tilt and catch the light toward the pointer.',
+  changes: [
+    'Four materials: common is matte paper grain with a bronze hairline; fine has a silver edge and a periodic silver sheen; rare has a gold edge, a rainbow hologram that follows the pointer and twinkling glints; legendary has a gold double frame, sunburst rays and a slow polychrome sheen with a breathing glow.',
+    'A small diamond gem beside the name marks rarity (bronze / silver / gold / rainbow).',
+    'Motion: each floor’s offers are dealt in one by one with a card snap (a shimmer for legendaries); at rest they sway slightly; on hover a card lifts, tilts toward the pointer, and its hologram and sheen follow.',
+    'With “reduce motion” only the static materials remain: no dealing, swaying or tilting.',
+  ],
+  experiments: [
+    'Browser checks: common and rare cards at 15F, 45F, 52F and 63F and a legendary card on 1F; hover tilt and dealing work, no console errors. No rule or value changes.',
+  ],
+  watch: [
+    'Fine cards (Thief, Officer, Nurse, Drifter, Child) were not in the screenshots; check them in play.',
+  ],
+};

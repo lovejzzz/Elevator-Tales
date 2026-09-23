@@ -2806,3 +2806,93 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 @keyframes cabin-calm { from { opacity:1; transform:scale(.6); } to { opacity:0; transform:scale(1.4); } }
 @keyframes cabin-closecall { 0% { opacity:0; } 15% { opacity:1; } 35% { opacity:.4; } 55% { opacity:1; } 100% { opacity:0; } }
 @keyframes wallet-bump { 0% { scale:1; } 35% { scale:1.08; box-shadow:0 0 22px #f2c35c88; } 100% { scale:1; } }
+
+/* v9.9 card materials (Balatro-style editions in Art Deco): matte / silver foil / gold holo / polychrome legend.
+   --mx/--my follow the pointer (0..1) and --tilt rotates the card toward it. */
+.game-shell .passenger-list { perspective:1100px; }
+.game-shell .passenger-list .passenger-card { position:relative; isolation:isolate; overflow:hidden; transform-style:preserve-3d; rotate:var(--tilt, 0 0 1 0deg); transition:rotate 140ms ease-out, box-shadow 200ms ease, translate 200ms ease; }
+.game-shell .passenger-list .passenger-card:hover:not(:disabled) { translate:0 -3px; box-shadow:0 18px 30px #0009, 0 0 0 1px #e0b75f55; }
+.game-shell .passenger-card .card-foil, .game-shell .passenger-card .card-glints { position:absolute; inset:0; z-index:3; pointer-events:none; border-radius:inherit; }
+.game-shell .passenger-card .compact-card, .game-shell .passenger-card .boarded-status { position:relative; z-index:2; }
+/* standard: matte stock with paper grain and a bronze hairline */
+.game-shell .passenger-card.grade-standard .card-foil { background:repeating-linear-gradient(0deg,#ffffff04 0 1px,transparent 1px 3px), radial-gradient(circle at calc(var(--mx,.5)*100%) calc(var(--my,.3)*100%), #ffffff0d, transparent 55%); box-shadow:inset 0 0 0 1px #b4865355; }
+/* fine: silver foil edge and a sweeping sheen */
+.game-shell .passenger-card.grade-fine { border-color:#c9d4dc!important; }
+.game-shell .passenger-card.grade-fine .card-foil { box-shadow:inset 0 0 0 1px #dfe8ee88, inset 0 0 18px #c9d4dc22; background:linear-gradient(105deg, transparent 35%, #ffffff26 48%, #e8f2ff18 52%, transparent 64%) no-repeat; background-size:260% 100%; background-position:calc(var(--mx, 1.4) * 100%) 0; }
+/* rare: gold foil edge, holographic rainbow that follows the pointer, twinkles */
+.game-shell .passenger-card.grade-rare { border-color:#e0b75f!important; box-shadow:0 0 16px #e0b75f22; }
+.game-shell .passenger-card.grade-rare .card-foil { box-shadow:inset 0 0 0 1px #f3d38faa, inset 0 0 22px #e0b75f33; background:repeating-linear-gradient(115deg, #ff6b6b 0%, #ffd36b 7%, #7dffb0 14%, #6bc6ff 21%, #c58bff 28%, #ff6b6b 35%); background-size:300% 300%; background-position:calc(var(--mx, .3) * 100%) calc(var(--my, .3) * 100%); mix-blend-mode:color-dodge; opacity:.16; }
+.game-shell .passenger-card.grade-rare:hover .card-foil { opacity:.32; }
+/* legendary: polychrome shifting surface, gold rays, glints */
+.game-shell .passenger-card.grade-legendary { border-color:#f3d38f!important; box-shadow:0 0 22px #e0b75f40, inset 0 0 0 1px #f3d38f66; }
+.game-shell .passenger-card.grade-legendary .card-foil { background:repeating-conic-gradient(from 0deg at 100% 0%, #f3d38f1f 0deg 3deg, transparent 3deg 9deg), conic-gradient(from calc(var(--mx, .5) * 360deg) at 50% 50%, #ff7a9a, #ffd36b, #8affc1, #7ab8ff, #d38bff, #ff7a9a); mix-blend-mode:color-dodge; opacity:.2; }
+.game-shell .passenger-card.grade-legendary:hover .card-foil { opacity:.34; }
+.game-shell .passenger-card .card-glints { display:none; }
+.game-shell .passenger-card.grade-rare .card-glints, .game-shell .passenger-card.grade-legendary .card-glints { display:block; }
+.game-shell .passenger-card .card-glints i { position:absolute; width:10px; height:10px; opacity:0; background:radial-gradient(circle,#fffbe8 0 18%,transparent 60%), linear-gradient(90deg,transparent 45%,#fff6d0 50%,transparent 55%), linear-gradient(0deg,transparent 45%,#fff6d0 50%,transparent 55%); }
+.game-shell .passenger-card .card-glints i:nth-child(1) { left:12%; top:18%; } .game-shell .passenger-card .card-glints i:nth-child(2) { left:78%; top:30%; }
+.game-shell .passenger-card .card-glints i:nth-child(3) { left:58%; top:76%; } .game-shell .passenger-card .card-glints i:nth-child(4) { left:26%; top:64%; }
+/* rarity gem beside the name */
+.card-gem { display:inline-block; width:9px; height:9px; margin-left:7px; vertical-align:middle; rotate:45deg; border-radius:1px; }
+.card-gem.gem-standard { background:#b48653; }
+.card-gem.gem-fine { background:linear-gradient(135deg,#f4f8fb,#9fb0bd); box-shadow:0 0 5px #dfe8ee88; }
+.card-gem.gem-rare { background:linear-gradient(135deg,#fff0bf,#d9a441); box-shadow:0 0 6px #e0b75faa; }
+.card-gem.gem-legendary { background:conic-gradient(#ff7a9a,#ffd36b,#8affc1,#7ab8ff,#d38bff,#ff7a9a); box-shadow:0 0 8px #f3d38fcc; }
+@media (prefers-reduced-motion:no-preference) {
+  .game-shell .passenger-list .passenger-card:not(:hover) { animation:card-sway 5.5s ease-in-out infinite alternate; }
+  .game-shell .passenger-item:nth-child(2) .passenger-card:not(:hover) { animation-delay:-1.8s; }
+  .game-shell .passenger-item:nth-child(3) .passenger-card:not(:hover) { animation-delay:-3.4s; }
+  .game-shell .offer-revealing .passenger-card { animation:card-deal 560ms var(--deal-delay, 0ms) both cubic-bezier(.2,.9,.25,1.15)!important; }
+  .game-shell .passenger-card.grade-fine .card-foil { animation:foil-sweep 5.5s ease-in-out infinite; }
+  .game-shell .passenger-card.grade-fine:hover .card-foil { animation:none; }
+  .game-shell .passenger-card.grade-rare .card-foil { animation:holo-drift 9s linear infinite; }
+  .game-shell .passenger-card.grade-rare:hover .card-foil, .game-shell .passenger-card.grade-legendary:hover .card-foil { animation:none; }
+  .game-shell .passenger-card.grade-legendary .card-foil { animation:poly-shift 7s linear infinite; }
+  .game-shell .passenger-card.grade-legendary { animation:legend-glow 3.2s ease-in-out infinite alternate!important; }
+  .game-shell .passenger-card .card-glints i { animation:glint 3.4s ease-in-out infinite; }
+  .game-shell .passenger-card .card-glints i:nth-child(2) { animation-delay:-.9s; } .game-shell .passenger-card .card-glints i:nth-child(3) { animation-delay:-1.8s; } .game-shell .passenger-card .card-glints i:nth-child(4) { animation-delay:-2.6s; }
+}
+@media (prefers-reduced-motion:reduce) { .game-shell .passenger-list .passenger-card { rotate:none; } }
+@keyframes card-sway { from { rotate:0 0 1 -.5deg; } to { rotate:0 0 1 .5deg; } }
+@keyframes card-deal { 0% { opacity:0; translate:0 -40px; rotate:0 1 0 -95deg; } 55% { opacity:1; rotate:0 1 0 12deg; } 100% { translate:0 0; rotate:0 1 0 0deg; } }
+@keyframes foil-sweep { 0%,55% { background-position:160% 0; } 100% { background-position:-60% 0; } }
+@keyframes holo-drift { from { background-position:0% 0%; } to { background-position:300% 150%; } }
+@keyframes poly-shift { from { filter:hue-rotate(0deg); } to { filter:hue-rotate(360deg); } }
+@keyframes legend-glow { from { box-shadow:0 0 14px #e0b75f30, inset 0 0 0 1px #f3d38f55; } to { box-shadow:0 0 30px #f3d38f66, inset 0 0 0 1px #f3d38faa; } }
+@keyframes glint { 0%,70%,100% { opacity:0; scale:.3; rotate:0deg; } 80% { opacity:1; scale:1; rotate:45deg; } 90% { opacity:.2; scale:.6; rotate:90deg; } }
+@media (prefers-reduced-motion:no-preference) {
+  .game-shell .offer-revealing .passenger-card.grade-legendary { animation:card-deal 560ms var(--deal-delay, 0ms) both cubic-bezier(.2,.9,.25,1.15), legend-glow 3.2s 600ms ease-in-out infinite alternate!important; }
+}
+/* v9.9 final card motion stack: deal once (no fill that would pin rotation), then sway; hovering hands rotation to the pointer tilt. */
+@media (prefers-reduced-motion:no-preference) {
+  .game-shell .passenger-list .passenger-card,
+  .game-shell .offer-revealing .passenger-card { animation:card-deal 560ms var(--deal-delay, 0ms) backwards cubic-bezier(.2,.9,.25,1.15), card-sway 5.5s calc(var(--deal-delay, 0ms) + 600ms) ease-in-out infinite alternate!important; }
+  .game-shell .passenger-list .passenger-card.grade-legendary,
+  .game-shell .offer-revealing .passenger-card.grade-legendary { animation:card-deal 560ms var(--deal-delay, 0ms) backwards cubic-bezier(.2,.9,.25,1.15), card-sway 5.5s calc(var(--deal-delay, 0ms) + 600ms) ease-in-out infinite alternate, legend-glow 3.2s ease-in-out infinite alternate!important; }
+  .game-shell .passenger-list .passenger-card:hover:not(:disabled) { animation:none!important; }
+  .game-shell .passenger-list .passenger-card.grade-legendary:hover:not(:disabled) { animation:legend-glow 3.2s ease-in-out infinite alternate!important; }
+}
+/* v9.9 refinements: Art Deco inner frames by material; a softer, drifting legendary polychrome. */
+.game-shell .passenger-list .passenger-card.grade-standard { outline:1px solid #b4865340; outline-offset:-6px; }
+.game-shell .passenger-list .passenger-card.grade-fine { outline:1px solid #dfe8ee66; outline-offset:-6px; }
+.game-shell .passenger-list .passenger-card.grade-rare { outline:1px solid #f3d38f88; outline-offset:-6px; }
+.game-shell .passenger-list .passenger-card.grade-legendary { outline:3px double #f3d38fcc; outline-offset:-7px; }
+.game-shell .passenger-card.grade-legendary .card-foil {
+  background:
+    repeating-conic-gradient(from 200deg at 100% 0%, #f3d38f24 0deg 2deg, transparent 2deg 8deg),
+    linear-gradient(115deg, transparent 10%, #ff7a9a55 25%, #ffd36b55 38%, #8affc155 50%, #7ab8ff55 62%, #d38bff55 75%, transparent 90%);
+  background-size:100% 100%, 260% 260%;
+  background-position:0 0, calc(var(--mx, .2) * 100%) calc(var(--my, .2) * 100%);
+  mix-blend-mode:soft-light; opacity:.55;
+}
+.game-shell .passenger-card.grade-legendary:hover .card-foil { opacity:.8; }
+@media (prefers-reduced-motion:no-preference) {
+  .game-shell .passenger-card.grade-legendary .card-foil { animation:legend-drift 8s ease-in-out infinite alternate; }
+}
+@keyframes legend-drift { from { background-position:0 0, 0% 0%; filter:hue-rotate(0deg); } to { background-position:0 0, 100% 100%; filter:hue-rotate(40deg); } }
+.game-shell .passenger-card.grade-rare .card-foil { background:linear-gradient(115deg, #ff6b6b, #ffd36b 18%, #7dffb0 36%, #6bc6ff 54%, #c58bff 72%, #ff6b6b 90%); background-size:320% 320%; opacity:.13; }
+.game-shell .passenger-card.grade-rare:hover .card-foil { opacity:.28; }
+@keyframes holo-drift { from { background-position:0% 0%; } to { background-position:100% 100%; } }
+@media (prefers-reduced-motion:no-preference) { .game-shell .passenger-card.grade-rare .card-foil { animation:holo-drift 7s ease-in-out infinite alternate; } }
+.game-shell .passenger-card.grade-legendary .card-foil { opacity:.75; }
+.game-shell .passenger-card.grade-legendary:hover .card-foil { opacity:1; }

@@ -3,7 +3,7 @@
 
 export type Sfx =
   | 'ding' | 'doorClose' | 'doorOpen' | 'hum' | 'clink' | 'register' | 'link' | 'conflict' | 'heartbeat'
-  | 'rumble' | 'calm' | 'stamp' | 'sell' | 'record' | 'district' | 'tick' | 'board' | 'whoosh' | 'closeCall';
+  | 'rumble' | 'calm' | 'stamp' | 'sell' | 'record' | 'district' | 'tick' | 'board' | 'whoosh' | 'closeCall' | 'deal' | 'shimmer';
 
 type Bus = { ctx: AudioContext; out: GainNode; wet: GainNode };
 let bus: Bus | null = null;
@@ -83,6 +83,8 @@ export function playSfx(enabled: boolean, name: Sfx, opts: { pitch?: number; del
       case 'tick': tone(b, 1800 * p, { at, dur: .03, gain: .025, type: 'square', wet: false }); break;
       case 'board': tone(b, 330 * p, { at, dur: .12, gain: .05, type: 'triangle', glideTo: 440 * p }); noise(b, { at, dur: .06, gain: .02, freq: 2600, q: 2 }); break;
       case 'whoosh': noise(b, { at, dur: .35, gain: .04, freq: 600, sweepTo: 2800, q: .7 }); break;
+      case 'deal': noise(b, { at, dur: .05, gain: .06, freq: 3800 * p, q: .9, filter: 'highpass' }); tone(b, 900 * p, { at, dur: .04, gain: .02, type: 'triangle', wet: false }); break;
+      case 'shimmer': [0, 4, 7, 11, 14].forEach((st, i) => tone(b, 1568 * 2 ** (st / 12), { at: at + i * .045, dur: .6, gain: .022, attack: .004 })); break;
       case 'closeCall': tone(b, 220, { at, dur: 1.2, gain: .05, type: 'sawtooth', glideTo: 440, attack: .3 }); bell(b, 1318.5, at + .9, 1.4, .06); break;
     }
   } catch { /* Sound is optional and must never block play. */ }

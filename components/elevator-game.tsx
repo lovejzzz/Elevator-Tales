@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { ChevronsUp, ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Check, Coins, Flame, HelpCircle, History, Info, LockKeyhole, Music2, RotateCcw, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -52,6 +52,17 @@ const SOUND_PREFERENCE_KEY = 'elevator-tales-sound-enabled-v1';
 function scrollMobileTarget(selector:string,block:ScrollLogicalPosition='nearest') {
   if(!window.matchMedia('(max-width:700px)').matches)return;
   document.querySelector(selector)?.scrollIntoView({block,behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'});
+}
+
+/** v9.9 card feel: the card tilts toward the pointer and its foil follows it (pure DOM, no React state). */
+function tiltCard(event: ReactPointerEvent<HTMLElement>) {
+  if (event.pointerType !== 'mouse') return;
+  const el = event.currentTarget, r = el.getBoundingClientRect(), x = (event.clientX - r.left) / r.width, y = (event.clientY - r.top) / r.height;
+  el.style.setProperty('--mx', x.toFixed(3)); el.style.setProperty('--my', y.toFixed(3));
+  el.style.setProperty('--tilt', `${(0.5 - y).toFixed(3)} ${(x - 0.5).toFixed(3)} 0 ${(Math.hypot(x - .5, y - .5) * 16).toFixed(2)}deg`);
+}
+function untiltCard(event: ReactPointerEvent<HTMLElement>) {
+  const el = event.currentTarget; el.style.removeProperty('--tilt'); el.style.removeProperty('--mx'); el.style.removeProperty('--my');
 }
 
 /** v9.8 end screen: the floor reached counts up with a soft tick. */
@@ -146,7 +157,7 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
   const legend=isLegend(rider.kind);
   const net=netValue(rider,run);
   return <span className="unified-passenger-summary compact-card" data-no-translate>
-    <span className="cc-head"><Portrait kind={rider.kind}/><span className="cc-title"><strong>{riderName(rider.kind,locale)}</strong><span className="cc-sub">
+    <span className="cc-head"><Portrait kind={rider.kind}/><span className="cc-title"><strong>{riderName(rider.kind,locale)}<span className={`card-gem gem-${passengerCardGrade(rider.kind)}`} title={({standard:zh?'普通':'Common',fine:zh?'精良':'Fine',rare:zh?'稀有':'Rare',legendary:zh?'传奇':'Legendary'} as Record<string,string>)[passengerCardGrade(rider.kind)]} aria-hidden="true" /></strong><span className="cc-sub">
       <span className="cc-trip">{zh?`${brief.distance} 站`:`${brief.distance} stops`}</span>
       {legend&&<span className="cc-tag cc-tag-legend">{zh?'传奇':'Legend'}</span>}
       {rider.volatile&&<span className="cc-tag cc-tag-risk" title={zh?`急躁的乘客：车费多 ${HIGH_RISK_BONUS}，但在车上每层 +1 躁动；护士相邻可以抵消`:`Impatient rider: fare +${HIGH_RISK_BONUS}, but +1 agitation per floor aboard; an adjacent Nurse offsets it`}><Flame aria-hidden="true" />{zh?`急躁：车费+${HIGH_RISK_BONUS}，躁动+1/层`:`Impatient: fare +${HIGH_RISK_BONUS}, +1/floor`}</span>}
@@ -286,6 +297,8 @@ export default function ElevatorGame() {
   const [copied, setCopied] = useState<string | null>(null);
   const rngOf = useCallback((channel: string, floor: number) => daily ? stream(daily.seed, channel, floor) : Math.random, [daily]);
   const [metricEvent, setMetricEvent] = useState<MetricEvent | null>(null);
+  // v9.9 deal sounds: one card snap per offer, a shimmer for a legendary card.
+  useEffect(() => { offers.forEach((offer, i) => { playSfx(sound, 'deal', { delay: .35 + i * .11, pitch: i * 2 }); if (passengerCardGrade(offer.kind) === 'legendary') playSfx(sound, 'shimmer', { delay: .5 + i * .11 }); }); }, [offers]); // eslint-disable-line react-hooks/exhaustive-deps
   const soundEnabled = useRef(false);
   // v9.8 juice bookkeeping: where a placement flew from, the delivery streak and whether this run's record was announced.
   const placingFrom = useRef<{ el: Element | null; kind: PassengerKind } | null>(null);
@@ -693,7 +706,8 @@ export default function ElevatorGame() {
             const unavailable = full; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id;
             const partner = unavailable ? null : readyPartner(offer.kind, run.cabin, offer.id, offer);
             const grade=passengerCardGrade(offer.kind);
-            return <div className="passenger-item" style={{ animationDelay: `${offerIndex * 90}ms` }} role="listitem" key={offer.id}><button data-offer-id={offer.id} className={`passenger-card category-${passengerCategory(offer.kind)} kind-${offer.kind} grade-${grade} tone-${spec.tone} ${offer.volatile?'volatile':''} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} aria-label={language==='zh'?`候选：${spec.name}，车费${displayedOffer.kind==='mystery'?'待揭晓':passengerBrief(displayedOffer,run.floor,run.cabin).coins}，每层耗电${passengerBrief(displayedOffer,run.floor,run.cabin).energy}，还剩${Math.max(0,displayedOffer.destination-run.floor)}站${boarded?'，已上车':''}`:`Candidate: ${riderName(offer.kind,'en')}, fare ${displayedOffer.kind==='mystery'?'sealed':passengerBrief(displayedOffer,run.floor,run.cabin).coins}, power ${passengerBrief(displayedOffer,run.floor,run.cabin).energy} per floor, ${Math.max(0,displayedOffer.destination-run.floor)} stops${boarded?', aboard':''}`} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
+            return <div className="passenger-item" style={{ animationDelay: `${offerIndex * 90}ms`, '--deal-delay': `${offerIndex * 110}ms` } as CSSProperties} role="listitem" key={offer.id}><button data-offer-id={offer.id} onPointerMove={tiltCard} onPointerLeave={untiltCard} className={`passenger-card category-${passengerCategory(offer.kind)} kind-${offer.kind} grade-${grade} tone-${spec.tone} ${offer.volatile?'volatile':''} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} aria-label={language==='zh'?`候选：${spec.name}，车费${displayedOffer.kind==='mystery'?'待揭晓':passengerBrief(displayedOffer,run.floor,run.cabin).coins}，每层耗电${passengerBrief(displayedOffer,run.floor,run.cabin).energy}，还剩${Math.max(0,displayedOffer.destination-run.floor)}站${boarded?'，已上车':''}`:`Candidate: ${riderName(offer.kind,'en')}, fare ${displayedOffer.kind==='mystery'?'sealed':passengerBrief(displayedOffer,run.floor,run.cabin).coins}, power ${passengerBrief(displayedOffer,run.floor,run.cabin).energy} per floor, ${Math.max(0,displayedOffer.destination-run.floor)} stops${boarded?', aboard':''}`} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
+              <span className="card-foil" aria-hidden="true" /><span className="card-glints" aria-hidden="true"><i /><i /><i /><i /></span>
               {boarded && <span className="boarded-status" aria-hidden="true"><Check />已上车</span>}
               <PassengerCardFace rider={displayedOffer} run={run} action={language==='zh'?(boarded?'已上车 · 再点撤回':pending?'已选中 · 点一个空位':full?'车厢已满':partner?`${offer.kind==='mimic'?'可复制':'可连绿线'} · ${PASSENGERS[partner].name}`:undefined):(boarded?'Aboard · click to withdraw':pending?'Selected · pick a seat':full?'Cabin full':partner?`${offer.kind==='mimic'?'Can copy':'Green link'} · ${riderName(partner,'en')}`:undefined)} locale={language}/>
             </button>{run.upgrades.reservation>0&&!boarded&&<button className="reservation-button" disabled={locked||Boolean(run.reservedRider)||run.reservationUsedSector===Math.floor(run.floor/10)||run.reservedIds?.includes(offer.id)} onClick={()=>{const next=reserveOffer(run,offers,offer.id);if(next!==run){setRun(next);setOffers(current=>current.filter(r=>r.id!==offer.id));setPendingOfferId(null);setDragged(null);}}}>{run.reservedIds?.includes(offer.id)?'已保留过 · 不可续订':'留到下一批 · 每十层一次'}</button>}<button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(displayedOffer);}} aria-label={`查看${spec.name}规则`}><BookOpen /><span>{language === 'en' ? 'Details' : '完整规则'}</span></button></div>;

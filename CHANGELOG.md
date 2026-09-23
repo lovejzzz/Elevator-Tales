@@ -1,6 +1,10 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.8**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.9**. Publication status is tracked separately from the source version.
+
+## v9.9 — 2026-09-23 — Card materials / 人物卡材质
+
+- Rarity materials on offer cards (matte / silver foil / gold holo / polychrome legend), rarity gem, deal-in with card snap and legendary shimmer, idle sway, pointer tilt with following foil. Reduced motion keeps static materials. No rule changes.
 
 ## v9.8 — 2026-09-23 — Juice: sound, motion, talking riders / 音效、动画、乘客的话
 
