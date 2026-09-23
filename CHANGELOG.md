@@ -1,6 +1,10 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.13**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.14**. Publication status is tracked separately from the source version.
+
+## v9.14 — 2026-09-23 — Card re-layout, no clipped text / 人物卡重排
+
+- Portrait-left grid layout from the top; compact four-card mode; single-line keepsake; list scrolls as a safety net. Measured element overflow 0 at six viewports with three and four cards (was up to 58 px). No rule changes.
 
 ## v9.13 — 2026-09-23 — Seat lock and seat materials / 座位嵌入与座位材质
 

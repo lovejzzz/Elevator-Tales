@@ -855,3 +855,29 @@ export const V913_EN: ChangelogEntry = {
   experiments: ['Frame-by-frame recording shows a single transition on boarding (settle + frame lock) with no late fly-in; a legendary seat shows the double gold frame and shader with no console errors. verify and build pass; no rule or value changes.'],
   watch: ['The seat shader is mostly covered by the portrait and shows around it; if it should read more strongly, let the portrait edges fade into it.'],
 };
+
+export const V914_ZH: ChangelogEntry = {
+  version: '9.14', date: '2026-09-23', title: '人物卡重排，文字不再被遮挡',
+  summary: '候客卡改为“画像在左，名字和数字在右，能力和关系在下”的排版，内容从上往下排；四张卡时自动缩小画像和行距。',
+  changes: [
+    '修复：第 1 层有传奇时四张卡同屏，卡片高度不够，底部的关系标签和信物被裁掉（9.9 起卡片为了箔面效果会裁掉超出部分，加上内容垂直居中和放大的画像）。',
+    '新排版：画像放在左侧，右边是名字、站数和车费/耗电/净值；能力一行和关系标签在下面全宽显示。四张卡时画像 48 像素、行距更紧，并隐藏“已选中”等状态小字。',
+    '传奇卡的信物合并为一行“信物 · 名字：效果”，不再标签和说明各占一行。',
+    '保险：如果某张卡仍然比格子高，候客列表会滚动，而不是藏住文字。',
+  ],
+  experiments: ['逐张测量卡内每个元素是否超出卡片边缘：1440×900、1440×800、1366×768、1280×720、1024×768、390×844，有传奇（四张）和无传奇（三张）两种情况，修改前四张卡时最多超出 58 像素，修改后全部为 0。规则与数值不变。'],
+  watch: ['更矮的窗口（高度低于 720）如果出现滚动条，告诉我再压缩。'],
+};
+
+export const V914_EN: ChangelogEntry = {
+  version: '9.14', date: '2026-09-23', title: 'Rider cards re-laid out; no more clipped text',
+  summary: 'Offer cards now read portrait on the left, name and numbers on the right, ability and relations below, laid out from the top; with four cards the portrait and spacing shrink.',
+  changes: [
+    'Fix: with a legend on floor 1 there are four cards and not enough height, so the bottom relation tags and keepsake were cut off (since 9.9 cards clip overflow for the foil, combined with vertically centred content and a larger portrait).',
+    'New layout: portrait on the left; name, stops and fare / power / net on the right; the ability line and relation tags run full width below. With four cards the portrait is 48 px, rows are tighter, and the small “selected” status text is hidden.',
+    'A legend’s keepsake is a single line, “Keepsake · name: effect”, instead of a tag plus a separate description.',
+    'Safety net: if a card is still taller than its slot, the offer list scrolls instead of hiding text.',
+  ],
+  experiments: ['Measured every element against its card’s edges at 1440×900, 1440×800, 1366×768, 1280×720, 1024×768 and 390×844, with a legend (four cards) and without (three): before, four-card layouts overflowed by up to 58 px; after, 0 everywhere. No rule or value changes.'],
+  watch: ['If an even shorter window (under 720 px tall) shows a scrollbar, tell me and I will tighten further.'],
+};

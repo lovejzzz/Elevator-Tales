@@ -172,8 +172,7 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
       {net!==null&&<span className={`cc-net ${net>0?'is-pos':net<0?'is-neg':''}`} title={zh?'单独带这位乘客大约赚多少，按金币算：车费 − 全程耗电×充电价；会加躁动的乘客再按每点每层 3 币扣掉（显示“含躁动”）。不含邻座加成，配对/组合的人物通常显示亏。':'Net ≈ fare − trip power × charge price − trip agitation × 3, before neighbour bonuses. Positive means worth carrying even alone.'}>{(()=>{const ag=netIncludesAgitation(rider,run);const unit=zh?(ag?'（含躁动）':' 币'):(ag?' (incl. agitation)':' coins');return zh?(net>0?`单独带 赚 ${net}${unit}`:net<0?`单独带 亏 ${-net}${unit}`:'单独带 持平'):(net>0?`Alone +${net}${unit}`:net<0?`Alone −${-net}${unit}`:'Alone: break even');})()}</span>}
     </span>}
     <span className="cc-line">{summary.line}{summary.progress&&<em>{summary.progress}</em>}</span>
-    {legend&&<span className="cc-chips"><span className="cc-chip chip-keepsake" title={keepsakeTitle(rider.kind as LegendKind,locale)}>{zh?'信物 · ':'Keepsake · '}{keepsakeName(rider.kind as LegendKind,locale)}</span></span>}
-    {legend&&<span className="cc-keepsake-effect">{keepsakeTitle(rider.kind as LegendKind,locale)}</span>}
+    {legend&&<span className="cc-keepsake-effect"><b>{zh?'信物 · ':'Keepsake · '}{keepsakeName(rider.kind as LegendKind,locale)}{zh?'：':': '}</b>{keepsakeTitle(rider.kind as LegendKind,locale)}</span>}
     {summary.chips.length>0&&<span className="cc-chips">{summary.chips.map((chip,index)=><span key={index} className={`cc-chip chip-${chip.tone}`} title={chip.title}>{chip.tone==='green'?'+':chip.tone==='risk'?'⛓':''}<ChipIcon icon={chip.icon}/>{chip.label}</span>)}</span>}
     {action&&<span className="cc-action">{action}</span>}
   </span>;
