@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.0.4**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.1**. Publication status is tracked separately from the source version.
+
+## v9.1 — 2026-09-23 — Art Deco poster style / Art Deco 海报画风
+
+- All art redrawn as 1930s Art Deco travel posters: 21 riders, 8 legends (gold sunburst), 19 shop icons, cabin background (same layout, dimmed). 49 images, each checked for style, text and props.
+- One image per character instead of six-portrait sheets; art weight ~16 MB → ~1.3 MB.
+- Fixed the v9.0.4 breathing animation overriding seat-portrait centring.
+- Chosen from a three-way comparison (current realism / Art Deco poster / noir ink) at real 40 px and 80 px sizes. No rule changes.
 
 ## v9.0.4 — 2026-09-23 — District light and cabin motion / 楼区灯光与车厢动作
 

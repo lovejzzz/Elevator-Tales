@@ -1,26 +1,19 @@
 // Portraits are static card illustrations; gameplay and connections never live in the bitmap.
-import { PASSENGERS, isLegend, type PassengerKind } from './game-data';
+import type { PassengerKind } from './game-data';
 
 const publicBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 const publicAsset = (path: string) => `${publicBasePath}${path}`;
 export const PASSENGER_ART = {
-  style: 'Waist-up cinematic midnight noir; bottle-green backdrop, brass and teal light; same human proportions; no text.',
-  usage: 'runtime-sprite',
+  style: 'v9.1 Art Deco travel poster: flat gouache shapes, bottle-green backdrop, brass and cream with one accent colour; legends add a gold sunburst; no text.',
+  usage: 'runtime-portrait',
   interaction: ['inspect', 'place', 'reseat', 'dismiss'],
   pivot: [0.5, 1],
   footprint: 'one of six engine-owned slots',
   motion: 'static portrait; UI transition only, no simulated walking',
-  newer: {
-    mystery: publicAsset('/assets/mystery-v6.png'),
-    shifter: publicAsset('/assets/shifter-v6.png'),
-    mimic: publicAsset('/assets/mimic-v6.png'),
-  },
 } as const;
+/** One square portrait per rider and legend (v9.1); legends are recognised by their gold sunburst and frame. */
 export function portraitAsset(kind: PassengerKind) {
-  // v9 legends: single painted portraits generated in the same style as the v6 riders.
-  if (isLegend(kind)) return {src:publicAsset(`/assets/legend-${kind}.jpg`),columns:1,rows:1,cell:0};
-  if (kind === 'mystery' || kind === 'shifter' || kind === 'mimic') return {src:PASSENGER_ART.newer[kind],columns:1,rows:1,cell:0};
-  const spec=PASSENGERS[kind]; return {src:publicAsset(`/assets/passengers-${spec.sheet}.png`),columns:3,rows:2,cell:spec.cell};
+  return { src: publicAsset(`/assets/riders/${kind}.jpg`), columns: 1, rows: 1, cell: 0 };
 }
 
 /** Object icons for shop abilities and power-box lines (one painted item each). */

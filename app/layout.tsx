@@ -7,7 +7,7 @@ const sans = Geist({ variable: '--font-sans', subsets: ['latin'] });
 const mono = Geist_Mono({ variable: '--font-mono', subsets: ['latin'] });
 const display = Cormorant_Garamond({ variable: '--font-display', subsets: ['latin'], weight: ['500', '600', '700'] });
 const publicBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
-const elevatorImage = `${publicBasePath}/assets/elevator-cabin.png`;
+const elevatorImage = `${publicBasePath}/assets/elevator-cabin-deco.jpg`;
 const publicOrigin = process.env.GITHUB_PAGES === 'true'
   ? 'https://lovejzzz.github.io/'
   : 'https://elevator-tales-midnight.skylab.chatgpt.site/';

@@ -215,3 +215,45 @@ export const V904_EN: ChangelogEntry = {
     'Diegetic gauges (a voltmeter needle for power, a cash register for coins) wait for the style decision.',
   ],
 };
+
+export const V91_ZH: ChangelogEntry = {
+  version: '9.1', date: '2026-09-23', title: 'Art Deco 海报画风',
+  summary: '全部人物、传奇、商店物品和电梯厢换成 1930 年代 Art Deco 旅行海报风格；小尺寸下更容易认出每个人。',
+  changes: [
+    '画风：平涂色块、清晰剪影、深瓶绿底、黄铜与奶油色，每个人物一个点缀色；每人保留原来的标志道具（通勤者的报纸、快递员的包裹、小偷的怀表、护士的白帽……）。',
+    '21 位乘客、8 位传奇（背后金色放射纹）、16 项能力和配电箱三条线路的图标、电梯厢背景全部重画，共 49 张。',
+    '电梯厢保持原构图（中间开门、地面六个站位圆），调暗以让人物在前。',
+    '每位人物改为单独图片，不再从六宫格大图里裁切；美术资源从约 16 MB 减到约 1.3 MB，首屏加载更快。',
+    '修复 v9.0.4 的问题：车厢人物的“呼吸”动画覆盖了居中定位，导致座位画像偏移、只露出一部分。',
+  ],
+  experiments: [
+    '风格选择：同一组三位乘客、电梯厢和商店物品画成三种风格，在 40 px 与 80 px 实际尺寸下对比后选定 Art Deco 海报。',
+    '生成：图像模型以选定风格的样图为参考，逐张检查画风一致、无文字、道具与人物设定一致；电梯厢以旧图为构图参考。',
+    '浏览器检查：桌面与手机车厢、候客卡、商店；规则与数值不变，verify、类型检查和构建通过。',
+  ],
+  watch: [
+    '仪表化界面（电量做成电压表指针、金币做成收银机）是下一步。',
+    '幽灵画像的背景比其他人稍亮，如在游戏里显得突兀再单独重画。',
+  ],
+};
+
+export const V91_EN: ChangelogEntry = {
+  version: '9.1', date: '2026-09-23', title: 'Art Deco poster style',
+  summary: 'Every rider, legend, shop item and the cabin redrawn as 1930s Art Deco travel posters, easier to recognise at small sizes.',
+  changes: [
+    'Style: flat gouache shapes, clean silhouettes, deep bottle-green backdrop, brass and cream with one accent colour per character; everyone keeps their signature prop (the Commuter’s newspaper, the Courier’s parcel, the Thief’s pocket watch, the Nurse’s cap…).',
+    'All 21 riders, 8 legends (with a gold sunburst behind them), the 16 ability and 3 power-box icons and the cabin background redrawn: 49 images.',
+    'The cabin keeps its layout (open doors in the centre, six floor circles) and is dimmed so riders stay in front.',
+    'Each character is now its own image instead of a crop from a six-portrait sheet; art weight drops from about 16 MB to about 1.3 MB for a faster first load.',
+    'Fixed a v9.0.4 bug: the riders’ breathing animation overrode their centring, shifting seat portraits so only part showed.',
+  ],
+  experiments: [
+    'Style choice: the same three riders, cabin and shop item were drawn in three styles and compared at the real 40 px and 80 px sizes; Art Deco poster was chosen.',
+    'Generation: an image model used the chosen style samples as reference; each image was checked for style consistency, no text and props matching the character; the cabin used the old image as its layout reference.',
+    'Browser checks: desktop and phone cabin, offer cards and shop; no rule or value changes; verify, type check and build pass.',
+  ],
+  watch: [
+    'Diegetic gauges (a voltmeter needle for power, a cash register for coins) are next.',
+    'The Ghost’s backdrop is slightly lighter than the others; redraw it if it stands out in play.',
+  ],
+};
