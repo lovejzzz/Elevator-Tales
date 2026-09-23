@@ -1,6 +1,10 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.11**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.12**. Publication status is tracked separately from the source version.
+
+## v9.12 — 2026-09-23 — Hover flash fixed, pointer drag / 修复悬停闪黑、重做拖拽
+
+- Root cause: the 9.9.2 hover rule replayed the opacity-0 deal animation on hover; removed (recorded brightness steady). Native drag-and-drop replaced by a pointer drag with a spring-settled portrait ghost; no double fly-in; cached placement previews. No rule changes.
 
 ## v9.11 — 2026-09-23 — Recorded sound effects / 真实录音音效
 

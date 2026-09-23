@@ -799,3 +799,37 @@ export const V911_EN: ChangelogEntry = {
   ],
   watch: ['Volume balance needs a human ear: tell me which sounds are too loud or too frequent.'],
 };
+
+export const V912_ZH: ChangelogEntry = {
+  version: '9.12', date: '2026-09-23', title: '修复悬停闪黑；拖拽重做',
+  summary: '真正找到并修掉了悬停闪黑的原因；拖拽改为自己实现的指针拖拽，画像跟手移动，放下时弹进座位或弹回原处。',
+  changes: [
+    '修复悬停闪黑：9.9.2 加的一条悬停规则会在每次悬停时重播卡片的淡入动画（从完全透明开始），看起来就是闪黑。现在悬停只改变阴影和边框，上抬由 Motion 负责。',
+    '拖拽重做：不再使用浏览器自带的拖放（整张卡半透明截图、拖动时不断重绘）。按住卡片或座位上的人物拖动，一张带金边的画像跟着鼠标走，稍微倾斜；放到座位上时弹簧式落座，放到无效位置时弹回原处；原位置变暗提示正在拖。',
+    '拖回候客区撤回、座位之间换位都用新的拖拽；触屏仍然是点选再点座位，不会影响页面滚动。',
+    '放下后不再从候客卡重复播放一次“画像飞入”，过渡只有一次。',
+    '拖动时的放置预览结果做了缓存，只在经过新座位时重新计算。',
+  ],
+  experiments: [
+    '悬停录屏：修复前每次悬停卡片区域亮度从 33 骤降到 24–26（录屏逐帧检测到 3 次）；修复后 289 帧亮度稳定在 35–40，没有下降。',
+    '拖拽：浏览器中用真实鼠标事件验证拖到座位、拖回候客区撤回、拖到别处；页面内 60 步拖动的帧间隔中位 16.7 毫秒（60 帧）。verify、构建通过；规则与数值不变。',
+  ],
+  watch: ['开发模式下经过座位时偶有 40 毫秒以上的帧，需在线上正式构建中复测。'],
+};
+
+export const V912_EN: ChangelogEntry = {
+  version: '9.12', date: '2026-09-23', title: 'Hover flash fixed; dragging rebuilt',
+  summary: 'The real cause of the hover black flash is fixed, and dragging is now a custom pointer drag: the portrait follows the pointer and springs into the seat or back to where it came from.',
+  changes: [
+    'Hover flash fixed: a hover rule added in 9.9.2 replayed the card’s fade-in (starting fully transparent) on every hover, which read as a black flash. Hover now only changes shadow and border; Motion handles the lift.',
+    'Dragging rebuilt: no more native browser drag-and-drop (a translucent snapshot of the whole card and constant redraws). Press and drag a card or a seated rider and a gold-framed portrait follows the pointer, slightly tilted; dropped on a seat it springs in, dropped anywhere invalid it springs back; the source dims while dragging.',
+    'Dragging back to the offers to withdraw and moving between seats use the new drag; touch keeps tap-then-seat so page scrolling is unaffected.',
+    'After a drop the portrait no longer also flies in from the offer card, so there is a single transition.',
+    'Placement previews during a drag are cached and only recomputed when the pointer reaches a new seat.',
+  ],
+  experiments: [
+    'Hover recording: before the fix, card brightness dropped from 33 to 24–26 on each hover (3 dips detected frame by frame); after it, 289 frames stay steady at 35–40.',
+    'Drag: real mouse events in the browser for drag to seat, drag back to withdraw and drag elsewhere; a 60-step in-page drag ran at a median 16.7 ms per frame (60 fps). verify and build pass; no rule or value changes.',
+  ],
+  watch: ['In development mode crossing seats occasionally took 40 ms+; recheck on the live production build.'],
+};
