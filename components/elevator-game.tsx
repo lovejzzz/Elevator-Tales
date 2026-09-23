@@ -32,6 +32,9 @@ import { localizeTree, translateGameText, type GameLocale } from '@/lib/i18n';
 import { UPGRADE_SLOTS, riskPartnerships } from '@/lib/shift-rules';
 import { flywheelAllowance } from '@/lib/shop-effects';
 import { netIncludesAgitation, netValue } from '@/lib/net-value';
+import { chance, disposeSfx, playSfx, randomPitch } from '@/lib/game-sfx';
+import { banner, bubble, burstAt, clearJuice, flashClass, flyPortrait, popText } from '@/components/juice';
+import { quip } from '@/lib/quips';
 import { calmRescuePlan, departureRisk, rescuePlan, sectorNeed, SECTOR_NEED_RIDERS } from '@/lib/departure-guard';
 import { offerReveal } from '@/lib/offer-reveal';
 import { shouldPreviewConnection } from '@/lib/connection-preview';
@@ -49,6 +52,22 @@ const SOUND_PREFERENCE_KEY = 'elevator-tales-sound-enabled-v1';
 function scrollMobileTarget(selector:string,block:ScrollLogicalPosition='nearest') {
   if(!window.matchMedia('(max-width:700px)').matches)return;
   document.querySelector(selector)?.scrollIntoView({block,behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'});
+}
+
+/** v9.8 end screen: the floor reached counts up with a soft tick. */
+function CountUp({ value, sound }: { value: number; sound: boolean }) {
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { const f = requestAnimationFrame(() => setShown(value)); return () => cancelAnimationFrame(f); }
+    const start = performance.now(), duration = Math.min(1400, 500 + value * 12); let last = -1, frame = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration), next = Math.round(value * (1 - (1 - t) ** 3));
+      if (next !== last && next % Math.max(1, Math.round(value / 18)) === 0) playSfx(sound, 'tick', { pitch: Math.min(12, next / Math.max(1, value) * 12) });
+      last = next; setShown(next); if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick); return () => cancelAnimationFrame(frame);
+  }, [value, sound]);
+  return <>{shown}</>;
 }
 
 function AnimatedNumber({ value }: { value: number }) {
@@ -268,6 +287,10 @@ export default function ElevatorGame() {
   const rngOf = useCallback((channel: string, floor: number) => daily ? stream(daily.seed, channel, floor) : Math.random, [daily]);
   const [metricEvent, setMetricEvent] = useState<MetricEvent | null>(null);
   const soundEnabled = useRef(false);
+  // v9.8 juice bookkeeping: where a placement flew from, the delivery streak and whether this run's record was announced.
+  const placingFrom = useRef<{ el: Element | null; kind: PassengerKind } | null>(null);
+  const streakRef = useRef(0);
+  const recordAnnounced = useRef(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const metricEventId = useRef(0);
   const feedbackId = useRef(0); const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null); const journeyTimers = useRef<Array<ReturnType<typeof setTimeout>>>([]);
@@ -284,7 +307,7 @@ export default function ElevatorGame() {
     setMetricEvent({ id: ++metricEventId.current, label, changes });
     playMetricSounds(soundEnabled.current, changes);
   }, []);
-  useEffect(() => () => { journeyTimers.current.forEach(clearTimeout); if (feedbackTimer.current) clearTimeout(feedbackTimer.current); disposeGameAudio(); disposeGameMusic(); }, []);
+  useEffect(() => () => { journeyTimers.current.forEach(clearTimeout); if (feedbackTimer.current) clearTimeout(feedbackTimer.current); disposeGameAudio(); disposeSfx(); clearJuice(); disposeGameMusic(); }, []);
 
   useEffect(() => { setFastReveal(localStorage.getItem('elevator-tales-fast-reveal-v1') === 'on'); let seen = false; try { seen = localStorage.getItem('elevator-tales-intro-seen-v1') === 'yes'; } catch { /* storage unavailable */ } setIntroState(current => current ?? !seen); }, []);
   useEffect(() => {
@@ -293,7 +316,7 @@ export default function ElevatorGame() {
       const nextSound = localStorage.getItem(SOUND_PREFERENCE_KEY) !== 'off';
       setMusic(nextMusic); setSound(nextSound); soundEnabled.current = nextSound;
       if (!nextMusic) disposeGameMusic();
-      if (!nextSound) disposeGameAudio();
+      if (!nextSound) { disposeGameAudio(); disposeSfx(); }
       setAudioReady(true);
     };
     syncPreferences();
@@ -372,7 +395,7 @@ export default function ElevatorGame() {
   const calmLeft = calmAllowance(run);
   const calmNeed = stressFatal ? Math.max(1, run.stress + pressurePreview.highDelta - run.stressCap + 1) : 0;
   const calmRescue = useMemo(() => (stressFatal && calmLeft < calmNeed ? calmRescuePlan(run) : null), [run, stressFatal, calmLeft, calmNeed]);
-  const calm = (units: number) => { const next = buyCalm(run, units); if (next === run) return; reportMetrics(run, next, language === 'zh' ? '途中安抚' : 'Calming'); setRun(next); playTone(sound, 'upgrade'); };
+  const calm = (units: number) => { const next = buyCalm(run, units); if (next === run) return; reportMetrics(run, next, language === 'zh' ? '途中安抚' : 'Calming'); setRun(next); playSfx(sound, 'calm'); flashClass(document.querySelector('.elevator-stage'), 'cabin-calm', 900); burstAt(document.querySelector('[data-metric="stress"]'), 'blue', 12, 60); };
   const forecastTone = energyFatal || stressFatal ? 'danger' : pressurePreview.tone;
   const phase = shiftPhase(run.floor); const upgradeCount = Object.values(run.upgrades).reduce((sum, count) => sum + count, 0); const nextShop = nextShopFloor(run.floor); const nextIsShop = (run.floor + 1) % 10 === 0; const agitated = run.stress >= agitationThreshold(run.stressCap);
   const loverResponse = offers.some((rider) => rider.calledByLover); const firstPairLesson = run.floor === 1 && guidedShift;
@@ -407,10 +430,18 @@ export default function ElevatorGame() {
   const canDismiss=Boolean(detailRider&&detailOnboard&&detailRider.boardedAt<run.floor&&run.status==='playing'&&doors==='open');
   const penalty=detailRider?dismissalCost(run,detailRider):0;
 
-  const reset = useCallback(() => { journeyTimers.current.forEach(clearTimeout); journeyTimers.current = []; if (feedbackTimer.current) clearTimeout(feedbackTimer.current); setFeedback(null); setArriving([]); setMetricEvent(null); setReceiptOpen(false); setInventoryOpen(false); setChangelogOpen(false); setPassengerDetails(null); setEjectArmed(false); setLeaveArmed(false); disposeGameAudio(); recordRef.current = []; setCopied(null); const opening = daily ? startRun(false, stream(daily.seed, 'offers', 1), LEGEND_STARTERS) : startRun(false, Math.random, drawLegend(unlockedLegends)); setRunStartBest(bestFloor); setRun(opening.state); presentOffers(opening.offers); setRunDelivered({}); setNewLegends([]); setGuidedShift(false); setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setDoors('open'); setIntro(false); busyRef.current = false; }, [bestFloor, presentOffers, unlockedLegends, daily]);
+  const reset = useCallback(() => { clearJuice(); streakRef.current = 0; recordAnnounced.current = false; journeyTimers.current.forEach(clearTimeout); journeyTimers.current = []; if (feedbackTimer.current) clearTimeout(feedbackTimer.current); setFeedback(null); setArriving([]); setMetricEvent(null); setReceiptOpen(false); setInventoryOpen(false); setChangelogOpen(false); setPassengerDetails(null); setEjectArmed(false); setLeaveArmed(false); disposeGameAudio(); recordRef.current = []; setCopied(null); const opening = daily ? startRun(false, stream(daily.seed, 'offers', 1), LEGEND_STARTERS) : startRun(false, Math.random, drawLegend(unlockedLegends)); setRunStartBest(bestFloor); setRun(opening.state); presentOffers(opening.offers); setRunDelivered({}); setNewLegends([]); setGuidedShift(false); setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setDoors('open'); setIntro(false); busyRef.current = false; }, [bestFloor, presentOffers, unlockedLegends, daily]);
   const switchMode = (toDaily: boolean) => { const url = new URL(window.location.href); if (toDaily) url.searchParams.set('daily', '1'); else url.searchParams.delete('daily'); window.location.assign(url.toString()); };
   const commitPlacement = (result: PlacementResult) => {
     if (result.ok && result.changed) reportMetrics(run, result.next, result.label);
+    if (result.ok && result.changed) {
+      const from = placingFrom.current; placingFrom.current = null;
+      const target = result.slots[result.slots.length - 1];
+      const slotEl = typeof target === 'number' ? document.querySelectorAll('.standing-slot')[target] ?? null : null;
+      if (from?.el) { flyPortrait(from.el, slotEl, portraitAsset(from.kind).src); playSfx(soundEnabled.current, 'board', { pitch: randomPitch() }); if (chance(.35)) window.setTimeout(() => bubble(slotEl, quip(from.kind, 'board', language === 'zh')), 380); }
+      if (result.tone === 'combo') { playSfx(soundEnabled.current, 'link', { delay: .12, pitch: Math.min(7, conflictLinks(result.next.cabin).length) }); window.setTimeout(() => burstAt(slotEl, 'green', 12, 60), 330); }
+      if (conflictLinks(result.next.cabin).length > conflictLinks(run.cabin).length) { playSfx(soundEnabled.current, 'conflict', { delay: .1 }); window.setTimeout(() => burstAt(slotEl, 'red', 8, 40), 330); }
+    }
     setRun(result.next);
     if (!result.ok || result.changed) { flash({ tone: result.tone, label: result.label, slots: result.slots }); playTone(sound, result.ok ? result.tone === 'combo' ? 'combo' : 'place' : 'danger'); }
     if (result.ok) { setPendingOfferId(null); setSelectedSlot(null); setDragOverSlot(null); }
@@ -440,6 +471,7 @@ export default function ElevatorGame() {
     if (pendingOfferId) {
       const offer = offers.find((candidate) => candidate.id === pendingOfferId);
       if (!offer) { setPendingOfferId(null); return; }
+      placingFrom.current = { el: document.querySelector(`[data-offer-id="${offer.id}"] .portrait-window`), kind: offer.kind };
       commitPlacement(planPlacement(run, offer, slot)); return;
     }
     if (selectedSlot === null) { const rider = run.cabin[slot]; if (rider) { setSelectedSlot(slot); playTone(sound, 'select'); } return; }
@@ -463,15 +495,41 @@ export default function ElevatorGame() {
     try { payload = JSON.parse(event.dataTransfer.getData('application/elevator-tales')) as DragPayload; } catch { /* state fallback */ }
     if (!payload || typeof payload !== 'object') { endDrag(); return; }
     const rider = payload.type === 'offer' ? offers.find((candidate) => candidate.id === payload.id) : payload.type === 'slot' && Number.isInteger(payload.slot) ? run.cabin[payload.slot] : null;
+    if (rider && payload.type === 'offer') placingFrom.current = { el: document.querySelector(`[data-offer-id="${rider.id}"] .portrait-window`), kind: rider.kind };
     if (rider) commitPlacement(planPlacement(run, rider, target));
     endDrag();
   };
+  // v9.8 juice after each floor: bell, speech, streak, and at most one banner (record > close call > district > unrest rumble).
+  const celebrateFloor = (before: RunState, after: RunState) => {
+    const on = soundEnabled.current, zh = language === 'zh', stage = document.querySelector('.elevator-stage');
+    if (after.status !== 'lost') { playSfx(on, 'doorOpen', { delay: .05 }); playSfx(on, 'ding', { delay: .12 }); }
+    const arrivals = after.lastArrivals ?? [];
+    streakRef.current = arrivals.length ? streakRef.current + 1 : 0;
+    window.setTimeout(() => {
+      document.querySelectorAll('.arrival-exit').forEach((el, i) => { if (i < 2 && arrivals[i]) bubble(el, quip(arrivals[i].kind, 'arrive', zh), 1500); });
+      if (streakRef.current >= 3) popText(document.querySelector('.floor-indicator'), zh ? `连送 ×${streakRef.current}` : `Streak ×${streakRef.current}`, 'green');
+    }, 140);
+    if (after.status === 'lost') return;
+    const bandUp = agitationBand(after.stress) === 'high' && agitationBand(before.stress) !== 'high';
+    if (after.floor > runStartBest && runStartBest > 1 && !recordAnnounced.current) {
+      recordAnnounced.current = true;
+      window.setTimeout(() => { banner(stage, zh ? '新纪录！' : 'New record!', zh ? `第 ${after.floor} 层` : `Floor ${after.floor}`, 'gold'); playSfx(on, 'record'); burstAt(document.querySelector('.floor-indicator'), 'gold', 22, 110); }, 260);
+    } else if (after.energy <= 3 || after.stress >= after.stressCap - 1) {
+      window.setTimeout(() => { banner(stage, zh ? '险！' : 'Close call!', after.energy <= 3 ? (zh ? `电量只剩 ${after.energy}` : `${after.energy} power left`) : (zh ? `躁动 ${after.stress}/${after.stressCap}` : `Agitation ${after.stress}/${after.stressCap}`), 'red', 1600); playSfx(on, 'heartbeat'); flashClass(stage, 'cabin-closecall', 1400); }, 260);
+    } else if (districtFor(after.floor).from === after.floor && after.floor > 1) {
+      const d = districtFor(after.floor);
+      window.setTimeout(() => { banner(stage, d.name[zh ? 0 : 1], d.scene[zh ? 0 : 1], 'district', 2600); playSfx(on, 'district'); }, 260);
+    }
+    if (bandUp) { playSfx(on, 'rumble', { delay: .2 }); flashClass(stage, 'cabin-rumble', 900); }
+  };
+  const celebrateRef = useRef(celebrateFloor);
+  useEffect(() => { celebrateRef.current = celebrateFloor; });
   const depart = useCallback(() => {
     if (locked || busyRef.current) return;
     if (!run.cabin.some(Boolean)) { flash({tone:'error',label:'至少接一位乘客才能上行',slots:[]}); playTone(sound,'danger'); return; }
     if ((risk.fatal || stressFatal) && !departArmed) { setDepartArmedFor(run); playTone(sound,'danger'); return; }
     const reduced = fastReveal || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    busyRef.current = true; setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setFeedback(null); setDoors('closing'); playTone(sound, 'depart');
+    busyRef.current = true; setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setFeedback(null); setDoors('closing'); playTone(sound, 'depart'); playSfx(sound, 'doorClose'); playSfx(sound, 'hum', { delay: .3 });
     journeyTimers.current.forEach(clearTimeout);
     journeyTimers.current = [
       setTimeout(() => setDoors('moving'), reduced ? 30 : 250),
@@ -490,6 +548,7 @@ export default function ElevatorGame() {
         reportMetrics(run, resolved, `${resolved.floor} 层 · 到站结算`);
         flash({ tone: 'arrival', label: `${String(resolved.floor).padStart(2, '0')}F · 本层结算`, slots: [], coins: resolved.lastEarnings.total, energy: resolved.lastEnergy.delta, pressure: resolved.lastPressure.delta });
         playTone(soundEnabled.current, resolved.status === 'lost' ? 'danger' : 'arrive');
+        celebrateRef.current(run, resolved);
       }, reduced ? 70 : 470),
 
     ];
@@ -500,6 +559,9 @@ export default function ElevatorGame() {
     const timer = window.setTimeout(() => {
       const wallet = document.querySelector('[data-metric="coins"]')?.getBoundingClientRect();
       if (!wallet || !wallet.width) return;
+      let landed = 0; const total = arriving.reduce((sum, a) => sum + Math.max(0, a.coins), 0);
+      const walletEl = document.querySelector('[data-metric="coins"]');
+      window.setTimeout(() => { flashClass(walletEl, 'wallet-bump', 600); popText(walletEl, `+${total}`, 'gold', total >= 20); if (total >= 20) { playSfx(soundEnabled.current, 'register'); burstAt(walletEl, 'gold', 18, 80); } }, 900);
       document.querySelectorAll('.arrival-exit .arrival-payout').forEach((payout, index) => {
         const from = payout.getBoundingClientRect(); const coins = arriving[index]?.coins ?? 0; if (!from.width || coins <= 0) return;
         const x0 = from.left + from.width / 2, y0 = from.top + from.height / 2, dx = wallet.left + wallet.width / 2 - x0, dy = wallet.top + wallet.height / 2 - y0;
@@ -511,7 +573,7 @@ export default function ElevatorGame() {
             { transform: 'translate(-50%,-50%) scale(.5)', opacity: 0 },
             { transform: `translate(calc(-50% + ${dx * .25 + spread}px), calc(-50% + ${dy * .25 - 70}px)) scale(1)`, opacity: 1, offset: .35 },
             { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.45)`, opacity: .85 },
-          ], { duration: 820, delay: k * 70, easing: 'cubic-bezier(.45,0,.3,1)', fill: 'forwards' }).onfinish = () => coin.remove();
+          ], { duration: 820, delay: k * 70, easing: 'cubic-bezier(.45,0,.3,1)', fill: 'forwards' }).onfinish = () => { coin.remove(); playSfx(soundEnabled.current, 'clink', { pitch: Math.min(12, landed++) }); };
         }
       });
     }, fastReveal ? 60 : 420);
@@ -525,6 +587,7 @@ export default function ElevatorGame() {
   const chooseUpgrade = (key: UpgradeKey) => {
     setLeaveArmed(false);
     const updated = installUpgrade(run, key); if (updated === run) return;
+    playSfx(sound, 'stamp'); burstAt(document.querySelector(`.upgrade-grid button[data-key="${key}"]`), 'gold', 14, 70);
     const extra = run.shopUpgradeBought;
     reportMetrics(run, updated, `${extra ? '加购' : '选取'}${UPGRADES[key].name}`);
     setRun(updated); flash({ tone: 'combo', label: `${UPGRADES[key].name} · ${extra ? '已加购' : '已选取'}`, slots: [] }); playTone(sound, 'upgrade');
@@ -579,7 +642,7 @@ export default function ElevatorGame() {
         <div className="event-log">{run.log.slice(0, 3).map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}</div>
       </aside>
       <section className={`elevator-stage doors-${doors} ${activeRider ? 'is-placing' : ''} ${agitated ? 'cabin-agitated' : ''} ${run.status==='playing'&&risk.fatal ? 'power-fatal' : run.status==='playing'&&run.energy + energyPreview.lowDelta <= LOW_POWER_FLICKER ? 'power-low' : ''}`} data-district={districtFor(run.floor).id} style={{ '--shake': (0.6 + 2.6 * Math.min(1, run.stress / Math.max(1, run.stressCap))).toFixed(2) } as CSSProperties} aria-label="电梯座舱" aria-busy={doors !== 'open'}>
-        <div className="elevator-image" /><div className="district-light" aria-hidden="true" /><div className="cabin-flicker" aria-hidden="true" /><div className="motion-lines" /><div className="floor-indicator"><ArrowUp /><b key={run.floor}>{String(run.floor).padStart(2, '0')}</b></div><div className="district-tag" data-no-translate>{districtFor(run.floor).name[language==='zh'?0:1]}</div>
+        <div className="elevator-image" /><div className="district-light" aria-hidden="true" /><div className="cabin-flicker" aria-hidden="true" /><div className="motion-lines" /><div className="floor-indicator"><ArrowUp /><b key={run.floor}>{String(run.floor).padStart(2, '0')}</b></div>{run.status==='playing'&&bestFloor>run.floor&&bestFloor-run.floor<=10&&<div className="record-gap" data-no-translate>{language==='zh'?`距纪录 ${bestFloor-run.floor} 层`:`${bestFloor-run.floor} to record`}</div>}<div className="district-tag" data-no-translate>{districtFor(run.floor).name[language==='zh'?0:1]}</div>
         {outlook && <div className={`adjacency-key shift-outlook ${nextIsShop ? 'shop-next-outlook' : 'peak-outlook'}`}><span>{outlook}</span><span className="connection-legend">绿线协作 · 红线代价 · 紫箭头复制</span></div>}
         {feedback && (feedback.tone!=='arrival'||arriving.length===0) && <output key={feedback.id} className={`cabin-feedback feedback-${feedback.tone}`}>
           <div className="feedback-label">{feedback.tone === 'error' ? <X /> : feedback.tone === 'combo' ? <Sparkles /> : <Check />}<b>{feedback.label}</b></div>
@@ -630,7 +693,7 @@ export default function ElevatorGame() {
             const unavailable = full; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id;
             const partner = unavailable ? null : readyPartner(offer.kind, run.cabin, offer.id, offer);
             const grade=passengerCardGrade(offer.kind);
-            return <div className="passenger-item" style={{ animationDelay: `${offerIndex * 90}ms` }} role="listitem" key={offer.id}><button className={`passenger-card category-${passengerCategory(offer.kind)} kind-${offer.kind} grade-${grade} tone-${spec.tone} ${offer.volatile?'volatile':''} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} aria-label={language==='zh'?`候选：${spec.name}，车费${displayedOffer.kind==='mystery'?'待揭晓':passengerBrief(displayedOffer,run.floor,run.cabin).coins}，每层耗电${passengerBrief(displayedOffer,run.floor,run.cabin).energy}，还剩${Math.max(0,displayedOffer.destination-run.floor)}站${boarded?'，已上车':''}`:`Candidate: ${riderName(offer.kind,'en')}, fare ${displayedOffer.kind==='mystery'?'sealed':passengerBrief(displayedOffer,run.floor,run.cabin).coins}, power ${passengerBrief(displayedOffer,run.floor,run.cabin).energy} per floor, ${Math.max(0,displayedOffer.destination-run.floor)} stops${boarded?', aboard':''}`} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
+            return <div className="passenger-item" style={{ animationDelay: `${offerIndex * 90}ms` }} role="listitem" key={offer.id}><button data-offer-id={offer.id} className={`passenger-card category-${passengerCategory(offer.kind)} kind-${offer.kind} grade-${grade} tone-${spec.tone} ${offer.volatile?'volatile':''} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} aria-label={language==='zh'?`候选：${spec.name}，车费${displayedOffer.kind==='mystery'?'待揭晓':passengerBrief(displayedOffer,run.floor,run.cabin).coins}，每层耗电${passengerBrief(displayedOffer,run.floor,run.cabin).energy}，还剩${Math.max(0,displayedOffer.destination-run.floor)}站${boarded?'，已上车':''}`:`Candidate: ${riderName(offer.kind,'en')}, fare ${displayedOffer.kind==='mystery'?'sealed':passengerBrief(displayedOffer,run.floor,run.cabin).coins}, power ${passengerBrief(displayedOffer,run.floor,run.cabin).energy} per floor, ${Math.max(0,displayedOffer.destination-run.floor)} stops${boarded?', aboard':''}`} draggable={!locked && !unavailable} onDragStart={(event) => startDrag(event, { type: 'offer', id: offer.id })} onDragEnd={endDrag} disabled={locked || unavailable} aria-pressed={boarded || pending}>
               {boarded && <span className="boarded-status" aria-hidden="true"><Check />已上车</span>}
               <PassengerCardFace rider={displayedOffer} run={run} action={language==='zh'?(boarded?'已上车 · 再点撤回':pending?'已选中 · 点一个空位':full?'车厢已满':partner?`${offer.kind==='mimic'?'可复制':'可连绿线'} · ${PASSENGERS[partner].name}`:undefined):(boarded?'Aboard · click to withdraw':pending?'Selected · pick a seat':full?'Cabin full':partner?`${offer.kind==='mimic'?'Can copy':'Green link'} · ${riderName(partner,'en')}`:undefined)} locale={language}/>
             </button>{run.upgrades.reservation>0&&!boarded&&<button className="reservation-button" disabled={locked||Boolean(run.reservedRider)||run.reservationUsedSector===Math.floor(run.floor/10)||run.reservedIds?.includes(offer.id)} onClick={()=>{const next=reserveOffer(run,offers,offer.id);if(next!==run){setRun(next);setOffers(current=>current.filter(r=>r.id!==offer.id));setPendingOfferId(null);setDragged(null);}}}>{run.reservedIds?.includes(offer.id)?'已保留过 · 不可续订':'留到下一批 · 每十层一次'}</button>}<button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(displayedOffer);}} aria-label={`查看${spec.name}规则`}><BookOpen /><span>{language === 'en' ? 'Details' : '完整规则'}</span></button></div>;
@@ -722,11 +785,11 @@ export default function ElevatorGame() {
       {!availableShopCards(run).length&&<p className="shop-receipt" role="status" data-no-translate>{run.shopExtraBought?(language==='zh'?'本店已选取并加购能力，下次商店再选。':'Ability taken and extra bought; more at the next shop.'):(language==='zh'?'本店没有可选的能力。':'No abilities to choose here.')}</p>}
       {availableShopCards(run).length>0&&upgradeCount>=UPGRADE_SLOTS&&<p className="shop-receipt shop-full-hint" role="status" data-no-translate>{language==='zh'?`六个安装位已满：在下方卖掉一项（退 ${SELL_REFUND} 金币）才能装新能力。`:`All six slots are full: sell one below (refund ${SELL_REFUND}) to install a new ability.`}</p>}
       {(run.keepsakes?.length??0)>0&&<p className="keepsake-row" data-no-translate>{language==='zh'?'信物：':'Keepsakes: '}{run.keepsakes!.map(k=><span key={k} className="keepsake-chip keepsake-full"><b>{keepsakeLabel(k,language)}</b>{keepsakeText(k,language)}</span>)}</p>}
-      <div className="shop-choice-row"><div className="shop-main-column"><div className="upgrade-grid">{availableShopCards(run).map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, run); const warning = card.price > 0 ? purchaseRepairWarning(run,key,card.price) : null; const slotsFull = upgradeCount >= UPGRADE_SLOTS; return <button key={key} className={rescue ? 'crisis-rescue' : ''} disabled={!affordable || slotsFull} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price === 0 ? '免费选取' : `加购 ${card.price} 金币`}${!affordable ? '，金币不足' : ''}`}>
+      <div className="shop-choice-row"><div className="shop-main-column"><div className="upgrade-grid">{availableShopCards(run).map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, run); const warning = card.price > 0 ? purchaseRepairWarning(run,key,card.price) : null; const slotsFull = upgradeCount >= UPGRADE_SLOTS; return <button key={key} data-key={key} className={rescue ? 'crisis-rescue' : ''} disabled={!affordable || slotsFull} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price === 0 ? '免费选取' : `加购 ${card.price} 金币`}${!affordable ? '，金币不足' : ''}`}>
         <span className="shop-item-head"><span className="shop-icon" style={{backgroundImage:`url(${shopIcon(`ability-${key}`)})`}} aria-hidden="true" /><b>{UPGRADES[key].name}</b></span><p>{UPGRADES[key].description}</p>{IMPACT_KEYS.includes(key)&&<em>{upgradeImpact(key, run)}</em>}{warning && <span className="reserve-warning">{warning === 'crisis' ? '购买后不足以修复当前失控' : '购买后无法补至参考电量；参考线不是离店要求'}</span>}<span className="shop-price" data-no-translate>{card.price===0?<><Check aria-hidden="true" /><strong>{language==='zh'?'免费选取':'Free pick'}</strong></>:<><Coins aria-hidden="true" /><strong>{card.price}</strong><span>{affordable ? (language==='zh'?'加购':'Buy extra') : (language==='zh'?`还差 ${card.price - run.coins}`:`Need ${card.price - run.coins}`)}</span></>}</span>
       </button>; })}</div>
       <section className="shop-slots" data-no-translate><div className="shop-slots-head"><b>{language==='zh'?`已装能力 ${upgradeCount}/${UPGRADE_SLOTS}`:`Installed ${upgradeCount}/${UPGRADE_SLOTS}`}</b><span>{language==='zh'?`卖出退 ${SELL_REFUND} 金币`:`Sell for ${SELL_REFUND}`}</span></div>
-        <div className="shop-slot-grid">{Array.from({length:UPGRADE_SLOTS},(_,i)=>{const key=(Object.keys(UPGRADES) as UpgradeKey[]).filter(k=>run.upgrades[k]>0)[i];return key?<div key={key} className="shop-slot" title={translateGameText(UPGRADES[key].description,language)}><span className="shop-icon" style={{backgroundImage:`url(${shopIcon(`ability-${key}`)})`}} aria-hidden="true" /><span className="shop-slot-name">{translateGameText(UPGRADES[key].name,language)}</span><button disabled={!canSellUpgrade(run,key)} title={!canSellUpgrade(run,key)&&key==='calm'?(language==='zh'?'躁动太高：卖掉安全余量会让躁动上限低于当前值':'Agitation too high: selling it would drop the cap below your agitation'):undefined} onClick={()=>{const next=sellUpgrade(run,key);if(next!==run){reportMetrics(run,next,language==='zh'?'卖出能力':'Sold ability');setRun(next);playTone(sound,'select');}}}>{language==='zh'?'卖出':'Sell'}</button></div>:<div key={`empty-${i}`} className="shop-slot is-empty">{language==='zh'?'空位':'Empty'}</div>;})}</div>
+        <div className="shop-slot-grid">{Array.from({length:UPGRADE_SLOTS},(_,i)=>{const key=(Object.keys(UPGRADES) as UpgradeKey[]).filter(k=>run.upgrades[k]>0)[i];return key?<div key={key} className="shop-slot" title={translateGameText(UPGRADES[key].description,language)}><span className="shop-icon" style={{backgroundImage:`url(${shopIcon(`ability-${key}`)})`}} aria-hidden="true" /><span className="shop-slot-name">{translateGameText(UPGRADES[key].name,language)}</span><button disabled={!canSellUpgrade(run,key)} title={!canSellUpgrade(run,key)&&key==='calm'?(language==='zh'?'躁动太高：卖掉安全余量会让躁动上限低于当前值':'Agitation too high: selling it would drop the cap below your agitation'):undefined} onClick={(event)=>{const next=sellUpgrade(run,key);if(next!==run){reportMetrics(run,next,language==='zh'?'卖出能力':'Sold ability');setRun(next);playSfx(sound,'sell');popText(event.currentTarget,`+${SELL_REFUND}`,'gold');}}}>{language==='zh'?'卖出':'Sell'}</button></div>:<div key={`empty-${i}`} className="shop-slot is-empty">{language==='zh'?'空位':'Empty'}</div>;})}</div>
       </section></div>
       <div className="shop-service-column"><section className="recharge-panel box-panel">
         <div className="shop-step-head"><h3><i>2</i>{language==='zh'?`配电箱 · 升 1 级（可跳过）`:`Power box · 1 level (optional)`}</h3><span>{(run.freeBoxLevels??0)>0?(language==='zh'?'扳手：本次免费':'Wrench: free'):`${boxTotal(boxOf(run))}/${BOX_TOTAL_CAP}`}</span></div>
@@ -754,7 +817,7 @@ export default function ElevatorGame() {
     </DialogContent></Dialog>
     <Dialog open={run.status === 'lost' && doors === 'open'}><DialogContent className="story-dialog result-dialog failure-dialog compact-result" showCloseButton={false}>
       <p className="dialog-kicker">{language==='zh'?'本班结束':'SHIFT ENDED'}</p>
-      <DialogHeader><DialogTitle>{run.floor}<small>{language==='zh'?'层':'F'}</small></DialogTitle><DialogDescription className="failure-cause">{run.message.includes('炸弹倒计时') ? '炸弹倒计时归零' : run.energy<=0 && run.stress>=run.stressCap ? '电量耗尽 · 躁动失控' : run.energy<=0 ? '电量耗尽' : '躁动失控'}</DialogDescription></DialogHeader>
+      <DialogHeader><DialogTitle><CountUp value={run.floor} sound={sound} /><small>{language==='zh'?'层':'F'}</small></DialogTitle><DialogDescription className="failure-cause">{run.message.includes('炸弹倒计时') ? '炸弹倒计时归零' : run.energy<=0 && run.stress>=run.stressCap ? '电量耗尽 · 躁动失控' : run.energy<=0 ? '电量耗尽' : '躁动失控'}</DialogDescription></DialogHeader>
       <p className="compact-record">{run.floor>runStartBest ? (language==='zh'?'新纪录': 'NEW BEST') : (language==='zh'?`最高纪录 ${bestFloor} 层`:`Best: floor ${bestFloor}`)}</p>
       {daily&&<p className="compact-record" data-no-translate>{language==='zh'?`每日班次 ${daily.key} · 今日最佳 ${Math.max(dailyBest,run.floor)} 层`:`Daily shift ${daily.key} · today's best ${Math.max(dailyBest,run.floor)}F`}</p>}
       {newLegends.length>0&&<p className="compact-record legend-unlock" data-no-translate>{language==='zh'?`新传奇加入：${newLegends.map(k=>riderName(k,'zh')).join('、')}`:`New legends: ${newLegends.map(k=>riderName(k,'en')).join(', ')}`}</p>}

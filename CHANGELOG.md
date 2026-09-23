@@ -1,6 +1,11 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.7**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.8**. Publication status is tracked separately from the source version.
+
+## v9.8 — 2026-09-23 — Juice: sound, motion, talking riders / 音效、动画、乘客的话
+
+- Synthesized SFX with reverb (bell, doors, motor, rising coin clinks, register, link chord, conflict buzz, heartbeat, rumble, calm, stamp/sell, record fanfare, district sweep); portrait fly-in on boarding, link sparks, wallet bump and "+N" (big with gold burst at ≥20), record / close-call / district banners, cabin rumble and calm ripple.
+- Boarding and arrival lines for all riders and legends (zh/en); delivery streak, "N to record", result count-up. Reduced motion keeps banners and bubbles only. No rule changes.
 
 ## v9.7 — 2026-09-23 — Selling, rebuilt shop, fairer impatience and unrest / 卖能力、商店重排、急躁与夜深人躁
 

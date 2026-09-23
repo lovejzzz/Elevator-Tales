@@ -2773,3 +2773,36 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .upgrade-dialog .shop-slot-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 .upgrade-dialog .shop-agitation { justify-content:flex-start; gap:8px; }
+
+/* v9.8 juice layer: fly-ins, sparks, pop numbers, banners, speech bubbles, cabin pulses. */
+.juice { position:fixed; z-index:90; pointer-events:none; }
+.juice-fly { border-radius:6px; background:#0d1f19 center/cover no-repeat; box-shadow:0 10px 24px #000a, 0 0 0 2px #e0b75f99; }
+.juice-spark { width:7px; height:7px; border-radius:50%; }
+.juice-spark.juice-gold { background:radial-gradient(circle,#fff3c4,#f2c35c 60%,transparent); box-shadow:0 0 8px #f2c35c; }
+.juice-spark.juice-green { background:radial-gradient(circle,#e8ffef,#7fe0a5 60%,transparent); box-shadow:0 0 8px #67d491; }
+.juice-spark.juice-blue { background:radial-gradient(circle,#eaf6ff,#8fc7ee 60%,transparent); box-shadow:0 0 8px #6fb4e6; }
+.juice-spark.juice-red { background:radial-gradient(circle,#ffe3dc,#ff8a6e 60%,transparent); box-shadow:0 0 8px #e0715a; }
+.juice-pop { font:800 20px/1 var(--font-mono); white-space:nowrap; text-shadow:0 2px 10px #000c; }
+.juice-pop.is-big { font-size:34px; }
+.juice-pop.juice-gold { color:#ffd98a; } .juice-pop.juice-green { color:#9ee3b5; } .juice-pop.juice-blue { color:#b8def7; } .juice-pop.juice-red { color:#ffab96; }
+.juice-banner { display:grid; justify-items:center; gap:4px; padding:14px 20px; transform:translate(-50%,-50%); border-top:1px solid; border-bottom:1px solid; text-align:center; backdrop-filter:blur(3px); }
+.juice-banner strong { font:700 clamp(28px,4vw,46px)/1.1 var(--font-display, serif); letter-spacing:.06em; }
+.juice-banner span { font-size:14px; letter-spacing:.08em; }
+.juice-banner-gold { border-color:#e0b75f; background:linear-gradient(90deg,transparent,#2a1f0ae6 18%,#2a1f0ae6 82%,transparent); color:#ffd98a; text-shadow:0 0 18px #e0b75f88; }
+.juice-banner-red { border-color:#e0715a; background:linear-gradient(90deg,transparent,#2a0f0ae6 18%,#2a0f0ae6 82%,transparent); color:#ffb4a2; text-shadow:0 0 18px #e0715a88; }
+.juice-banner-district { border-color:#c99d5288; background:linear-gradient(90deg,transparent,#0c1813e6 18%,#0c1813e6 82%,transparent); color:#f1e2bf; }
+.juice-banner-district span { color:#cbbd97; font-style:italic; letter-spacing:.02em; }
+.juice-bubble { max-width:180px; padding:5px 10px; border:1px solid #e0b75f88; border-radius:10px; background:#f4ead2; color:#1d1a12; font-size:12px; font-weight:600; line-height:1.35; box-shadow:0 6px 14px #0008; }
+.juice-bubble::after { content:''; position:absolute; left:50%; bottom:-6px; width:10px; height:10px; transform:translateX(-50%) rotate(45deg); background:#f4ead2; border-right:1px solid #e0b75f88; border-bottom:1px solid #e0b75f88; }
+.game-shell .record-gap { position:absolute; z-index:6; left:50%; top:66px; transform:translateX(-50%); padding:2px 9px; border:1px solid #e0b75f66; border-radius:99px; background:#0c1813d9; color:#ffd98a; font:600 11px var(--font-mono); white-space:nowrap; }
+@media (prefers-reduced-motion:no-preference) {
+  .cabin-rumble { animation:cabin-rumble 900ms ease-out; }
+  .cabin-calm::after, .cabin-closecall::after { content:''; position:absolute; inset:0; z-index:5; pointer-events:none; }
+  .cabin-calm::after { animation:cabin-calm 900ms ease-out; background:radial-gradient(circle at 50% 60%,#8fc7ee55,transparent 60%); }
+  .cabin-closecall::after { animation:cabin-closecall 1400ms ease-out; box-shadow:inset 0 0 120px #e0715a99; }
+  [data-metric="coins"].wallet-bump { animation:wallet-bump 600ms cubic-bezier(.3,1.6,.5,1); }
+}
+@keyframes cabin-rumble { 0%,100% { translate:0 0; box-shadow:inset 0 0 0 #c8574b00; } 15% { translate:-3px 1px; box-shadow:inset 0 0 90px #c8574b88; } 30% { translate:3px -1px; } 45% { translate:-2px 1px; } 60% { translate:2px 0; } }
+@keyframes cabin-calm { from { opacity:1; transform:scale(.6); } to { opacity:0; transform:scale(1.4); } }
+@keyframes cabin-closecall { 0% { opacity:0; } 15% { opacity:1; } 35% { opacity:.4; } 55% { opacity:1; } 100% { opacity:0; } }
+@keyframes wallet-bump { 0% { scale:1; } 35% { scale:1.08; box-shadow:0 0 22px #f2c35c88; } 100% { scale:1; } }

@@ -613,3 +613,45 @@ export const V97_EN: ChangelogEntry = {
     'Watch whether people plan arrivals to dodge late-night unrest.',
   ],
 };
+
+export const V98_ZH: ChangelogEntry = {
+  version: '9.8', date: '2026-09-23', title: '电梯活起来了：音效、动画和乘客的话',
+  summary: '全新合成音效（电梯铃、开关门、马达、金币、连线、心跳……），上客飞入、连线火花、大额收入爆金、险情/新纪录/楼区大字幕，乘客上车和下车会说话；连送计数和“距纪录 N 层”。',
+  changes: [
+    '音效：新增一套合成音效（带混响）：到站电梯铃“叮—咚”、关门/开门滑动声、上行马达嗡鸣、金币落入钱包一枚一枚升调的叮当声、大额收入的收银机声、绿线连上的三和弦、红线的刺耳嗡声、险情心跳、躁动升到高档的低沉轰鸣、安抚的风声与铃声、商店盖章与卖出、新纪录号角、进入新楼区的扫音。静音开关同时关闭它们。',
+    '动画：上客时人物画像从候客卡飞进座位；新连上绿线时迸出绿色火花、红线迸出红色火花；金币飞进钱包后钱包弹一下并飘出“+N”，一层收入 ≥ 20 时变成大字并爆出金色粒子。',
+    '字幕：新纪录（“新纪录！第 N 层”，金色）、死里逃生（“险！电量只剩 N / 躁动 N/上限”，红色，车厢边缘闪红）、进入新楼区（楼区名 + 场景一句）。每层最多一条。',
+    '车厢：躁动升入高档时车厢震一下；安抚时一圈蓝色涟漪。',
+    '乘客的话：每位乘客和传奇都有上车、下车的台词（中英文），下车时说一句，上车时偶尔说一句。',
+    '想再来一层：连续三层以上有人到站时显示“连送 ×N”；离个人最高纪录 10 层以内时，楼层数字下方显示“距纪录 N 层”；结算页楼层数字从 0 滚动到最终层数。',
+    '系统设置“减少动态效果”时，飞入、火花、震动等位移动画关闭，字幕和气泡仍然显示。',
+  ],
+  experiments: [
+    '浏览器检查：上客飞入、绿线火花、下车台词、金币飞入与“+15”、10→11 层的住宅层字幕、24→33 层途中的夜店层字幕与“险！躁动 7/8”；控制台无错误。',
+    'verify 新增：所有乘客与传奇都有上车/下车台词（中英），无音频环境下音效不报错。规则与数值不变。',
+  ],
+  watch: [
+    '音量和出现频率需要真人试玩判断：如果嫌吵，可以降低金币叮当或减少上车台词的概率（现在 35%）。',
+  ],
+};
+
+export const V98_EN: ChangelogEntry = {
+  version: '9.8', date: '2026-09-23', title: 'The lift comes alive: sound, motion and riders who talk',
+  summary: 'New synthesized sound (lift bell, doors, motor, coins, links, heartbeat…), riders flying into seats, link sparks, big-payout bursts, close-call / new-record / district title banners, riders who speak when boarding and leaving, a delivery streak and “N floors to your record”.',
+  changes: [
+    'Sound: a new synthesized set with a little reverb — the lift’s two-tone arrival bell, sliding doors, the motor hum on the way up, coins landing in the wallet one by one in rising pitch, a cash-register ring for big payouts, a chord when a green link forms and a sour buzz for a red one, a heartbeat on close calls, a low rumble when agitation turns high, a whoosh-and-bell when calming, a stamp and a coin flick in the shop, a fanfare for a new record and a sweep into each new district. The mute switch silences all of it.',
+    'Motion: a boarded rider’s portrait flies from the offer card into the seat; new green links throw green sparks, red links red ones; after the coins land the wallet bumps and a “+N” floats up, turning big with a gold burst when a floor pays 20 or more.',
+    'Banners: New record (gold), Close call (“Close call! N power left / Agitation N/cap”, red, with the cabin edge flashing), and the name and scene of each new district. At most one per floor.',
+    'Cabin: it shudders when agitation turns high and ripples blue when you calm it.',
+    'Riders talk: every rider and legend has boarding and arrival lines in both languages; they speak when getting off and sometimes when boarding.',
+    'One more floor: a “Streak ×N” pops after three or more floors in a row with arrivals; within 10 floors of your best, “N to record” sits under the floor number; the result screen counts the floor up from 0.',
+    'With “reduce motion”, the fly-ins, sparks and shakes are off; banners and speech bubbles still appear.',
+  ],
+  experiments: [
+    'Browser checks: fly-in on boarding, green link sparks, arrival lines, coins into the wallet with “+15”, the Residences banner at 10→11F, the Nightclub banner and “Close call! Agitation 7/8” on the way from 24F to 33F; no console errors.',
+    'New verify checks: every rider and legend has boarding and arrival lines in both languages; sound effects do not throw without audio. No rule or value changes.',
+  ],
+  watch: [
+    'Volume and frequency need a human ear: if it feels busy, soften the coin clinks or lower the boarding-line chance (35%).',
+  ],
+};

@@ -14,6 +14,8 @@ import { calmRescuePlan, departureRisk, rescuePlan, sectorNeed } from '../lib/de
 import { stressForecast } from '../lib/game-forecast';
 import { netValue } from '../lib/net-value';
 import { drawLegend } from '../lib/legend-unlocks';
+import { QUIPS, quip } from '../lib/quips';
+import { playSfx } from '../lib/game-sfx';
 import { readFileSync } from 'node:fs';
 import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
@@ -331,4 +333,13 @@ console.log('PASS agitation sources itemised and a real calming rescue found');
   assert.equal(E.sellUpgrade({ ...withShop, stress: 8 }, 'calm').upgrades.calm, 1, 'not while agitation would exceed the lowered cap');
 }
 console.log('PASS selling abilities and full-kit shops');
-console.log(JSON.stringify({ version: 'v9', checks: 23, passed: true }));
+// v9.8 juice: every rider and legend has boarding and arrival lines in both languages; sound never throws without audio.
+{
+  for (const kind of Object.keys(PASSENGERS) as PassengerKind[]) {
+    for (const moment of ['board', 'arrive'] as const) { assert.ok(QUIPS[kind]?.[moment]?.length, `${kind} ${moment} lines`); assert.ok(quip(kind, moment, true) && quip(kind, moment, false), `${kind} ${moment} text`); }
+  }
+  assert.doesNotThrow(() => playSfx(true, 'ding'), 'no window, no audio, no error');
+  assert.doesNotThrow(() => playSfx(false, 'record'));
+}
+console.log('PASS juice lines and silent-safe sound');
+console.log(JSON.stringify({ version: 'v9', checks: 24, passed: true }));
