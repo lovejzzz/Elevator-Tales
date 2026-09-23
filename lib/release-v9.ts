@@ -927,3 +927,27 @@ export const V9142_EN: ChangelogEntry = {
   experiments: ['New verify checks: empty cabin equals the alone value; a second Lover is worth clearly more beside the first; a Nurse is −3 alone and +11 beside a Child; a Child is −13 alone and +1 beside a Nurse. No rule or value changes.'],
   watch: ['It is an estimate without chance bonuses or future reseating; watch whether players try more combinations.'],
 };
+
+export const V9143_ZH: ChangelogEntry = {
+  version: '9.14.3', date: '2026-09-23', title: '“送达净收益”与“配对后”双标签；传奇卡不再被裁',
+  summary: '人物卡数字改为“送达 净+N”（到站时才结算，不是上车就给钱）；组合型乘客额外显示“配某人 +N”，不再让人因为一个负数就放弃组合；传奇卡按内容自动变高。',
+  changes: [
+    '措辞：“上车 赚/亏”改为“送达 净+N / 净−N”；会影响躁动的乘客前面有小火苗；悬停说明写明是送到站时的估算。',
+    '配对潜力：如果旁边坐上他喜欢的搭档（恋人配恋人、护士配儿童、警察配小偷……），会多一个虚线标签“配恋人 +7”，显示配对后送达的净收益；搭档已经在车上时不显示（当前数值已包含），加成不到 3 币也不显示。',
+    '修复：护士长等说明较长的传奇卡在四张同屏时底部被裁；候客列表改为每行至少容纳整张卡，多余高度再平均分配。',
+  ],
+  experiments: ['逐张测量 8 位传奇 × 4 种窗口尺寸：1366×768 及以上全部无裁切、无滚动；1280×720 时列表出现滚动条但文字不再被裁。verify 新增配对潜力检查（恋人、护士→儿童、搭档已在车上时隐藏、通勤者无提示）。规则与数值不变。'],
+  watch: ['每张卡两个数字是否太多，需要试玩判断；如果嫌挤，可以只在悬停时显示“配对后”。'],
+};
+
+export const V9143_EN: ChangelogEntry = {
+  version: '9.14.3', date: '2026-09-23', title: 'Net-on-delivery plus a paired value; legend cards no longer clipped',
+  summary: 'The card number reads “On arrival +N” (settled on delivery, nothing paid on boarding); combination riders also show “w/ partner +N” so one negative number no longer talks players out of a combination; legend cards grow to fit.',
+  changes: [
+    'Wording: “Board ±N” becomes “On arrival +N / −N”; riders who affect agitation carry a small flame; the hover says it is an estimate at delivery.',
+    'Pairing potential: if a partner they like sat beside them (Lover and Lover, Nurse and Child, Officer and Thief…), a dashed tag such as “w/ Lover +7” shows their net on delivery once paired; hidden when that partner is already aboard (the main value covers it) or when pairing adds under 3 coins.',
+    'Fix: long legend cards such as the Matron were clipped at the bottom with four cards on screen; each row now fits its whole card and spare height is shared.',
+  ],
+  experiments: ['Measured all 8 legends at 4 window sizes: no clipping or scrolling at 1366×768 and above; at 1280×720 the list scrolls but no text is cut. New verify checks for pairing potential (Lover, Nurse → Child, hidden when the partner is aboard, none for the Commuter). No rule or value changes.'],
+  watch: ['Two numbers per card may be busy; if so, show the paired value on hover only.'],
+};

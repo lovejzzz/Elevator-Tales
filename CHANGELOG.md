@@ -1,6 +1,10 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.14.2**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.14.3**. Publication status is tracked separately from the source version.
+
+## v9.14.3 — 2026-09-23 — Net on delivery + paired value / 送达净收益与配对潜力
+
+- "On arrival ±N" wording (nothing paid on boarding); dashed "w/ partner ±N" for combination riders, hidden when the partner is aboard or the gain is under 3; content-sized offer rows fix clipped legend cards (all 8 legends measured). No rule changes.
 
 ## v9.14.2 — 2026-09-23 — Cabin-aware card value / 按车厢计算的赚亏
 

@@ -1,6 +1,6 @@
 import { boxOf, cooperationBonus, cooperationRelief, eventPressureMultiplier, riderAgitation, type Rider, type RunState } from './game-engine';
 import { passengerBrief } from './passenger-presentation';
-import { PASSENGERS, isLegend } from './game-data';
+import { ADJACENT, PASSENGERS, isLegend, type PassengerKind } from './game-data';
 import { riderProfile } from './rider-profile';
 import { chargeUnitPrice } from './power-box';
 
@@ -60,4 +60,33 @@ export function boardNet(rider: Rider, state: RunState): { value: number; seated
     if (best === null || v > best) best = v;
   });
   return best === null ? null : { value: Math.round(best), seated: false };
+}
+
+/** v9.14.3 partner potential: the rider's value once their best partner (a kind they like) sits beside them.
+ * Lets a combination rider show "red now, green when paired" instead of just red. Null when no partner type
+ * would add at least 3 coins over the current value, or when the rider is already beside such a partner. */
+export function pairedNet(rider: Rider, state: RunState): { value: number; partner: PassengerKind } | null {
+  if (isLegend(rider.kind)) return null;
+  const now = boardNet(rider, state); if (!now) return null;
+  const likes = riderProfile(rider, state.cabin).bond.likes.filter(k => !isLegend(k)).slice(0, 3);
+  if (!likes.length) return null;
+  const at = state.cabin.findIndex(r => r?.id === rider.id);
+  const trip = Math.max(1, rider.destination - state.floor);
+  let best: { value: number; partner: PassengerKind } | null = null;
+  for (const kind of likes) {
+    const partner: Rider = { id: `hypothetical-${kind}`, kind, destination: state.floor + trip, patience: 0, boardedAt: state.floor, fareBonus: 0, stash: 0, volatile: false };
+    // A partner of this kind is already aboard (not yet seated rider) or already beside them: the current value covers it.
+    if (at < 0 && state.cabin.some(r => r?.kind === kind)) continue;
+    if (at >= 0 && ADJACENT.some(([a, b]) => (a === at && state.cabin[b]?.kind === kind) || (b === at && state.cabin[a]?.kind === kind))) return null;
+    for (const [a, b] of ADJACENT) for (const [mine, theirs] of [[a, b], [b, a]] as const) {
+      const mineOk = at >= 0 ? mine === at : !state.cabin[mine];
+      if (!mineOk || state.cabin[theirs]) continue;
+      // Partner in the neighbouring seat, rider in theirs: the rider's value with the partner present.
+      const seated = { ...rider, boardedAt: at >= 0 ? rider.boardedAt : state.floor };
+      const cabin = state.cabin.map((r, i) => (i === theirs ? partner : i === mine ? seated : r));
+      const value = boardNet(seated, { ...state, cabin })?.value;
+      if (value !== undefined && value !== null && (!best || value > best.value)) best = { value, partner: kind };
+    }
+  }
+  return best && best.value >= now.value + 3 ? best : null;
 }

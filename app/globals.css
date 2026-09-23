@@ -3001,3 +3001,13 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
   .game-shell .passenger-list { overflow-y:auto; overscroll-behavior:contain; }
 }
 .cc-keepsake-effect b { color:#f3d38f; font-weight:700; }
+
+/* v9.14.3 rows size to their card: every card is at least as tall as its content, spare height is shared. */
+@media (min-width:701px) {
+  .game-shell .passenger-list { grid-template-rows:none!important; grid-auto-rows:minmax(min-content,1fr)!important; }
+  .game-shell .passenger-list .passenger-item, .game-shell .passenger-list .passenger-card { min-height:0; height:100%; }
+}
+.cc-net { display:inline-flex; align-items:center; gap:3px; }
+.cc-net-flame { width:12px; height:12px; }
+.cc-net + .cc-net-paired { margin-left:6px; }
+.cc-net-paired { border-style:dashed!important; }

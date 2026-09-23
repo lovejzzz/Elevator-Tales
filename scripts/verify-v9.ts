@@ -12,7 +12,7 @@ import { sectorForecast } from '../lib/game-forecast';
 import { motorAdvanceNotice, motorScheduleText, nightUnrest } from '../lib/balance-v832';
 import { calmRescuePlan, departureRisk, rescuePlan, sectorNeed } from '../lib/departure-guard';
 import { stressForecast } from '../lib/game-forecast';
-import { boardNet, netValue } from '../lib/net-value';
+import { boardNet, netValue, pairedNet } from '../lib/net-value';
 import { drawLegend } from '../lib/legend-unlocks';
 import { QUIPS, quip } from '../lib/quips';
 import { playSfx, SAMPLES } from '../lib/game-sfx';
@@ -365,4 +365,17 @@ console.log('PASS recorded samples and licences present');
   assert.equal(boardNet(rider('operator', 15, 9), empty), null);
 }
 console.log('PASS cabin-aware card value');
-console.log(JSON.stringify({ version: 'v9', checks: 26, passed: true }));
+// v9.14.3 partner potential: a combination rider shows what they are worth once paired, and the hint disappears
+// when the partner is already aboard (the current value covers it).
+{
+  const empty = run(15, []);
+  const lover = rider('lover', 15, 5, { boardedAt: 15 });
+  const p = pairedNet(lover, empty);
+  assert.ok(p && p.partner === 'lover' && p.value > boardNet(lover, empty)!.value, JSON.stringify(p));
+  assert.equal(pairedNet(lover, run(15, [rider('lover', 15, 5, { boardedAt: 14 })])), null, 'partner already aboard');
+  const nurse = rider('nurse', 15, 5, { boardedAt: 15 });
+  assert.equal(pairedNet(nurse, empty)?.partner, 'child');
+  assert.equal(pairedNet(rider('commuter', 15, 5, { boardedAt: 15 }), empty), null, 'no hint when pairing adds little');
+}
+console.log('PASS partner potential on cards');
+console.log(JSON.stringify({ version: 'v9', checks: 27, passed: true }));

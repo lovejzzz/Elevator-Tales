@@ -31,7 +31,7 @@ import { CHANGELOG, CHANGELOG_EN, GAME_VERSION } from '@/lib/changelog';
 import { localizeTree, translateGameText, type GameLocale } from '@/lib/i18n';
 import { UPGRADE_SLOTS, riskPartnerships } from '@/lib/shift-rules';
 import { flywheelAllowance } from '@/lib/shop-effects';
-import { boardNet, netIncludesAgitation } from '@/lib/net-value';
+import { boardNet, netIncludesAgitation, pairedNet } from '@/lib/net-value';
 import { chance, disposeSfx, playSfx, preloadSfx, randomPitch } from '@/lib/game-sfx';
 import { motion, useReducedMotion } from 'motion/react';
 import { CardShader } from '@/components/card-shader';
@@ -157,7 +157,7 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
   const summary=cardSummary(rider,run,locale);
   const zh=locale==='zh';
   const legend=isLegend(rider.kind);
-  const board=boardNet(rider,run); const net=board?.value ?? null;
+  const board=boardNet(rider,run); const net=board?.value ?? null; const paired=pairedNet(rider,run);
   return <span className="unified-passenger-summary compact-card" data-no-translate>
     <span className="cc-head"><Portrait kind={rider.kind}/><span className="cc-title"><strong>{riderName(rider.kind,locale)}<span className={`card-gem gem-${passengerCardGrade(rider.kind)}`} title={({standard:zh?'普通':'Common',fine:zh?'精良':'Fine',rare:zh?'稀有':'Rare',legendary:zh?'传奇':'Legendary'} as Record<string,string>)[passengerCardGrade(rider.kind)]} aria-hidden="true" /></strong><span className="cc-sub">
       <span className="cc-trip">{zh?`${brief.distance} 站`:`${brief.distance} stops`}</span>
@@ -169,7 +169,7 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
       <b className="cc-fare" aria-label={brief.coins===null?(zh?'车费到站揭晓':'Fare sealed'):`${zh?'车费':'Fare'} ${brief.coins}`}><Coins aria-hidden="true" />{brief.coins===null?'?':brief.coins}{brief.tip>0&&<small>+{brief.tip}</small>}</b>
       <span className="cc-energy" aria-label={`${zh?'每层耗电':'Power per floor'} ${brief.energy}`}><BatteryCharging aria-hidden="true" />{brief.energy}</span>
       {brief.agitation>0&&<span className="cc-agitation" aria-label={`${zh?'每层躁动':'Agitation per floor'} +${brief.agitation}`}><Flame aria-hidden="true" />+{brief.agitation}</span>}
-      {net!==null&&<span className={`cc-net ${net>0?'is-pos':net<0?'is-neg':''}`} title={zh?'按现在的车厢估算，这位乘客能带来多少金币：到站车费，加上和已上车乘客配对、邻座带来的加成（取最好的空位），减去全程电费；会加躁动的乘客再按每点每层 3 币扣掉。车厢为空时就是单独带的价值。':'What this rider is worth in the current cabin: their arrival fare plus any pairing or neighbour bonus with riders already aboard (best empty seat), minus the trip’s power; riders who add agitation lose 3 coins per point per floor. With an empty cabin this is their value alone.'}>{(()=>{const ag=netIncludesAgitation(rider,run)||rider.kind==='nurse';const unit=zh?(ag?' 币（含躁动）':' 币'):(ag?' coins (incl. agitation)':' coins');const lead=zh?(board?.seated?'在车上':'上车'):(board?.seated?'Aboard':'Board');return zh?(net>0?`${lead} 赚 ${net}${unit}`:net<0?`${lead} 亏 ${-net}${unit}`:`${lead} 持平`):(net>0?`${lead} +${net}${unit}`:net<0?`${lead} −${-net}${unit}`:`${lead}: break even`);})()}</span>}
+      {net!==null&&<span className={`cc-net ${net>0?'is-pos':net<0?'is-neg':''}`} title={zh?`送到站时的净收益估算（不是上车就给钱）：到站车费，加上和已上车乘客配对、邻座的加成，减去这一路的电费${netIncludesAgitation(rider,run)||rider.kind==='nurse'?'，再算上他让车厢躁动的变化（每点每层按 3 币）':''}。按现在车厢里的人和最好的空位计算。`:`Estimated net on delivery (nothing is paid on boarding): arrival fare plus pairing / neighbour bonuses with riders aboard, minus the power for the trip${netIncludesAgitation(rider,run)||rider.kind==='nurse'?', and the change in cabin agitation (3 coins per point per floor)':''}. Based on who is aboard now and the best empty seat.`}>{(netIncludesAgitation(rider,run)||rider.kind==='nurse')&&<Flame aria-hidden="true" className="cc-net-flame" />}{zh?`送达 净${net>0?'+':net<0?'−':'±'}${Math.abs(net)}`:`On arrival ${net>0?'+':net<0?'−':'±'}${Math.abs(net)}`}</span>}{paired&&<span className={`cc-net cc-net-paired ${paired.value>0?'is-pos':paired.value<0?'is-neg':''}`} title={zh?`如果旁边坐上一位${riderName(paired.partner,'zh')}，这位乘客送达时的净收益估算；配对的加成双方都算。`:`Estimated net on delivery if a ${riderName(paired.partner,'en')} sits beside them; the pairing bonus counts for both.`}>{zh?`配${riderName(paired.partner,'zh')} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)}`:`w/ ${riderName(paired.partner,'en')} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)}`}</span>}
     </span>}
     <span className="cc-line">{summary.line}{summary.progress&&<em>{summary.progress}</em>}</span>
     {legend&&<span className="cc-keepsake-effect"><b>{zh?'送到 10 层得信物 · ':'Deliver to 10F for keepsake · '}{keepsakeName(rider.kind as LegendKind,locale)}{zh?'：':': '}</b>{keepsakeTitle(rider.kind as LegendKind,locale)}</span>}
