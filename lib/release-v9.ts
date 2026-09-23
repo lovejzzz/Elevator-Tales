@@ -881,3 +881,25 @@ export const V914_EN: ChangelogEntry = {
   experiments: ['Measured every element against its card’s edges at 1440×900, 1440×800, 1366×768, 1280×720, 1024×768 and 390×844, with a legend (four cards) and without (three): before, four-card layouts overflowed by up to 58 px; after, 0 everywhere. No rule or value changes.'],
   watch: ['If an even shorter window (under 720 px tall) shows a scrollbar, tell me and I will tighten further.'],
 };
+
+export const V9141_ZH: ChangelogEntry = {
+  version: '9.14.1', date: '2026-09-23', title: '传奇信物说明更准确',
+  summary: '传奇卡上的信物写明“送到 10 层得信物”；夜莺的黑胶唱片改为“音乐家提前出现（不必等到 16 层）”。',
+  changes: [
+    '传奇候客卡的信物一行改为“送到 10 层得信物 · 名字：效果”，说明信物要等传奇在 10 层商店下车后才生效。',
+    '黑胶唱片：原来写“音乐家从第 1 层起出现”，但信物在 10 层才拿到，而音乐家平时 16 层才出现；改为“音乐家提前出现（不必等到 16 层）”。规则本身不变：拿到唱片后音乐家立即加入候客。',
+  ],
+  experiments: ['中英文数字一致性检查与 verify 通过；规则与数值不变。'],
+  watch: ['其他信物如果也有容易误解的说法，请截图给我。'],
+};
+
+export const V9141_EN: ChangelogEntry = {
+  version: '9.14.1', date: '2026-09-23', title: 'Clearer legend keepsakes',
+  summary: 'Legend cards say “Deliver to 10F for keepsake”; the Nightingale’s Vinyl Record now reads “Musicians appear early (no need to wait for floor 16)”.',
+  changes: [
+    'A legend offer card’s keepsake line now reads “Deliver to 10F for keepsake · name: effect”, making clear the keepsake applies only after the legend gets off at the floor-10 shop.',
+    'Vinyl Record: it said “Musicians from floor 1”, but the keepsake arrives at 10F and Musicians normally start at 16F; it now reads “Musicians appear early (no need to wait for floor 16)”. The rule is unchanged: Musicians join the offers as soon as you hold the record.',
+  ],
+  experiments: ['Number-parity check between Chinese and English and verify pass; no rule or value changes.'],
+  watch: ['If another keepsake reads confusingly, send a screenshot.'],
+};

@@ -1,6 +1,10 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.14**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.14.1**. Publication status is tracked separately from the source version.
+
+## v9.14.1 — 2026-09-23 — Clearer keepsakes / 信物说明
+
+- Legend cards: "Deliver to 10F for keepsake · name: effect". Vinyl Record: "Musicians appear early (no need to wait for floor 16)" instead of "from floor 1". No rule changes.
 
 ## v9.14 — 2026-09-23 — Card re-layout, no clipped text / 人物卡重排
 
