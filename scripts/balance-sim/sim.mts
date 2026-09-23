@@ -123,7 +123,7 @@ function evaluate(state: RunState, bot: Bot): number {
 const place = (state: RunState, rider: Rider, slot: number): RunState => ({ ...state, cabin: state.cabin.map((r, i) => (i === slot ? rider : r)) });
 
 /** What a "net" line on the card would show: fare minus trip power valued at the current shop charge price. */
-export let NET_AGITATION_COINS = 4;
+export const NET_AGITATION_COINS = 3;
 export function cardNet(o: Rider, state: RunState) {
   const trip = Math.max(1, o.destination - state.floor);
   const fare = isLegend(o.kind) ? 0 : o.kind === 'mystery' ? 16 : PASSENGERS[o.kind].fare;
