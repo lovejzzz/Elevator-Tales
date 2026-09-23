@@ -7,8 +7,19 @@ export const BASE_AGITATION_CAP = 8;
 // default stays explicit; forecasts and settlement call the same rule.
 export const AGITATION_RULES = { arrivalReliefCap: 2 };
 /** v9 agitation: crowding costs calm, a lively cabin tips, and a wild cabin has incidents. */
-export const V9_AGITATION = { crowdingFrom: 6, crowding: 1, mediumTip: 1, lowTip: 1, incidentChance: 0.2, lateCrowdingFloor: 999, lateCrowdingFrom: 5 };
-export const crowdingThreshold = (floor: number) => floor >= V9_AGITATION.lateCrowdingFloor ? V9_AGITATION.lateCrowdingFrom : V9_AGITATION.crowdingFrom;
+/** Late-night unrest from `from`: +1 agitation every third floor, then every second floor after `every` more floors,
+ * then every floor, then +2 per floor (cap). A gradual clock that riders like nurses and musicians can answer. */
+export const NIGHT_UNREST = { from: 0, every: 20, cap: 2 };
+export const nightUnrest = (floor: number) => {
+  if (!NIGHT_UNREST.from || floor < NIGHT_UNREST.from) return 0;
+  const d = floor - NIGHT_UNREST.from, level = Math.floor(d / NIGHT_UNREST.every);
+  if (level === 0) return d % 3 === 0 ? 1 : 0;
+  if (level === 1) return d % 2 === 0 ? 1 : 0;
+  return Math.min(NIGHT_UNREST.cap, level - 1);
+};
+export const V9_AGITATION = { crowdingFrom: 6, crowding: 1, mediumTip: 1, lowTip: 1, incidentChance: 0.2, lateCrowdingFloor: 999, lateCrowdingFrom: 5, crowdSteps: [] as number[], crowdMin: 3 };
+/** Late night: each floor in crowdSteps lowers the crowding threshold by one rider (never below crowdMin). */
+export const crowdingThreshold = (floor: number) => Math.max(V9_AGITATION.crowdMin, (floor >= V9_AGITATION.lateCrowdingFloor ? V9_AGITATION.lateCrowdingFrom : V9_AGITATION.crowdingFrom) - V9_AGITATION.crowdSteps.filter(step => floor >= step).length);
 export const MUSIC_RULES = { step: 2 };
 // Defaults unchanged after R01. Isolated Lab scenarios may override these;
 // never use player resources or floor to change their values mid-run.
@@ -28,8 +39,8 @@ export function musicBeatForAgitation(value: number) {
 }
 // Local playtest candidate, adopted after matched and unused-seed comparisons.
 // The old schedule remains available only as an explicit research scenario.
-export const MOTOR_RULES = { upperZone: true, midDiscount: 0, lateSteps: true, lateSlope: 7, lateCap: 12, lateStart: 46, surchargeFrom: 11, surcharge: 1 };
-export const motorCost = (destination: number) => baseMotorCost(destination) + (destination >= MOTOR_RULES.surchargeFrom ? MOTOR_RULES.surcharge : 0);
+export const MOTOR_RULES = { upperZone: true, midDiscount: 0, lateSteps: true, lateSlope: 7, lateCap: 12, lateStart: 46, surchargeFrom: 11, surcharge: 1, flat: 0, rampFrom: 0, rampEvery: 10 };
+export const motorCost = (destination: number) => MOTOR_RULES.flat > 0 ? (destination <= 10 ? 1 : MOTOR_RULES.flat + (MOTOR_RULES.rampFrom && destination >= MOTOR_RULES.rampFrom ? 1 + Math.floor((destination - MOTOR_RULES.rampFrom) / MOTOR_RULES.rampEvery) : 0)) : baseMotorCost(destination) + (destination >= MOTOR_RULES.surchargeFrom ? MOTOR_RULES.surcharge : 0);
 const baseMotorCost = (destination: number) => {
   if (!MOTOR_RULES.upperZone || destination < 41) return destination <= 10 ? 1 : destination <= 30 ? 2 : destination <= 60 ? 3 : 4;
   if (!MOTOR_RULES.lateSteps || destination < MOTOR_RULES.lateStart) return destination <= 50 ? 4 - MOTOR_RULES.midDiscount : destination <= 60 ? 5 - MOTOR_RULES.midDiscount : 6;

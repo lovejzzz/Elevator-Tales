@@ -12,6 +12,7 @@ import { sectorForecast } from '../lib/game-forecast';
 import { motorAdvanceNotice, motorScheduleText } from '../lib/balance-v832';
 import { departureRisk, rescuePlan, sectorNeed } from '../lib/departure-guard';
 import { netValue } from '../lib/net-value';
+import { drawLegend } from '../lib/legend-unlocks';
 import { readFileSync } from 'node:fs';
 import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
@@ -267,4 +268,15 @@ console.log('PASS rescue plans are real or the floor is declared lost');
   assert.equal(netValue(rider('operator', 15, 9, { boardedAt: 15 }), s), null);
 }
 console.log('PASS card net value');
-console.log(JSON.stringify({ version: 'v9', checks: 19, passed: true }));
+// v9.5 legend shuffle bag: each unlocked legend once per cycle, never the same twice in a row.
+{
+  const store = new Map<string, string>();
+  (globalThis as unknown as { localStorage: Pick<Storage, 'getItem' | 'setItem'> }).localStorage = { getItem: k => store.get(k) ?? null, setItem: (k, v) => { store.set(k, v); } };
+  const pool = ['operator', 'matchmaker', 'matron', 'tycoon'] as const;
+  const draws = Array.from({ length: 40 }, () => drawLegend([...pool])[0]);
+  for (let i = 0; i < 40; i += 4) assert.equal(new Set(draws.slice(i, i + 4)).size, 4, `cycle ${i / 4} repeats: ${draws.slice(i, i + 4).join(",")}`);
+  for (let i = 1; i < 40; i++) assert.notEqual(draws[i], draws[i - 1], `back-to-back ${draws[i]}`);
+  assert.deepEqual(drawLegend([]), []);
+}
+console.log('PASS legend shuffle bag');
+console.log(JSON.stringify({ version: 'v9', checks: 20, passed: true }));

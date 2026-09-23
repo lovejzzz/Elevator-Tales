@@ -1,12 +1,37 @@
 // Process-local rule variants for side-by-side comparison. Production defaults live in lib/.
 // A shard applies exactly one variant before running; nothing here changes the shipped game.
-import { AGITATION_RULES, FARE_RULES, MOTOR_RULES, V9_AGITATION } from '../../lib/balance-v832.ts';
+import { AGITATION_RULES, FARE_RULES, MOTOR_RULES, NIGHT_UNREST, V9_AGITATION } from '../../lib/balance-v832.ts';
 import { BOX_PRICES, CHARGE_PRICES, EMERGENCY_PRICES } from '../../lib/power-box.ts';
-import { CALM_RULES, INSULATION_RULES, RISK_RULES, SHOP_PRICES, SOUNDPROOF_RULES, START_RULES } from '../../lib/game-engine.ts';
+import { CALM_PURCHASE, CALM_RULES, INSULATION_RULES, RISK_RULES, SHOP_PRICES, SOUNDPROOF_RULES, START_RULES } from '../../lib/game-engine.ts';
 import { LEGEND_RULES } from '../../lib/legends.ts';
 
 export const VARIANTS: Record<string, () => void> = {
   baseline: () => {},
+  flat2: () => { MOTOR_RULES.flat = 2; },
+  f3g41e20: () => { MOTOR_RULES.flat = 3; NIGHT_UNREST.from = 41; NIGHT_UNREST.every = 20; },
+  f3g51e20: () => { MOTOR_RULES.flat = 3; NIGHT_UNREST.from = 51; NIGHT_UNREST.every = 20; },
+  f3g61e20: () => { MOTOR_RULES.flat = 3; NIGHT_UNREST.from = 61; NIGHT_UNREST.every = 20; },
+  c2p6s4: () => { MOTOR_RULES.flat = 2; NIGHT_UNREST.from = 41; NIGHT_UNREST.every = 20; CALM_PURCHASE.price = 6; CALM_PURCHASE.perSector = 4; },
+  c2p8s6: () => { MOTOR_RULES.flat = 2; NIGHT_UNREST.from = 41; NIGHT_UNREST.every = 20; CALM_PURCHASE.price = 8; CALM_PURCHASE.perSector = 6; },
+  c2p10s8: () => { MOTOR_RULES.flat = 2; NIGHT_UNREST.from = 41; NIGHT_UNREST.every = 20; CALM_PURCHASE.price = 10; CALM_PURCHASE.perSector = 8; },
+  c2up: () => { VARIANTS.c2p8s6(); CHARGE_PRICES.splice(0, 4, 3, 2.6, 2.2, 1.9); EMERGENCY_PRICES.base = 6; EMERGENCY_PRICES.topTransformer = 5; },
+  c2up25: () => { VARIANTS.c2p8s6(); CHARGE_PRICES.splice(0, 4, 2.5, 2.2, 1.9, 1.6); EMERGENCY_PRICES.base = 5; EMERGENCY_PRICES.topTransformer = 4; },
+  k1: () => { MOTOR_RULES.flat = 2; NIGHT_UNREST.from = 41; NIGHT_UNREST.every = 15; CALM_PURCHASE.price = 8; CALM_PURCHASE.perSector = 20; },
+  k2: () => { MOTOR_RULES.flat = 2; NIGHT_UNREST.from = 31; NIGHT_UNREST.every = 15; CALM_PURCHASE.price = 8; CALM_PURCHASE.perSector = 20; },
+  g41e15: () => { MOTOR_RULES.flat = 2; NIGHT_UNREST.from = 41; NIGHT_UNREST.every = 15; },
+  g41e20: () => { MOTOR_RULES.flat = 2; NIGHT_UNREST.from = 41; NIGHT_UNREST.every = 20; },
+  g51e20: () => { MOTOR_RULES.flat = 2; NIGHT_UNREST.from = 51; NIGHT_UNREST.every = 20; },
+  r41e10: () => { MOTOR_RULES.flat = 2; MOTOR_RULES.rampFrom = 41; MOTOR_RULES.rampEvery = 10; },
+  r41e10c: () => { MOTOR_RULES.flat = 2; MOTOR_RULES.rampFrom = 41; MOTOR_RULES.rampEvery = 10; V9_AGITATION.crowdSteps = [61, 81]; },
+  r61e10: () => { MOTOR_RULES.flat = 2; MOTOR_RULES.rampFrom = 61; MOTOR_RULES.rampEvery = 10; },
+  r51e10: () => { MOTOR_RULES.flat = 2; MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 10; },
+  r61e7: () => { MOTOR_RULES.flat = 2; MOTOR_RULES.rampFrom = 61; MOTOR_RULES.rampEvery = 7; },
+  r51e7: () => { MOTOR_RULES.flat = 2; MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 7; },
+  f2c3151: () => { MOTOR_RULES.flat = 2; V9_AGITATION.crowdSteps = [31, 51]; },
+  f2c4161: () => { MOTOR_RULES.flat = 2; V9_AGITATION.crowdSteps = [41, 61]; },
+  f2c314661: () => { MOTOR_RULES.flat = 2; V9_AGITATION.crowdSteps = [31, 46, 61]; },
+  f2c21416181: () => { MOTOR_RULES.flat = 2; V9_AGITATION.crowdSteps = [21, 41, 61, 81]; V9_AGITATION.crowdMin = 2; },
+  flat3: () => { MOTOR_RULES.flat = 3; },
   insul1: () => { INSULATION_RULES.coinsPerLink = 1; },
   insul2: () => { INSULATION_RULES.coinsPerLink = 2; INSULATION_RULES.cap = 4; },
   late51: () => { MOTOR_RULES.lateStart = 51; },

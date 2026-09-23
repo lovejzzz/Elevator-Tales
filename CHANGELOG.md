@@ -1,6 +1,12 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.4**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.5**. Publication status is tracked separately from the source version.
+
+## v9.5 — 2026-09-23 — Cleaner rail, drag-back withdraw, legend rotation / 侧栏精简、拖回撤销、传奇轮换
+
+- Rail: dial + one forecast line + one charge button; motor cost in the tooltip; status tags. Drag a just-boarded rider back onto the offers to withdraw.
+- Legends: shuffle bag (each once per cycle, no back-to-back repeats). Keepsake effects spelled out in the shop and on legend cards. Net pill reads "Alone +5 / −7".
+- Research (not shipped): flat motor + late-night unrest variants and in-transit calming prototypes (off by default). Decision pending on replacing the per-sector motor increase.
 
 ## v9.4 — 2026-09-23 — Net value on cards (trial) / 人物卡净值（试用）
 

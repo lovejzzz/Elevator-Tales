@@ -435,3 +435,43 @@ export const V94_EN: ChangelogEntry = {
     'Net value makes new players noticeably stronger; playtests should confirm the difficulty still feels right.',
   ],
 };
+
+export const V95_ZH: ChangelogEntry = {
+  version: '9.5', date: '2026-09-23', title: '更清楚的侧栏、拖回撤销、传奇轮换',
+  summary: '侧栏精简；刚上车的乘客可以拖回候客区撤销；传奇不再连着重复；信物效果直接写出来；“净值”改成“单独 赚/亏”。',
+  changes: [
+    '侧栏：电量只剩表盘、一行“下一站 −3 · 到店剩 45 / 15 层断电”和需要时一个补电按钮；运转耗电移到悬停提示；检修、飞轮、第五张票改为小标签；单站检票器、谢幕礼的静态说明从侧栏移除（仍在能力说明里）。',
+    '撤销：本层刚上车的乘客可以直接拖回右侧候客区撤回（拖动时候客区出现“拖回这里撤回”），和点候客卡撤回效果相同。',
+    '传奇轮换：改为“洗牌袋”——已解锁的传奇每一轮各出现一次、顺序随机，也不会连续两局相同。此前是每局独立随机，四选一时连续遇到同一位的概率不低。',
+    '信物：商店里的信物直接显示效果（例如“老周的扳手：配电箱免费升 1 级，此后每级便宜 5 金币”）；传奇候客卡下方也写出信物效果，不再依赖悬停。',
+    '人物卡：“净 −7”改为“单独 亏 7 / 单独 赚 5 / 单独 持平”，意思是单独带这位乘客大约赚还是亏（不含配对、邻座加成）。',
+  ],
+  experiments: [
+    '传奇随机性检查：引擎 4000 次抽样四位传奇各约 25%；线上连续刷新 12 次为老周 5、大亨 3、月老 2、护士长 2——是随机的，但重复感强，所以改为洗牌袋；verify 新增 40 次抽取的轮换检查。',
+    '拖回撤销在浏览器中验证：拖动已上车乘客到候客区后车厢清空、提示“回到队伍中”。',
+    '电量规则研究（未上线，见下方观察）：固定运转耗电后，熟练玩法会一直活下去；加入“夜深人躁”（41 层起每三层+1 躁动，逐渐加快）后熟练型中位约 85，但熟练玩家会明显变富。规则本版不变。',
+  ],
+  watch: [
+    '取消“每十层加电”需要选择方向：见本版说明里的两个方案。',
+  ],
+};
+
+export const V95_EN: ChangelogEntry = {
+  version: '9.5', date: '2026-09-23', title: 'A cleaner rail, drag back to withdraw, legend rotation',
+  summary: 'A simpler rail; riders who just boarded can be dragged back to the offers; legends no longer repeat back to back; keepsake effects are spelled out; the net value reads “alone: gain/lose”.',
+  changes: [
+    'Rail: power keeps its dial, one line “Next −3 · 45 at shop / out at 15F” and a single charge button when needed; the motor cost moves to the hover hint; repair, flywheel and fifth-ticket status become small tags; static notes for Single Arrival and Curtain Call leave the rail (they remain in the ability text).',
+    'Withdraw: a rider who boarded on this floor can be dragged back onto the offer list (it shows “Drop here to withdraw” while dragging), the same as clicking their offer card.',
+    'Legend rotation: a shuffle bag now shows each unlocked legend once per cycle in random order and never the same one twice in a row. Before, each run drew independently, so with four legends repeats were common.',
+    'Keepsakes: the shop shows each keepsake’s effect in full (e.g. “Old Zhou’s Wrench: one free power-box level; every later level costs 5 coins less”), and a legend’s offer card states its keepsake effect instead of relying on hover.',
+    'Rider cards: “Net −7” now reads “Alone −7 / Alone +5 / Alone ±0”: roughly what carrying this rider alone gains or loses, before pairing and neighbour bonuses.',
+  ],
+  experiments: [
+    'Legend randomness: 4,000 engine draws give each of the four starters about 25%; 12 live reloads gave Old Zhou 5, Tycoon 3, Matchmaker 2, Matron 2. Random, but repetitive, hence the shuffle bag; a new verify check draws 40 times.',
+    'Drag-back verified in the browser: dropping a boarded rider on the offers empties the seat with “returned to the queue”.',
+    'Power-rule research (not shipped, see watch): a flat motor lets skilled play survive indefinitely; adding late-night unrest (from 41F, +1 agitation every third floor, speeding up) brings the optimizer back to a median of about 85, but skilled players become noticeably rich. Rules are unchanged in this version.',
+  ],
+  watch: [
+    'Removing the per-sector motor increase needs a direction choice; see the two options in this release’s notes.',
+  ],
+};

@@ -236,7 +236,7 @@ export type ShopLog = { floor: number; energy: number; coins: number; cap: numbe
 export type RunLog = {
   bot: BotId; seed: number; floor: number; cause: 'energy' | 'agitation' | 'bomb' | 'alive';
   closeCalls: number; escapes: number; powerCalls: number; stressCalls: number; bombCalls: number;
-  emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
+  emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; calmUnits?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
   legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
   shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
 };
@@ -298,6 +298,9 @@ export function runOne(opt: RunOptions): RunLog {
     {
       let guard = 0;
       while (guard++ < 12 && powerDeath() && E.emergencyAllowance(state) > 0) { state = E.emergencyCharge(state, 1); log.emergencyUnits++; }
+      const calmDeath = () => { const t = test(); return t.status === 'lost' && t.message.includes('躁动'); };
+      guard = 0;
+      while (guard++ < 12 && calmDeath() && E.calmAllowance(state) > 0) { state = E.buyCalm(state, 1); log.calmUnits = (log.calmUnits ?? 0) + 1; }
     }
     log.stressFloors[agitationBand(state.stress)]++;
     { const aboard = state.cabin.filter(r => r && !isLegend(r.kind)); log.riderFloors = (log.riderFloors ?? 0) + aboard.length; log.links = (log.links ?? 0) + ADJACENT.filter(([a, b]) => activeConnection(state.cabin, a, b)).length; }

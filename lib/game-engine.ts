@@ -4,7 +4,7 @@ import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, isLegend, passengerCatego
 import { BOX_MAX_LEVEL, BOX_PRICES, BOX_TOTAL_CAP, emergencySectorCap, EMPTY_BOX, affordableUnits, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, motorNoise, shopEntryCharge, storageCap, type BoxLine, type PowerBox } from './power-box';
 import { districtWeight } from './districts';
 import { CHILD_CARERS, DRUNK_CARERS, GHOST_CONTROLLERS, KEEPSAKE_KEYS, LEGEND_DECLINE_COINS, LEGEND_DESTINATION, LEGEND_KEEPSAKE, LEGEND_POOL_DEFAULT, LEGEND_RULES, type KeepsakeKey } from './legends';
-import { V9_AGITATION, crowdingThreshold, agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
+import { V9_AGITATION, nightUnrest, crowdingThreshold, agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
 import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome, flywheelSaving, consumeFlywheel } from './shop-effects';
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
@@ -47,6 +47,8 @@ export type RunState = {
   stabilizerSector?: number;
   stabilizerUsed?: number;
   emergencyUsed?: number;
+  calmSector?: number;
+  calmUsed?: number;
   rerolledFloor?: number;
   shopUpgradeBought: boolean;
   shopExtraBought?: boolean;
@@ -372,6 +374,7 @@ export function cabinPressureLines(state: RunState): ChangeLine[] {
   const occupied = state.cabin.filter(Boolean).length, band = agitationBand(state.stress), red = conflictLinks(state.cabin).length;
   const lines: ChangeLine[] = [];
   if (occupied >= crowdingThreshold(state.floor + 1)) lines.push({ label: '车厢拥挤', amount: V9_AGITATION.crowding });
+  const unrest = nightUnrest(state.floor + 1); if (unrest) lines.push({ label: '夜深人躁', amount: unrest });
   const noise = motorNoise(boxOf(state), occupied); if (noise) lines.push({ label: '电机噪音', amount: noise });
   if (legendInCabin(state.cabin, 'don')) lines.push({ label: '教父的威压', amount: LEGEND_RULES.donAgitation });
   if (legendInCabin(state.cabin, 'matchmaker') && red) lines.push({ label: '月老见不得争吵', amount: red });
@@ -671,6 +674,19 @@ export function emergencySectorLeft(state: RunState) {
 export function emergencyAllowance(state: RunState) {
   const used = state.emergencySector === sectorOf(state.floor) ? state.emergencyUsed ?? 0 : 0;
   return Math.max(0, Math.min(emergencySectorCap(boxOf(state)) - used, state.energyCap - state.energy, Math.floor(state.coins / emergencyUnitPrice(boxOf(state)))));
+}
+/** In-transit calming (v9.5): pay coins before departure to lower agitation, capped per ten floors. 0 per sector disables. */
+export const CALM_PURCHASE = { price: 6, perSector: 0 };
+export function calmAllowance(state: RunState) {
+  if (state.status !== 'playing' || !CALM_PURCHASE.perSector) return 0;
+  const used = state.calmSector === sectorOf(state.floor) ? state.calmUsed ?? 0 : 0;
+  return Math.max(0, Math.min(CALM_PURCHASE.perSector - used, state.stress, Math.floor(state.coins / CALM_PURCHASE.price)));
+}
+export function buyCalm(state: RunState, units: number): RunState {
+  if (!Number.isSafeInteger(units) || units <= 0 || units > calmAllowance(state)) return state;
+  const sector = sectorOf(state.floor), used = state.calmSector === sector ? state.calmUsed ?? 0 : 0, cost = units * CALM_PURCHASE.price;
+  return { ...state, stress: state.stress - units, coins: state.coins - cost, calmSector: sector, calmUsed: used + units, message: `途中安抚 −${units} 躁动，支付 ${cost} 金币。`,
+    lastEarnings: { total: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] }, lastPressure: { delta: -units, sources: [{ label: '途中安抚', amount: -units }] } };
 }
 /** Paid mid-sector charging before departure: double the shop price, capped per sector. */
 export function emergencyCharge(state: RunState, units: number): RunState {

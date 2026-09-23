@@ -33,3 +33,20 @@ export const loadUnlockedLegends = (hasPlayed: boolean): LegendKind[] => {
 };
 export const loadKeepsakesSeen = (): KeepsakeKey[] => readList<KeepsakeKey>(KEEPSAKES_SEEN_KEY, KEEPSAKE_KEYS);
 export const saveList = (key: string, list: string[]) => { try { localStorage.setItem(key, JSON.stringify(list)); } catch { /* storage unavailable */ } };
+
+export const LEGEND_BAG_KEY = 'elevator-tales-legend-bag-v1';
+/** Shuffle bag: every unlocked legend appears once, in random order, before any repeats, and never twice in a row.
+ * Returns a one-legend pool for startRun (empty when nothing is unlocked). */
+export function drawLegend(unlocked: LegendKind[], rng: () => number = Math.random): LegendKind[] {
+  if (!unlocked.length) return [];
+  let bag: LegendKind[] = [], last: LegendKind | null = null;
+  try { const saved = JSON.parse(localStorage.getItem(LEGEND_BAG_KEY) ?? '{}'); bag = (saved.bag ?? []).filter((k: LegendKind) => unlocked.includes(k)); last = saved.last ?? null; } catch { /* storage unavailable */ }
+  if (!bag.length) {
+    bag = [...unlocked];
+    for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; }
+    if (bag.length > 1 && bag[0] === last) bag.push(bag.shift()!);
+  }
+  const next = bag.shift()!;
+  try { localStorage.setItem(LEGEND_BAG_KEY, JSON.stringify({ bag, last: next })); } catch { /* storage unavailable */ }
+  return [next];
+}
