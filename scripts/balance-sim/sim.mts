@@ -1,3 +1,5 @@
+import { activeConnection } from '../../lib/game-interaction.ts';
+import { ADJACENT } from '../../lib/game-data.ts';
 // v9 balance simulator. Archetype bots play the production engine (no second rule set)
 // and every run records the three design targets: many viable styles, close calls in
 // every run, and never feeling rich.
@@ -5,8 +7,7 @@ import * as E from '../../lib/game-engine.ts';
 import { PASSENGERS, isLegend, type LegendKind, type PassengerKind, type UpgradeKey } from '../../lib/game-data.ts';
 import { riderProfile } from '../../lib/rider-profile.ts';
 import { motorCost, agitationBand } from '../../lib/balance-v832.ts';
-import { BOX_LINES, BOX_PRICES, BOX_TOTAL_CAP, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, type BoxLine } from '../../lib/power-box.ts';
-import { RESERVE_CELL_PRICE } from '../../lib/balance-v832.ts';
+import { BOX_LINES, BOX_PRICES, BOX_TOTAL_CAP, boxTotal, boxedMotorCost, chargeCost, chargeUnitPrice, emergencyUnitPrice, type BoxLine } from '../../lib/power-box.ts';
 import type { Rider, RunState } from '../../lib/game-engine.ts';
 
 // ---------- deterministic streams ----------
@@ -17,7 +18,7 @@ const stream = (seed: number, channel: string, floor: number) => rngFor(hash(`${
 const previewRng = () => { const seq = [0.5, 0.73, 0.41, 0.9, 0.62, 0.55]; let i = 0; return () => seq[i++ % seq.length]; };
 
 // ---------- archetypes ----------
-export type BotId = 'coop' | 'crime' | 'occult' | 'quiet' | 'lively' | 'investor' | 'balanced' | 'novice' | 'tempo' | 'gamble' | 'mixed';
+export type BotId = 'coop' | 'crime' | 'occult' | 'quiet' | 'lively' | 'investor' | 'balanced' | 'novice' | 'tempo' | 'gamble' | 'mixed' | 'casual' | 'casualnet';
 export type Bot = {
   id: BotId; name: string; favored: PassengerKind[]; favor: number;
   band: 'low' | 'medium' | 'high' | null; abilities: UpgradeKey[]; box: BoxLine[]; boxEager: boolean; legends: LegendKind[]; fixedBox?: boolean;
@@ -36,6 +37,10 @@ export const BOTS: Record<BotId, Bot> = {
   tempo: { id: 'tempo', name: '快进快出', favored: ['courier', 'commuter', 'mechanic', 'child', 'musician'], favor: 1.3, band: null, abilities: ['finale', 'single', 'express'], box: ['transformer', 'storage', 'motor'], boxEager: false, legends: ['operator', 'tycoon'] },
   gamble: { id: 'gamble', name: '豪赌', favored: ['mystery', 'shifter', 'mimic', 'bomb', 'celebrity', 'cop'], favor: 1.4, band: null, abilities: ['insulation', 'meter'], box: ['storage', 'transformer', 'motor'], boxEager: false, legends: ['stranger', 'don'] },
   mixed: { id: 'mixed', name: '混搭', favored: ['thief', 'cop', 'ghost', 'exorcist', 'tourist', 'nurse', 'drunk'], favor: 1.1, band: null, abilities: ['crowd', 'insulation', 'soundproof'], box: ['transformer', 'motor', 'storage'], boxEager: false, legends: ['medium', 'don'] },
+  // A thoughtful first-week player: seats riders by printed fare like the novice, but shops like the optimizer.
+  casual: { id: 'casual', name: '休闲', favored: [], favor: 0, band: null, abilities: GENERIC_ABILITIES, box: ['transformer', 'storage', 'motor'], boxEager: false, legends: [] },
+  // The casual player reading a "net" figure on each card: printed fare minus trip power at the shop price.
+  casualnet: { id: 'casualnet', name: '看净值', favored: [], favor: 0, band: null, abilities: GENERIC_ABILITIES, box: ['transformer', 'storage', 'motor'], boxEager: false, legends: [] },
   novice: { id: 'novice', name: '新手', favored: [], favor: 0, band: null, abilities: [], box: [], boxEager: false, legends: [] },
 };
 
@@ -67,7 +72,7 @@ export function sectorBudget(state: RunState) {
   }
   state.cabin.forEach(r => { if (r?.kind === 'courier' && r.destination <= shop) refunds += 2; });
   const emergency = Math.min((E.boxOf(state).storage >= 3 ? 10 : 20) - (state.emergencySector === Math.floor(state.floor / 10) ? state.emergencyUsed ?? 0 : 0), Math.floor(Math.max(0, state.coins) / emergencyUnitPrice(E.boxOf(state))));
-  const avail = state.energy + refunds + Math.max(0, emergency) + (state.reserveCell ? 8 : 0);
+  const avail = state.energy + refunds + Math.max(0, emergency);
   return { need, avail, slack: avail - need };
 }
 
@@ -117,6 +122,14 @@ function evaluate(state: RunState, bot: Bot): number {
 
 const place = (state: RunState, rider: Rider, slot: number): RunState => ({ ...state, cabin: state.cabin.map((r, i) => (i === slot ? rider : r)) });
 
+/** What a "net" line on the card would show: fare minus trip power valued at the current shop charge price. */
+export let NET_AGITATION_COINS = 4;
+export function cardNet(o: Rider, state: RunState) {
+  const trip = Math.max(1, o.destination - state.floor);
+  const fare = isLegend(o.kind) ? 0 : o.kind === 'mystery' ? 16 : PASSENGERS[o.kind].fare;
+  const p = riderProfile(o, state.cabin), price = chargeUnitPrice(E.boxOf(state));
+  return fare - trip * p.energy * price + (o.kind === "courier" ? 2 * price : 0) - trip * ((p.agitation ?? 0) + (['thief', 'drunk', 'child'].includes(o.kind) ? 1 : 0) + (o.volatile ? 1 : 0)) * NET_AGITATION_COINS;
+}
 function chooseBoarding(state: RunState, offers: Rider[], bot: Bot, mode: LegendMode): RunState {
   let pool = offers.filter(o => !isLegend(o.kind) || mode === 'auto' || mode === 'board');
   let cur = state;
@@ -125,9 +138,13 @@ function chooseBoarding(state: RunState, offers: Rider[], bot: Bot, mode: Legend
     const slot = cur.cabin.findIndex(r => !r);
     if (legend && slot >= 0) { cur = place(cur, legend, !cur.cabin[1] ? 1 : slot); pool = pool.filter(o => o !== legend); }
   }
-  if (bot.id === 'novice') {
+  if (bot.id === 'novice' || bot.id === 'casual' || bot.id === 'casualnet') {
     // Instinct: fill seats with the highest printed fare, but heed a red "you will not survive the next floor" forecast.
-    for (const o of [...pool].sort((a, b) => PASSENGERS[b.kind].fare - PASSENGERS[a.kind].fare)) {
+    // casualnet ranks by the card's net value instead and skips riders whose net is negative once someone is aboard.
+    const net = (o: Rider) => cardNet(o, cur);
+    const order = bot.id === 'casualnet' ? [...pool].sort((a, b) => net(b) - net(a)) : [...pool].sort((a, b) => PASSENGERS[b.kind].fare - PASSENGERS[a.kind].fare);
+    for (const o of order) {
+      if (bot.id === 'casualnet' && cur.cabin.some(Boolean) && net(o) < 0) continue;
       const slot = cur.cabin.findIndex(r => !r); if (slot < 0) break;
       const cand = place(cur, o, slot);
       const preview = E.resolveFloor(cand, previewRng());
@@ -204,8 +221,7 @@ function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog): RunSta
     const reserveFor = chargeFor(Math.max(0, target - s.energy));
     if (extra && s.coins - E.SHOP_PRICES.extraAbility >= reserveFor) { s = E.installUpgrade(s, extra); if (s.shopExtraBought) log.abilities.push(extra); }
   }
-  // 6. reserve cell with genuine surplus
-  if (bot.id !== 'novice' && !s.reserveCell && s.coins >= RESERVE_CELL_PRICE + 25) s = E.buyReserveCell(s);
+  // (The Reserve Cell left the shop in v9.0.2; bots no longer buy what players cannot.)
   // top up with anything left if still under target (scarcity check reads what remains)
   units = Math.min(Math.max(0, target - s.energy), E.affordableChargingPlan(s).units);
   if (units > 0) s = E.chargeBattery(s, units);
@@ -225,7 +241,7 @@ export type ShopLog = { floor: number; energy: number; coins: number; cap: numbe
 export type RunLog = {
   bot: BotId; seed: number; floor: number; cause: 'energy' | 'agitation' | 'bomb' | 'alive';
   closeCalls: number; escapes: number; powerCalls: number; stressCalls: number; bombCalls: number;
-  emergencyUnits: number; incidents: number; dismissals?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
+  emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
   legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
   shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
 };
@@ -267,7 +283,7 @@ export function runOne(opt: RunOptions): RunLog {
       const fresh = state.cabin.filter(r => r && r.boardedAt === state.floor && !isLegend(r.kind) && r.destination - state.floor >= 3).sort((a, b) => b!.destination - a!.destination)[0];
       if (fresh) state = E.retimeRider(state, fresh.id, -1);
     }
-    // emergency power / reserve cell only when the actual next ascent would fail
+    // emergency power only when the actual next ascent would fail
     const test = () => E.resolveFloor(state, previewRng());
     // Paid dismissal when the forecast says this cabin will not survive (two per sector, fare forfeited).
     if (bot.id !== 'novice') {
@@ -285,11 +301,11 @@ export function runOne(opt: RunOptions): RunLog {
     }
     const powerDeath = () => { const t = test(); return t.status === 'lost' && t.message.includes('电量'); };
     {
-      if (powerDeath() && state.reserveCell) state = E.consumeReserveCell(state);
       let guard = 0;
       while (guard++ < 12 && powerDeath() && E.emergencyAllowance(state) > 0) { state = E.emergencyCharge(state, 1); log.emergencyUnits++; }
     }
     log.stressFloors[agitationBand(state.stress)]++;
+    { const aboard = state.cabin.filter(r => r && !isLegend(r.kind)); log.riderFloors = (log.riderFloors ?? 0) + aboard.length; log.links = (log.links ?? 0) + ADJACENT.filter(([a, b]) => activeConnection(state.cabin, a, b)).length; }
     const cabinBefore = state.cabin.filter(Boolean).map(r => r!);
     const next = E.resolveFloor(state, stream(opt.seed, 'resolve', state.floor));
     for (const r of cabinBefore) if (!next.cabin.some(n => n?.id === r.id) && next.lastArrivals?.some(a => a.riderId === r.id)) log.delivered[r.kind] = (log.delivered[r.kind] ?? 0) + 1;

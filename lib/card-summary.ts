@@ -49,7 +49,7 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     case 'mystery': { const f = rider.traits?.fare ?? 16; const band = f <= 13 ? L('低档 8–13', 'low 8–13') : f <= 19 ? L('中档 14–19', 'mid 14–19') : L('高档 20–24', 'high 20–24'); return { line: L(`车费${band} · 到站揭晓`, `Fare ${band} · revealed on arrival`) }; }
     case 'shifter': return { line: L('每层重抽属性', 'Rerolls every floor') };
     case 'mimic': { const slot = run.cabin.findIndex(r => r?.id === rider.id); const above = slot >= 3 ? run.cabin[slot - 3] : null; return { line: above ? L(`↑ 复制${riderName(above.kind, locale)}车费 ${profile.fare}`, `↑ Copies ${riderName(above.kind, locale)}: fare ${profile.fare}`) : L('↑ 复制正上方的车费', '↑ Copies the fare above') }; }
-    case 'operator': return { line: L('在车时运转 −1 电', 'Motor −1 while aboard') };
+    case 'operator': return { line: L('车内不满 6 人时运转 −1 电', 'Motor −1 unless the cabin is full') };
     case 'matchmaker': return { line: L(`恋人常来 · 邻座到站 +${LEGEND_RULES.matchmakerNeighbourCoins}`, `More Lovers · neighbors +${LEGEND_RULES.matchmakerNeighbourCoins}`) };
     case 'don': return { line: L(`每层存 ${LEGEND_RULES.donStashPerFloor} 币 · +1 躁动`, `Banks ${LEGEND_RULES.donStashPerFloor}/floor · +1 agitation`), progress: rider.stash ? `🪙 ${rider.stash}` : undefined };
     case 'matron': return { line: L('全车 −1 躁动/层 · 安静多赚', 'Cabin −1 agitation/floor · calm pays') };

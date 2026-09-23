@@ -1,4 +1,5 @@
-import { boxOf, emergencyAllowance, nextShopFloor, type RunState } from './game-engine';
+import { boxOf, dismissRider, emergencyAllowance, nextShopFloor, type Rider, type RunState } from './game-engine';
+import { isLegend } from './game-data';
 import { energyForecast, sectorForecast } from './game-forecast';
 import { motorCost } from './balance-v832';
 import { boxedMotorCost, emergencyUnitPrice } from './power-box';
@@ -32,4 +33,31 @@ export function sectorNeed(state: RunState): { from: number; to: number; motor: 
   for (let f = from; f <= to; f++) motor += boxedMotorCost(motorCost(f), boxOf(state), f);
   const riders = (to - from + 1) * SECTOR_NEED_RIDERS;
   return { from, to, motor, riders, total: motor + riders };
+}
+
+export type RescuePlan = { remove: Array<{ id: string; kind: Rider['kind']; paid: number }>; charge: number; cost: number };
+
+/** Cheapest way to survive a fatal floor: withdraw new riders (free) or dismiss earlier ones (paid), then charge
+ * in transit. Legends are never suggested. Returns null when no combination survives, so the UI can say so. */
+export function rescuePlan(state: RunState): RescuePlan | null {
+  const risk = departureRisk(state);
+  if (!risk.fatal) return null;
+  const candidates = state.cabin.filter((r): r is Rider => Boolean(r) && !isLegend(r!.kind));
+  let best: RescuePlan | null = null;
+  for (let mask = 0; mask < 1 << candidates.length; mask++) {
+    let s = state, paid = 0, ok = true;
+    const remove: RescuePlan['remove'] = [];
+    candidates.forEach((r, i) => {
+      if (!ok || !(mask & (1 << i))) return;
+      if (r.boardedAt >= state.floor) { s = { ...s, cabin: s.cabin.map(x => (x?.id === r.id ? null : x)) }; remove.push({ id: r.id, kind: r.kind, paid: 0 }); return; }
+      const next = dismissRider(s, r.id); if (next === s) { ok = false; return; }
+      remove.push({ id: r.id, kind: r.kind, paid: s.coins - next.coins }); paid += s.coins - next.coins; s = next;
+    });
+    if (!ok || !s.cabin.some(Boolean)) continue;
+    const need = Math.max(0, 1 - (s.energy + energyForecast(s).lowDelta));
+    if (need > emergencyAllowance(s)) continue;
+    const plan = { remove, charge: need, cost: paid + need * risk.unitPrice };
+    if (!best || plan.remove.length < best.remove.length || (plan.remove.length === best.remove.length && plan.cost < best.cost)) best = plan;
+  }
+  return best;
 }

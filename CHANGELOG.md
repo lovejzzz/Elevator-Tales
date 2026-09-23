@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.3**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.3.1**. Publication status is tracked separately from the source version.
+
+## v9.3.1 — 2026-09-23 — Real rescue plans / 上行保护给出真实出路
+
+- Guard enumerates withdraw (free) / dismiss (paid) + charge combinations and shows the cheapest surviving plan, one-tap when dismissals only; otherwise states the floor cannot be survived. Old Zhou shows "Full · no saving".
+- From a 9.3 playtest (29F): floor 28 had no surviving arrangement but the old guard suggested dismissing, costing the last 16 coins. Verify checks added.
+- Simulator: bots no longer buy/use the retired Reserve Cell (acceptance nearly unchanged: optimizer 86, styles 91.3%, agitation deaths 22.7%; Ghost boarding 66.2% vs 65% bound). New casual bot median 28 (playtest 29); boarding by a net value (fare − trip power × price − trip agitation × 3) lifts it to 49.
+- Watch: decide whether to show net value on cards.
 
 ## v9.3 — 2026-09-23 — Full pass, cleaner interface / 全面检查、界面精简
 

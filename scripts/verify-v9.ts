@@ -10,7 +10,7 @@ import type { Rider, RunState } from '../lib/game-engine';
 import { translateGameText } from '../lib/i18n';
 import { sectorForecast } from '../lib/game-forecast';
 import { motorAdvanceNotice, motorScheduleText } from '../lib/balance-v832';
-import { departureRisk, sectorNeed } from '../lib/departure-guard';
+import { departureRisk, rescuePlan, sectorNeed } from '../lib/departure-guard';
 import { readFileSync } from 'node:fs';
 import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
@@ -246,4 +246,15 @@ console.log('PASS insulation friction tip');
   assert.ok(ui.includes('useState<boolean | null>(null)') && ui.includes('setIntroState(current => current ?? !seen)'), 'intro starts unknown and opens only for unseen players');
 }
 console.log('PASS intro opens only after storage is read');
-console.log(JSON.stringify({ version: 'v9', checks: 17, passed: true }));
+// v9.3.1 rescue plans: the 9.3 playtest's floor 28 had no way out, so the guard must say so instead of suggesting dismissals.
+{
+  const doomed = run(28, [null, null, rider('child', 21, 9, { boardedAt: 20 }), null, null, rider('lover', 27, 3, { boardedAt: 26 })], { energy: 1, coins: 16, emergencySector: 2, emergencyUsed: 10 });
+  const risk = departureRisk(doomed);
+  assert.ok(risk.fatal && risk.need > risk.affordable, JSON.stringify(risk));
+  assert.equal(rescuePlan(doomed), null, 'no dismissal and charge combination survives floor 28');
+  const saveable = run(24, [rider('commuter', 24, 3, { boardedAt: 22 }), rider('tourist', 24, 3, { boardedAt: 22 }), rider('commuter', 24, 4, { boardedAt: 24 })], { energy: 3, coins: 12, emergencySector: 2, emergencyUsed: 0 });
+  const plan = rescuePlan(saveable);
+  assert.ok(plan && plan.remove.length === 1 && plan.remove[0].paid === 0 && plan.charge > 0, `withdraw the new rider, then charge: ${JSON.stringify(plan)}`);
+}
+console.log('PASS rescue plans are real or the floor is declared lost');
+console.log(JSON.stringify({ version: 'v9', checks: 18, passed: true }));

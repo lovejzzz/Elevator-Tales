@@ -361,3 +361,43 @@ export const V93_EN: ChangelogEntry = {
     'On phones the offers and cabin still need vertical scrolling; if playtests find it tiresome, consider a horizontal offer strip.',
   ],
 };
+
+export const V931_ZH: ChangelogEntry = {
+  version: '9.3.1', date: '2026-09-23', title: '上行保护给出真实的出路',
+  summary: '这一层补电不够时，保护会算出真正能撑过的请离/撤回+补电方案，或者直接说明这一层撑不过；老周满员不省电会显示在座位上。',
+  changes: [
+    '上行保护：补电额度或金币不够时，不再笼统建议“请离耗电的乘客”，而是枚举撤回新上车乘客（免费）和请离旧乘客（付赔偿）的组合，给出最省钱的能撑过方案（例如“能撑过：通勤者（请离 8 币），再补电 +2”），只需请离时可一键“照此安排”；没有任何组合能撑过时，明确显示“这一层无论怎么安排都会断电”。',
+    '老周：卡片写明“车内不满 6 人时运转 −1 电”；满员时座位显示“满员 · 不省电”。',
+  ],
+  experiments: [
+    '试玩记录（9.3，29 层，电量耗尽）：28 层电量 1、金币 16，下一层最坏耗 5 电，途中补电只买得起 4；旧保护建议请离，玩家付 16 币请离两人并换上一位恋人，仍然断电。逐一枚举后确认该层没有任何能撑过的安排——保护应当直说。verify 新增：该层必须判定无解；另一个“撤回新乘客再补电”的局面必须找到方案。',
+    '同一记录：老周从 1 层坐到 10 层，但 2–9 层车厢一直满 6 人，他的运转 −1 从未生效。',
+    '模拟器修正：v9.0.2 已从商店下架的应急电池，机器人仍在购买和使用；已移除。重跑验收（3900 局）几乎不变：均衡型中位 86，流派 91.3%，躁动死亡 22.7%；新的边缘项：均衡型幽灵上车率 66.2%（界限 65%）。',
+    '新增“休闲”机器人（按卡面车费上客、像熟练者一样购物）：中位 28 层，与本次试玩 29 层吻合；新手 25，均衡 85。差距几乎全部来自上客选择：均衡型平均每层只带 3.55 人（休闲 4.27），偏好快递员、小偷、幽灵这类省电或途中赚钱的乘客。',
+    '界面实验（未上线）：让休闲机器人改按“净值＝车费 − 全程耗电×充电价 − 全程躁动×3”上客，中位从 28 升到 49，p10 从 19 升到 46。',
+  ],
+  watch: [
+    '是否在人物卡上显示“净值”——对新玩家帮助很大，但会降低难度，待决定。',
+    '均衡型幽灵上车率 66.2%，略超 65% 界限。',
+  ],
+};
+
+export const V931_EN: ChangelogEntry = {
+  version: '9.3.1', date: '2026-09-23', title: 'The ascend guard offers a real way out',
+  summary: 'When charging is not enough, the guard now finds a withdraw/dismiss-and-charge plan that actually survives, or says plainly that the floor cannot be survived; Old Zhou shows when a full cabin cancels his saving.',
+  changes: [
+    'Ascend guard: when coins or sector allowance fall short, it no longer just suggests dismissing a rider. It tries every combination of withdrawing new riders (free) and dismissing earlier ones (paid) and shows the cheapest plan that survives (e.g. “You can make it: Commuter (dismiss, 8c), then charge +2”), with a one-tap “Do it” when only dismissals are involved; when nothing survives it says “No arrangement survives this floor”.',
+    'Old Zhou: his card says “Motor −1 unless the cabin is full”, and his seat shows “Full · no saving” when it is.',
+  ],
+  experiments: [
+    'Playtest record (9.3, 29F, out of power): on 28F with 1 power and 16 coins, the next floor needed 5 in the worst case and in-transit charging could buy 4; the old guard suggested dismissing, the player paid 16 to dismiss two riders and boarded a Lover, and still ran out. Enumerating every option shows that floor had no surviving arrangement, so the guard should say so. New verify checks: that floor must be declared lost; a withdraw-then-charge position must find its plan.',
+    'Same record: Old Zhou rode 1F–10F but the cabin held 6 riders on 2F–9F, so his −1 motor never applied.',
+    'Simulator fix: bots were still buying and using the Reserve Cell that left the shop in v9.0.2; removed. Acceptance (3,900 runs) barely moves: optimizer median 86, styles 91.3%, agitation deaths 22.7%; new marginal item: the optimizer boards Ghosts 66.2% of the time (bound 65%).',
+    'New “casual” bot (boards by printed fare, shops like the optimizer): median 28, matching this playtest’s 29; novice 25, optimizer 85. The gap is almost entirely seating: the optimizer carries 3.55 riders per floor (casual 4.27) and prefers power-light or earning riders such as Couriers, Thieves and Ghosts.',
+    'Interface experiment (not shipped): the casual bot boarding by “net = fare − trip power × charge price − trip agitation × 3” rises from median 28 to 49 and p10 from 19 to 46.',
+  ],
+  watch: [
+    'Whether to show a “net value” on rider cards: a big help to new players, but it lowers difficulty; awaiting a decision.',
+    'The optimizer boards Ghosts 66.2% of the time, just over the 65% bound.',
+  ],
+};

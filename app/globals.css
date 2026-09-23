@@ -2715,3 +2715,6 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .game-shell .standing-slot .rider-visual>*:not(.seat-art) { position:relative; z-index:1; }
   .game-shell .standing-slot .rider-visual .seat-overlay { display:none; }
 }
+.power-alert-rescue { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+.power-alert-rescue button { min-height:32px; padding:0 10px; border:1px solid #d9a24f; background:#d9a24f22; color:#f7e2b6; font-weight:700; cursor:pointer; }
+.power-alert .power-alert-doomed { color:#ffb4a2; }

@@ -31,7 +31,7 @@ import { CHANGELOG, CHANGELOG_EN, GAME_VERSION } from '@/lib/changelog';
 import { localizeTree, translateGameText, type GameLocale } from '@/lib/i18n';
 import { UPGRADE_SLOTS, riskPartnerships } from '@/lib/shift-rules';
 import { flywheelAllowance } from '@/lib/shop-effects';
-import { departureRisk, sectorNeed, SECTOR_NEED_RIDERS } from '@/lib/departure-guard';
+import { departureRisk, rescuePlan, sectorNeed, SECTOR_NEED_RIDERS } from '@/lib/departure-guard';
 import { offerReveal } from '@/lib/offer-reveal';
 import { shouldPreviewConnection } from '@/lib/connection-preview';
 import { AgitationGauge } from '@/components/agitation-gauge';
@@ -155,6 +155,7 @@ function riderState(cabin: Array<Rider | null>, slot: number, bonus: number, agi
   if(rider.kind==='shifter')return {label:`耗电 ${bond.energy} · 躁动 +${bond.agitation}`,tone:'warn'};
   switch (rider.kind) {
     case 'tourist': { const count=touristCompanionCount(cabin,slot)+Number(hasNeighbour(cabin,slot,['nightingale'])); return count ? { label: `${count}位邻座 · 到站+${count*2}币`, tone: 'active' } : { label: '等待邻座 · 每位到站+2币', tone: 'neutral' }; }
+    case 'operator': return cabin.filter(Boolean).length >= 6 ? { label: '满员 · 不省电', tone: 'warn' } : { label: '运转 −1 电', tone: 'active' };
     case 'courier': return { label: '到站补充2电', tone: 'active' };
     case 'lover': return hasNeighbour(cabin, slot, ['lover']) ? { label: '已配对', tone: 'active' } : { label: '正在呼唤同伴', tone: 'neutral' };
     case 'thief': return hasNeighbour(cabin, slot, ['cop', 'lawyer']) ? { label: '已受控制', tone: 'active' } : { label: '未受控制', tone: 'warn' };
@@ -354,6 +355,8 @@ export default function ElevatorGame() {
   const energyFatal = run.energy + energyPreview.lowDelta <= 0;
   const sector = useMemo(() => sectorForecast(run), [run]);
   const risk = useMemo(() => departureRisk(run), [run]);
+  // When charging alone is not enough, look for a real way out before suggesting anything (v9.3.1).
+  const rescue = useMemo(() => (risk.fatal && risk.affordable < risk.need ? rescuePlan(run) : null), [run, risk]);
   // A floor that can end the run needs a second press; any change to the run disarms it.
   const [departArmedFor, setDepartArmedFor] = useState<RunState | null>(null);
   const departArmed = departArmedFor === run;
@@ -624,7 +627,8 @@ export default function ElevatorGame() {
               {risk.fatal&&risk.need>0&&<button disabled={locked||risk.affordable<risk.need} onClick={()=>emergency(risk.need)}>{language==='zh'?`补电 +${risk.need} · ${risk.need*risk.unitPrice}币`:`Charge +${risk.need} · ${risk.need*risk.unitPrice}c`}</button>}
               {emergencyNeed>risk.need&&<button disabled={locked||risk.affordable<emergencyNeed} onClick={()=>emergency(emergencyNeed)}>{language==='zh'?`补足本段 +${emergencyNeed} · ${emergencyNeed*risk.unitPrice}币`:`Top up sector +${emergencyNeed} · ${emergencyNeed*risk.unitPrice}c`}</button>}
             </div>
-            {risk.fatal&&<small>{risk.affordable<risk.need?(language==='zh'?'金币或本段补电额度不够：可以请离耗电的乘客。':'Not enough coins or sector allowance: dismiss a rider to save power.'):''}{departArmed?(language==='zh'?' 再按一次上行＝冒险出发。':' Press ascend again to risk it.'):''}</small>}
+            {risk.fatal&&risk.affordable<risk.need&&(rescue?<div className="power-alert-rescue"><small>{language==='zh'?`能撑过：${rescue.remove.map(r=>`${riderName(r.kind,'zh')}${r.paid?`（请离 ${r.paid} 币）`:'（撤回上车）'}`).join('、')}${rescue.charge?`，再补电 +${rescue.charge}`:''}。`:`You can make it: ${rescue.remove.map(r=>`${riderName(r.kind,'en')} ${r.paid?`(dismiss, ${r.paid}c)`:'(withdraw)'}`).join(', ')}${rescue.charge?`, then charge +${rescue.charge}`:''}.`}</small>{rescue.remove.every(r=>r.paid>0)&&<button disabled={locked} onClick={()=>{let next=run;for(const r of rescue.remove)next=dismissRider(next,r.id);if(rescue.charge)next=emergencyCharge(next,rescue.charge);if(next!==run){reportMetrics(run,next,language==='zh'?'请离并补电':'Dismiss and charge');setRun(next);playTone(sound,'upgrade');}}}>{language==='zh'?`照此安排 · ${rescue.cost}币`:`Do it · ${rescue.cost}c`}</button>}</div>:<small className="power-alert-doomed">{language==='zh'?'这一层无论怎么安排都会断电：补电额度或金币不够，请离也省不出来。':'No arrangement survives this floor: not enough coins or allowance, and dismissals cannot save enough.'}</small>)}
+            {risk.fatal&&departArmed&&<small>{language==='zh'?'再按一次上行＝冒险出发。':'Press ascend again to risk it.'}</small>}
           </div>}
           <button className={`depart-button ${departArmed?'is-armed':''}`} onClick={depart} disabled={locked || occupied===0} aria-label={language==='zh'?`关门上行 · 下一站电量 ${energyPreview.range}，躁动 ${pressurePreview.range}`:`Close doors and ascend`}><span>{doors === 'open' ? occupied===0?'至少接1人':departArmed?'确认冒险上行':'关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
           {(pendingOfferId || selectedSlot !== null || firstPairLesson && !firstPairActive) && <p className={`mobile-departure-note forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? `已选${activeRider ? PASSENGERS[activeRider.kind].name : '乘客'} · 点下方空位` : selectedSlot !== null ? run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : '点另一站位换位 · 再点原位取消' : '新手示例：让两位恋人成为邻座，观察绿色协作线'}</p>}
