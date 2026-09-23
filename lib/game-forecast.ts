@@ -1,4 +1,4 @@
-import { COURIER_ARRIVAL_CHARGE, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
+import { COURIER_ARRIVAL_CHARGE, parcelBeside, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
 import { riderProfile } from './rider-profile';
 import { motorCost } from './balance-v832';
 import { boxedMotorCost, shopEntryCharge } from './power-box';
@@ -51,7 +51,7 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
   const crimeLinks = partnershipAgitation(state);
   const redRise = redOnly + crimeLinks + cabinRise;
   const variants = projectedDestinationVariants(state).map((destinations) => {
-    const arriving = state.cabin.flatMap((rider, slot) => rider && destinations[slot] !== null && nextFloor >= destinations[slot]! ? [slot] : []);
+    const arriving = state.cabin.flatMap((rider, slot) => rider && rider.kind !== 'parcel' && destinations[slot] !== null && nextFloor >= destinations[slot]! ? [slot] : []);
     return { arrivals: arriving.length };
   });
   const cap = arrivalReliefCapFor(state);
@@ -104,9 +104,8 @@ export function energyForecast(state: RunState, _legacyWeight?: number, _riskTun
  const shopCharge=nextFloor%10===0?shopEntryCharge(boxOf(state)):0;
  let relayPossible=false;
  const charges=projectedDestinationVariants(state).flatMap(destinations=>{
-  const slots=state.cabin.flatMap((rider,slot)=>rider&&destinations[slot]!==null&&destinations[slot]!<=nextFloor?[slot]:[]);
-  const arriving=slots.map(slot=>state.cabin[slot]!);
-  const natural=arriving.filter(rider=>rider.kind==='courier').length*COURIER_ARRIVAL_CHARGE;
+  const slots=state.cabin.flatMap((rider,slot)=>rider&&rider.kind!=='parcel'&&destinations[slot]!==null&&destinations[slot]!<=nextFloor?[slot]:[]);
+  const natural=slots.filter(slot=>state.cabin[slot]!.kind==='courier'&&parcelBeside(state.cabin,slot)).length*COURIER_ARRIVAL_CHARGE;
   const gap=deliveryGapCharge(state,slots.length).energy+flywheelSaving(state,slots.length,motor-service);
   const charge=shopCharge+natural+naturalChargeBoost(state,natural)+gap;
   const relay=shopOpportunities(state,state.cabin,slots).relay;
@@ -133,7 +132,7 @@ export function sectorForecast(state: RunState): { shop: number; projected: numb
     const riders = aboard.reduce((n, { r, slot }) => n + riderProfile(r, state.cabin, slot).energy, 0);
     const motor = boxedMotorCost(motorCost(f), boxOf(state), f) - (f === state.floor + 1 ? operatorSaving(state) + serviceSaving(state) : 0);
     energy -= Math.max(0, motor) + (aboard.length ? riders : 1);
-    energy += state.cabin.filter(r => r?.kind === 'courier' && r.destination === f).length * COURIER_ARRIVAL_CHARGE;
+    energy += state.cabin.filter((r, slot) => r?.kind === 'courier' && r.destination === f && parcelBeside(state.cabin, slot)).length * COURIER_ARRIVAL_CHARGE;
     if (f === shop) energy = Math.min(state.energyCap, energy + shopEntryCharge(boxOf(state)));
     if (failFloor === null && (energy < 0 || (f < shop && energy <= 0))) failFloor = f;
   }

@@ -3,6 +3,7 @@ export type PassengerKind =
   | 'thief' | 'cop' | 'lawyer' | 'drunk' | 'nurse' | 'child'
   | 'ghost' | 'exorcist' | 'coach' | 'celebrity' | 'inspector' | 'bomb'
   | 'mystery' | 'shifter' | 'mimic'
+  | 'parcel'
   | LegendKind;
 
 /** v9 legendary riders: one may wait on floor 1 as a fourth card. They ride 1→10,
@@ -36,7 +37,7 @@ export const MECHANIC_SAVING = 2;
 export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   commuter: { kind: 'commuter', name: '通勤者', title: 'The Commuter', weight: 1, fare: 6, energy: 1, trip: [2, 5], patience: 3, rarity: 18, sheet: '01', cell: 0, tone: 'steady', short: '低躁动到站：额外+3金币', detail: '到站前关门时处于低躁动，额外支付3金币，不参与倍率。不消耗躁动，也不要求邻座。' },
   tourist: { kind: 'tourist', name: '游客', title: 'The Tourist', weight: 2, fare: 8, energy: 1, trip: [4, 7], patience: 3, rarity: 10, sheet: '01', cell: 1, tone: 'steady', short: "本人到站：每位邻座+2币；本次关门时中躁动再+3", detail: "基价以卡面为准；每位仍相邻的乘客让本人到站多赚2金币，包括游客与同层到站者。到站前关门时处于中躁动，再支付3金币；两项均不参与倍率。途中不产金币。" },
-  courier: { kind: 'courier', name: '快递员', title: 'The Courier', weight: 1, fare: 3, energy: 1, trip: [1, 3], patience: 2, rarity: 4, sheet: '01', cell: 2, tone: 'support', short: '到站补充2电 · 短途周转', detail: '目的地很近；到站时为电梯补充2电（不超过电量上限），适合用短途周转换取续航。' },
+  courier: { kind: 'courier', name: '快递员', title: 'The Courier', weight: 1, fare: 8, energy: 1, trip: [1, 3], patience: 2, rarity: 4, sheet: '01', cell: 2, tone: 'support', short: '送包裹：纸箱在旁才付钱 · 回 2 电', detail: '会多带一张纸箱卡。纸箱坐在他上下左右相邻的位置时，他到站付车费并为电梯补充2电（不超过电量上限）。纸箱没上车或不挨着他，他每层+1躁动，到站不付钱也不补电。' },
   mechanic: { kind: 'mechanic', name: '维修工', title: 'The Mechanic', weight: 2, fare: 6, energy: 1, trip: [3, 7], patience: 3, rarity: 5, sheet: '01', cell: 3, tone: 'support', short: '低躁动检修2次：随后4层运转少耗1电', detail: '关门时处于低躁动，检修进度+1；其他状态暂停，不清空进度。完成2次后，随后4次上行运转少耗1电；每位维修工仅完成一次。多位延长时间，最多8层，不增加每层节能量。不消耗躁动。' },
   lover: { kind: 'lover', name: '恋人', title: 'The Lover', weight: 1, fare: 5, energy: 1, trip: [3, 7], patience: 4, rarity: 10, sheet: '01', cell: 4, tone: 'social', short: "每位邻座恋人：到站基价+100%", detail: "有未配对恋人时，每层全车统一15%概率呼唤1位恋人，不按人数叠加。成功时另两位为非恋人，仍可互相作用；未触发时按普通候客规则生成。每位相邻恋人让本人到站基价增加100%，线性叠加；途中不产金币。小费、默契和急躁加价不参与倍率。" },
   musician: { kind: 'musician', name: '音乐家', title: 'The Musician', weight: 2, fare: 6, energy: 1, trip: [2, 5], patience: 3, rarity: 5, sheet: '01', cell: 5, tone: 'social', short: '全舱节拍：向中躁动靠近；中躁动每层+2币', detail: '按关门时状态：低躁动向3提高最多2点，高躁动向4降低最多2点，中躁动不变；关门时处于中躁动，每层演出收入+2金币。多位音乐家不叠加。不单独照护邻座，也不停止坏人合作。节拍后仍会结算人物、红线与到站舒缓；不是保证最终停在中档。' },
@@ -54,6 +55,8 @@ export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   bomb: { kind: 'bomb', name: '炸弹客', title: 'Bomb Timer', weight: 1, fare: 14, energy: 1, trip: [2, 6], patience: 1, rarity: 4, sheet: '03', cell: 5, tone: 'risk', short: "倒计时归零前送达；坏人链接可暂存收益", detail: "基价以卡面为准，倒计时3–6层；到站前归零立即失败，同层归零安全。相邻警察锁住倒计时，也停止坏人链接。未受控时可与小偷、醉汉或炸弹客链接暂存收益。", risk: { label: '致命风险', guide: '与警察相邻：锁住倒计时' } },
   mystery: { kind:'mystery', name:'神秘人', title:'The Mystery', weight:2, fare:0, energy: 1, trip:[2,7], patience:4, rarity:6, sheet:'04', cell:0, tone:'occult', short: "参数与关系随机；8–24金币到站揭晓", detail: "出现时随机耗电、自身躁动、路程与关系；车费均匀抽取8–24金币，封存至到站，请离报价不透露答案。", risk:{label:'风险交易',guide:'查看这一次的协作与冲突对象'} },
   shifter: { kind:'shifter', name:'百变人', title:'The Shifter', weight:2, fare: 22, energy: 1, trip:[4,7], patience:5, rarity:5, sheet:'04', cell:1, tone:'risk', short: "每层换属性；基价看卡面", detail: "每到一层重新抽取自身躁动0–1、原始车费16–28与协作/冲突对象；耗电固定为1。短途再按固定比例折算基价。目的地不延长，关门前查看新状态。", risk:{label:'条件风险',guide:'每层查看新状态，留好请离赔偿'} },
+  // v9.16: a Courier's parcel. Not a person: it takes a seat and power, never counts as a neighbour.
+  parcel: { kind:'parcel', name:'纸箱', title:'The Parcel', weight:0, fare:0, energy:1, trip:[1,1], patience:9, rarity:0, sheet:'04', cell:0, tone:'support', short:'占一个座位、每层耗1电；必须挨着它的快递员', detail:'快递员的包裹。占一个座位、每层耗1电，不算任何人的邻座，本身不付钱。和快递员一起上车时必须相邻（上下左右），跟他一起到站。快递员没上车时，纸箱到站后开箱：随机得到 6 金币或 3 电。' },
   mimic: { kind:'mimic', name:'复制人', title:'The Mimic', weight:1, fare:10, energy: 1, trip:[3,6], patience:4, rarity:6, sheet:'04', cell:2, tone:'occult', short:'↑ 复制正上方乘客的车费', detail:'固定复制正上方紧邻乘客的基础车费；上方空缺时恢复本体车费。隐藏车费仍隐藏。不复制技能、耗电、倒计时、路程或已叠加奖励。'} ,
   operator: { kind:'operator', name:'老周', title:'The Old Operator', weight:0, fare:0, energy:0, trip:[9,9], patience:9, rarity:0, sheet:'04', cell:0, tone:'support', short:'传奇 · 在车时运转耗电−1（满6人时不生效）', detail:'退休电梯工。第1层上车、第10层商店下车，自身不耗电、不付车费。在车时每层运转耗电−1；关门时满6人则当层不帮忙。送达后留下信物「老周的扳手」：配电箱免费升1级，此后每次升级便宜5金币。' },
   matchmaker: { kind:'matchmaker', name:'月老', title:'The Matchmaker', weight:0, fare:0, energy:0, trip:[9,9], patience:9, rarity:0, sheet:'04', cell:0, tone:'social', short:'传奇 · 恋人呼唤50%；邻座到站+3币', detail:'第1层上车、第10层下车，不耗电、不付车费。在车时恋人呼唤概率升至50%，她的每位邻座到站额外+3金币；车内每有一条红线，每层额外+1躁动。信物「红绳」：每条默契到站奖励+2，此后恋人呼唤概率35%。' },
@@ -75,7 +78,7 @@ export const PASSENGER_ORDER: PassengerKind[] = [
 // recognizes high base fares, but never reads a Mystery rider's hidden fare.
 export function passengerCardGrade(kind: PassengerKind): PassengerCardGrade {
   if (isLegend(kind)) return 'legendary';
-  if (['courier','mechanic'].includes(kind)) return 'standard';
+  if (['courier','mechanic','parcel'].includes(kind)) return 'standard';
   const passenger = PASSENGERS[kind];
   if (passenger.rarity <= 4 || passenger.fare >= 30) return 'rare';
   if (passenger.rarity <= 6 || passenger.fare >= 20) return 'rare';

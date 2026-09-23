@@ -15,7 +15,7 @@ const results:PacketStats[]=[];
 for(const floor of [5,25,45])for(const {name,cabin} of layouts){
  const rng=rngFor(832);let total=0,packets=0,multiple=0,called=0,calledLovers=0;
  for(let i=0;i<20000;i++){
-  const offers=makeOffers(floor,EMPTY_UPGRADES,false,rng,cabin),lovers=offers.filter(r=>r.kind==='lover').length;
+  const offers=makeOffers(floor,EMPTY_UPGRADES,false,rng,cabin).filter(r=>r.kind!=='parcel'),lovers=offers.filter(r=>r.kind==='lover').length;
   const call=offers.some(r=>r.calledByLover);
   assert.equal(offers.length,3);
   if(call){

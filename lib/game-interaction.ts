@@ -1,7 +1,7 @@
 import { riskPartnerships } from './shift-rules';
 import { bondStatus, riderProfile } from './rider-profile';
 import { ADJACENT, PASSENGERS, type PassengerKind } from './game-data';
-import { hasNeighbour, isFreeReseat, neighbourCount, oldMovesRemaining, type Rider, type RunState } from './game-engine';
+import { hasNeighbour, parcelLayoutOk, isFreeReseat, neighbourCount, oldMovesRemaining, type Rider, type RunState } from './game-engine';
 import { agitationBand } from './balance-v832';
 
 export function copyConnection(cabin: Array<Rider | null>, first: number, second: number) {
@@ -64,6 +64,7 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
     if (cabin[target]) return reject('这里已经有人 · 请选空位');
     cabin[target] = rider;
   }
+  if (!parcelLayoutOk(cabin)) return reject('纸箱必须挨着快递员（上下左右）');
   const linkIds = (seats: Array<Rider | null>) => new Set(ADJACENT.filter(([a, b]) => activeConnection(seats, a, b)).map(([a, b]) => [seats[a]!.id, seats[b]!.id].sort().join(':')));
   const before = linkIds(state.cabin); const after = linkIds(cabin);
   const combo = [...after].some((id) => !before.has(id));

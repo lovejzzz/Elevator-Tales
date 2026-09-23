@@ -31,7 +31,7 @@ export const BONDS: Record<PassengerKind,Bond> = {
  mystery:{likes:['coach'],avoids:['inspector']},
  shifter:{likes:['nurse'],avoids:['cop']},
  mimic:{likes:['mimic'],avoids:['ghost','bomb']},
- operator:{likes:[],avoids:[]}, matchmaker:{likes:[],avoids:[]}, don:{likes:[],avoids:[]}, matron:{likes:[],avoids:[]},
+ parcel:{likes:[],avoids:[]}, operator:{likes:[],avoids:[]}, matchmaker:{likes:[],avoids:[]}, don:{likes:[],avoids:[]}, matron:{likes:[],avoids:[]},
  nightingale:{likes:[],avoids:[]}, medium:{likes:[],avoids:[]}, tycoon:{likes:[],avoids:[]}, stranger:{likes:[],avoids:[]},
 };
 const pairKey=(a:PassengerKind,b:PassengerKind)=>[a,b].sort().join(':');
@@ -75,7 +75,8 @@ export function riderProfile(rider:Rider,cabin:Array<Rider|null>=[],slot=cabin.f
  if(rider.kind!=='mimic'||slot<0){result.fare=ticketFare(rider,result.fare);return result;}
  // Only the immediately-above position. The pair key deliberately excludes
  // floor, column, and all other neighbors. Preview/reseat never consumes RNG.
- const source = slot >= 3 ? cabin[slot-3] : null;
+ const above = slot >= 3 ? cabin[slot-3] : null;
+ const source = above?.kind === 'parcel' ? null : above; // a parcel has no fare to copy
  if(source){
    // v9: deterministic — the Mimic always copies the base fare of the rider above.
    const field=('fare' as CopyField);

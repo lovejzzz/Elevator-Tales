@@ -82,7 +82,8 @@ export function report(logs: RunLog[]) {
   const ref = bal.length ? bal : skilled;
   const offered: Record<string, number> = {}, boarded: Record<string, number> = {};
   for (const l of ref) { for (const [k, v] of Object.entries(l.offered)) offered[k] = (offered[k] ?? 0) + v; for (const [k, v] of Object.entries(l.boarded)) boarded[k] = (boarded[k] ?? 0) + v; }
-  const roles = Object.keys(offered).filter(k => !LEGEND_KINDS.includes(k as never) && offered[k] >= 20);
+  // The Courier's parcel is not a person; its usage is reported by parcel-report.mts.
+  const roles = Object.keys(offered).filter(k => !LEGEND_KINDS.includes(k as never) && k !== 'parcel' && offered[k] >= 20);
   const adopt = roles.map(k => ({ k, a: pct(boarded[k] ?? 0, offered[k]) })).sort((a, b) => a.a - b.a);
   const outOfBand = adopt.filter(r => r.a < 15 || r.a > 65);
   checks.push(check('人物：均衡型上车率都在 15–65%', outOfBand.length ? outOfBand.map(r => `${PASSENGERS[r.k as PassengerKind]?.name ?? r.k} ${f1(r.a)}%`).join('，') : '全部在区间内', '无越界', !outOfBand.length));

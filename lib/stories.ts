@@ -23,6 +23,7 @@ export const STORIES: Record<PassengerKind, [string, string]> = {
   mystery: ['没人记得他在哪一层上车。到站时他留下的车费每次都不一样，像是按心情付的。', 'Nobody remembers where he got on. The fare he leaves is different every time, as if he pays by mood.'],
   shifter: ['每到一层，她就换一副样子。“我只是还没决定，”她说，“今晚要当谁。”', 'At every floor she wears a different face. “I just have not decided,” she says, “who to be tonight.”'],
   mimic: ['他总是学站在他上方的人。有一次学得太像，连对方都以为自己已经下了车。', 'He always copies whoever stands above him. Once he did it so well the original thought they had already got off.'],
+  parcel: ['没人知道箱子里装的是什么。快递员说，只要它准时到，里面是什么都不重要。', 'Nobody knows what is in the box. The courier says that as long as it arrives on time, what is inside does not matter.'],
   operator: ['老周开了四十年电梯，退休那天没人来送他。于是他每晚回来坐第一班，从一楼坐到十楼，替新人把电机捂热。', 'Zhou ran this lift for forty years; nobody came to see him off when he retired. So he rides the first car every night, one to ten, warming the motor for whoever is new.'],
   matchmaker: ['她口袋里总有一团红线，说是在这栋楼里捡到的。她把线头交给谁，谁就会在某一层遇见另一个人。', 'She always carries a tangle of red thread, found somewhere in the building. Whoever she hands an end to meets someone, on some floor.'],
   don: ['他从不大声说话。整栋楼的坏人见了他都会摘下帽子，然后乖乖把钱存进他的账上。', 'He never raises his voice. Every crook in the building takes off his hat when he boards—and quietly pays into his account.'],

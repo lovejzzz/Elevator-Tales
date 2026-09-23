@@ -197,7 +197,7 @@ test('12000 encounter packets use nineteen roles and supply a real available rel
  assert.equal(D.PASSENGER_ORDER.length,19);assert.equal(E.unlockedAt(1).length,5);
  assert(!D.PASSENGER_ORDER.includes('lawyer'));assert(!D.PASSENGER_ORDER.includes('shifter'));
  for(let i=0;i<12000;i++){
-  const floor=1+i%120,offers=E.makeOffers(floor,E.EMPTY_UPGRADES,false,rng);
+  const floor=1+i%120,offers=E.makeOffers(floor,E.EMPTY_UPGRADES,false,rng).filter(r=>r.kind!=='parcel');
   assert.equal(offers.length,3);assert(offers.every(r=>E.unlockedAt(floor).includes(r.kind)));assert(offers.some(r=>!r.volatile));
   let relation=false;
   for(let a=0;a<3;a++)for(let b=a+1;b<3;b++){

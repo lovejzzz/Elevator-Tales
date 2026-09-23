@@ -14,7 +14,7 @@ export type CardChip = { tone: ChipTone; kinds: PassengerKind[]; label: string; 
 export type CardSummary = { line: string; progress?: string; chips: CardChip[] };
 
 const EN_NAMES: Record<PassengerKind, string> = {
-  commuter: 'Commuter', tourist: 'Tourist', courier: 'Courier', mechanic: 'Mechanic', lover: 'Lover', musician: 'Musician',
+  parcel: 'Parcel', commuter: 'Commuter', tourist: 'Tourist', courier: 'Courier', mechanic: 'Mechanic', lover: 'Lover', musician: 'Musician',
   thief: 'Thief', cop: 'Officer', lawyer: 'Counsel', drunk: 'Drifter', nurse: 'Nurse', child: 'Child', ghost: 'Ghost', exorcist: 'Warden',
   coach: 'Coach', celebrity: 'Celebrity', inspector: 'Inspector', bomb: 'Bomb Carrier', mystery: 'Mystery', shifter: 'Shifter', mimic: 'Mimic',
   operator: 'Old Zhou', matchmaker: 'Matchmaker', don: 'The Don', matron: 'Matron', nightingale: 'Nightingale', medium: 'Medium', tycoon: 'Tycoon', stranger: 'Stranger in 13',
@@ -30,7 +30,8 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
   switch (rider.kind) {
     case 'commuter': return { line: L(`低躁动到站 +${COMMUTER_QUIET_BONUS}`, `+${COMMUTER_QUIET_BONUS} if calm on arrival`) };
     case 'tourist': return { line: L(`每位邻座 +2 · 中躁动 +${TOURIST_MEDIUM_BONUS}`, `+2 per neighbor · +${TOURIST_MEDIUM_BONUS} at medium`) };
-    case 'courier': return { line: L('到站回 2 电', 'Returns 2 power on arrival') };
+    case 'courier': return { line: rider.parcelId ? L('带着纸箱送达才付钱 · 回 2 电', 'Pays only with his parcel beside him · returns 2 power') : L('到站回 2 电', 'Returns 2 power on arrival') };
+    case 'parcel': return { line: L('挨着快递员 · 他没上车时到站开箱', 'Beside its Courier · opens on arrival if he never boarded') };
     case 'mechanic': return rider.repairDone ? { line: L(`检修完成 · ${REPAIR_DURATION} 层省电`, `Repaired · ${REPAIR_DURATION} floors cheaper`) } : { line: L(`低躁动检修 → ${REPAIR_DURATION} 层运转 −1`, `Calm repair → motor −1 for ${REPAIR_DURATION}`), progress: `${rider.repairProgress ?? 0}/${REPAIR_WORK}` };
     case 'lover': return { line: L('恋人相邻：基价翻倍', 'Beside a Lover: fare ×2') };
     case 'musician': return { line: L('躁动拉向中档 · 中档 +2/层', 'Pulls agitation to medium · +2/floor there') };

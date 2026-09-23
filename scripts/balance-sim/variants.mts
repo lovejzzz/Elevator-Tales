@@ -4,9 +4,26 @@ import { AGITATION_RULES, FARE_RULES, MOTOR_RULES, NIGHT_UNREST, V9_AGITATION } 
 import { BOX_PRICES, CHARGE_PRICES, EMERGENCY_PRICES } from '../../lib/power-box.ts';
 import { CALM_PURCHASE, CALM_RULES, INSULATION_RULES, RISK_RULES, SHOP_PRICES, SOUNDPROOF_RULES, START_RULES } from '../../lib/game-engine.ts';
 import { LEGEND_RULES } from '../../lib/legends.ts';
+import { PARCEL_RULES } from '../../lib/game-engine.ts';
+import { PASSENGERS } from '../../lib/game-data.ts';
+const parcel = (fare: number, coins: number, power: number) => () => { PASSENGERS.courier.fare = fare; PARCEL_RULES.payoutCoins = coins; PARCEL_RULES.payoutPower = power; };
 
 export const VARIANTS: Record<string, () => void> = {
   baseline: () => {},
+  // v9.16 Courier parcel study: parcel off (pre-9.16 Courier), then Courier fare × unclaimed-parcel payout (coins / power).
+  noParcel: () => { PARCEL_RULES.enabled = false; },
+  f3c6p3: parcel(3, 6, 3),
+  f3c8p4: parcel(3, 8, 4),
+  f3c10p6: parcel(3, 10, 6),
+  f6c6p3: parcel(6, 6, 3),
+  f6c8p4: parcel(6, 8, 4),
+  f6c10p6: parcel(6, 10, 6),
+  f8c6p3: parcel(8, 6, 3),
+  f8c8p4: parcel(8, 8, 4),
+  f8c10p6: parcel(8, 10, 6),
+  f10c6p3: parcel(10, 6, 3),
+  f10c8p4: parcel(10, 8, 4),
+  f10c10p6: parcel(10, 10, 6),
   uLate61: () => { NIGHT_UNREST.from = 61; },
   uArr41: () => { NIGHT_UNREST.arrivalsCalm = true; },
   uArr61: () => { NIGHT_UNREST.from = 61; NIGHT_UNREST.arrivalsCalm = true; },

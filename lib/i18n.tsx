@@ -146,8 +146,10 @@ const exactPairs: Array<[string, string]> = [
   ['任何相邻乘客：每层 +1 金币，逐人叠加。', 'Any adjacent rider: +1 coin per floor, stacking per rider.'],
   ['包括其他游客；不设人数上限，由站位决定最大旅伴数。邻座变化时立即重新计算。', 'Includes other Tourists. There is no rules cap; cabin positions determine the maximum companion count. The bonus updates immediately when neighbors change.'],
   ['包括其他游客；邻座变化即重算', 'Includes other Tourists; updates when neighbors change'],
-  ['到站补充2电 · 短途周转', 'Recharge 2 power on arrival · quick turnover'],
-  ['目的地很近；到站时为电梯补充2电（不超过电量上限），适合用短途周转换取续航。', 'A nearby destination. On arrival, recharge 2 power up to the cap, turning quick turnover into extra range.'],
+  ['送包裹：纸箱在旁才付钱 · 回 2 电', 'Delivers a parcel: pays only with it beside him · +2 power'],
+  ['会多带一张纸箱卡。纸箱坐在他上下左右相邻的位置时，他到站付车费并为电梯补充2电（不超过电量上限）。纸箱没上车或不挨着他，他每层+1躁动，到站不付钱也不补电。', 'Brings an extra parcel card. With the parcel in a seat next to him (up, down, left or right) he pays his fare and recharges the elevator by 2 power on arrival (up to the power cap). If the parcel is not aboard or not beside him, he adds +1 agitation per floor and pays nothing on arrival, with no recharge.'],
+  ['占一个座位、每层耗1电；必须挨着它的快递员', 'Takes a seat, 1 power per floor; must sit beside its Courier'],
+  ['快递员的包裹。占一个座位、每层耗1电，不算任何人的邻座，本身不付钱。和快递员一起上车时必须相邻（上下左右），跟他一起到站。快递员没上车时，纸箱到站后开箱：随机得到 6 金币或 3 电。', 'The Courier’s parcel. Takes a seat and uses 1 power per floor; it is nobody’s neighbour and pays nothing itself. Boarded with its Courier it must sit next to him (up, down, left or right) and leaves with him. If the Courier never boarded, the parcel is opened when it arrives: 6 coins or 3 power, at random.'],
   ['到站时补充2电，不超过电量上限。', 'Recharge 2 power on arrival, up to the power cap.'],
   ['到站补充2电（不超过上限）', 'Recharge 2 power on arrival (up to cap)'],
   ['到站补充2电', 'Recharge 2 power on arrival'],
@@ -433,6 +435,9 @@ const exactPairs: Array<[string, string]> = [
   ['下一层躁动不变 · 没有已知来源', 'Next floor: no agitation change · no known source'], ['休整用尽，空驶不免疲劳', 'No rests left; an empty car no longer prevents fatigue'],
   ['高躁动：人物引起的正向躁动 ×2', 'High agitation: positive rider agitation ×2'], ['人物正向躁动已按 ×2 计算', 'Positive rider agitation already calculated at ×2'],
   ['电梯运转', 'Elevator motor'], ['稳压模块抵消', 'Stabilizer'], ['节能少耗', 'Power savings'], ['宽松轿厢', 'Uncrowded cabin'], ['班次压力', 'Shift pressure'],
+  ['纸箱必须挨着快递员（上下左右）', 'The parcel must sit beside its Courier (up, down, left or right)'], ['快递员在找纸箱', 'Courier looking for his parcel'], ['快递员没带着纸箱到站，没有付钱', 'The Courier arrived without his parcel and paid nothing'], ['纸箱开箱', 'Parcel opened'], ['纸箱', 'Parcel'],
+  ['纸箱在旁：到站付钱并补充2电；不在旁：每层+1躁动、不付钱', 'Parcel beside him: pays and recharges 2 power on arrival; otherwise +1 agitation per floor and no fare'], ['快递员没上车时到站开箱：随机 6 金币或 3 电', 'If its Courier never boarded, opened on arrival: 6 coins or 3 power at random'], ['纸箱须在旁', 'Parcel must be beside him'], ['无人认领：6 金币或 3 电', 'Unclaimed: 6 coins or 3 power'],
+  ['纸箱在旁 · 到站付钱+2电', 'Parcel beside him · pays and +2 power on arrival'], ['纸箱不在 · 每层+1躁动 · 不付钱', 'No parcel · +1 agitation per floor · pays nothing'], ['跟快递员一起到站', 'Leaves with its Courier'], ['无人认领 · 到站开箱', 'Unclaimed · opens on arrival'],
   ['快递员电池包', 'Courier battery pack'], ['快递补电', 'Courier recharge'], ['可能快递补电', 'possible Courier recharge'],
   ['红线躁动', 'Red-link agitation'], ['红线额外耗电', 'Red-link extra power'], ['红线金币损失', 'Red-link coin loss'], ['绝缘衬层：冲突小费', 'Insulation: friction tip'], ['抵达商店补电', 'Shop-entry recharge'],
   ['乘客到站舒缓', 'Arrival relief'], ['商店充电', 'Shop charge'], ['补给站充电', 'Supply-station charge'], ['请离赔偿', 'Dismissal compensation'], ['电量上限截取', 'Power capped'], ['躁动下限修正', 'Agitation floor adjustment'],
@@ -558,6 +563,8 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^飞轮本段可省 (\d+)\/4电 · 到商店重置$/u, 'Flywheel: $1/4 power left this sector · Resets at shop')
     .replace(/电量耗尽 · 本层总扣电 (\d+)（运转 (\d+)、人物与红线 (\d+)）；抵消与回电 \+(\d+)；净变化 (-?\d+)。/gu, 'Power depleted · Gross cost $1 (motor $2, riders and red links $3); offsets and recharge +$4; net change $5. ')
     .replace(/^(.+?)已购入，花费 (\d+) 金币。$/u, '$1 purchased for $2 coins.')
+    .replace(/无人认领的纸箱里有 (\d+) 金币/gu, 'The unclaimed parcel held $1 coins')
+    .replace(/无人认领的纸箱里是 (\d+) 电的电池/gu, 'The unclaimed parcel held a $1-power battery')
     .replace(/ · 已购入$/u, ' · Purchased')
     .replace(/^使用应急电池 \+(\d+)电$/u, 'Use Reserve Cell +$1 power')
     .replace(/容量 (\d+) → (\d+)；仍需付费充电/gu, 'Capacity $1 → $2; charging still costs coins')

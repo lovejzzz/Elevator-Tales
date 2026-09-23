@@ -48,7 +48,7 @@ test('reservations preserve every kind, sealed traits, fuse, seed and remaining 
   const r=rider(kind,'held',{boardedAt:floor,destination:floor+5,fuse:3,copySeed:12345,localFareRatio:.5});
   const held=E.reserveOffer(s,[r],r.id);assert(held!==s);assert(!planPlacement(held,r,0).ok);
   assert.equal(E.reserveOffer(held,[r],r.id),held);
-  const next=E.nextOfferBatch({...held,floor:floor+1},rngFor(floor));assert.equal(next.offers.length,3);assert(!next.state.reservedRider);
+  const next=E.nextOfferBatch({...held,floor:floor+1},rngFor(floor));assert.equal(next.offers.filter(o=>o.kind!=='parcel').length,3);assert(!next.state.reservedRider);
   assert.deepEqual(next.offers[0],{...r,boardedAt:floor+1,destination:floor+6,calledByLover:false});
   assert.equal(E.reserveOffer(next.state,next.offers,r.id),next.state);
  }

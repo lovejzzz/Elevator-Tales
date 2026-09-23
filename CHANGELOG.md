@@ -1,6 +1,11 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.15**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.16**. Publication status is tracked separately from the source version.
+
+## v9.16 — 2026-09-23 — The Courier brings a parcel / 快递员带着纸箱
+
+- New Parcel card dealt with each Courier (max one Courier per floor): a seat, 1 power/floor, no fare, nobody's neighbour, counts toward crowding; must sit orthogonally adjacent to its Courier (placement refused otherwise). Courier fare 3 → 8; he pays and recharges 2 only with his parcel beside him, otherwise +1 agitation/floor and nothing on arrival. Parcel alone opens at its floor for 6 coins or 3 power (50/50). Dismissal takes the parcel; neither can be reserved; tutorial Courier has none.
+- Tuning: fare {3,6,8,10} × payout {6/3, 8/4, 10/6} + no parcel, 39,000 runs; fare 8 / 6c-3p gives Courier 43%, pair 42%, parcel-alone 21%. Acceptance 3,600 runs: balanced 114 → 109F, Courier boarding 80.5% → ~46%, novice 39 → 41, power deaths 1.8% → 6.7%, style spread 95.2%. Watch parcel-alone frequency and early-game ease.
 
 ## v9.15 — 2026-09-23 — Bomb lock states, calm reserve hint / 炸弹锁定显示、留钱提示
 

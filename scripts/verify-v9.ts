@@ -21,6 +21,7 @@ import { existsSync } from 'node:fs';
 import { readFileSync } from 'node:fs';
 import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
+import { planPlacement } from '../lib/game-interaction';
 
 const seq = (...values: number[]) => { let i = 0; return () => values[i++ % values.length]; };
 const fixed = (v = 0.5) => () => v;
@@ -39,7 +40,7 @@ console.log('PASS 21 riders unlock by floor 41; legends stay out of the ordinary
 
 // Opening: a fourth legend card outside the tutorial, none inside it.
 const opening = E.startRun(false, seq(0.1, 0.3, 0.5, 0.7, 0.9));
-assert.equal(opening.offers.length, 4);
+assert.equal(opening.offers.filter(r => r.kind !== 'parcel').length, 4);
 assert.equal(opening.offers.filter(r => isLegend(r.kind)).length, 1);
 assert.ok(opening.state.legendOffer && isLegend(opening.state.legendOffer));
 const tutorial = E.startRun(true, fixed());
@@ -273,7 +274,10 @@ console.log('PASS rescue plans are real or the floor is declared lost');
 {
   const s = run(15, []);
   assert.equal(netValue(rider('commuter', 15, 3, { boardedAt: 15 }), s), 0);
-  assert.equal(netValue(rider('courier', 15, 1, { boardedAt: 15 }), s), 5);
+  assert.equal(netValue(rider('courier', 15, 1, { boardedAt: 15 }), s), 10);
+  // v9.16: a Courier carrying a parcel is valued as the pair; a parcel alone as its unclaimed contents.
+  assert.equal(netValue(rider('courier', 15, 1, { boardedAt: 15, parcelId: 'p' }), s), 8 - 2 - 2 + 4);
+  assert.equal(netValue(rider('parcel', 15, 1, { boardedAt: 15, ownerId: 'c' }), s), (6 + 3 * 2) / 2 - 2);
   assert.equal(netValue(rider('thief', 15, 2, { boardedAt: 15 }), s), 5 - 4 - 6);
   assert.equal(netValue(rider('operator', 15, 9, { boardedAt: 15 }), s), null);
 }
@@ -389,4 +393,57 @@ console.log('PASS partner potential on cards');
   assert.equal(locked.cabin[1]?.fuse, 2, 'settlement agrees: a locked timer does not tick');
 }
 console.log('PASS bomb timer display matches settlement');
-console.log(JSON.stringify({ version: 'v9', checks: 28, passed: true }));
+// v9.16 Courier parcel: an extra card that must sit beside its Courier; he pays only with it, an unclaimed one opens.
+{
+  assert.deepEqual([PASSENGERS.courier.fare, E.PARCEL_RULES.payoutCoins, E.PARCEL_RULES.payoutPower], [8, 6, 3], 'card texts quote these values');
+  const rng = seq(0.11, 0.62, 0.37, 0.93, 0.48, 0.05, 0.76, 0.29);
+  let withCourier = 0;
+  for (let i = 0; i < 4000; i++) {
+    const floor = 2 + (i % 100), offers = E.makeOffers(floor, E.EMPTY_UPGRADES, false, rng);
+    const couriers = offers.filter(r => r.kind === 'courier');
+    assert.ok(couriers.length <= 1 && offers.length <= 4, 'one Courier per floor, so at most four cards after the opening');
+    if (!couriers.length) { assert.ok(!offers.some(r => r.kind === 'parcel')); continue; }
+    withCourier++;
+    const c = couriers[0], at = offers.indexOf(c), parcel = offers[at + 1];
+    assert.ok(parcel?.kind === 'parcel' && c.parcelId === parcel.id && parcel.ownerId === c.id && parcel.destination === c.destination && !parcel.volatile);
+  }
+  assert.ok(withCourier > 200, 'Couriers still appear');
+  const courier = (trip: number, extra: Partial<Rider> = {}) => rider('courier', 30, trip, { parcelId: 'box', ...extra });
+  const parcel = (trip: number, extra: Partial<Rider> = {}) => rider('parcel', 30, trip, { id: 'box', ownerId: 'courier-owner', ...extra });
+  // Delivered together: fare and the power pack; the parcel leaves with him and is not an arrival.
+  const pair = run(30, [courier(1, { id: 'courier-owner' }), parcel(1)], { energy: 30 });
+  const delivered = E.resolveFloor(pair, fixed());
+  assert.equal(lines(delivered, 'lastEarnings')['快递员到站'], 8);
+  assert.equal(lines(delivered, 'lastEnergy')['快递员电池包'], 2);
+  assert.ok(delivered.cabin.every(r => !r) && delivered.lastArrivals?.length === 1 && delivered.lastArrivals[0].kind === 'courier');
+  // Without the parcel beside him: +1 agitation a floor, then no fare and no power pack.
+  const lost = run(30, [courier(2, { id: 'courier-owner' })], { energy: 30 });
+  assert.equal(E.riderAgitation(lost, 0).low, 1);
+  assert.equal(lines(E.resolveFloor(lost, fixed()), 'lastPressure')['快递员在找纸箱'], 1);
+  const unpaid = E.resolveFloor(run(30, [courier(1)], { energy: 30 }), fixed());
+  assert.ok(!lines(unpaid, 'lastEarnings')['快递员到站'] && !lines(unpaid, 'lastEnergy')['快递员电池包']);
+  assert.equal(E.arrivalFare(courier(1), [courier(1), null, null, null, null, null], 0), 0);
+  // Unclaimed: opens at its floor for 6 coins or 3 power, at random.
+  const opened = (roll: number) => E.resolveFloor(run(30, [parcel(1)], { energy: 30 }), fixed(roll));
+  assert.equal(lines(opened(0.1), 'lastEarnings')['纸箱开箱'], 6);
+  assert.equal(lines(opened(0.9), 'lastEnergy')['纸箱开箱'], 3);
+  // Never anyone's neighbour: a Nurse or Coach beside it has no one to work on.
+  const seats = [parcel(3), rider('coach', 30, 3), null, null, null, null];
+  assert.equal(E.neighbourCount(seats, 1), 0);
+  // Placement: refused unless the pair is adjacent (up, down, left or right).
+  const fresh = courier(3, { id: 'courier-owner', boardedAt: 30 });
+  const seated = run(30, [fresh], { energy: 30 });
+  assert.ok(!planPlacement(seated, parcel(3, { boardedAt: 30 }), 2).ok);
+  assert.ok(planPlacement(seated, parcel(3, { boardedAt: 30 }), 1).ok && planPlacement(seated, parcel(3, { boardedAt: 30 }), 3).ok);
+  // A dismissed Courier takes his parcel; neither can be held for the next floor.
+  const aboard = run(30, [courier(3, { id: 'courier-owner', boardedAt: 28 }), parcel(3, { boardedAt: 28 })]);
+  assert.ok(E.dismissRider(aboard, 'courier-owner').cabin.every(r => !r));
+  const holding = { ...run(30, []), upgrades: { ...E.EMPTY_UPGRADES, reservation: 1 } };
+  const offer = [courier(3, { boardedAt: 30 }), parcel(3, { boardedAt: 30 })];
+  assert.equal(E.reserveOffer(holding, offer, offer[0].id), holding);
+  assert.equal(E.reserveOffer(holding, offer, offer[1].id), holding);
+  // Cards: the Courier's pairing hint is his own parcel.
+  assert.equal(pairedNet(courier(3, { boardedAt: 30 }), run(30, []))?.partner, 'parcel');
+}
+console.log('PASS Courier parcel rules');
+console.log(JSON.stringify({ version: 'v9', checks: 29, passed: true }));

@@ -37,7 +37,7 @@ export const finaleIncome=(state:RunState,arrivals:number,remaining:number)=>sta
 /** Process-local experimental switches; production uses these defaults. */
 export const SHOP_RULES = { expanded: true, grouped: true, mixed: true, optionalCalm: true };
 export function mixedTicketEligible(cabin: Array<Rider|null>) {
-  return SHOP_RULES.mixed ? new Set(cabin.flatMap(r=>r?[passengerCategory(r.kind)]:[])).size === 3 : cabin.filter(Boolean).length >= CROWD_MINIMUM;
+  return SHOP_RULES.mixed ? new Set(cabin.flatMap(r=>r&&r.kind!=='parcel'?[passengerCategory(r.kind)]:[])).size === 3 : cabin.filter(Boolean).length >= CROWD_MINIMUM;
 }
 export function deliveryUpgradeIncome(state:RunState,cabin:Array<Rider|null>,slots:number[]) {
   return {
@@ -53,7 +53,7 @@ export function deliveryUpgradeIncome(state:RunState,cabin:Array<Rider|null>,slo
 export function shopOpportunities(state: RunState, cabin: Array<Rider | null>, arrivalSlots: number[]) {
   const eligibleTips = state.upgrades.tipjar ? arrivalSlots.filter(slot => {
     const adjacent = ADJACENT.flatMap(([a,b]) => a === slot ? [b] : b === slot ? [a] : []);
-    return adjacent.filter(i => cabin[i]).length >= 2;
+    return adjacent.filter(i => cabin[i] && cabin[i]!.kind !== 'parcel').length >= 2;
   }).length : 0;
   return { eligibleTips, relay: Boolean(state.upgrades.relay && arrivalSlots.length >= 2) };
 }

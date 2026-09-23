@@ -979,3 +979,47 @@ export const V915_EN: ChangelogEntry = {
   ],
   watch: ['Late runs still end mostly in agitation; see whether the reserve hint changes choices, and if not, warn that a sixth rider adds crowding +1.'],
 };
+
+export const V916_ZH: ChangelogEntry = {
+  version: '9.16', date: '2026-09-23', title: '快递员带着纸箱上车',
+  summary: '快递员出现时多一张“纸箱”卡：纸箱占一个座位、每层耗1电、不付钱，必须挨着快递员；快递员只有带着纸箱才付钱。只上纸箱的话，到站开箱随机得到金币或电。',
+  changes: [
+    '新卡“纸箱”：快递员出现时紧跟在他后面发出。占一个座位、每层耗 1 电、不付车费；不算任何人的邻座（护士、教练、名人、游客、小费盒都不把它当人），但算在满员拥挤的 6 人里。',
+    '相邻规则：快递员和纸箱都在车上时必须上下左右相邻，放到不相邻的位置会被拒绝（“纸箱必须挨着快递员”），换位同样检查。',
+    '快递员：车费 3 → 8。纸箱在旁边时到站付车费并补 2 电；纸箱没上车或不在旁边时，每层 +1 躁动（“快递员在找纸箱”），到站不付钱、不补电、也没有小费和打卡计数。纸箱在他到站时一起离开，不算到站乘客。',
+    '只上纸箱：到纸箱的目的地时开箱，50% 得 6 金币，50% 得 3 电（按商店基础电价两者等值）。',
+    '每层最多一位快递员，所以普通楼层最多 4 张卡，第 1 层加上传奇最多 5 张。请离快递员时纸箱一起离开；快递员和纸箱都不能“留到下一批”，保留的乘客也不会替换掉快递员或纸箱。教学关的快递员不带纸箱。',
+    '卡片：快递员显示“配纸箱 ±N”（两张卡合计的送达净收益，已减去纸箱电费）；纸箱在快递员已上车时显示补回他车费和躁动的价值，单独时显示开箱期望减电费。纸箱是普通卡，没有闪卡效果。',
+  ],
+  experiments: [
+    '调参：快递员车费 {3, 6, 8, 10} × 无人认领纸箱 {6 币/3 电, 8/4, 10/6}，外加“没有纸箱”（旧规则），每组 10 种打法 × 300 局 = 3,000 局，共 39,000 局（seed 424242，150 层上限）。',
+    '车费 3 时单独上纸箱是主流（熟练型遇到纸箱时 44–82% 只上纸箱），快递员几乎没人要（6–15%）；车费 8、纸箱 6 币/3 电时：快递员上车率 43%，带纸箱配对 42%，只上纸箱 21%，只上快递员 1%，选择最分散，采用这一组。10/8/4 只上纸箱升到 36%，纸箱上车率 86% 越界。',
+    '验收（balance:accept，300 局 × 12 组 = 3,600 局，seed 999001）旧规则 → 新规则：均衡型中位 114 → 109 层；快递员上车率 80.5%（越界）→ 约 46%（区间内）；新手 39 → 41；电量致死 1.8% → 6.7%，躁动致死 97.6% → 92.7%；离店金币中位 215 → 187。五种流派强弱比 95.2%，不变。',
+    '探索（300 局/打法）：休闲 41 → 53 层（会按卡面把快递员和纸箱一起上）、新手 35 → 41、看净值 98 → 98；熟练型变化在 ±4 层以内。',
+    '联动检查：纸箱不是邻座（护士/教练/名人/游客/小费盒/幽灵延误不作用于它）；复制人正上方是纸箱时不复制；车厢事故不会选中纸箱；中转站、谢幕礼、单人小费、计价器、第五位打卡、到站舒缓只算真正到站的乘客；加固（≥5 人）和老周（未满员）按座位计算，纸箱算一个座位。',
+    'verify 新增 1 项（共 29 项）：4,000 个发牌包里每层最多一位快递员且纸箱紧随其后、同目的地；配对到站 +8 币 +2 电且纸箱不算到站；没纸箱时 +1 躁动、到站 0 币无补电；无人认领开箱 6 币或 3 电；纸箱不算邻座；不相邻放置被拒绝；请离带走纸箱；两者都不能保留。浏览器中实测拒绝提示、配对到站和开箱 6 币。',
+  ],
+  watch: ['快递员上车率约 46%、纸箱单独 21%，看真实玩家是否更常只上纸箱；如果单独纸箱成了默认选择，下调开箱金额。', '新手和休闲玩家中位楼层上升（按卡面配对的短途两人组很稳），留意第一周难度是否偏低。'],
+};
+
+export const V916_EN: ChangelogEntry = {
+  version: '9.16', date: '2026-09-23', title: 'The Courier brings a parcel',
+  summary: 'A Courier now comes with an extra Parcel card: it takes a seat, uses 1 power per floor, pays nothing and must sit beside him; he only pays with it. Board the parcel alone and it opens on arrival for coins or power at random.',
+  changes: [
+    'New card, the Parcel: dealt right after its Courier. Takes a seat, uses 1 power per floor, pays no fare; it is nobody’s neighbour (Nurse, Coach, Celebrity, Tourist and the tip jar ignore it) but counts toward the six riders for crowding.',
+    'Adjacency: with both aboard, the Courier and his parcel must sit next to each other (up, down, left or right); other seats are refused (“The parcel must sit beside its Courier”), including moves.',
+    'Courier: fare 3 → 8. With his parcel beside him he pays and recharges 2 power on arrival; without it he adds +1 agitation per floor (“Courier looking for his parcel”) and pays nothing on arrival: no recharge, tips or punch card. The parcel leaves with him and is not an arrival.',
+    'Parcel alone: opened at its floor for 6 coins (50%) or 3 power (50%), equal value at the base shop price.',
+    'At most one Courier per floor, so at most 4 cards on a normal floor and 5 on floor 1 with a legend. A dismissed Courier takes his parcel; neither can be held for the next batch, and a held rider never replaces them. The tutorial Courier carries no parcel.',
+    'Cards: the Courier shows “w/ Parcel ±N” (net for both cards on delivery, the parcel’s power included); the Parcel shows the value of restoring his fare and calm when he is aboard, otherwise its expected contents minus power. The Parcel is a plain card without foil.',
+  ],
+  experiments: [
+    'Tuning: Courier fare {3, 6, 8, 10} × unclaimed parcel {6c/3p, 8/4, 10/6}, plus no parcel (old rules); 10 play styles × 300 runs per cell = 3,000 runs, 39,000 in all (seed 424242, 150F horizon).',
+    'At fare 3 the parcel alone dominated (skilled styles took only the parcel on 44–82% of offers) and the Courier was rarely taken (6–15%). At fare 8 with 6c/3p: Courier boarded 43%, pair 42%, parcel alone 21%, Courier alone 1%, the widest spread, so it was adopted. 10/8/4 pushed parcel-alone to 36% and parcel boarding to 86%, out of band.',
+    'Acceptance (balance:accept, 300 runs × 12 groups = 3,600 runs, seed 999001), old → new: balanced median 114 → 109F; Courier boarding 80.5% (out of band) → about 46% (in band); novice 39 → 41; power deaths 1.8% → 6.7%, agitation deaths 97.6% → 92.7%; median exit coins 215 → 187. Style spread 95.2%, unchanged.',
+    'Exploration (300 runs per style): casual 41 → 53F (boards the pair as the card suggests), novice 35 → 41, net-reading 98 → 98; skilled styles within ±4 floors.',
+    'Interactions: the parcel is no neighbour (Nurse / Coach / Celebrity / Tourist / tip jar / Ghost delay skip it); a Mimic with a parcel above copies nothing; incidents never pick it; relay, finale, single fare, meter, punch card and arrival relief count real arrivals only; Reinforced (5+) and the Operator (not full) count seats, and the parcel takes one.',
+    'verify: one new check (29 in all): across 4,000 packets at most one Courier per floor with his parcel right after and the same destination; paired arrival +8 coins +2 power and the parcel is not an arrival; without it +1 agitation, 0 coins and no recharge; unclaimed opens for 6 coins or 3 power; not a neighbour; non-adjacent placement refused; dismissal takes the parcel; neither can be held. Browser: refusal message, paired delivery and a 6-coin opening confirmed.',
+  ],
+  watch: ['Courier boarding about 46% and parcel-alone 21%: watch whether real players take the parcel alone more often; if it becomes the default, lower the payout.', 'Novice and casual medians rose (the short paired trip is safe); watch whether the first week gets too easy.'],
+};

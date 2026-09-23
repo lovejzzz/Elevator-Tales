@@ -71,7 +71,7 @@ export function sectorBudget(state: RunState) {
     const aboard = state.cabin.some(r => r && r.destination >= f);
     need += futureMotor(state, f) + (aboard ? riders : 1);
   }
-  state.cabin.forEach(r => { if (r?.kind === 'courier' && r.destination <= shop) refunds += 2; });
+  state.cabin.forEach((r, slot) => { if (r?.kind === 'courier' && r.destination <= shop && E.parcelBeside(state.cabin, slot)) refunds += 2; });
   const emergency = Math.min((E.boxOf(state).storage >= 3 ? 10 : 20) - (state.emergencySector === Math.floor(state.floor / 10) ? state.emergencyUsed ?? 0 : 0), Math.floor(Math.max(0, state.coins) / emergencyUnitPrice(E.boxOf(state))));
   const avail = state.energy + refunds + Math.max(0, emergency);
   return { need, avail, slack: avail - need };
@@ -101,6 +101,8 @@ function evaluate(state: RunState, bot: Bot): number {
     v += Math.pow(0.95, rem) * fare - EP_FUTURE * energy * rem + 0.8 * transitIncome(r, after.cabin, slot) * rem;
     if (bot.favored.includes(r.kind)) v += bot.favor * Math.min(rem, 5);
     if (isLegend(r.kind)) v += LEGEND_HEURISTIC + (bot.legends.includes(r.kind as LegendKind) ? 12 : 0);
+    if (r.kind === 'parcel' && !after.cabin.some(o => o?.id === r.ownerId)) v += Math.pow(0.95, rem) * (E.PARCEL_RULES.payoutCoins + EP_FUTURE * E.PARCEL_RULES.payoutPower) / 2;
+    if (r.kind === 'courier' && E.parcelBeside(after.cabin, slot)) v += Math.pow(0.95, rem) * EP_FUTURE * E.COURIER_ARRIVAL_CHARGE;
     if (r.kind === 'bomb' && (r.fuse ?? 9) < rem && !E.hasNeighbour(after.cabin, slot, ['cop'])) v -= 150;
     // Visible progress a player can plan around: repairs, compliance stamps, child care.
     const low = agitationBand(after.stress) === 'low';
@@ -122,6 +124,8 @@ function evaluate(state: RunState, bot: Bot): number {
 }
 
 const place = (state: RunState, rider: Rider, slot: number): RunState => ({ ...state, cabin: state.cabin.map((r, i) => (i === slot ? rider : r)) });
+/** The UI refuses a Courier and his parcel aboard in non-adjacent seats. */
+const valid = (state: RunState) => E.parcelLayoutOk(state.cabin);
 
 /** The same net value the cards show (lib/net-value.ts). */
 export const cardNet = (o: Rider, state: RunState) => netValue(o, state) ?? 0;
@@ -139,9 +143,17 @@ function chooseBoarding(state: RunState, offers: Rider[], bot: Bot, mode: Legend
     const net = (o: Rider) => cardNet(o, cur);
     const order = bot.id === 'casualnet' ? [...pool].sort((a, b) => net(b) - net(a)) : [...pool].sort((a, b) => PASSENGERS[b.kind].fare - PASSENGERS[a.kind].fare);
     for (const o of order) {
+      // The card says the Courier only pays with his parcel beside him: casual players take both or neither.
+      if (o.kind === 'parcel') continue;
       if (bot.id === 'casualnet' && cur.cabin.some(Boolean) && net(o) < 0) continue;
       const slot = cur.cabin.findIndex(r => !r); if (slot < 0) break;
-      const cand = place(cur, o, slot);
+      const parcel = o.parcelId ? pool.find(p => p.id === o.parcelId) : undefined;
+      let cand = place(cur, o, slot);
+      if (parcel) {
+        const pair = ADJACENT.flatMap(([a, b]) => [[a, b], [b, a]]).find(([a, b]) => !cur.cabin[a] && !cur.cabin[b]);
+        if (!pair) continue;
+        cand = place(place(cur, o, pair[0]), parcel, pair[1]);
+      }
       const preview = E.resolveFloor(cand, previewRng());
       if (cur.cabin.some(Boolean) && (preview.status === 'lost' || preview.stress >= preview.stressCap - 2)) continue;
       cur = cand;
@@ -153,13 +165,13 @@ function chooseBoarding(state: RunState, offers: Rider[], bot: Bot, mode: Legend
     let best: { s: RunState; v: number; used: Rider[] } | null = null;
     const empty = [0, 1, 2, 3, 4, 5].filter(i => !cur.cabin[i]);
     for (const o of pool) for (const slot of empty) {
-      const cand = place(cur, o, slot); const v = evaluate(cand, bot);
+      const cand = place(cur, o, slot); if (!valid(cand)) continue; const v = evaluate(cand, bot);
       if (!best || v > best.v) best = { s: cand, v, used: [o] };
     }
     // Pairs, so that synergies that need two new riders (lovers, cop+thief) are visible.
     for (let i = 0; i < pool.length; i++) for (let j = i + 1; j < pool.length; j++) for (const a of empty) for (const b of empty) {
       if (a === b) continue;
-      const cand = place(place(cur, pool[i], a), pool[j], b); const v = evaluate(cand, bot);
+      const cand = place(place(cur, pool[i], a), pool[j], b); if (!valid(cand)) continue; const v = evaluate(cand, bot);
       if (!best || v > best.v) best = { s: cand, v, used: [pool[i], pool[j]] };
     }
     if (!best || best.v <= score + 0.01) break;
@@ -239,7 +251,7 @@ export type RunLog = {
   bot: BotId; seed: number; floor: number; cause: 'energy' | 'agitation' | 'bomb' | 'alive';
   closeCalls: number; escapes: number; powerCalls: number; stressCalls: number; bombCalls: number;
   emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; calmUnits?: number; inspectors?: number; stamped?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
-  legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
+  parcel?: Record<'offered' | 'paired' | 'courierOnly' | 'parcelOnly' | 'opened', number>; legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
   shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
 };
 
@@ -275,6 +287,15 @@ export function runOne(opt: RunOptions): RunLog {
     state = chooseBoarding(state, offers, bot, mode);
     if (!state.cabin.some(Boolean)) { const slot = 0; state = place(state, offers.find(o => !isLegend(o.kind)) ?? offers[0], slot); }
     for (const r of state.cabin) if (r && !before.has(r.id)) log.boarded[r.kind] = (log.boarded[r.kind] ?? 0) + 1;
+    {
+      const p = (log.parcel ??= { offered: 0, paired: 0, courierOnly: 0, parcelOnly: 0, opened: 0 });
+      if (offers.some(o => o.kind === 'parcel')) p.offered++;
+      state.cabin.forEach((r, slot) => {
+        if (!r || before.has(r.id)) return;
+        if (r.kind === 'courier' && r.parcelId) { if (E.parcelBeside(state.cabin, slot)) p.paired++; else p.courierOnly++; }
+        if (r.kind === 'parcel' && !state.cabin.some(o => o?.id === r.ownerId)) p.parcelOnly++;
+      });
+    }
     // Dispatch / Rebooking: shorten the longest new trip by one stop (fare unchanged).
     if (bot.id !== 'novice' && (state.upgrades.dispatch || state.upgrades.retime)) {
       const fresh = state.cabin.filter(r => r && r.boardedAt === state.floor && !isLegend(r.kind) && r.destination - state.floor >= 3).sort((a, b) => b!.destination - a!.destination)[0];
@@ -309,6 +330,7 @@ export function runOne(opt: RunOptions): RunLog {
     const cabinBefore = state.cabin.filter(Boolean).map(r => r!);
     const next = E.resolveFloor(state, stream(opt.seed, 'resolve', state.floor));
     for (const r of cabinBefore) if (!next.cabin.some(n => n?.id === r.id) && next.lastArrivals?.some(a => a.riderId === r.id)) log.delivered[r.kind] = (log.delivered[r.kind] ?? 0) + 1;
+    for (const a of next.lastArrivals ?? []) if (a.kind === 'parcel') log.parcel!.opened++;
     for (const a of next.lastArrivals ?? []) if (a.kind === 'inspector') { log.inspectors = (log.inspectors ?? 0) + 1; if (a.coins >= PASSENGERS.inspector.fare + 12) log.stamped = (log.stamped ?? 0) + 1; }
     if (next.message.includes('车厢事故') || next.log[0]?.includes('车厢事故')) log.incidents++;
     for (const line of next.lastPressure.sources) if (line.amount > 0) log.pressure[line.label] = (log.pressure[line.label] ?? 0) + line.amount;

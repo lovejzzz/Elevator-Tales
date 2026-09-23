@@ -3,6 +3,7 @@ import type { PassengerKind } from './game-data';
 type Line = [string, string];
 /** Short in-character lines: said on boarding (sometimes) and on getting off. Flavour only. */
 export const QUIPS: Record<PassengerKind, { board: Line[]; arrive: Line[] }> = {
+  parcel: { board: [['……', '…']], arrive: [['（纸箱被打开了）', '(The parcel is opened)']] },
   commuter: { board: [['又是这一班。', 'Same lift again.'], ['别叫醒我。', 'Don’t wake me.']], arrive: [['明天见。', 'See you tomorrow.'], ['准点，谢了。', 'On time. Thanks.']] },
   tourist: { board: [['这层的地毯好看！', 'Lovely carpet here!'], ['可以拍一张吗？', 'Mind if I take a photo?']], arrive: [['下一层还会更漂亮吗？', 'Is the next floor prettier?'], ['拍到了！', 'Got the shot!']] },
   courier: { board: [['加急件，快点。', 'Rush parcel, hurry.'], ['签收在上面。', 'Signature’s upstairs.']], arrive: [['送达！', 'Delivered!'], ['电给你留了点。', 'Left you some charge.']] },

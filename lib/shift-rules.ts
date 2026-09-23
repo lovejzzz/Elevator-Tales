@@ -40,5 +40,5 @@ export const OFFER_PARTNERS: Record<PassengerKind, PassengerKind[]> = {
   nurse: ['drunk', 'child'], child: ['nurse', 'lover'], ghost: ['exorcist'], exorcist: ['ghost'],
   coach: ['commuter', 'courier', 'mystery'], celebrity: ['tourist', 'coach'], inspector: ['mechanic'],
   bomb: ['cop', 'thief', 'drunk'], mystery: ['coach'], shifter: ['nurse'], mimic: ['tourist'],
-  operator: ['mechanic'], matchmaker: ['lover'], don: ['thief'], matron: ['child'], nightingale: ['tourist'], medium: ['ghost'], tycoon: ['commuter'], stranger: ['tourist'],
+  parcel: [], operator: ['mechanic'], matchmaker: ['lover'], don: ['thief'], matron: ['child'], nightingale: ['tourist'], medium: ['ghost'], tycoon: ['commuter'], stranger: ['tourist'],
 };
