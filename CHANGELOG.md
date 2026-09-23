@@ -1,6 +1,12 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.5**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.6**. Publication status is tracked separately from the source version.
+
+## v9.6 — 2026-09-23 — Flat motor, late-night unrest, calming / 电机固定、夜深人躁、途中安抚
+
+- Motor 1 on 1–10F, flat 2 from 11F (no more increases). Late-night unrest from 41F: +1 agitation every third floor, every second from 61F, every floor from 81F, +2 from 101F. In-transit calming 8 coins per point, 6 per ten floors; the ascend guard also covers agitation.
+- Acceptance (3,900 runs): styles 98.1%, close calls 97.6%, 0% alive at 150F, optimizer median 102. Novice 26 → 41, casual 29 → 44, power deaths 60–69% → 21–33%.
+- Accepted cost: skilled/net-reading players are rich late (68–86% affluent shops); deaths 99% agitation for skilled; Musician boarding 70%. Failing targets kept visible for the next adjustment.
 
 ## v9.5 — 2026-09-23 — Cleaner rail, drag-back withdraw, legend rotation / 侧栏精简、拖回撤销、传奇轮换
 

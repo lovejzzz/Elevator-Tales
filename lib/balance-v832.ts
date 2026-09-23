@@ -9,7 +9,7 @@ export const AGITATION_RULES = { arrivalReliefCap: 2 };
 /** v9 agitation: crowding costs calm, a lively cabin tips, and a wild cabin has incidents. */
 /** Late-night unrest from `from`: +1 agitation every third floor, then every second floor after `every` more floors,
  * then every floor, then +2 per floor (cap). A gradual clock that riders like nurses and musicians can answer. */
-export const NIGHT_UNREST = { from: 0, every: 20, cap: 2 };
+export const NIGHT_UNREST = { from: 41, every: 20, cap: 2 };
 export const nightUnrest = (floor: number) => {
   if (!NIGHT_UNREST.from || floor < NIGHT_UNREST.from) return 0;
   const d = floor - NIGHT_UNREST.from, level = Math.floor(d / NIGHT_UNREST.every);
@@ -39,7 +39,7 @@ export function musicBeatForAgitation(value: number) {
 }
 // Local playtest candidate, adopted after matched and unused-seed comparisons.
 // The old schedule remains available only as an explicit research scenario.
-export const MOTOR_RULES = { upperZone: true, midDiscount: 0, lateSteps: true, lateSlope: 7, lateCap: 12, lateStart: 46, surchargeFrom: 11, surcharge: 1, flat: 0, rampFrom: 0, rampEvery: 10 };
+export const MOTOR_RULES = { upperZone: true, midDiscount: 0, lateSteps: true, lateSlope: 7, lateCap: 12, lateStart: 46, surchargeFrom: 11, surcharge: 1, flat: 2, rampFrom: 0, rampEvery: 10 };
 export const motorCost = (destination: number) => MOTOR_RULES.flat > 0 ? (destination <= 10 ? 1 : MOTOR_RULES.flat + (MOTOR_RULES.rampFrom && destination >= MOTOR_RULES.rampFrom ? 1 + Math.floor((destination - MOTOR_RULES.rampFrom) / MOTOR_RULES.rampEvery) : 0)) : baseMotorCost(destination) + (destination >= MOTOR_RULES.surchargeFrom ? MOTOR_RULES.surcharge : 0);
 const baseMotorCost = (destination: number) => {
   if (!MOTOR_RULES.upperZone || destination < 41) return destination <= 10 ? 1 : destination <= 30 ? 2 : destination <= 60 ? 3 : 4;
@@ -54,7 +54,7 @@ export function nextMotorChange(floor:number) {
 }
 export const motorAdvanceNotice=(floor:number)=>{
  const change=nextMotorChange(floor);
- return change?`预告：${change.from}层起运转${change.power}电`:'运转已达上限，不再增加';
+ return change?`预告：${change.from}层起运转${change.power}电`:`运转固定${motorCost(floor+1)}电`;
 };
 /** Generated from motorCost so the rules text can never drift from settlement. */
 export const motorScheduleText=()=>{
@@ -65,6 +65,8 @@ export const motorScheduleText=()=>{
  parts.push(`${start}层起${motorCost(start)}电封顶`);
  return `运转：${parts.join('，')}。每十层可维修，人物耗电另计。`;
 };
+/** Rules text for late-night unrest, generated from NIGHT_UNREST so it cannot drift from settlement. */
+export const nightUnrestText = () => NIGHT_UNREST.from ? `${NIGHT_UNREST.from}层起夜深人躁：每三层+1躁动，${NIGHT_UNREST.from + NIGHT_UNREST.every}层起每两层，${NIGHT_UNREST.from + 2 * NIGHT_UNREST.every}层起每层。` : '';
 export const REPAIR_WORK = 2;
 export const REPAIR_DURATION = 4;
 export const REPAIR_DURATION_CAP = 8;

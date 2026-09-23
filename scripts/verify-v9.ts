@@ -9,7 +9,7 @@ import { riderProfile } from '../lib/rider-profile';
 import type { Rider, RunState } from '../lib/game-engine';
 import { translateGameText } from '../lib/i18n';
 import { sectorForecast } from '../lib/game-forecast';
-import { motorAdvanceNotice, motorScheduleText } from '../lib/balance-v832';
+import { motorAdvanceNotice, motorScheduleText, nightUnrest } from '../lib/balance-v832';
 import { departureRisk, rescuePlan, sectorNeed } from '../lib/departure-guard';
 import { netValue } from '../lib/net-value';
 import { drawLegend } from '../lib/legend-unlocks';
@@ -171,7 +171,7 @@ console.log('PASS safety margin, soundproof, insulation, stabilizer cap, dispatc
   assert.equal(riderProfile(mimic, [top, null, null, mimic, null, null], 3).fare, PASSENGERS.bomb.fare, 'mimic copies the fare above');
   assert.equal(riderProfile(mimic, [null, null, null, mimic, null, null], 3).fare, PASSENGERS.mimic.fare);
   const schedule = [1, 10, 11, 30, 31, 41, 46, 53, 88, 200].map(motorCost);
-  assert.deepEqual(schedule, [1, 1, 3, 3, 4, 5, 7, 8, 13, 13]);
+  assert.deepEqual(schedule, [1, 1, 2, 2, 2, 2, 2, 2, 2, 2], "v9.6: motor 1 on 1–10, then a flat 2");
   assert.equal(E.availableKinds(1, [E.legendRider('medium', fixed())]).filter(k => k === 'ghost').length, 2, 'medium doubles ghost weight early');
   assert.equal(LEGEND_KINDS.length, 8);
 }
@@ -186,7 +186,7 @@ console.log('PASS mimic fare copy, motor schedule, medium ghost draw');
   }
   assert.equal(projected.shop, 20);
   assert.equal(s.energy, projected.projected, 'projection equals simulated settlement');
-  assert.equal(sectorForecast(run(12, [rider('commuter', 12, 8)], { energy: 10 })).failFloor, 15);
+  assert.equal(sectorForecast(run(12, [rider('commuter', 12, 8)], { energy: 10 })).failFloor, 16, 'v9.6: 3 per floor (motor 2 + rider 1)');
 }
 console.log('PASS sector power forecast equals settlement with no new boarding');
 // Daily shift: seeded streams reproduce the opening and the shop draw regardless of seating.
@@ -202,7 +202,8 @@ console.log('PASS sector power forecast equals settlement with no new boarding')
 }
 console.log('PASS daily shift streams reproduce openings and shop draws');
 // Generated motor texts translate by pattern, whatever the numbers.
-assert.equal(translateGameText(motorAdvanceNotice(1), 'en'), 'Ahead: motor 3 from floor 11');
+assert.equal(translateGameText(motorAdvanceNotice(1), 'en'), 'Ahead: motor 2 from floor 11');
+assert.equal(translateGameText(motorAdvanceNotice(20), 'en'), 'Motor fixed at 2');
 assert.ok(!/[\u3400-\u9fff]/u.test(translateGameText(motorScheduleText(), 'en')), translateGameText(motorScheduleText(), 'en'));
 console.log('PASS generated motor notice and schedule translate');
 // v9.0.2 ascend guard: the playtest death at 14F (8 power, 9 needed, 87 coins) must be caught and rescuable.
@@ -215,7 +216,7 @@ console.log('PASS generated motor notice and schedule translate');
   assert.equal(departureRisk(E.emergencyCharge(s, risk.need)).fatal, false, 'charging the offered amount clears the guard');
   assert.equal(departureRisk({ ...s, energy: 40 }).fatal, false, 'a safe floor never asks twice');
   const ui = readFileSync(new URL('../components/elevator-game.tsx', import.meta.url), 'utf8');
-  assert.ok(/if \(risk\.fatal && !departArmed\)/.test(ui), 'the ascend handler must stop a fatal floor until confirmed');
+  assert.ok(/if \(\(risk\.fatal \|\| stressFatal\) && !departArmed\)/.test(ui), 'the ascend handler must stop a fatal floor until confirmed');
   const need = sectorNeed({ ...s, floor: 10, status: 'upgrade' });
   assert.deepEqual([need.from, need.to, need.riders], [11, 20, 50]);
   assert.equal(need.motor, Array.from({ length: 10 }, (_, i) => motorCost(11 + i)).reduce((a, b) => a + b, 0));
@@ -250,11 +251,11 @@ console.log('PASS insulation friction tip');
 console.log('PASS intro opens only after storage is read');
 // v9.3.1 rescue plans: the 9.3 playtest's floor 28 had no way out, so the guard must say so instead of suggesting dismissals.
 {
-  const doomed = run(28, [null, null, rider('child', 21, 9, { boardedAt: 20 }), null, null, rider('lover', 27, 3, { boardedAt: 26 })], { energy: 1, coins: 16, emergencySector: 2, emergencyUsed: 10 });
+  const doomed = run(28, [null, null, rider('child', 21, 9, { boardedAt: 20 }), null, null, rider('lover', 27, 3, { boardedAt: 26 })], { energy: 1, coins: 12, emergencySector: 2, emergencyUsed: 10 }); // v9.6: 12 coins (the 9.3 run's 16 now survives at motor 2)
   const risk = departureRisk(doomed);
   assert.ok(risk.fatal && risk.need > risk.affordable, JSON.stringify(risk));
   assert.equal(rescuePlan(doomed), null, 'no dismissal and charge combination survives floor 28');
-  const saveable = run(24, [rider('commuter', 24, 3, { boardedAt: 22 }), rider('tourist', 24, 3, { boardedAt: 22 }), rider('commuter', 24, 4, { boardedAt: 24 })], { energy: 3, coins: 12, emergencySector: 2, emergencyUsed: 0 });
+  const saveable = run(24, [rider('commuter', 24, 3, { boardedAt: 22 }), rider('tourist', 24, 3, { boardedAt: 22 }), rider('commuter', 24, 4, { boardedAt: 24 })], { energy: 3, coins: 8, emergencySector: 2, emergencyUsed: 0 });
   const plan = rescuePlan(saveable);
   assert.ok(plan && plan.remove.length === 1 && plan.remove[0].paid === 0 && plan.charge > 0, `withdraw the new rider, then charge: ${JSON.stringify(plan)}`);
 }
@@ -279,4 +280,18 @@ console.log('PASS card net value');
   assert.deepEqual(drawLegend([]), []);
 }
 console.log('PASS legend shuffle bag');
-console.log(JSON.stringify({ version: 'v9', checks: 20, passed: true }));
+// v9.6 option A: flat motor 2 from 11F, late-night unrest from 41F, in-transit calming (8 coins, 6 per ten floors).
+{
+  assert.deepEqual([40, 41, 42, 44, 60, 61, 62, 63, 81, 100, 101, 140].map(nightUnrest), [0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 2, 2]);
+  const late = run(43, [rider('commuter', 43, 5, { boardedAt: 40 })], { stress: 2, coins: 100 });
+  const after = E.resolveFloor(late, fixed());
+  assert.equal(lines(after, 'lastPressure')['夜深人躁'], 1, 'floor 44 carries unrest');
+  const calmed = E.buyCalm(late, 2);
+  assert.deepEqual([calmed.stress, calmed.coins], [0, 84]);
+  let s = { ...late, stress: 8, stressCap: 10 };
+  for (let i = 0; i < 6; i++) s = E.buyCalm(s, 1);
+  assert.equal(s.stress, 2); assert.equal(E.calmAllowance(s), 0, 'six per ten floors');
+  assert.equal(E.buyCalm(s, 1), s);
+}
+console.log('PASS option A: flat motor, late-night unrest and calming');
+console.log(JSON.stringify({ version: 'v9', checks: 21, passed: true }));

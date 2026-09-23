@@ -39,7 +39,7 @@ const offers40=makeOffers(40,initialRun().upgrades,false,rngFor(13));
 assert(offers40.some(r=>!r.volatile),'every floor retains a non-high-risk offer');
 
 const shop=state({floor:10,status:'upgrade',coins:100,earned:100,energy:2});
-assert.equal(chargingPlan(shop).target,50);assert.equal(chargingPlan(shop).baseline,30);assert.equal(chargingPlan(shop).cost,96);
+assert.equal(chargingPlan(shop).target,50);assert.equal(chargingPlan(shop).baseline,20);assert.equal(chargingPlan(shop).cost,96);
 assert.equal(chargeBattery(shop,20).energy,22);assert.equal(chargeBattery(shop,20).coins,60);
 
 const rng=rngFor(812091);let transitions=0;

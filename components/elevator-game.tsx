@@ -17,7 +17,7 @@ import { LEGEND_KINDS, type LegendKind } from '@/lib/game-data';
 import { availableShopCards, emergencyRepairPlan, repairEmergency, dismissalsRemaining, energyBreakdown, purchaseRepairWarning } from '@/lib/game-engine';
 import { HIGH_RISK_BONUS, travelEnergyCost, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, touristCompanionCount, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, sectorForecast, stressForecast } from '@/lib/game-forecast';
-import { RETIRED_UPGRADES, emergencyAllowance, emergencySectorLeft, emergencyCharge, boxOf, buyBoxLevel, canBuyBoxLevel, boxLevelPrice, rerollShop, REROLL_PRICE, SHOP_PRICES } from '@/lib/game-engine';
+import { RETIRED_UPGRADES, CALM_PURCHASE, buyCalm, calmAllowance, emergencyAllowance, emergencySectorLeft, emergencyCharge, boxOf, buyBoxLevel, canBuyBoxLevel, boxLevelPrice, rerollShop, REROLL_PRICE, SHOP_PRICES } from '@/lib/game-engine';
 import { emergencyUnitPrice, BOX_LINES, BOX_LINE_LABELS, BOX_MAX_LEVEL, BOX_TOTAL_CAP, boxTotal, chargeCost as boxChargeCost, chargeUnitPrice, affordableUnits, type BoxLine } from '@/lib/power-box';
 import { activeConnection, copyConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
@@ -38,7 +38,7 @@ import { shouldPreviewConnection } from '@/lib/connection-preview';
 import { AgitationGauge } from '@/components/agitation-gauge';
 import { PowerGauge, RegisterNumber } from '@/components/power-gauge';
 import { cooperationLabel } from '@/lib/cooperation-label';
-import { agitationBand, musicBeatForAgitation, motorAdvanceNotice, motorScheduleText, REPAIR_WORK, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, RESERVE_CELL_CHARGE } from '@/lib/balance-v832';
+import { agitationBand, musicBeatForAgitation, motorAdvanceNotice, motorScheduleText, nightUnrestText, REPAIR_WORK, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, RESERVE_CELL_CHARGE } from '@/lib/balance-v832';
 import { consumeReserveCell, nextOfferBatch, retimeRider, oldMovesRemaining, reserveOffer, applyCalmCharge, startRun } from '@/lib/game-engine';
 
 type DragPayload = { type: 'offer'; id: string } | { type: 'slot'; slot: number };
@@ -368,6 +368,10 @@ export default function ElevatorGame() {
   const emergencyPrice = emergencyUnitPrice(boxOf(run));
   const emergencyNeed = run.status === 'playing' ? Math.min(emergencyLeft, Math.max(0, 1 - sector.projected, energyFatal ? 1 - (run.energy + energyPreview.lowDelta) : 0)) : 0;
   const stressFatal = run.stress + pressurePreview.highDelta >= run.stressCap;
+  // v9.6 in-transit calming: coins lower agitation before departure, capped per ten floors.
+  const calmLeft = calmAllowance(run);
+  const calmNeed = stressFatal ? Math.max(1, run.stress + pressurePreview.highDelta - run.stressCap + 1) : 0;
+  const calm = (units: number) => { const next = buyCalm(run, units); if (next === run) return; reportMetrics(run, next, language === 'zh' ? '途中安抚' : 'Calming'); setRun(next); playTone(sound, 'upgrade'); };
   const forecastTone = energyFatal || stressFatal ? 'danger' : pressurePreview.tone;
   const phase = shiftPhase(run.floor); const upgradeCount = Object.values(run.upgrades).reduce((sum, count) => sum + count, 0); const nextShop = nextShopFloor(run.floor); const nextIsShop = (run.floor + 1) % 10 === 0; const agitated = run.stress >= agitationThreshold(run.stressCap);
   const loverResponse = offers.some((rider) => rider.calledByLover); const firstPairLesson = run.floor === 1 && guidedShift;
@@ -463,7 +467,7 @@ export default function ElevatorGame() {
   const depart = useCallback(() => {
     if (locked || busyRef.current) return;
     if (!run.cabin.some(Boolean)) { flash({tone:'error',label:'至少接一位乘客才能上行',slots:[]}); playTone(sound,'danger'); return; }
-    if (risk.fatal && !departArmed) { setDepartArmedFor(run); playTone(sound,'danger'); return; }
+    if ((risk.fatal || stressFatal) && !departArmed) { setDepartArmedFor(run); playTone(sound,'danger'); return; }
     const reduced = fastReveal || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     busyRef.current = true; setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setFeedback(null); setDoors('closing'); playTone(sound, 'depart');
     journeyTimers.current.forEach(clearTimeout);
@@ -487,7 +491,7 @@ export default function ElevatorGame() {
       }, reduced ? 70 : 470),
 
     ];
-  }, [locked, sound, run, flash, reportMetrics, fastReveal, presentOffers, runDelivered, keepsakesSeen, unlockedLegends, storiesUnlocked, rngOf, offers, daily, dailyBest, risk.fatal, departArmed]);
+  }, [locked, sound, run, flash, reportMetrics, fastReveal, presentOffers, runDelivered, keepsakesSeen, unlockedLegends, storiesUnlocked, rngOf, offers, daily, dailyBest, risk.fatal, stressFatal, departArmed]);
   // Arrival coins fly from each departing rider into the wallet. Purely decorative DOM, removed on finish.
   useEffect(() => {
     if (!arriving.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -556,6 +560,7 @@ export default function ElevatorGame() {
           <MetricResponse metric="stress" event={metricEvent} locale={language} />
           <AgitationGauge value={run.stress} cap={run.stressCap} nextLow={run.stress+pressurePreview.lowDelta} nextHigh={run.stress+pressurePreview.highDelta} locale={language}/>
           <small className="rail-forecast"><span>下一站 <b className={stressFatal ? 'forecast-fatal' : ''}>{pressurePreview.range}</b></span></small>
+          {run.status==='playing'&&calmLeft>0&&(stressFatal||agitationBand(run.stress)!=='low')&&(()=>{const units=Math.min(calmLeft,Math.max(1,calmNeed));return <div className="emergency-charge calm-charge" data-no-translate title={language==='zh'?`本段还可安抚 ${calmLeft} 点 · ${CALM_PURCHASE.price} 币/点`:`${calmLeft} left this sector · ${CALM_PURCHASE.price} coins each`}><button className={stressFatal?'is-urgent':''} disabled={locked} onClick={()=>calm(units)}>{language==='zh'?`安抚 −${units} · ${units*CALM_PURCHASE.price}币`:`Calm −${units} · ${units*CALM_PURCHASE.price}c`}</button></div>;})()}
         </div>
         <div data-metric="coins" className="score-card wallet-card"><Coins aria-hidden="true" /><span className="rail-metric-name">余额</span><strong><RegisterNumber value={run.coins} /></strong><MetricResponse metric="coins" event={metricEvent} locale={language} /><span className={`mobile-shop-note ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</span><small className={`wallet-summary ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</small></div>
 
@@ -630,6 +635,11 @@ export default function ElevatorGame() {
         </div><div className="candidate-notes"><span className="route-note">运转 {travelEnergyCost(run.floor+1)} 电/层 · 下段 {travelEnergyCost(nextShop+1)} 电/层</span><span>每层＝上行后立即结算 · 到站＝下车时结算 · 邻座逐人叠加</span>{run.upgrades.single>0&&<span>车费不含整车奖励：单人到站+2币</span>}{run.upgrades.crowd>0&&<span>车费不含整车奖励：三类齐全且有人到站+6币</span>}{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
         <div className="departure-controls">
           <button className="mobile-inspect-button" disabled={!activeRider || locked} onClick={() => {if(activeRider){setEjectArmed(false);setPassengerDetails(activeRider);}}} aria-label="查看选中人物规则"><BookOpen /><span>人物/请离</span></button>
+          {run.status==='playing'&&doors==='open'&&occupied>0&&stressFatal&&!risk.fatal&&<div className={`power-alert is-fatal ${departArmed?'is-armed':''}`} role="alert" data-no-translate>
+            <p><Flame aria-hidden="true"/>{language==='zh'?`这一层躁动可能失控：现在 ${run.stress}/${run.stressCap}，下一站 ${pressurePreview.range}`:`Agitation can boil over this floor: ${run.stress}/${run.stressCap} now, next ${pressurePreview.range}`}</p>
+            <div className="power-alert-actions">{calmLeft>=calmNeed&&<button disabled={locked} onClick={()=>calm(calmNeed)}>{language==='zh'?`安抚 −${calmNeed} · ${calmNeed*CALM_PURCHASE.price}币`:`Calm −${calmNeed} · ${calmNeed*CALM_PURCHASE.price}c`}</button>}</div>
+            <small>{calmLeft<calmNeed?(language==='zh'?'金币或本段安抚额度不够：换座位、请离躁动的乘客，或让人到站。':'Not enough coins or calming left: reseat, dismiss an agitating rider, or let someone arrive.'):''}{departArmed?(language==='zh'?' 再按一次上行＝冒险出发。':' Press ascend again to risk it.'):''}</small>
+          </div>}
           {run.status==='playing'&&doors==='open'&&occupied>0&&(risk.fatal||(sector.failFloor!==null&&sector.failFloor-run.floor<=2))&&<div className={`power-alert ${risk.fatal?'is-fatal':''} ${departArmed?'is-armed':''}`} role="alert" data-no-translate>
             <p><BatteryCharging aria-hidden="true"/>{risk.fatal?(language==='zh'?`这一层可能断电：电量 ${run.energy}，下一站 ${energyPreview.range}`:`This floor can run you out of power: ${run.energy} now, next ${energyPreview.range}`):(language==='zh'?`照现在 ${sector.failFloor} 层断电`:`At this rate: out of power at ${sector.failFloor}F`)}</p>
             <div className="power-alert-actions">
@@ -679,8 +689,8 @@ export default function ElevatorGame() {
         {change.capDelta !== 0 && <p><span>{change.label}上限</span><b>{signedDelta(change.capDelta)}</b></p>}
       </section>)}</div>
     </DialogContent></Dialog>
-    <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">TEMPORARY ASSIGNMENT · 00:17 AM</p><DialogHeader><DialogTitle>临时顶班。<br />这栋楼没有尽头。</DialogTitle><DialogDescription>今晚，你被临时派来这座古怪大楼开电梯。守住电量和躁动，安排每位乘客的位置。这里没有最后一层——活得越久，成绩越高。</DialogDescription></DialogHeader><p className="route-schedule">{motorScheduleText()}</p><div className="intro-rules"><span><b>01</b> 接客并安排站位</span><span><b>02</b> 守住电量与躁动</span><span><b>03</b> 尽可能生存下去</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始临时夜班 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button>{!daily&&<button className="story-link" data-no-translate onClick={()=>switchMode(true)}>{language==='zh'?'或者：今天的每日班次（所有人同一套候客与商店）':'Or: today’s daily shift (everyone gets the same riders and shops)'}</button>}</DialogContent></Dialog>
-    <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">ENDLESS SHIFT MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>这是一次没有终点的临时夜班。守住电量与躁动，活得越久，楼层成绩越高。</DialogDescription></DialogHeader><p className="route-schedule">{motorScheduleText()}</p><div className="manual-grid" data-no-translate>{MANUAL.map(([zhTitle,zhBody,enTitle,enBody])=><div key={zhTitle}><b>{language==='zh'?zhTitle:enTitle}</b><p>{language==='zh'?zhBody:enBody}</p></div>)}</div></DialogContent></Dialog>
+    <Dialog open={intro} onOpenChange={setIntro}><DialogContent className="story-dialog intro-dialog" showCloseButton={false}><p className="dialog-kicker">TEMPORARY ASSIGNMENT · 00:17 AM</p><DialogHeader><DialogTitle>临时顶班。<br />这栋楼没有尽头。</DialogTitle><DialogDescription>今晚，你被临时派来这座古怪大楼开电梯。守住电量和躁动，安排每位乘客的位置。这里没有最后一层——活得越久，成绩越高。</DialogDescription></DialogHeader><p className="route-schedule">{motorScheduleText()}{nightUnrestText()&&<><br />{nightUnrestText()}</>}</p><div className="intro-rules"><span><b>01</b> 接客并安排站位</span><span><b>02</b> 守住电量与躁动</span><span><b>03</b> 尽可能生存下去</span></div><Button className="story-primary" onClick={() => setIntro(false)}>开始临时夜班 <ArrowUp /></Button><button className="story-link" onClick={() => { setIntro(false); setHelp(true); }}>先阅读值班手册</button>{!daily&&<button className="story-link" data-no-translate onClick={()=>switchMode(true)}>{language==='zh'?'或者：今天的每日班次（所有人同一套候客与商店）':'Or: today’s daily shift (everyone gets the same riders and shops)'}</button>}</DialogContent></Dialog>
+    <Dialog open={help} onOpenChange={setHelp}><DialogContent className="story-dialog manual-dialog"><p className="dialog-kicker">ENDLESS SHIFT MANUAL</p><DialogHeader><DialogTitle>值班手册</DialogTitle><DialogDescription>这是一次没有终点的临时夜班。守住电量与躁动，活得越久，楼层成绩越高。</DialogDescription></DialogHeader><p className="route-schedule">{motorScheduleText()}{nightUnrestText()&&<><br />{nightUnrestText()}</>}</p><div className="manual-grid" data-no-translate>{MANUAL.map(([zhTitle,zhBody,enTitle,enBody])=><div key={zhTitle}><b>{language==='zh'?zhTitle:enTitle}</b><p>{language==='zh'?zhBody:enBody}</p></div>)}</div></DialogContent></Dialog>
     <Dialog open={pressureHelp} onOpenChange={setPressureHelp}><DialogContent className="story-dialog pressure-dialog"><p className="dialog-kicker">CABIN AGITATION</p><DialogHeader><DialogTitle>低、中、高：躁动是一种状态。</DialogTitle><DialogDescription>低0–2，中3–4，高5及以上；达到 {run.stressCap} 失控。人物按关门时的档位工作，躁动不兑换电量。虚线指针是下站预测，不是当前数值。</DialogDescription></DialogHeader><div className="pressure-rule-grid" data-no-translate>
       <section className="pressure-rise"><small>{language==='zh'?'会增加躁动':'Raises agitation'}</small>{PRESSURE_RISE.map(([zt,zb,et,eb])=><span key={zt}><b>{language==='zh'?zt:et}</b><p>{language==='zh'?zb:eb}</p></span>)}</section>
       <section className="pressure-relief"><small>{language==='zh'?'可以缓解 · 也有收益':'Relief · and upsides'}</small>{PRESSURE_RELIEF.map(([zt,zb,et,eb])=><span key={zt}><b>{language==='zh'?zt:et}</b><p>{language==='zh'?zb:eb}</p></span>)}</section>

@@ -73,4 +73,5 @@ export const V9_PAIRS: Array<[string, string]> = [
   ['大亨嫌挤', 'The Tycoon feels crowded'], ['坏人惊扰护士长', 'Criminals upset the Matron'], ['老周的扳手：配电箱免费升级。', 'Old Zhou’s Wrench: free power-box level.'],
   ['知道了', 'Got it'], ['？？？', '???'],
   ['满员 · 不省电', 'Full · no saving'], ['运转 −1 电', 'Motor −1'],
+  ['夜深人躁', 'Late-night unrest'], ['途中安抚', 'Calming'],
 ];

@@ -475,3 +475,49 @@ export const V95_EN: ChangelogEntry = {
     'Removing the per-sector motor increase needs a direction choice; see the two options in this release’s notes.',
   ],
 };
+
+export const V96_ZH: ChangelogEntry = {
+  version: '9.6', date: '2026-09-23', title: '电机不再每十层加电；夜深了，车厢会越来越躁',
+  summary: '运转耗电改为 1–10 层 1 电、11 层起固定 2 电，不再上涨；41 层起“夜深人躁”逐渐加快；新增途中安抚，用金币压下躁动。',
+  changes: [
+    '运转：1–10 层每层 1 电，11 层起每层固定 2 电，永不再加（原来是 11–30 层 3 电、31–40 层 4 电、41–45 层 5 电，46 层起每 7 层 +1 到 13）。',
+    '夜深人躁：41 层起每三层 +1 躁动，61 层起每两层，81 层起每层，101 层起每层 +2；已计入躁动预测，开场说明和值班手册写明时间表。护士、音乐家、乘客到站都能抵消。',
+    '途中安抚：躁动到中档以上时，躁动栏出现“安抚 −1 · 8 币”；每十层最多 6 点。这一层可能躁动失控时，上行按钮上方也会给出需要的安抚量，并需要再按一次才冒险出发。',
+    '侧栏的运转提示在 11 层后改为“运转固定 2 电”。',
+  ],
+  experiments: [
+    '取消加电后先试了“什么都不补”：熟练玩法 50–90% 的局活过 150 层，无尽模式失去终点，所以用“夜深人躁”代替加电作为后期的时钟。比较了固定 2 电 / 固定 3 电、夜深人躁开始楼层（41/51/61）与加速间隔（15/20/30）、每层 +1 的硬墙版本、途中安抚价格与上限共约 20 组。',
+    '最终验收（种子 999001，3900 局）：五种流派最弱 / 最强 98.1%，招牌能力 98–104%，死里逃生 97.6%，每 10 层险情 2.3 次，150 层存活 0%。熟练型（均衡）中位 102 层（p10 86，p90 108）。',
+    '玩家水平（种子 4242，每类 300 局）：新手中位 26 → 41，休闲 29 → 44；电量死亡占比 60–69% → 21–33%；离店剩余金币仍约 1–2。',
+    '已知代价（按方案 A 接受）：会算账的玩家后期明显变富——看净值上客中位 99 层、进店富裕 68.5%；均衡型进店富裕 83.4%、离店剩 162 金币；熟练型几乎都死于躁动（99%）。均衡型音乐家上车率 70%（界限 65%），因为音乐家能把躁动拉回中档。验收里这些目标暂列为失败，待下一步调整。',
+    'verify：运转时间表、断电楼层、上行保护（含躁动）、夜深人躁时间表、安抚价格与每十层上限；9.3 试玩的 28 层在新规则下可以撑过，测试改用 12 金币的无解局面。',
+  ],
+  watch: [
+    '熟练玩家后期太富：候选方案是后期车费略降，或让安抚价格随使用次数上升。',
+    '需要真人试玩确认“夜深人躁”比加电更公平、也仍然紧张。',
+    '音乐家上车率 70%，略超界限。',
+  ],
+};
+
+export const V96_EN: ChangelogEntry = {
+  version: '9.6', date: '2026-09-23', title: 'No more motor increases; the night grows restless instead',
+  summary: 'The motor costs 1 per floor on 1–10F and a flat 2 from 11F, never rising; from 41F late-night unrest slowly speeds up; new in-transit calming spends coins on agitation.',
+  changes: [
+    'Motor: 1 per floor on floors 1–10, then a flat 2 per floor forever (before: 3 on 11–30, 4 on 31–40, 5 on 41–45, then +1 every 7 floors up to 13).',
+    'Late-night unrest: from 41F +1 agitation every third floor, every second floor from 61F, every floor from 81F, +2 per floor from 101F. It is in the agitation forecast, and the intro and manual show the schedule. Nurses, Musicians and arrivals offset it.',
+    'Calming: once agitation is medium or higher the agitation panel offers “Calm −1 · 8c”, up to 6 per ten floors. When this floor can boil over, the ascend button shows the calming needed and asks for a second press to risk it.',
+    'The rail’s motor hint reads “Motor fixed at 2” from 11F.',
+  ],
+  experiments: [
+    'First, removing the increase with nothing in its place: skilled play survived past 150F in 50–90% of runs, so the endless mode lost its end; late-night unrest replaces the motor as the late clock. About 20 variants compared: flat motor 2 vs 3, unrest start (41/51/61) and pace (15/20/30), a hard +1-per-floor wall, calming price and cap.',
+    'Final acceptance (seed 999001, 3,900 runs): rider styles weakest / strongest 98.1%, signature abilities 98–104%, close calls 97.6%, 2.3 per ten floors, 0% alive at 150F. Optimizer median 102 (p10 86, p90 108).',
+    'Player tiers (seed 4242, 300 runs each): novice median 26 → 41, casual 29 → 44; share of deaths from power 60–69% → 21–33%; coins left after shopping still about 1–2.',
+    'Known cost (accepted with option A): players who do the maths grow rich late — net-reading median 99 with 68.5% affluent shops; the optimizer 83.4% affluent with 162 coins left; skilled runs nearly all end in agitation (99%). The optimizer boards Musicians 70% of the time (bound 65%) since they pull agitation back to medium. These acceptance targets are left failing pending the next adjustment.',
+    'verify: motor schedule, power-out floor, ascend guard (now including agitation), unrest schedule, calming price and per-sector cap; the 9.3 playtest’s floor 28 survives under the new rules, so the test now uses an unwinnable 12-coin position.',
+  ],
+  watch: [
+    'Skilled players are too rich late: candidates are slightly lower late fares or calming that gets pricier with use.',
+    'Human playtests need to confirm late-night unrest feels fairer than the motor increases and still tense.',
+    'Musicians boarded 70% of the time, just over the bound.',
+  ],
+};

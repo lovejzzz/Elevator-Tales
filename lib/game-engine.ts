@@ -676,7 +676,7 @@ export function emergencyAllowance(state: RunState) {
   return Math.max(0, Math.min(emergencySectorCap(boxOf(state)) - used, state.energyCap - state.energy, Math.floor(state.coins / emergencyUnitPrice(boxOf(state)))));
 }
 /** In-transit calming (v9.5): pay coins before departure to lower agitation, capped per ten floors. 0 per sector disables. */
-export const CALM_PURCHASE = { price: 6, perSector: 0 };
+export const CALM_PURCHASE = { price: 8, perSector: 6 };
 export function calmAllowance(state: RunState) {
   if (state.status !== 'playing' || !CALM_PURCHASE.perSector) return 0;
   const used = state.calmSector === sectorOf(state.floor) ? state.calmUsed ?? 0 : 0;
