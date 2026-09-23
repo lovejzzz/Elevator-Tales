@@ -2953,3 +2953,24 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .is-drag-source { opacity:.35; transition:opacity 120ms ease; }
 body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:none; }
 .game-shell .standing-slot.occupied:not(:disabled), .game-shell .passenger-card:not(:disabled):not(.boarded) { cursor:grab; }
+
+/* v9.13 seat lock: instead of a glow ring and sparks, the seat's gold frame closes in around the rider and locks. */
+.game-shell .slot-reaction:not(.reaction-error) { inset:0; border:2px solid #f3d38f; background:none; border-radius:inherit; box-shadow:inset 0 0 0 1px #fff3cf55, inset 0 0 18px #e0b75f33; animation:seat-lock 560ms cubic-bezier(.2,.8,.25,1) both; }
+.game-shell .slot-reaction.reaction-combo { border-color:#a9e8c2; box-shadow:inset 0 0 0 1px #e3ffef55, inset 0 0 18px #7ad69b33; }
+@keyframes seat-lock {
+  0%   { opacity:0; transform:scale(1.06); border-width:1px; }
+  40%  { opacity:1; transform:scale(.99); border-width:3px; }
+  60%  { transform:scale(1); border-width:2px; }
+  100% { opacity:0; transform:scale(1); border-width:2px; }
+}
+@media (prefers-reduced-motion:reduce) { .game-shell .slot-reaction:not(.reaction-error) { animation:none; opacity:0; } }
+
+/* v9.13 seat materials: a rider keeps their card's rarity in the cabin. */
+.game-shell .standing-slot.seat-grade-fine { border-color:#cfd9e0!important; box-shadow:inset 0 0 0 1px #dfe8ee55, 0 0 10px #c9d4dc22; }
+.game-shell .standing-slot.seat-grade-rare { border-color:#e0b75f!important; box-shadow:inset 0 0 0 1px #f3d38f77, 0 0 14px #e0b75f33; }
+.game-shell .standing-slot.seat-grade-legendary { border:3px double #f3d38f!important; box-shadow:inset 0 0 0 1px #fff3cf66, 0 0 20px #f3d38f55; }
+@media (prefers-reduced-motion:no-preference) { .game-shell .standing-slot.seat-grade-legendary { animation:seat-legend-glow 6s ease-in-out infinite alternate; } }
+@keyframes seat-legend-glow { from { box-shadow:inset 0 0 0 1px #fff3cf44, 0 0 12px #f3d38f33; } to { box-shadow:inset 0 0 0 1px #fff3cf88, 0 0 24px #f3d38f66; } }
+.game-shell .rider-visual .card-shader { position:absolute; inset:0; z-index:0; width:100%; height:100%; pointer-events:none; opacity:.85; }
+.game-shell .rider-visual>*:not(.card-shader) { position:relative; z-index:1; }
+.game-shell .standing-slot.seat-grade-rare .seat-metrics, .game-shell .standing-slot.seat-grade-legendary .seat-metrics { border-color:#e0b75f99; }

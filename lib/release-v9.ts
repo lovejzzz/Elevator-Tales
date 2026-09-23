@@ -833,3 +833,25 @@ export const V912_EN: ChangelogEntry = {
   ],
   watch: ['In development mode crossing seats occasionally took 40 ms+; recheck on the live production build.'],
 };
+
+export const V913_ZH: ChangelogEntry = {
+  version: '9.13', date: '2026-09-23', title: '上车是“嵌进座位”；座位也有稀有度材质',
+  summary: '人物上车时不再放礼花，改为画像轻轻落下、座位的金色边框收拢锁住；精良、稀有、传奇乘客在车厢里也保留各自的材质。',
+  changes: [
+    '上车动画：去掉座位上的光圈和火花，也去掉点选上车时从候客卡飞来的画像；人物从上方轻轻落进座位，座位金边从外向内收拢、锁紧后淡去（结成绿线时为绿边）。',
+    '座位材质：精良——银边；稀有——金边加全息着色器；传奇——金色双线框、柔和呼吸的外发光和流光着色器；名字旁显示稀有度宝石。普通座位保持原样。',
+  ],
+  experiments: ['逐帧录屏确认上车只有“落下 + 边框锁住”一个过渡，没有滞后的飞入；传奇乘客座位显示双金框与着色器，控制台无错误。verify、构建通过；规则与数值不变。'],
+  watch: ['座位着色器大部分被画像挡住，只在四周露出；如果想更明显，可以让画像边缘透出一点。'],
+};
+
+export const V913_EN: ChangelogEntry = {
+  version: '9.13', date: '2026-09-23', title: 'Boarding locks into the seat; seats show rarity',
+  summary: 'Boarding no longer bursts like confetti: the portrait settles down and the seat’s gold frame closes in and locks. Fine, rare and legendary riders keep their material in the cabin.',
+  changes: [
+    'Boarding: the seat glow ring and sparks are gone, as is the portrait flying in from the offer card on tap-to-place; the rider settles into the seat from just above while the seat’s gold frame closes inward, locks and fades (green when a link forms).',
+    'Seat materials: fine — silver edge; rare — gold edge with the holographic shader; legendary — gold double frame, a soft breathing glow and the polychrome shader; a rarity gem sits beside the name. Common seats are unchanged.',
+  ],
+  experiments: ['Frame-by-frame recording shows a single transition on boarding (settle + frame lock) with no late fly-in; a legendary seat shows the double gold frame and shader with no console errors. verify and build pass; no rule or value changes.'],
+  watch: ['The seat shader is mostly covered by the portrait and shows around it; if it should read more strongly, let the portrait edges fade into it.'],
+};
