@@ -12,7 +12,7 @@ import { sectorForecast } from '../lib/game-forecast';
 import { motorAdvanceNotice, motorScheduleText, nightUnrest } from '../lib/balance-v832';
 import { calmRescuePlan, departureRisk, rescuePlan, sectorNeed } from '../lib/departure-guard';
 import { stressForecast } from '../lib/game-forecast';
-import { netValue } from '../lib/net-value';
+import { boardNet, netValue } from '../lib/net-value';
 import { drawLegend } from '../lib/legend-unlocks';
 import { QUIPS, quip } from '../lib/quips';
 import { playSfx, SAMPLES } from '../lib/game-sfx';
@@ -350,4 +350,19 @@ console.log('PASS juice lines and silent-safe sound');
   assert.ok(existsSync(new URL('LICENSE-kenney-casino-audio.txt', dir)) && existsSync(new URL('LICENSE-kenney-interface-sounds.txt', dir)), 'sample licences ship with the files');
 }
 console.log('PASS recorded samples and licences present');
-console.log(JSON.stringify({ version: 'v9', checks: 25, passed: true }));
+// v9.14.2 cabin-aware card value: empty cabin = alone; partners and calming change it.
+{
+  const empty = run(15, []);
+  const lover = rider('lover', 15, 4, { boardedAt: 15 });
+  assert.equal(boardNet(lover, empty)?.value, netValue(lover, empty), 'empty cabin equals the alone value');
+  const withLover = run(15, [rider('lover', 15, 4, { boardedAt: 14 })]);
+  assert.ok(boardNet(lover, withLover)!.value > boardNet(lover, empty)!.value + 5, 'a second Lover is worth more beside the first');
+  const child = rider('child', 15, 4, { boardedAt: 14 }), nurse = rider('nurse', 15, 4, { boardedAt: 15 });
+  const childAlone = run(15, [child]);
+  assert.ok(boardNet(nurse, childAlone)!.value > boardNet(nurse, empty)!.value, 'a Nurse is worth more with a Child to calm');
+  const cared = run(15, [child, nurse]);
+  assert.ok(boardNet(child, cared)!.value > boardNet(child, childAlone)!.value, 'a cared-for Child is worth more');
+  assert.equal(boardNet(rider('operator', 15, 9), empty), null);
+}
+console.log('PASS cabin-aware card value');
+console.log(JSON.stringify({ version: 'v9', checks: 26, passed: true }));

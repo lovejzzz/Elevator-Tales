@@ -903,3 +903,27 @@ export const V9141_EN: ChangelogEntry = {
   experiments: ['Number-parity check between Chinese and English and verify pass; no rule or value changes.'],
   watch: ['If another keepsake reads confusingly, send a screenshot.'],
 };
+
+export const V9142_ZH: ChangelogEntry = {
+  version: '9.14.2', date: '2026-09-23', title: '人物卡的“赚/亏”按当前车厢计算',
+  summary: '“单独带 赚/亏”改为“上车 赚/亏”：按现在车厢里的人计算这位乘客能带来多少金币；已上车的显示“在车上 赚/亏”。',
+  changes: [
+    '计算：到站车费，加上他和已上车乘客的配对、邻座加成（在最好的空位上），减去全程电费；再减去他让整车躁动变化的代价（每点每层 3 币）——所以护士旁边有儿童时会变成正数，被照顾的儿童也不再显示大亏。',
+    '车厢为空时和原来的“单独带”数值一样；已上车的乘客显示他在当前座位上的价值；车厢满员时不显示。',
+    '悬停说明同步更新。',
+  ],
+  experiments: ['verify 新增：空车厢时等于单独价值；已有恋人时第二位恋人价值明显更高；护士单独 −3、旁边有儿童 +11；儿童单独 −13、旁边有护士 +1。规则与数值不变。'],
+  watch: ['数值是估算，不含概率奖励和未来的站位变化；看玩家是否更愿意尝试组合。'],
+};
+
+export const V9142_EN: ChangelogEntry = {
+  version: '9.14.2', date: '2026-09-23', title: 'Card gain/loss now reflects the current cabin',
+  summary: '“Alone ±N” becomes “Board ±N”: what this rider is worth given who is already aboard; riders already aboard read “Aboard ±N”.',
+  changes: [
+    'Computed as their arrival fare plus pairing and neighbour bonuses with riders already aboard (at the best empty seat), minus the trip’s power, minus the change they cause in the cabin’s agitation (3 coins per point per floor) — so a Nurse beside a Child turns positive and a cared-for Child no longer shows a big loss.',
+    'With an empty cabin it matches the old “alone” value; riders aboard show their value in their current seat; it is hidden when the cabin is full.',
+    'The hover explanation is updated to match.',
+  ],
+  experiments: ['New verify checks: empty cabin equals the alone value; a second Lover is worth clearly more beside the first; a Nurse is −3 alone and +11 beside a Child; a Child is −13 alone and +1 beside a Nurse. No rule or value changes.'],
+  watch: ['It is an estimate without chance bonuses or future reseating; watch whether players try more combinations.'],
+};
