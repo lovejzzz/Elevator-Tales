@@ -5,7 +5,7 @@ import {V834_EN, V834_ZH} from './release-v834';
 import {V835_EN, V835_ZH} from './release-v835';
 import {V836_EN, V836_ZH} from './release-v836';
 import {V837_EN, V837_ZH} from './release-v837';
-import {V901_EN, V901_ZH, V902_EN, V902_ZH, V903_EN, V903_ZH, V904_EN, V904_ZH, V91_EN, V91_ZH, V92_EN, V92_ZH, V921_EN, V921_ZH, V93_EN, V93_ZH, V931_EN, V931_ZH, V94_EN, V94_ZH, V95_EN, V95_ZH, V96_EN, V96_ZH, V961_EN, V961_ZH, V9_EN, V9_ZH} from './release-v9';
+import {V901_EN, V901_ZH, V902_EN, V902_ZH, V903_EN, V903_ZH, V904_EN, V904_ZH, V91_EN, V91_ZH, V92_EN, V92_ZH, V921_EN, V921_ZH, V93_EN, V93_ZH, V931_EN, V931_ZH, V94_EN, V94_ZH, V95_EN, V95_ZH, V96_EN, V96_ZH, V961_EN, V961_ZH, V97_EN, V97_ZH, V9_EN, V9_ZH} from './release-v9';
 
 export type ChangelogEntry = {
   version: string;
@@ -17,9 +17,10 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '9.6.1';
+export const GAME_VERSION = '9.7';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  V97_ZH,
   V961_ZH,
   V96_ZH,
   V95_ZH,
@@ -588,6 +589,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  V97_EN,
   V961_EN,
   V96_EN,
   V95_EN,

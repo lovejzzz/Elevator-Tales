@@ -46,7 +46,10 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
   const linkRise = experimentalRiskLinks(state.cabin, riskTuning).agitation;
   const cabinLines = cabinPressureLines(state);
   const cabinRise = cabinLines.reduce((sum, line) => sum + line.amount, 0);
-  const redRise=conflictLinks(state.cabin).filter(link=>link.effect==='agitation').length - redAgitationProtection(state) + linkRise + partnershipAgitation(state) + cabinRise;
+  // Totals include cabin-wide lines; the labels below keep each source separate (v9.7 fixed a double-listed "red link").
+  const redOnly = conflictLinks(state.cabin).filter(link=>link.effect==='agitation').length - redAgitationProtection(state) + linkRise;
+  const crimeLinks = partnershipAgitation(state);
+  const redRise = redOnly + crimeLinks + cabinRise;
   const variants = projectedDestinationVariants(state).map((destinations) => {
     const arriving = state.cabin.flatMap((rider, slot) => rider && destinations[slot] !== null && nextFloor >= destinations[slot]! ? [slot] : []);
     return { arrivals: arriving.length };
@@ -75,17 +78,19 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
     ...effects.flatMap(effect => effect.fixed.map(line => `${line.label} ${signedDelta(line.amount)}`)),
     beat ? `音乐家节拍 ${signedDelta(beat)}` : '',
     ...cabinLines.map(line => `${line.label} ${signedDelta(line.amount)}`),
-    redRise?`红线躁动 +${redRise}`:'',
+    redOnly?`红线躁动 ${signedDelta(redOnly)}`:'',
+    crimeLinks?`坏人链接 +${crimeLinks}`:'',
     arrivalReason,
   ].filter(Boolean);
   const details = reasons.join(' · ');
   // Grouped sources for the rail: every rider's high-risk line counts as one "high-risk riders" source.
   const grouped = new Map<string, { label: string; amount: number; count: number }>();
-  const addSource = (label: string, amount: number) => { if (!amount) return; const key = label.endsWith('高危') ? '高危乘客' : label; const g = grouped.get(key) ?? { label: key, amount: 0, count: 0 }; g.amount += amount; g.count += 1; grouped.set(key, g); };
+  const addSource = (label: string, amount: number) => { if (!amount) return; const key = label.endsWith('急躁') ? '急躁乘客' : label; const g = grouped.get(key) ?? { label: key, amount: 0, count: 0 }; g.amount += amount; g.count += 1; grouped.set(key, g); };
   effects.forEach(effect => effect.fixed.forEach(line => addSource(line.label, line.amount)));
   if (beat) addSource('音乐家节拍', beat);
   cabinLines.forEach(line => addSource(line.label, line.amount));
-  if (redRise) addSource('红线躁动', redRise);
+  if (redOnly) addSource('红线躁动', redOnly);
+  if (crimeLinks) addSource('坏人链接', crimeLinks);
   if (maxRelief) addSource('到站舒缓', -maxRelief);
   const sources = [...grouped.values()].sort((a, b) => b.amount - a.amount);
   const summary = details ? `下一层 ${range} · ${details}` : '下一层躁动不变 · 没有已知来源';

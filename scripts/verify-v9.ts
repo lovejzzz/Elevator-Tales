@@ -92,8 +92,12 @@ console.log('PASS keepsakes on delivery: wrench (free level, then −5), rounds 
   for (const line of ['storage', 'storage', 'transformer', 'transformer', 'motor'] as const) { floor += 10; s = E.buyBoxLevel({ ...s, floor, status: 'upgrade' }, line); }
   assert.equal(Object.values(s.box!).reduce((x, y) => x + y, 0), 5, 'five levels per run');
   assert.equal(chargeCost({ storage: 0, transformer: 2, motor: 0 }, 10), 15);
-  assert.equal(E.effectiveMotor({ floor: 44, box: { storage: 0, transformer: 0, motor: 1 } }), motorCost(45) - 1);
-  assert.equal(E.effectiveMotor({ floor: 20, box: { storage: 0, transformer: 0, motor: 1 } }), motorCost(21));
+  // v9.7 motor: level 1 saves 1 every third floor, level 2 on even floors, never below 1; level 3 quiets unrest.
+  assert.equal(E.effectiveMotor({ floor: 23, box: { storage: 0, transformer: 0, motor: 1 } }), motorCost(24) - 1);
+  assert.equal(E.effectiveMotor({ floor: 21, box: { storage: 0, transformer: 0, motor: 1 } }), motorCost(22));
+  assert.equal(E.effectiveMotor({ floor: 45, box: { storage: 0, transformer: 0, motor: 2 } }), 1);
+  assert.equal(E.effectiveMotor({ floor: 44, box: { storage: 0, transformer: 0, motor: 2 } }), 2);
+  assert.equal(E.effectiveMotor({ floor: 3, box: { storage: 0, transformer: 0, motor: 2 } }), 1, 'never below 1');
 }
 console.log('PASS power box: shop only, one per shop, five per run, capacity/price/motor effects');
 
@@ -283,13 +287,16 @@ console.log('PASS card net value');
 console.log('PASS legend shuffle bag');
 // v9.6 option A: flat motor 2 from 11F, late-night unrest from 41F, in-transit calming (8 coins, 6 per ten floors).
 {
-  assert.deepEqual([40, 41, 42, 44, 60, 61, 62, 63, 81, 100, 101, 140].map(nightUnrest), [0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 2, 2]);
+  assert.deepEqual([40, 41, 42, 44, 60, 61, 62, 63, 81, 100, 101, 140].map(nightUnrest), [0, 1, 0, 1, 0, 1, 0, 1, 1, 2, 3, 4]);
   const late = run(43, [rider('commuter', 43, 5, { boardedAt: 40 })], { stress: 2, coins: 100 });
   const after = E.resolveFloor(late, fixed());
   assert.equal(lines(after, 'lastPressure')['夜深人躁'], 1, 'floor 44 carries unrest');
   const calmed = E.buyCalm(late, 2);
-  assert.deepEqual([calmed.stress, calmed.coins], [0, 84]);
-  let s = { ...late, stress: 8, stressCap: 10 };
+  assert.equal(E.calmPrice(43), 14, 'v9.7: 6 + 2 per ten floors');
+  assert.deepEqual([calmed.stress, calmed.coins], [0, 72]);
+  const arriving = E.resolveFloor(run(43, [rider('commuter', 43, 1, { boardedAt: 40 })], { stress: 2 }), fixed());
+  assert.equal(lines(arriving, 'lastPressure')['夜深人躁'], undefined, 'a floor where someone gets off loses 1 unrest');
+  let s = { ...late, stress: 8, stressCap: 10, coins: 200 };
   for (let i = 0; i < 6; i++) s = E.buyCalm(s, 1);
   assert.equal(s.stress, 2); assert.equal(E.calmAllowance(s), 0, 'six per ten floors');
   assert.equal(E.buyCalm(s, 1), s);
@@ -302,10 +309,26 @@ console.log('PASS option A: flat motor, late-night unrest and calming');
   const s = run(30, cab, { stress: 6, coins: 1 });
   const f = stressForecast(s);
   const src = Object.fromEntries((f.sources ?? []).map(x => [x.label, x.amount]));
-  assert.equal(src['高危乘客'], 2); assert.equal(src['儿童无人照顾'], 1); assert.equal(src['车厢拥挤'], 1);
+  assert.equal(src['急躁乘客'], 2); assert.equal(src['儿童无人照顾'], 1); assert.equal(src['车厢拥挤'], 1);
   assert.ok(s.stress + f.highDelta >= s.stressCap, 'the floor is fatal as shown');
   const plan = calmRescuePlan(s);
   assert.ok(plan && plan.remove.length === 1 && plan.remove[0].kind === 'child' && plan.remove[0].paid === 0 && plan.calm === 0, JSON.stringify(plan));
 }
 console.log('PASS agitation sources itemised and a real calming rescue found');
-console.log(JSON.stringify({ version: 'v9', checks: 22, passed: true }));
+// v9.7 selling: +15 coins, frees the slot, shop cards stay visible when full; Safety Margin cannot be sold into a crisis.
+{
+  const full = { ...E.initialRun(), status: 'upgrade' as const, floor: 70, coins: 10, upgrades: { ...E.initialRun().upgrades, calm: 1, reinforced: 1, tipjar: 1, crowd: 1, buffer: 1, punchcard: 1 }, stressCap: 10, stress: 3 };
+  const withShop = { ...full, shop: E.drawUpgradeOffer(full.upgrades, [], fixed(), 70).keys.map(key => ({ key, price: 0, purchased: false })) };
+  assert.equal(withShop.shop.length, 3, 'cards are drawn even with six slots filled');
+  assert.equal(E.availableShopCards(withShop).length, 3);
+  const key = withShop.shop[0].key;
+  assert.equal(E.installUpgrade(withShop, key), withShop, 'cannot install into a full kit');
+  const sold = E.sellUpgrade(withShop, 'tipjar');
+  assert.deepEqual([sold.coins, sold.upgrades.tipjar], [25, 0]);
+  assert.notEqual(E.installUpgrade(sold, key), sold, 'a freed slot takes the new card');
+  const soldCalm = E.sellUpgrade(withShop, 'calm');
+  assert.deepEqual([soldCalm.stressCap, soldCalm.calmCharge], [8, false]);
+  assert.equal(E.sellUpgrade({ ...withShop, stress: 8 }, 'calm').upgrades.calm, 1, 'not while agitation would exceed the lowered cap');
+}
+console.log('PASS selling abilities and full-kit shops');
+console.log(JSON.stringify({ version: 'v9', checks: 23, passed: true }));

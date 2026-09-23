@@ -9,7 +9,7 @@ export const AGITATION_RULES = { arrivalReliefCap: 2 };
 /** v9 agitation: crowding costs calm, a lively cabin tips, and a wild cabin has incidents. */
 /** Late-night unrest from `from`: +1 agitation every third floor, then every second floor after `every` more floors,
  * then every floor, then +2 per floor (cap). A gradual clock that riders like nurses and musicians can answer. */
-export const NIGHT_UNREST = { from: 41, every: 20, cap: 2 };
+export const NIGHT_UNREST = { from: 41, every: 15, cap: 4, arrivalsCalm: true };
 export const nightUnrest = (floor: number) => {
   if (!NIGHT_UNREST.from || floor < NIGHT_UNREST.from) return 0;
   const d = floor - NIGHT_UNREST.from, level = Math.floor(d / NIGHT_UNREST.every);
@@ -66,12 +66,17 @@ export const motorScheduleText=()=>{
  return `运转：${parts.join('，')}。每十层可维修，人物耗电另计。`;
 };
 /** Rules text for late-night unrest, generated from NIGHT_UNREST so it cannot drift from settlement. */
-export const nightUnrestText = () => NIGHT_UNREST.from ? `${NIGHT_UNREST.from}层起夜深人躁：每三层+1躁动，${NIGHT_UNREST.from + NIGHT_UNREST.every}层起每两层，${NIGHT_UNREST.from + 2 * NIGHT_UNREST.every}层起每层。` : '';
+export const nightUnrestText = () => {
+  const { from, every, cap } = NIGHT_UNREST;
+  if (!from) return '';
+  const steps = Array.from({ length: cap - 1 }, (_, i) => `${from + (i + 3) * every}层起每层+${i + 2}`).join('，');
+  return `${from}层起夜深人躁：每三层+1躁动，${from + every}层起每两层，${from + 2 * every}层起每层${steps ? `，${steps}` : ''}${NIGHT_UNREST.arrivalsCalm ? '；有乘客到站的那一层少1' : ''}。`;
+};
 export const REPAIR_WORK = 2;
 export const REPAIR_DURATION = 4;
 export const REPAIR_DURATION_CAP = 8;
 export const REPAIR_MOTOR_SAVING = 1;
-export const INSPECTION_WORK = 2;
+export const INSPECTION_WORK = 3;
 export const INSPECTION_BONUS = 12;
 export const CHILD_CARE_WORK = 2;
 export const CHILD_CARE_BONUS = 6;

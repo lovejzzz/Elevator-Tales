@@ -34,7 +34,7 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'mechanic':special=`低躁动检修 ${rider.repairProgress??0}/${REPAIR_WORK}；完成后${REPAIR_DURATION}层运转少耗1电；每人一次`;break;
   case 'ghost':special='无驱魔师：3的倍数层随机延误邻座1站；邻驱魔师：不延误且每站节能1';moneyNote='邻驱魔师：到站再+2币';break;
   case 'exorcist':special='邻幽灵：阻止延误，每站节能1';moneyNote='受控幽灵到站再+2币';break;
-  case 'inspector':moneyNote=`连续低躁动${INSPECTION_WORK}层：到站 +${INSPECTION_BONUS}金币`;special='达标后保留签章；未达标时升至中/高会中断连续计数';break;
+  case 'inspector':moneyNote=`连续不高躁动${INSPECTION_WORK}层：到站 +${INSPECTION_BONUS}金币`;special='达标后保留签章；未达标时升至高躁动会中断连续计数';break;
   case 'coach':moneyNote='每位相邻教练：基础车费+50%；本人到站每邻座+3币';break;
   case 'cop':moneyNote='邻小偷：停止途中收入，到站+5';special='邻小偷：免偷窃躁动；邻炸弹：锁住倒计时';break;
   case 'lawyer':moneyNote='邻小偷：停止途中收入，到站+5';special='邻小偷：免偷窃躁动；不能暂停炸弹倒计时';break;
@@ -43,7 +43,7 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'shifter':special='每站重抽三值和关系；基价16–28币';break;
   case 'mimic':special=profile.copies.length?profile.copies.map(c=>`↑ 复制${PASSENGERS[c.sourceKind].name}的${c.field==='energy'?'耗电':'基础车费'} · 同一人物对不重抽`).join('；'):'↑ 只复制正上方的耗电或基础车费；同一人物对不重抽';break;
  }
- if(rider.volatile){moneyNote=[`高危到站 +${HIGH_RISK_BONUS}币`,moneyNote].filter(Boolean).join('；');pressure.push('高危 +1');}
+ if(rider.volatile){moneyNote=[`急躁到站 +${HIGH_RISK_BONUS}币`,moneyNote].filter(Boolean).join('；');pressure.push('急躁 +1');}
  const slot=state.cabin.findIndex(r=>r?.id===rider.id),actual=slot>=0?riderAgitation(state,slot):null;
  const conflicts=riderConflictRules(rider,state.cabin).map(rule=>`邻${PASSENGERS[rule.target].name}：${rule.text}`);
  return {energy,pressure,moneyNote,special,
@@ -138,7 +138,7 @@ export function passengerCardSections(
    self.push(effect('coins','1位邻座：每上1层立即 +2'),effect('agitation','2+邻座：每上1层 +1躁动'));
    break;
   case 'inspector':
-   self.push(effect('neutral',rider.complianceReady?'合规签章已保留':`连续低躁动 ${rider.quietStreak??0}/${INSPECTION_WORK}`),effect('coins',`达标：到站 +${INSPECTION_BONUS}金币`));
+   self.push(effect('neutral',rider.complianceReady?'合规签章已保留':`连续不高躁动 ${rider.quietStreak??0}/${INSPECTION_WORK}`),effect('coins',`达标：到站 +${INSPECTION_BONUS}金币`));
    break;
   case 'bomb':
    self.push(effect('timer',`倒计时 ${rider.fuse??0} · 未到站归零失败`),effect('neutral','同层到站安全；幽灵可能延误'));

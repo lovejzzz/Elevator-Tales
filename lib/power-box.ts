@@ -19,7 +19,7 @@ export const EMERGENCY_SECTOR_CAP = 20;
 export const BOX_LINE_LABELS: Record<BoxLine, { name: string; levels: string[] }> = {
   storage: { name: '蓄电', levels: ['电量上限75；进商店免费补10电', '电量上限90；进商店免费补15电', '电量上限110；进商店免费补20电；途中补电上限降为每十层10电'] },
   transformer: { name: '变压', levels: ['充电1.75金币/电', '充电1.5金币/电', '充电1.25金币/电；途中补电3金币/电'] },
-  motor: { name: '电机', levels: ['41层起运转−1', '31层起运转−1', '所有楼层再−1（最低1）；5人以上每层+1躁动'] },
+  motor: { name: '电机', levels: ['每三层运转−1', '偶数层运转−1', '静音：夜深人躁−1'] },
 };
 
 export const boxTotal = (box: PowerBox) => box.storage + box.transformer + box.motor;
@@ -32,11 +32,15 @@ export const chargeCost = (box: PowerBox, units: number) => Math.ceil(units * ch
 /** Most units a wallet can buy at the box's shop price. */
 export const affordableUnits = (box: PowerBox, coins: number) => Math.floor((coins + 1e-9) / chargeUnitPrice(box));
 export const emergencyUnitPrice = (box: PowerBox) => (box.transformer >= BOX_MAX_LEVEL ? EMERGENCY_PRICES.topTransformer : EMERGENCY_PRICES.base);
+/** v9.7 motor for the flat motor schedule: level 1 saves 1 on even floors, level 2+ on every floor (never below 1).
+ * Level 3 adds a quiet motor that cancels 1 late-night unrest (see cabinPressureLines). */
+export const MOTOR_BOX = { l1Every: 3, l2Every: 2 };
+/** v9.7 motor for the flat motor schedule: level 1 saves 1 every third floor, level 2 on every even floor
+ * (never below 1). Level 3 adds a quiet motor that cancels 1 late-night unrest (see cabinPressureLines). */
 export function motorReduction(level: number, destination: number) {
-  if (level >= 3) return (destination >= 31 ? 1 : 0) + 1;
-  if (level >= 2) return destination >= 31 ? 1 : 0;
-  if (level >= 1) return destination >= 41 ? 1 : 0;
+  if (level >= 2) return destination % MOTOR_BOX.l2Every === 0 ? 1 : 0;
+  if (level >= 1) return destination % MOTOR_BOX.l1Every === 0 ? 1 : 0;
   return 0;
 }
 export const boxedMotorCost = (base: number, box: PowerBox, destination: number) => Math.max(1, base - motorReduction(box.motor, destination));
-export const motorNoise = (box: PowerBox, occupied: number) => (box.motor >= BOX_MAX_LEVEL && occupied >= 5 ? 1 : 0);
+export const motorNoise = (_box: PowerBox, _occupied: number) => 0;

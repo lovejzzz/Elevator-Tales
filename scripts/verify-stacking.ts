@@ -46,8 +46,8 @@ assert.deepEqual([0,2,4].map(slot=>riderAgitation(musicianFanout,slot).low),[2,2
 const nurseFanout=state({cabin:[agitated('nurse-a'),rider('nurse','nurse'),agitated('nurse-b'),null,agitated('nurse-c'),null]});
 assert.deepEqual([0,2,4].map(slot=>riderAgitation(nurseFanout,slot).low),[1,1,1],'one Nurse cancels one point from every adjacent rider');
 
-const inspectors=state({floor:1,cabin:[rider('inspector','i1',{quietStreak:1,destination:2}),rider('inspector','i2',{quietStreak:1,destination:2}),null,null,null,null]});
-assert.equal(resolveFloor(inspectors,()=>.9).lastEarnings.sources.find(line=>line.label==='检查员到站')?.amount,40,'v9: two Inspectors independently finish stamps and pay 8 base +12 bonus each');
+const inspectors=state({floor:1,cabin:[rider('inspector','i1',{quietStreak:2,destination:2}),rider('inspector','i2',{quietStreak:2,destination:2}),null,null,null,null]});
+assert.equal(resolveFloor(inspectors,()=>.9).lastEarnings.sources.find(line=>line.label==='检查员到站')?.amount,40,'v9.7: two Inspectors on their third calm-enough floor independently finish stamps and pay 8 base +12 bonus each');
 
 const controlledDrunks=state({floor:1,cabin:[rider('drunk','d1'),rider('nurse','n'),rider('drunk','d2'),null,null,null]});
 assert.equal(resolveFloor(controlledDrunks,()=>.9).lastEarnings.sources.find(line=>line.label==='醉汉安抚')?.amount??0,0,'calming no longer generates travel income');

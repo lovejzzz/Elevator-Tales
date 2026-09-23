@@ -559,3 +559,57 @@ export const V961_EN: ChangelogEntry = {
     'Watch whether players use calming and the guard’s plans; if late runs still end in agitation, consider Nurses and Musicians appearing earlier.',
   ],
 };
+
+export const V97_ZH: ChangelogEntry = {
+  version: '9.7', date: '2026-09-23', title: '卖能力、商店重排、急躁与夜深人躁更讲理',
+  summary: '商店可以卖掉能力、在店里安抚，布局重做；“高危”改名“急躁”且支持型人物不再急躁；修复凭空出现的“红线躁动”；检查员改为连续 3 层不在高躁动；电机重新设计；夜深人躁可以靠到站来应对。',
+  changes: [
+    '修复：躁动来源里的“红线躁动 +1”其实是车厢整体来源（拥挤、夜深人躁）被重复列出，总数一直是对的；现在红线、坏人链接、整车来源分开显示。',
+    '“高危”改名“急躁”：候客卡写“急躁：车费+4，躁动+1/层”，护士相邻可以抵消。护士、检查员、警察、律师、维修工、快递员、驱魔师不会再出现急躁版本。',
+    '人物卡：“单独带 亏 8 币”写明单位；如果乘客自己会加躁动，显示“（含躁动）”，悬停说明躁动按每点每层 3 币折算。',
+    '检查员：改为连续 3 次关门时不在高躁动（低或中都算）即盖章，+12 不变；检查员本人不会急躁。',
+    '商店：顶部显示电量、躁动、金币；左边是能力卡和“已装能力”6 个位置，每项可“卖出”退 15 金币；六格满时仍会出现 3 张能力卡，卖掉一项就能装；右边依次是配电箱、充电、安抚（新增：在商店里也能安抚，和途中共用每十层 6 点）。',
+    '配电箱电机（运转已固定为 2）：1 级每三层运转 −1，2 级偶数层运转 −1，3 级“静音”：夜深人躁 −1。去掉 3 级“5 人以上 +1 躁动”的副作用。',
+    '夜深人躁：有乘客在这一层到站时少 1（可以靠安排到站来应对）；升级间隔 15 层：41 层起每三层 +1，56 层起每两层，71 层起每层，86 层起每层 +2，101 层 +3，116 层 +4。',
+    '安抚价格随夜深上涨：6 金币 + 每十层 2 金币（30 层 12 币，70 层 20 币）。',
+  ],
+  experiments: [
+    '试玩记录（9.6.1，71 层，躁动失控）：70 层商店用掉最后的金币充电到 81/110，带着 9/10 躁动出门，下一层夜深人躁 +1 失控；侧栏同时显示的“红线 +1”是重复计数的显示错误。',
+    '检查员盖章率（每类 150 局）：原规则（只算低躁动、2 层）休闲 12%、看净值 56%、均衡 37%；只放宽到中躁动（2 层）52% / 79% / 66%，偏容易；定为中躁动也算、连续 3 层：35% / 72% / 58%。',
+    '夜深人躁方案（每类 200 局）：到站抵消整层（不管多少）会让熟练型 17–82% 的局活过 150 层；改为“到站少 1、每 15 层升级、最高 +4”，配合安抚随楼层涨价，所有档位 150 层存活 0%。',
+    '最终验收（3900 局）：五种流派 99.0%，死里逃生 98.0%，150 层存活 0%；均衡型中位 114。玩家档位（每类 300 局）：新手中位 39，休闲 47，看净值 98。',
+    '已知代价：熟练玩法后期仍然富裕（均衡型进店富裕 85.9%），均衡型教练上车率 67.8%（界限 65%）。',
+    'verify 新增：卖出能力与满格商店、电机新规则、检查员 3 层、夜深人躁到站少 1、安抚涨价；原有测试按新规则更新。',
+  ],
+  watch: [
+    '熟练玩家后期太富裕的问题仍在；可考虑让卖出、重抽等消耗更多金币，或后期车费略降。',
+    '看真人是否会主动安排到站来躲夜深人躁。',
+  ],
+};
+
+export const V97_EN: ChangelogEntry = {
+  version: '9.7', date: '2026-09-23', title: 'Sell abilities, a rebuilt shop, fairer impatience and unrest',
+  summary: 'Sell abilities and calm in the shop, with a redesigned layout; “High risk” becomes “Impatient” and support riders never roll it; a phantom “red-link agitation” fixed; the Inspector needs 3 floors below high; a new motor line; late-night unrest can be answered by arrivals.',
+  changes: [
+    'Fix: the “red-link agitation +1” shown in the agitation sources was cabin-wide sources (crowding, late-night unrest) listed twice; totals were always right. Red links, criminal links and cabin-wide sources are now listed separately.',
+    '“High risk” is now “Impatient”: offer cards read “Impatient: fare +4, +1/floor”, and an adjacent Nurse offsets it. Nurses, Inspectors, Officers, Counsel, Mechanics, Couriers and Wardens never roll the impatient variant.',
+    'Rider cards: “Alone −8 coins” states its unit; when the rider adds agitation it reads “(incl. agitation)” and the hover explains agitation is counted at 3 coins per point per floor.',
+    'Inspector: stamped after 3 consecutive departures not at high agitation (low or medium both count), still +12; Inspectors are never impatient.',
+    'Shop: power, agitation and coins across the top; on the left the ability cards and your 6 installed slots, each with “Sell” for 15 coins; with all six filled, 3 cards still appear and selling one lets you install; on the right the power box, charging and calming (new: calm in the shop too, sharing the 6-per-ten-floors allowance).',
+    'Power-box motor (the motor is now a flat 2): level 1 saves 1 every third floor, level 2 on even floors, level 3 is a quiet motor cancelling 1 late-night unrest. The old level-3 “+1 agitation with 5+ riders” drawback is gone.',
+    'Late-night unrest: 1 less on any floor where a rider gets off (plan arrivals to answer it); it steps up every 15 floors: +1 every third floor from 41F, every second floor from 56F, every floor from 71F, +2 per floor from 86F, +3 from 101F, +4 from 116F.',
+    'Calming gets pricier with the night: 6 coins + 2 per ten floors (12 at 30F, 20 at 70F).',
+  ],
+  experiments: [
+    'Playtest record (9.6.1, 71F, agitation): at the 70F shop the last coins went on charging to 81/110 and the run left at 9/10 agitation; one unrest on the next floor ended it. The “red link +1” shown alongside was the double-listing bug.',
+    'Inspector stamp rate (150 runs per bot): old rule (low only, 2 floors) casual 12%, net-reading 56%, optimizer 37%; allowing medium (2 floors) 52% / 79% / 66%, too easy; medium allowed over 3 floors: 35% / 72% / 58%.',
+    'Unrest designs (200 runs per bot): arrivals cancelling a whole floor let skilled bots survive past 150F in 17–82% of runs; “arrivals take 1 off, stepping up every 15 floors to +4” plus calming priced by depth gives 0% alive at 150F for every tier.',
+    'Final acceptance (3,900 runs): styles 99.0%, close calls 98.0%, 0% alive at 150F; optimizer median 114. Player tiers (300 runs each): novice median 39, casual 47, net-reading 98.',
+    'Known cost: skilled play is still rich late (optimizer 85.9% affluent shops); the optimizer boards Coaches 67.8% of the time (bound 65%).',
+    'New verify checks: selling and full-kit shops, the motor line, the 3-floor Inspector, arrivals reducing unrest, depth-priced calming; existing tests updated to the new rules.',
+  ],
+  watch: [
+    'Late wealth for skilled players remains; options include pricier sells/rerolls or slightly lower late fares.',
+    'Watch whether people plan arrivals to dodge late-night unrest.',
+  ],
+};

@@ -53,7 +53,7 @@ const exactPairs: Array<[string, string]> = [
   ['维修工和受控幽灵的节能逐项相加，最多抵完人物耗电；运转仍耗1电。压力回收在到站舒缓后另算。', 'Mechanics and controlled ghosts stack savings up to passenger power cost. The motor still costs 1. Pressure Reclaimer recovery is separate, after arrival relief.'],
   ['只有列出的对象有这项到站奖励；能力绿线不一定有奖励。到站那一刻仍相邻才算。', 'Only the listed partners grant this arrival bonus. Ability links do not necessarily pay it. Partners must still be adjacent at arrival.'],
   ['恋人已配对：每条恋人连接每层 +2 金币，双方到站基价各 +100%。', 'Lovers linked: each Lover connection earns 2 coins per floor and adds 100% to each partner’s base arrival fare.'],
-  ['基价；高危加价参与倍率，小费不参与', 'Base fare; high-risk premium is multiplied, tips are not'],
+  ['基价；急躁加价参与倍率，小费不参与', 'Base fare; high-risk premium is multiplied, tips are not'],
   ['按当前站位计算；未来站位与属性变化会改变收益', 'At current seating; future position and trait changes alter the payout'],
   ['按当前站位到站：', 'Arrival at current seating: '],
   ['。包括倍率、联动和小费，不包括途中收入；未来站位与属性变化会改变收益。', '. Includes multipliers, bonds and tips, not flow income. Future position and trait changes alter the payout.'],
@@ -61,7 +61,7 @@ const exactPairs: Array<[string, string]> = [
   ['初次见面', 'FIRST ENCOUNTER'],
   ['绿线表示能力或默契，红线表示额外交易，不一定只有损失。只有卡片列出的默契对象，才给本人到站 +', 'Green links indicate abilities or bonds; red links add a trade-off, not necessarily just a loss. Only the bond partners listed on the card grant an own-arrival bonus of +'],
   [' 金币；双方分别判断。', ' coins; each rider is evaluated separately.'],
-  ['高危乘客基价 +', 'High-risk base fare +'], ['，参与倍率，但每层多 +1 躁动。', ', affected by multipliers, but adds 1 agitation each floor.'],
+  ['急躁乘客基价 +', 'High-risk base fare +'], ['，参与倍率，但每层多 +1 躁动。', ', affected by multipliers, but adds 1 agitation each floor.'],
   ['小偷每层改赚 +1', 'Thief now earns +1/floor'], ['小偷不加躁动', 'Thief adds no agitation'],
   // Passenger names.
   ['通勤者', 'Commuter'], ['游客', 'Tourist'], ['快递员', 'Courier'], ['维修工', 'Mechanic'],
@@ -103,7 +103,7 @@ const exactPairs: Array<[string, string]> = [
   ['红线每层生效；多条逐条相加。同类倍率按基础值线性叠加。', 'Red links resolve every floor and stack individually. Multipliers of the same type add linearly from the base value.'],
   ['多条绿色连接逐条叠加；恋人、教练、途中收入等人物技能另外计算。', 'Green links stack individually; rider abilities such as Lover, Coach, and ride income resolve separately.'],
   ['绿色协作和红色冲突分别结算，互不抵消。', 'Green cooperation and red conflicts resolve separately; neither cancels the other.'],
-  ['初始50电、容量60。抵达商店先补 5 电，再用金币充电或买升级。高危乘客多赚 8 金币，但每层多 +1 躁动。', 'Start with 50 power and a capacity of 60. Entering the Shop restores 5 power; then spend coins on charging or upgrades. High Risk riders earn 8 extra coins but add +1 agitation per floor.'],
+  ['初始50电、容量60。抵达商店先补 5 电，再用金币充电或买升级。急躁乘客多赚 8 金币，但每层多 +1 躁动。', 'Start with 50 power and a capacity of 60. Entering the Shop restores 5 power; then spend coins on charging or upgrades. High Risk riders earn 8 extra coins but add +1 agitation per floor.'],
   ['到站时仍相邻才生效；同层送达多位协作乘客，可分别舒缓。', 'Only riders still adjacent on arrival count. Multiple cooperative arrivals on the same floor each provide relief.'],
   ['没人看管：旁边没有警察或律师', 'Unwatched: no adjacent Officer or Lawyer'],
   ['每上 1 层，赚 4 金币。', 'Each ascent earns 4 coins.'], ['每上 1 层，躁动 +1。', 'Each ascent adds 1 agitation.'],
@@ -418,7 +418,7 @@ const exactPairs: Array<[string, string]> = [
   ['游客旅伴', 'Tourist companions'],
   ['等待邻座', 'Waiting for a neighbor'], ['状态最佳', 'Ideal position'], ['被围住', 'Surrounded'], ['缺少关注', 'Needs attention'], ['正在演奏', 'Performing'], ['正在安抚', 'Calming'],
   ['每层抵消邻座1躁动', 'Cancels 1 adjacent agitation/floor'], ['高危', 'High Risk'], ['高危 +', 'High Risk +'], ['高危 +1', 'High Risk +1'], ['高危到站 +8币', 'High Risk arrival +8'],
-  ['卡牌稀有度', 'Card rarity'], ['本层起，高危候客增加', 'High-risk candidates increase from this floor'],
+  ['卡牌稀有度', 'Card rarity'], ['本层起，急躁候客增加', 'High-risk candidates increase from this floor'],
   ['至少接一位乘客才能上行。', 'Board at least one rider to ascend.'], ['至少接一位乘客才能上行', 'Board at least one rider to ascend'], ['至少接1人', 'Board 1+ rider'],
   ['只计算人物', 'Riders only'], ['每位到站 −1 · 本层最多 −2', 'Each arrival −1 · at most −2 this floor'], ['每位到站：本层最多 −1', 'Any arrivals: at most −1 this floor'], ['再 +', 'Failure in +'], [' 失控', ''],
   ['车费待揭晓', 'Fare hidden'], ['到站金币', 'Arrival fare'], ['每站耗电', 'Power per floor'], ['自身', 'Self'], ['当前不能调整站位', 'Positions cannot be changed now'], ['请选择电梯里的站位', 'Choose a cabin position'], ['已在此处', 'Already here'],
@@ -447,7 +447,7 @@ const exactPairs: Array<[string, string]> = [
   ['当前电量低于下一段运转参考；人物耗电与途中回充另计。再点一次确认冒险。', 'Power is below the next sector’s motor reference. Rider costs and power gained en route are separate. Click again to accept the risk.'], ['确认冒险离开', 'Confirm risky departure'], ['继续上行', 'Continue upward'],
   ['下一站：商店', 'Next: Shop'], ['十层商店', 'Shop every ten floors'], ['收入 ', 'Earned '], [' · 支出 ', ' · Spent '], ['三个值，六个站位', 'Three values, six positions'], ['躁动只来自人物', 'Agitation comes from riders'], ['安抚可以堆叠', 'Calming stacks'], ['十层补给', 'Supply every ten floors'], ['协作、冲突与堆叠', 'Cooperation, conflict, and stacks'],
   ['每一点躁动，都能在人物身上找到。', 'Every agitation point traces back to a rider.'], ['会增加躁动', 'Adds agitation'], ['人物自身', 'Rider values'], ['人物事件', 'Rider events'], ['红色冲突线', 'Red conflict links'], ['可以主动缓解', 'Ways to reduce it'], ['安抚邻座', 'Calm adjacent riders'], ['完成短程', 'Complete a trip'], ['购买舒缓系统', 'Buy Calm System'],
-  ['人物卡明确显示每层 0、+1 或 +2；高危乘客固定再 +1。', 'Rider cards explicitly show 0, +1, or +2 per floor. High Risk adds another +1.'],
+  ['人物卡明确显示每层 0、+1 或 +2；急躁乘客固定再 +1。', 'Rider cards explicitly show 0, +1, or +2 per floor. High Risk adds another +1.'],
   ['未受控的小偷、儿童与醉汉，被围住的名人，以及高耗电时的检查员，会按卡片规则增加躁动。', 'Uncontrolled Thieves, Children and Drunks, surrounded Celebrities, and Inspectors under high power add agitation exactly as shown on their cards.'],
   ['每条红线每层 +1。若该人物同时拥有任意绿色协作线，其邻座冲突被免除。', 'Each red link adds +1 per floor. Any green cooperation link protects that rider from neighbor conflicts.'],
   ['每位护士或音乐家抵消一名相邻乘客的 1 躁动。多人可堆叠，但不会产生负数。', 'Each Nurse or Musician cancels 1 agitation from one adjacent rider. Multiple calmers stack but never create a negative value.'],
@@ -465,7 +465,7 @@ const exactPairs: Array<[string, string]> = [
   ['关门前先看左栏的下一站预测；达到 ', 'Before closing the doors, check the next-floor forecast on the left. At '],
   [' 就会失控。没有拥挤惩罚、楼层压力或隐藏倍率。', ', the shift loses control. There is no crowding penalty, floor pressure, or hidden multiplier.'],
   ['绿线奖励逐条叠加并免除冲突；护士、音乐家各抵消一名相邻乘客的 1 躁动。', 'Green-link rewards stack and protect against conflicts. Each Nurse or Musician cancels 1 agitation from one adjacent rider.'],
-  ['。每十层可用金币充电或买升级；两者争用同一笔预算。高危乘客多赚 ', '. Every ten floors, spend coins on charging or upgrades; both compete for the same budget. High-risk riders earn '],
+  ['。每十层可用金币充电或买升级；两者争用同一笔预算。急躁乘客多赚 ', '. Every ten floors, spend coins on charging or upgrades; both compete for the same budget. High-risk riders earn '],
   [' 金币，但每层多 +1 躁动。', ' extra coins but add +1 agitation per floor.'],
   [' 金币，多条逐条叠加；有任意绿线时免除该人物全部邻座冲突。红线每层 +1 躁动。', ' coins. Multiple links stack; any green link protects the rider from all neighbor conflicts. Red links add +1 agitation per floor.'],
   ['当前电量连到下个补给站的基础运转都不够，人物还会额外耗电。再点一次确认带风险离开。', 'Current power cannot cover even the motor cost to the next supply stop, before rider power. Click again to leave at risk.'],
@@ -542,7 +542,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     // v9: motor notices and the schedule are generated from motorCost, so translate by pattern.
     .replace(/^预告：(\d+)层起运转(\d+)电$/u, 'Ahead: motor $2 from floor $1')
     .replace(/^运转固定(\d+)电$/u, 'Motor fixed at $1')
-    .replace(/^(\d+)层起夜深人躁：每三层\+1躁动，(\d+)层起每两层，(\d+)层起每层。$/u, 'Late-night unrest from floor $1: +1 agitation every third floor, every second floor from $2, every floor from $3.')
+    .replace(/^(\d+)层起夜深人躁：每三层\+1躁动，(\d+)层起每两层，(\d+)层起每层(.*?)(；有乘客到站的那一层少1)?。$/u, (_m, a: string, b: string, c: string, rest: string, arr?: string) => `Late-night unrest from floor ${a}: +1 agitation every third floor, every second floor from ${b}, every floor from ${c}${rest.replace(/，(\d+)层起每层\+(\d+)/gu, ', +$2 per floor from $1')}${arr ? '; one less on any floor where a rider gets off' : ''}.`)
     .replace(/^(\d+)位邻座 · 到站\+(\d+)币$/u, (_m, n: string, c: string) => `${n} ${n === '1' ? 'neighbor' : 'neighbors'} · +${c} on arrival`)
     .replace(/^遇见过的乘客会录入档案；第一次把人送到站，就能读到他的故事。最高抵达 (\d+)F · 故事 (\d+)\/(\d+)。$/u, 'Riders you meet join the archive; deliver someone once to read their story. Best floor $1F · Stories $2/$3.')
     .replace(/你带着 (\d+) 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 20 电。/u, 'You left with $1 coins: when power runs short, use in-transit charging in the power panel, up to 20 per ten floors.')
@@ -570,7 +570,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/中躁动到站 \+(\d+)金币/gu, 'Medium-agitation arrival +$1 coins')
     .replace(/完成：后续(\d+)层运转少耗1电/gu, 'Complete: save 1 motor power for the next $1 floors')
     .replace(/低躁动检修 (\d+)\/(\d+)；完成后(\d+)层运转少耗1电；每人一次/gu, 'Low-agitation work $1/$2; save 1 motor power for $3 future floors on completion; once per rider')
-    .replace(/连续低躁动(\d+)层：到站 \+(\d+)金币/gu, '$1 consecutive low-agitation floors: +$2 arrival coins')
+    .replace(/连续不高躁动(\d+)层：到站 \+(\d+)金币/gu, '$1 floors in a row below high agitation: +$2 arrival coins')
     .replace(/累计被照顾(\d+)层：到站 \+(\d+)金币/gu, '$1 cared-for floors: +$2 arrival coins')
     .replace(/累计(\d+)层：到站 \+(\d+)金币/gu, '$1 accumulated floors: +$2 arrival coins')
     .replace(/达标：到站 \+(\d+)金币/gu, 'Complete: +$1 arrival coins')

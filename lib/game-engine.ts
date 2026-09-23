@@ -4,7 +4,7 @@ import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, isLegend, passengerCatego
 import { BOX_MAX_LEVEL, BOX_PRICES, BOX_TOTAL_CAP, emergencySectorCap, EMPTY_BOX, affordableUnits, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, motorNoise, shopEntryCharge, storageCap, type BoxLine, type PowerBox } from './power-box';
 import { districtWeight } from './districts';
 import { CHILD_CARERS, DRUNK_CARERS, GHOST_CONTROLLERS, KEEPSAKE_KEYS, LEGEND_DECLINE_COINS, LEGEND_DESTINATION, LEGEND_KEEPSAKE, LEGEND_POOL_DEFAULT, LEGEND_RULES, type KeepsakeKey } from './legends';
-import { V9_AGITATION, nightUnrest, crowdingThreshold, agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
+import { V9_AGITATION, NIGHT_UNREST, nightUnrest, crowdingThreshold, agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
 import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome, flywheelSaving, consumeFlywheel } from './shop-effects';
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
@@ -163,7 +163,7 @@ function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
   if (!rider) return fixed;
   const add = (label: string, amount: number) => { if (amount > 0) fixed.push({ label, amount }); };
   add(`${PASSENGERS[rider.kind].name}自身躁动`, riderProfile(rider,state.cabin,slot).agitation);
-  if (rider.volatile) add(`${PASSENGERS[rider.kind].name}高危`, 1);
+  if (rider.volatile) add(`${PASSENGERS[rider.kind].name}急躁`, 1);
   switch (rider.kind) {
     case 'thief': if (!hasNeighbour(state.cabin, slot, ['cop', 'lawyer', 'don'])) add('小偷未受控', 1); break;
     case 'child': if (!hasNeighbour(state.cabin, slot, [...CHILD_CARERS])) add('儿童无人照顾', 1); break;
@@ -282,6 +282,8 @@ export function shuffle<T>(items: T[], rng: () => number = Math.random): T[] {
   return result;
 }
 
+/** Support riders never roll the agitated (high-risk) variant: an agitated Nurse or Inspector contradicts the role. */
+const CALM_NATURED: PassengerKind[] = ['nurse', 'inspector', 'cop', 'lawyer', 'mechanic', 'courier', 'exorcist'];
 const INTRINSIC_RISK: PassengerKind[] = ['thief','drunk','child','celebrity','inspector','mystery','shifter'];
 function weightedKind(floor: number, rng: () => number, forcedRisk = false, excludeLover = false, unlocked: PassengerKind[] = unlockedAt(floor)): PassengerKind {
   const pool = unlocked.filter(kind => (!forcedRisk || INTRINSIC_RISK.includes(kind)) && (!excludeLover || kind !== 'lover'));
@@ -332,7 +334,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
     const baseTrip = JOURNEY_RULES.localFrom31 && floor>=31 && index===floor%3
       ? Math.min(rolledTrip,spec.trip[0]+JOURNEY_RULES.localExtra) : rolledTrip;
     const traits = kind === 'mystery' || kind === 'shifter' ? randomTraits(kind, available, rng) : undefined;
-    const volatile = !guided && index !== calmIndex && (index === rushIndex || rng() < chance);
+    const volatile = !guided && index !== calmIndex && !CALM_NATURED.includes(kind) && (index === rushIndex || rng() < chance);
     return { id: 'f' + floor + '-' + index + '-' + rng().toString(36).slice(2, 7), kind,
       ...(JOURNEY_RULES.prorateLocalFare && baseTrip<rolledTrip ? {localFareRatio:baseTrip/rolledTrip} : {}),
       destination: floor + expressTrip(baseTrip, upgrades.express), patience: 0, traits, volatile,
@@ -360,7 +362,9 @@ export function riderAfterWork(rider: Rider, cabin: Array<Rider | null>, slot: n
     next.repairDone = next.repairProgress >= REPAIR_WORK;
   }
   if (next.kind === 'inspector' && !next.complianceReady) {
-    next.quietStreak = low ? Math.min(inspectionWork, (next.quietStreak ?? 0) + 1) : 0;
+    // v9.7: any departure that is not at high agitation counts (low or medium), two in a row.
+    const calmEnough = INSPECTION_RULE.allowMedium ? agitationBand(agitation) !== 'high' : agitationBand(agitation) === 'low';
+    next.quietStreak = calmEnough ? Math.min(inspectionWork, (next.quietStreak ?? 0) + 1) : 0;
     next.complianceReady = next.quietStreak >= inspectionWork;
   }
   if (next.kind === 'child' && hasNeighbour(cabin, slot, [...CHILD_CARERS])) {
@@ -374,7 +378,11 @@ export function cabinPressureLines(state: RunState): ChangeLine[] {
   const occupied = state.cabin.filter(Boolean).length, band = agitationBand(state.stress), red = conflictLinks(state.cabin).length;
   const lines: ChangeLine[] = [];
   if (occupied >= crowdingThreshold(state.floor + 1)) lines.push({ label: '车厢拥挤', amount: V9_AGITATION.crowding });
-  const unrest = nightUnrest(state.floor + 1); if (unrest) lines.push({ label: '夜深人躁', amount: unrest });
+  // A floor where someone is due to get off stays calm when arrivalsCalm is on (players can plan around the clock).
+  const unrest = nightUnrest(state.floor + 1), arriving = state.cabin.some(r => r && r.destination <= state.floor + 1);
+  const quiet = boxOf(state).motor >= 3 ? 1 : 0;
+  const settled = unrest - quiet - (NIGHT_UNREST.arrivalsCalm && arriving ? 1 : 0);
+  if (settled > 0) lines.push({ label: '夜深人躁', amount: settled });
   const noise = motorNoise(boxOf(state), occupied); if (noise) lines.push({ label: '电机噪音', amount: noise });
   if (legendInCabin(state.cabin, 'don')) lines.push({ label: '教父的威压', amount: LEGEND_RULES.donAgitation });
   if (legendInCabin(state.cabin, 'matchmaker') && red) lines.push({ label: '月老见不得争吵', amount: red });
@@ -409,7 +417,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const {conflict:redEnergy,conflictProtection}=energyBreakdown(state);
   if(redEnergy)adjustEnergy('红线额外耗电',-redEnergy);
   if(conflictProtection)adjustEnergy('绝缘衬层抵消',conflictProtection);
-  const inspectionWork = hasKeepsake(state,'roundsLog') ? 1 : INSPECTION_WORK;
+  const inspectionWork = hasKeepsake(state,'roundsLog') ? 1 : INSPECTION_RULE.work;
   let cabin = state.cabin.map((rider,slot) => rider ? riderAfterWork(rider,state.cabin,slot,state.stress,inspectionWork) : null);
   const notes: string[] = []; const stressReasons: string[] = [];
   let serviceTurns = Math.max(0,(state.serviceTurns ?? 0)-1);
@@ -596,7 +604,6 @@ export const UPGRADE_GROUPS:UpgradeKey[][]=[['calm','insulation','soundproof','d
 export function drawUpgradeOffer(upgrades:Record<UpgradeKey,number>,history:UpgradeKey[],rng:()=>number,floor=Infinity) {
   const added:UpgradeKey[]=['rails','insulation','reservation','single','delay','buffer','soundproof','retime','punchcard','finale','dispatch'];
   const pool=(Object.keys(UPGRADES) as UpgradeKey[]).filter(k=>!upgrades[k]&&!RETIRED_UPGRADES.includes(k)&&(!SHOP_RULES.mixed||k!=='crowd'||floor>=20)&&(k!=='delay'||floor>=30)&&(SHOP_RULES.expanded||!added.includes(k)));
-  if(Object.values(upgrades).filter(Boolean).length>=UPGRADE_SLOTS)return {keys:[] as UpgradeKey[],seen:[...history]};
   if(!SHOP_RULES.grouped)return {keys:shuffle(pool,rng).slice(0,3),seen:[...history]};
   let seen=history.filter(k=>pool.includes(k));const keys:UpgradeKey[]=[];
   const pick=(candidates:UpgradeKey[])=>{
@@ -611,7 +618,7 @@ export function drawUpgradeOffer(upgrades:Record<UpgradeKey,number>,history:Upgr
 }
 /** v9: the first ability of each shop is free; one of the remaining cards may then be bought. */
 export const SHOP_PRICES = { extraAbility: 40 };
-export const availableShopCards = (state: RunState) => state.shopExtraBought || Object.values(state.upgrades).filter(Boolean).length >= UPGRADE_SLOTS ? [] : state.shop.filter(card => !card.purchased && !state.upgrades[card.key]);
+export const availableShopCards = (state: RunState) => state.shopExtraBought ? [] : state.shop.filter(card => !card.purchased && !state.upgrades[card.key]);
 
 export function failureLesson(state: RunState): string {
   if (state.status !== 'lost') return '';
@@ -632,7 +639,7 @@ export function failureLesson(state: RunState): string {
     const advice = source?.label.includes('被围')
       ? '名人只留1位邻座，可避免围观新增躁动。'
       : '护士需贴邻抵消新增躁动；音乐家影响整车，高档最多减2，并不保证安全。';
-    return source ? `躁动失控 · 最后一层主要来源：${source.label} +${source.amount}。${advice}` : '躁动失控 · 下一班优先处理高危乘客与红色冲突。';
+    return source ? `躁动失控 · 最后一层主要来源：${source.label} +${source.amount}。${advice}` : '躁动失控 · 下一班优先处理急躁乘客与红色冲突。';
   }
   return '班次中断 · 下一班留意关门前的电量与躁动预报。';
 }
@@ -648,6 +655,18 @@ export function previewUpgrade(current: RunState, key: UpgradeKey): RunState {
 export const UPGRADE_BASE_PRICES: Record<UpgradeKey, number> = { battery: 30, capacity: 35, calm: 35, concierge: 40, reinforced: 45, express: 45, tipjar: 30, relay: 30, crowd: 24, meter: 25, rails:24, insulation:24, reservation:20, single:24, delay:24, buffer:8, soundproof:24, retime:24, punchcard:24, finale:24, dispatch:24 };
 export const upgradePrice = (_key: UpgradeKey, _floor: number, _installed: number) => 0;
 export const REROLL_PRICE = 10;
+/** v9.7: sell an installed ability at a shop for a small refund, freeing its slot for a new card. */
+export const SELL_REFUND = 15;
+export function canSellUpgrade(state: RunState, key: UpgradeKey) {
+  return state.status === 'upgrade' && state.upgrades[key] > 0 && !(key === 'calm' && state.stress >= state.stressCap - 2);
+}
+export function sellUpgrade(state: RunState, key: UpgradeKey): RunState {
+  if (!canSellUpgrade(state, key)) return state;
+  const upgrades = { ...state.upgrades, [key]: 0 };
+  const stressCap = key === 'calm' ? state.stressCap - 2 : state.stressCap;
+  return { ...state, upgrades, stressCap, calmCharge: key === 'calm' ? false : state.calmCharge, coins: state.coins + SELL_REFUND,
+    message: `卖出${UPGRADES[key].name}，退回 ${SELL_REFUND} 金币；空出一个安装位。`, lastEarnings: { total: SELL_REFUND, sources: [{ label: '卖出能力', amount: SELL_REFUND }] }, lastEnergy: { delta: 0, sources: [] }, lastPressure: { delta: 0, sources: [] } };
+}
 export function rerollShop(current: RunState, rng: () => number = Math.random): RunState {
   if (current.status !== 'upgrade' || current.shopUpgradeBought || current.rerolledFloor === current.floor || current.coins < REROLL_PRICE || !current.shop.length) return current;
   const drawn = drawUpgradeOffer(current.upgrades, current.shopSeen ?? [], rng, current.floor);
@@ -676,15 +695,19 @@ export function emergencyAllowance(state: RunState) {
   return Math.max(0, Math.min(emergencySectorCap(boxOf(state)) - used, state.energyCap - state.energy, Math.floor(state.coins / emergencyUnitPrice(boxOf(state)))));
 }
 /** In-transit calming (v9.5): pay coins before departure to lower agitation, capped per ten floors. 0 per sector disables. */
-export const CALM_PURCHASE = { price: 8, perSector: 6 };
+/** Inspector stamp condition: v9.7 counts medium agitation too (research switch for the balance simulator). */
+export const INSPECTION_RULE = { allowMedium: true, work: INSPECTION_WORK };
+export const CALM_PURCHASE = { price: 8, perSector: 6, base: 6, perTen: 2 };
+/** Calming price: flat `price`, or when `base` is set, base + perTen per ten floors (the late night costs more). */
+export const calmPrice = (floor: number) => CALM_PURCHASE.base ? CALM_PURCHASE.base + CALM_PURCHASE.perTen * Math.floor(floor / 10) : CALM_PURCHASE.price;
 export function calmAllowance(state: RunState) {
-  if (state.status !== 'playing' || !CALM_PURCHASE.perSector) return 0;
+  if ((state.status !== 'playing' && state.status !== 'upgrade') || !CALM_PURCHASE.perSector) return 0;
   const used = state.calmSector === sectorOf(state.floor) ? state.calmUsed ?? 0 : 0;
-  return Math.max(0, Math.min(CALM_PURCHASE.perSector - used, state.stress, Math.floor(state.coins / CALM_PURCHASE.price)));
+  return Math.max(0, Math.min(CALM_PURCHASE.perSector - used, state.stress, Math.floor(state.coins / calmPrice(state.floor))));
 }
 export function buyCalm(state: RunState, units: number): RunState {
   if (!Number.isSafeInteger(units) || units <= 0 || units > calmAllowance(state)) return state;
-  const sector = sectorOf(state.floor), used = state.calmSector === sector ? state.calmUsed ?? 0 : 0, cost = units * CALM_PURCHASE.price;
+  const sector = sectorOf(state.floor), used = state.calmSector === sector ? state.calmUsed ?? 0 : 0, cost = units * calmPrice(state.floor);
   return { ...state, stress: state.stress - units, coins: state.coins - cost, calmSector: sector, calmUsed: used + units, message: `途中安抚 −${units} 躁动，支付 ${cost} 金币。`,
     lastEarnings: { total: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] }, lastPressure: { delta: -units, sources: [{ label: '途中安抚', amount: -units }] } };
 }

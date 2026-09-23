@@ -9,6 +9,10 @@ const AGITATING = new Set(['thief', 'drunk', 'child']);
 
 /** Card "net" estimate: fare minus the trip's power at the shop charge price, minus the trip's own agitation.
  * It ignores neighbour bonuses on purpose, so a positive number is worth carrying even alone. Null for legends. */
+/** True when the net estimate includes the rider's own agitation (so the card can say so instead of plain coins). */
+export function netIncludesAgitation(rider: Rider, state: RunState) {
+  return !isLegend(rider.kind) && ((riderProfile(rider, state.cabin).agitation ?? 0) > 0 || AGITATING.has(rider.kind) || Boolean(rider.volatile));
+}
 export function netValue(rider: Rider, state: RunState): number | null {
   if (isLegend(rider.kind)) return null;
   const trip = Math.max(1, rider.destination - state.floor);

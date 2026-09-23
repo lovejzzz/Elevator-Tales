@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.6.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.7**. Publication status is tracked separately from the source version.
+
+## v9.7 — 2026-09-23 — Selling, rebuilt shop, fairer impatience and unrest / 卖能力、商店重排、急躁与夜深人躁
+
+- Fixed phantom "red-link agitation" (cabin-wide sources listed twice). "High risk" → "Impatient" (support riders never roll it). Net pill states units / "incl. agitation".
+- Inspector: 3 consecutive departures below high (35% casual / 58–72% skilled stamp rate, from 12% / 37–56%).
+- Shop: resources row with agitation, installed-slot strip with Sell (+15), cards shown when full, in-shop calming. Motor line: every-third-floor −1, even floors −1, quiet (unrest −1).
+- Unrest: arrivals take 1 off, steps every 15 floors to +4; calming 6 + 2 per ten floors. Acceptance: styles 99.0%, 0% alive at 150F, optimizer median 114; novice 39, casual 47, net-reading 98. Known: late wealth for skilled play; Coach boarding 67.8%.
 
 ## v9.6.1 — 2026-09-23 — Agitation sources visible / 躁动来源一眼看清
 

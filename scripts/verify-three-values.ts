@@ -33,8 +33,10 @@ assert.equal(resolveFloor(twoArrivals,()=>.9).lastPressure.delta,0,'each arrival
 const threeArrivals=state({stress:2,cabin:[rider('commuter','a',{destination:2,volatile:true}),rider('courier','b',{destination:2,volatile:true}),rider('lawyer','c',{destination:2,volatile:true}),null,null,null]});
 assert.equal(resolveFloor(threeArrivals,()=>.9).lastPressure.delta,1,'three arrivals still use the two-point floor cap');
 
-const offers39=makeOffers(39,initialRun().upgrades,false,rngFor(12));
-assert.equal(offers39.filter(r=>r.volatile).length>=1,true);
+// v9.7: support riders never roll high risk, so check across seeds rather than one fixed draw.
+const risky39=Array.from({length:20},(_,i)=>makeOffers(39,initialRun().upgrades,false,rngFor(12+i))).filter(o=>o.some(r=>r.volatile)).length;
+assert.ok(risky39>=8,`high-risk offers appear by 39F (${risky39}/20)`);
+assert.ok(Array.from({length:40},(_,i)=>makeOffers(39,initialRun().upgrades,false,rngFor(100+i))).flat().every(r=>!r.volatile||!['nurse','inspector','cop','lawyer','mechanic','courier','exorcist'].includes(r.kind)),'support riders are never high risk');
 const offers40=makeOffers(40,initialRun().upgrades,false,rngFor(13));
 assert(offers40.some(r=>!r.volatile),'every floor retains a non-high-risk offer');
 

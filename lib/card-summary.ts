@@ -44,7 +44,7 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     case 'exorcist': return { line: L('管住幽灵 · 每只省 1 电/层', 'Controls Ghosts · −1 power each/floor') };
     case 'coach': return { line: L('邻座车费 +50%', 'Neighbors’ fare +50%') };
     case 'celebrity': return { line: L('恰好 1 位邻座 +2/层', 'Exactly 1 neighbor: +2/floor') };
-    case 'inspector': return rider.complianceReady ? { line: L(`已盖章 · 到站 +${INSPECTION_BONUS}`, `Stamped · +${INSPECTION_BONUS} on arrival`) } : { line: L(`连续低躁动 → +${INSPECTION_BONUS}`, `Stay calm → +${INSPECTION_BONUS}`), progress: `${rider.quietStreak ?? 0}/${INSPECTION_WORK}` };
+    case 'inspector': return rider.complianceReady ? { line: L(`已盖章 · 到站 +${INSPECTION_BONUS}`, `Stamped · +${INSPECTION_BONUS} on arrival`) } : { line: L(`连续不高躁动 → +${INSPECTION_BONUS}`, `Stay below high → +${INSPECTION_BONUS}`), progress: `${rider.quietStreak ?? 0}/${INSPECTION_WORK}` };
     case 'bomb': return { line: L('到站前归零即失败 · 警察可锁', 'Fails if it hits zero aboard · Officer locks'), progress: `⏱ ${rider.fuse ?? 0}` };
     case 'mystery': { const f = rider.traits?.fare ?? 16; const band = f <= 13 ? L('低档 8–13', 'low 8–13') : f <= 19 ? L('中档 14–19', 'mid 14–19') : L('高档 20–24', 'high 20–24'); return { line: L(`车费${band} · 到站揭晓`, `Fare ${band} · revealed on arrival`) }; }
     case 'shifter': return { line: L('每层重抽属性', 'Rerolls every floor') };

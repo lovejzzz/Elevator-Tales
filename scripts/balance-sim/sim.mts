@@ -217,6 +217,8 @@ function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog): RunSta
     if (extra && s.coins - E.SHOP_PRICES.extraAbility >= reserveFor) { s = E.installUpgrade(s, extra); if (s.shopExtraBought) log.abilities.push(extra); }
   }
   // (The Reserve Cell left the shop in v9.0.2; bots no longer buy what players cannot.)
+  // v9.7 shop calming: bring high agitation down with coins beyond the power plan.
+  while (s.stress >= s.stressCap - 3 && E.calmAllowance(s) > 0 && s.coins - E.calmPrice(s.floor) >= chargeFor(Math.max(0, target - s.energy))) s = E.buyCalm(s, 1);
   // top up with anything left if still under target (scarcity check reads what remains)
   units = Math.min(Math.max(0, target - s.energy), E.affordableChargingPlan(s).units);
   if (units > 0) s = E.chargeBattery(s, units);
@@ -236,7 +238,7 @@ export type ShopLog = { floor: number; energy: number; coins: number; cap: numbe
 export type RunLog = {
   bot: BotId; seed: number; floor: number; cause: 'energy' | 'agitation' | 'bomb' | 'alive';
   closeCalls: number; escapes: number; powerCalls: number; stressCalls: number; bombCalls: number;
-  emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; calmUnits?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
+  emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; calmUnits?: number; inspectors?: number; stamped?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
   legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
   shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
 };
@@ -307,6 +309,7 @@ export function runOne(opt: RunOptions): RunLog {
     const cabinBefore = state.cabin.filter(Boolean).map(r => r!);
     const next = E.resolveFloor(state, stream(opt.seed, 'resolve', state.floor));
     for (const r of cabinBefore) if (!next.cabin.some(n => n?.id === r.id) && next.lastArrivals?.some(a => a.riderId === r.id)) log.delivered[r.kind] = (log.delivered[r.kind] ?? 0) + 1;
+    for (const a of next.lastArrivals ?? []) if (a.kind === 'inspector') { log.inspectors = (log.inspectors ?? 0) + 1; if (a.coins >= PASSENGERS.inspector.fare + 12) log.stamped = (log.stamped ?? 0) + 1; }
     if (next.message.includes('车厢事故') || next.log[0]?.includes('车厢事故')) log.incidents++;
     for (const line of next.lastPressure.sources) if (line.amount > 0) log.pressure[line.label] = (log.pressure[line.label] ?? 0) + line.amount;
     if (next.status === 'lost') log.deathSources = next.lastPressure.sources.map(l => `${l.label}${l.amount > 0 ? '+' : ''}${l.amount}`).join(' ') + ` | stress ${next.stress}/${next.stressCap} riders ${state.cabin.filter(Boolean).map(r => r!.kind).join(',')}`;

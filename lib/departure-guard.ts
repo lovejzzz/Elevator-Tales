@@ -1,4 +1,4 @@
-import { CALM_PURCHASE, boxOf, calmAllowance, dismissRider, emergencyAllowance, nextShopFloor, type Rider, type RunState } from './game-engine';
+import { calmPrice, boxOf, calmAllowance, dismissRider, emergencyAllowance, nextShopFloor, type Rider, type RunState } from './game-engine';
 import { isLegend } from './game-data';
 import { energyForecast, sectorForecast, stressForecast } from './game-forecast';
 import { motorCost } from './balance-v832';
@@ -83,7 +83,7 @@ export function calmRescuePlan(state: RunState): CalmPlan | null {
     if (!ok || !s.cabin.some(Boolean)) continue;
     const need = Math.max(0, worst(s) - s.stressCap + 1);
     if (need > calmAllowance(s)) continue;
-    const plan = { remove, calm: need, cost: paid + need * CALM_PURCHASE.price };
+    const plan = { remove, calm: need, cost: paid + need * calmPrice(state.floor) };
     if (!best || plan.remove.length < best.remove.length || (plan.remove.length === best.remove.length && plan.cost < best.cost)) best = plan;
   }
   return best;
