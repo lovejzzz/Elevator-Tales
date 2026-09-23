@@ -2582,3 +2582,33 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .changelog-dev { margin-top:8px; font-size:12px; color:#b7b2a4; }
 .changelog-dev summary { cursor:pointer; color:#d9c28c; }
 .portrait-legend-art { border-color:#e0b75f!important; box-shadow:0 0 10px rgba(224,183,95,.25); }
+
+/* v9.0.2 ascend guard: floats above the controls so no layout grid has to make room. */
+.power-alert { position:fixed; left:50%; bottom:calc(96px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:45; width:min(480px,calc(100vw - 32px)); padding:10px 12px; border:1px solid #d9a24f; background:#1d1509f2; box-shadow:0 12px 32px rgba(0,0,0,.45); color:#f3dfb8; display:grid; gap:7px; animation:power-alert-in 180ms ease-out both; }
+.power-alert.is-fatal { border-color:#e0715a; background:#2a110bf2; }
+.power-alert.is-armed { box-shadow:0 0 0 2px #e0715a88,0 12px 32px rgba(0,0,0,.45); }
+.power-alert p { display:flex; align-items:center; gap:7px; margin:0; font-size:13px; font-weight:700; }
+.power-alert p svg { width:16px; flex-shrink:0; color:#f0b16a; }
+.power-alert-actions { display:flex; flex-wrap:wrap; gap:6px; }
+.power-alert-actions button { min-height:36px; padding:0 12px; border:1px solid #d9a24f; background:#d9a24f22; color:#f7e2b6; font-weight:700; cursor:pointer; }
+.power-alert.is-fatal .power-alert-actions button:first-child { background:#d9a24f; color:#1a1208; }
+.power-alert-actions button:disabled { opacity:.45; cursor:not-allowed; }
+.power-alert small { font-size:12px; color:#e8c7a0; }
+.power-alert small:empty { display:none; }
+.depart-button.is-armed { background:linear-gradient(135deg,#e58a68,#9a3b22); border-color:#e0715a; }
+@keyframes power-alert-in { from { opacity:0; transform:translate(-50%,6px); } to { opacity:1; transform:translate(-50%,0); } }
+@media (prefers-reduced-motion: reduce) { .power-alert { animation:none; } }
+
+/* v9.0.2 shop: three numbered steps. */
+.upgrade-dialog .shop-head { gap:2px; margin:2px 0 6px; }
+.upgrade-dialog .shop-head .dialog-kicker { margin:0; }
+.upgrade-dialog .shop-step-head { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin:6px 0 8px; }
+.upgrade-dialog .recharge-panel>.shop-step-head { margin:0 0 6px; flex-direction:row; align-items:center; }
+.upgrade-dialog .shop-step-head h3 { display:flex; align-items:center; gap:8px; margin:0; font-size:15px; font-weight:700; color:#f1e2bf; }
+.upgrade-dialog .shop-step-head h3 output { color:#f6d58e; }
+.upgrade-dialog .shop-step-head h3 i { display:inline-grid; place-items:center; width:20px; height:20px; border:1px solid #d6ae65; border-radius:50%; font:700 11px var(--font-mono); font-style:normal; color:#d6ae65; }
+.upgrade-dialog .shop-step-head>span { display:inline-flex; align-items:center; gap:10px; font-size:12px; color:#bfb392; }
+.upgrade-dialog .shop-step-head .shop-reroll,.upgrade-dialog .shop-scroll-body .shop-step-head button.shop-reroll { margin:0; }
+.upgrade-dialog .sector-need { margin:0 0 8px; font-size:12px; line-height:1.5; color:#bcd3c3; }
+.upgrade-dialog .sector-need.is-short { color:#f0c07a; }
+@media (max-width:700px) { .power-alert:not(.is-fatal) { display:none; } }

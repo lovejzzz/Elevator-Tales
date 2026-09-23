@@ -31,12 +31,13 @@ import { CHANGELOG, CHANGELOG_EN, GAME_VERSION } from '@/lib/changelog';
 import { localizeTree, translateGameText, type GameLocale } from '@/lib/i18n';
 import { UPGRADE_SLOTS, riskPartnerships } from '@/lib/shift-rules';
 import { flywheelAllowance } from '@/lib/shop-effects';
+import { departureRisk, sectorNeed, SECTOR_NEED_RIDERS } from '@/lib/departure-guard';
 import { offerReveal } from '@/lib/offer-reveal';
 import { shouldPreviewConnection } from '@/lib/connection-preview';
 import { AgitationGauge } from '@/components/agitation-gauge';
 import { cooperationLabel } from '@/lib/cooperation-label';
-import { agitationBand, musicBeatForAgitation, motorAdvanceNotice, motorScheduleText, REPAIR_WORK, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE } from '@/lib/balance-v832';
-import { buyReserveCell, consumeReserveCell, nextOfferBatch, retimeRider, oldMovesRemaining, reserveOffer, applyCalmCharge, startRun } from '@/lib/game-engine';
+import { agitationBand, musicBeatForAgitation, motorAdvanceNotice, motorScheduleText, REPAIR_WORK, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, RESERVE_CELL_CHARGE } from '@/lib/balance-v832';
+import { consumeReserveCell, nextOfferBatch, retimeRider, oldMovesRemaining, reserveOffer, applyCalmCharge, startRun } from '@/lib/game-engine';
 
 type DragPayload = { type: 'offer'; id: string } | { type: 'slot'; slot: number };
 type Feedback = { id: number; tone: 'place' | 'combo' | 'error' | 'arrival'; label: string; slots: number[]; coins?: number; energy?: number; pressure?: number };
@@ -179,6 +180,7 @@ const rescuesCrisis = (key: UpgradeKey, run: RunState) => {
   return run.stress >= run.stressCap && preview.stress < preview.stressCap;
 };
 
+const IMPACT_KEYS: UpgradeKey[] = ['battery', 'calm', 'capacity'];
 function upgradeImpact(key: UpgradeKey, run: RunState): string {
   const preview = previewUpgrade(run, key);
   switch (key) {
@@ -321,8 +323,9 @@ export default function ElevatorGame() {
   };
 
   useEffect(() => { const frame=requestAnimationFrame(() => { const savedBest = Math.max(1, Number(localStorage.getItem('elevator-tales-endless-best-floor') || 1)); const savedHighest = Math.max(1, Number(localStorage.getItem('elevator-tales-highest') || 1)); const shouldGuide = savedBest <= 1 || new URLSearchParams(window.location.search).get('tutorial') === '1'; let savedDiscovered: PassengerKind[] = []; try { savedDiscovered=sanitizeDiscoveredPassengers(JSON.parse(localStorage.getItem(DISCOVERED_PASSENGERS_KEY) || '[]')); } catch {} setHighest(savedHighest); setBestFloor(savedBest); setRunStartBest(savedBest); setDiscovered(savedDiscovered); discoveredRef.current = savedDiscovered; setGuidedShift(shouldGuide); const legends = loadUnlockedLegends(savedBest > 1); setUnlockedLegends(legends); setKeepsakesSeen(loadKeepsakesSeen()); try { const saved = JSON.parse(localStorage.getItem(STORIES_KEY) ?? '[]'); if (Array.isArray(saved)) setStoriesUnlocked(saved.filter((k): k is PassengerKind => k in STORIES)); } catch { /* storage unavailable */ } const opening = startRun(shouldGuide, Math.random, legends);
-      // Development-only QA shortcut: ?qa=shop starts on floor 9 with coins, one ascent from the first shop.
-      if (process.env.NODE_ENV !== 'production' && new URLSearchParams(window.location.search).get('qa') === 'shop') { const qa = nextOfferBatch({ ...opening.state, floor: 9, coins: 140, earned: 140, energy: 30, legendOffer: undefined, legendStatus: undefined }); setGuidedShift(false); setIntroState(false); setRun(qa.state); presentOffers(qa.offers, savedDiscovered); return; }
+      // Development-only QA shortcuts: ?qa=shop starts one ascent from the first shop; ?qa=low starts at 14F nearly out of power.
+      const qaMode = process.env.NODE_ENV !== 'production' ? new URLSearchParams(window.location.search).get('qa') : null;
+      if (qaMode === 'shop' || qaMode === 'low') { const qa = nextOfferBatch({ ...opening.state, ...(qaMode === 'low' ? { floor: 14, coins: 87, earned: 188, energy: 4 } : { floor: 9, coins: 140, earned: 140, energy: 30 }), legendOffer: undefined, legendStatus: undefined }); setGuidedShift(false); setIntroState(false); setRun(qa.state); presentOffers(qa.offers, savedDiscovered); return; }
       if (new URLSearchParams(window.location.search).has('daily')) { const key = dailyKey(), seed = dailySeed(key); const d = startRun(false, stream(seed, 'offers', 1), LEGEND_STARTERS); setDaily({ key, seed }); setDailyBest(Number(localStorage.getItem(`elevator-tales-daily-best-${key}`) || 0)); setGuidedShift(false); setRun(d.state); presentOffers(d.offers, savedDiscovered); return; }
       setRun(opening.state); presentOffers(opening.offers, savedDiscovered); });return()=>cancelAnimationFrame(frame); }, []);
   useEffect(() => { const frame=requestAnimationFrame(()=>{ if (run.floor > highest) { setHighest(run.floor); localStorage.setItem('elevator-tales-highest', String(run.floor)); } if (run.floor > bestFloor) { setBestFloor(run.floor); localStorage.setItem('elevator-tales-endless-best-floor', String(run.floor)); } });return()=>cancelAnimationFrame(frame); }, [run.floor, highest, bestFloor]);
@@ -345,6 +348,10 @@ export default function ElevatorGame() {
   const pressurePreview = useMemo(() => stressForecast(run), [run]); const energyPreview = useMemo(() => energyForecast(run), [run]);
   const energyFatal = run.energy + energyPreview.lowDelta <= 0;
   const sector = useMemo(() => sectorForecast(run), [run]);
+  const risk = useMemo(() => departureRisk(run), [run]);
+  // A floor that can end the run needs a second press; any change to the run disarms it.
+  const [departArmedFor, setDepartArmedFor] = useState<RunState | null>(null);
+  const departArmed = departArmedFor === run;
   const emergencyLeft = run.status === 'playing' ? emergencyAllowance(run) : 0;
   const emergencyPrice = emergencyUnitPrice(boxOf(run));
   const emergencyNeed = run.status === 'playing' ? Math.min(emergencyLeft, Math.max(0, 1 - sector.projected, energyFatal ? 1 - (run.energy + energyPreview.lowDelta) : 0)) : 0;
@@ -369,6 +376,7 @@ export default function ElevatorGame() {
 
   const resultChallenge = failureLesson(run);
   const chargePlan=chargingPlan(run);
+  const need=sectorNeed(run);
   const [chargeChoice,setChargeChoice]=useState<{context:string;target:number}|null>(null);
   const chargeContext=`${run.floor}:${run.energy}:${run.energyCap}:${run.coins}`;
   const affordableChargeTarget=Math.min(run.energyCap,run.energy+affordableUnits(boxOf(run),Math.max(0,run.coins)));
@@ -432,6 +440,7 @@ export default function ElevatorGame() {
   const depart = useCallback(() => {
     if (locked || busyRef.current) return;
     if (!run.cabin.some(Boolean)) { flash({tone:'error',label:'至少接一位乘客才能上行',slots:[]}); playTone(sound,'danger'); return; }
+    if (risk.fatal && !departArmed) { setDepartArmedFor(run); playTone(sound,'danger'); return; }
     const reduced = fastReveal || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     busyRef.current = true; setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setFeedback(null); setDoors('closing'); playTone(sound, 'depart');
     journeyTimers.current.forEach(clearTimeout);
@@ -455,7 +464,7 @@ export default function ElevatorGame() {
       }, reduced ? 70 : 470),
 
     ];
-  }, [locked, sound, run, flash, reportMetrics, fastReveal, presentOffers, runDelivered, keepsakesSeen, unlockedLegends, storiesUnlocked, rngOf, offers, daily, dailyBest]);
+  }, [locked, sound, run, flash, reportMetrics, fastReveal, presentOffers, runDelivered, keepsakesSeen, unlockedLegends, storiesUnlocked, rngOf, offers, daily, dailyBest, risk.fatal, departArmed]);
   useEffect(() => { const onKey = (event: KeyboardEvent) => {
     if (intro || help || pressureHelp || archive || receiptOpen || passengerDetails || inventoryOpen || changelogOpen || event.repeat) return;
     if (event.key === 'Escape') { setPendingOfferId(null); setSelectedSlot(null); setDragged(null); setDragOverSlot(null); return; }
@@ -583,7 +592,15 @@ export default function ElevatorGame() {
         </div><div className="candidate-notes"><span className="route-note">运转 {travelEnergyCost(run.floor+1)} 电/层 · 下段 {travelEnergyCost(nextShop+1)} 电/层</span><span>每层＝上行后立即结算 · 到站＝下车时结算 · 邻座逐人叠加</span>{run.upgrades.single>0&&<span>车费不含整车奖励：单人到站+2币</span>}{run.upgrades.crowd>0&&<span>车费不含整车奖励：三类齐全且有人到站+6币</span>}{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
         <div className="departure-controls">
           <button className="mobile-inspect-button" disabled={!activeRider || locked} onClick={() => {if(activeRider){setEjectArmed(false);setPassengerDetails(activeRider);}}} aria-label="查看选中人物规则"><BookOpen /><span>人物/请离</span></button>
-          <button className="depart-button" onClick={depart} disabled={locked || occupied===0} aria-label={language==='zh'?`关门上行 · 下一站电量 ${energyPreview.range}，躁动 ${pressurePreview.range}`:`Close doors and ascend`}><span>{doors === 'open' ? occupied===0?'至少接1人':'关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
+          {run.status==='playing'&&doors==='open'&&occupied>0&&(risk.fatal||(sector.failFloor!==null&&sector.failFloor-run.floor<=2))&&<div className={`power-alert ${risk.fatal?'is-fatal':''} ${departArmed?'is-armed':''}`} role="alert" data-no-translate>
+            <p><BatteryCharging aria-hidden="true"/>{risk.fatal?(language==='zh'?`这一层可能断电：电量 ${run.energy}，下一站 ${energyPreview.range}`:`This floor can run you out of power: ${run.energy} now, next ${energyPreview.range}`):(language==='zh'?`照现在 ${sector.failFloor} 层断电`:`At this rate: out of power at ${sector.failFloor}F`)}</p>
+            <div className="power-alert-actions">
+              {risk.fatal&&risk.need>0&&<button disabled={locked||risk.affordable<risk.need} onClick={()=>emergency(risk.need)}>{language==='zh'?`补电 +${risk.need} · ${risk.need*risk.unitPrice}币`:`Charge +${risk.need} · ${risk.need*risk.unitPrice}c`}</button>}
+              {emergencyNeed>risk.need&&<button disabled={locked||risk.affordable<emergencyNeed} onClick={()=>emergency(emergencyNeed)}>{language==='zh'?`补足本段 +${emergencyNeed} · ${emergencyNeed*risk.unitPrice}币`:`Top up sector +${emergencyNeed} · ${emergencyNeed*risk.unitPrice}c`}</button>}
+            </div>
+            {risk.fatal&&<small>{risk.affordable<risk.need?(language==='zh'?'金币或本段补电额度不够：可以请离耗电的乘客。':'Not enough coins or sector allowance: dismiss a rider to save power.'):''}{departArmed?(language==='zh'?' 再按一次上行＝冒险出发。':' Press ascend again to risk it.'):''}</small>}
+          </div>}
+          <button className={`depart-button ${departArmed?'is-armed':''}`} onClick={depart} disabled={locked || occupied===0} aria-label={language==='zh'?`关门上行 · 下一站电量 ${energyPreview.range}，躁动 ${pressurePreview.range}`:`Close doors and ascend`}><span>{doors === 'open' ? occupied===0?'至少接1人':departArmed?'确认冒险上行':'关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
           {(pendingOfferId || selectedSlot !== null || firstPairLesson && !firstPairActive) && <p className={`mobile-departure-note forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? `已选${activeRider ? PASSENGERS[activeRider.kind].name : '乘客'} · 点下方空位` : selectedSlot !== null ? run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : '点另一站位换位 · 再点原位取消' : '新手示例：让两位恋人成为邻座，观察绿色协作线'}</p>}
           <p className={`panel-hint forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : firstPairLesson && !firstPairActive ? '新手示例 · 让两位恋人成为邻座，观察绿色协作线' : departureForecast}</p>
         </div>
@@ -644,42 +661,41 @@ export default function ElevatorGame() {
         <div className="shop-wallet"><span aria-label={`可用金币 ${run.coins}`}><Coins aria-hidden="true" /><span className="shop-balance-label">金币</span><b key={run.coins}>{run.coins}</b></span><span>收入 {run.earned} · 支出 {run.earned - run.coins}</span></div>
       </div>
       <div className="shop-scroll-body">
-      <p className="route-notice">运转 {travelEnergyCost(run.floor+1)} 电 / 层<span className="shop-motor-next">{motorAdvanceNotice(run.floor)}</span></p>
-      <p className="dialog-kicker">FLOOR {run.floor} · SHOP</p>{districtFor(run.floor+1).from===run.floor+1&&<p className="district-scene" data-no-translate>{language==='zh'?`前方：${districtFor(run.floor+1).name[0]} · `:`Ahead: ${districtFor(run.floor+1).name[1]} · `}{districtFor(run.floor+1).scene[language==='zh'?0:1]}</p>}<DialogHeader><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle><DialogDescription>{language==='zh'?`每店免费选 1 项能力，可再花 ${SHOP_PRICES.extraAbility} 金币加购 1 项；共 6 个安装位。配电箱每店可升 1 级。`:`Pick 1 ability free per shop and buy 1 more for ${SHOP_PRICES.extraAbility} coins; 6 slots in all. Upgrade the power box once per shop.`}</DialogDescription></DialogHeader>
+      <DialogHeader className="shop-head"><p className="dialog-kicker" data-no-translate>FLOOR {run.floor} · SHOP{districtFor(run.floor+1).from===run.floor+1?` · ${language==='zh'?'前方':'Ahead'}: ${districtFor(run.floor+1).name[language==='zh'?0:1]}`:''}</p><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle><DialogDescription className="sr-only">{language==='zh'?'选能力、升级配电箱、充电，然后继续上行。':'Pick an ability, upgrade the power box, charge, then ascend.'}</DialogDescription></DialogHeader>
       {upgradeCrisis && <p className="shop-warning">{upgradeCrisis === 'both' ? '电量与躁动同时失控：底部最低抢救可恢复1电，并将躁动降至上限以下1点。' : upgradeCrisis === 'energy' ? '电量已耗尽：使用下方充电服务，将电量恢复到 0 以上才能继续。' : '躁动失控：底部最低抢救每点8金币，只降至上限以下1点，不可继续购买舒缓。'} 若无力修复，本班将在这里结束。</p>}
-      <button className="shop-inventory-link" onClick={()=>setInventoryOpen(true)}><Layers />安装位 {upgradeCount} / {UPGRADE_SLOTS} · 查看已装升级</button>
+      <div className="shop-step-head" data-no-translate><h3><i>1</i>{language==='zh'?(run.shopUpgradeBought?`加购 1 项 · ${SHOP_PRICES.extraAbility} 金币（可跳过）`:'选 1 项能力 · 免费'):(run.shopUpgradeBought?`Buy 1 more · ${SHOP_PRICES.extraAbility} coins (optional)`:'Pick 1 ability · free')}</h3><span>
+        {!run.shopUpgradeBought&&availableShopCards(run).length>0&&run.rerolledFloor!==run.floor&&<button className="shop-reroll" disabled={run.coins<REROLL_PRICE} onClick={()=>{const next=rerollShop(run, rngOf('shop', run.floor));if(next!==run){reportMetrics(run,next,language==='zh'?'重抽能力':'Reroll abilities');setRun(next);playTone(sound,'select');}}}><RotateCcw aria-hidden="true" />{language==='zh'?`重抽 · ${REROLL_PRICE}币`:`Reroll · ${REROLL_PRICE}c`}</button>}
+        <button className="shop-inventory-link" onClick={()=>setInventoryOpen(true)}><Layers />{language==='zh'?`已装 ${upgradeCount}/${UPGRADE_SLOTS}`:`Installed ${upgradeCount}/${UPGRADE_SLOTS}`}</button></span></div>
       {!availableShopCards(run).length&&<p className="shop-receipt" role="status">{upgradeCount >= UPGRADE_SLOTS ? '六个安装位已满。本班保留当前能力，维修服务仍然可用。' : run.shopExtraBought?'本店已选取并加购能力，下次商店再选。':'本店没有未安装的能力可选。维修服务仍然可用。'}</p>}
-      {!run.shopUpgradeBought&&availableShopCards(run).length>0&&run.rerolledFloor!==run.floor&&<button className="shop-reroll" data-no-translate disabled={run.coins<REROLL_PRICE} onClick={()=>{const next=rerollShop(run, rngOf('shop', run.floor));if(next!==run){reportMetrics(run,next,language==='zh'?'重抽能力':'Reroll abilities');setRun(next);playTone(sound,'select');}}}><RotateCcw aria-hidden="true" />{language==='zh'?`重抽能力 · ${REROLL_PRICE} 金币（每店一次）`:`Reroll abilities · ${REROLL_PRICE} coins (once per shop)`}</button>}
-      {run.shopUpgradeBought&&!run.shopExtraBought&&availableShopCards(run).length>0&&<p className="shop-receipt" data-no-translate>{language==='zh'?`已免费选取 1 项。还可以加购剩下的 1 项（${SHOP_PRICES.extraAbility} 金币），或直接充电。`:`Free pick taken. You may buy one of the remaining cards (${SHOP_PRICES.extraAbility} coins) or spend on power.`}</p>}
       {(run.keepsakes?.length??0)>0&&<p className="keepsake-row" data-no-translate>{language==='zh'?'信物：':'Keepsakes: '}{run.keepsakes!.map(k=><span key={k} className="keepsake-chip" title={keepsakeText(k,language)}>{keepsakeLabel(k,language)}</span>)}</p>}
       <div className="shop-choice-row"><div className="upgrade-grid">{availableShopCards(run).map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, run); const warning = card.price > 0 ? purchaseRepairWarning(run,key,card.price) : null; return <button key={key} className={rescue ? 'crisis-rescue' : ''} disabled={!affordable} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price === 0 ? '免费选取' : `加购 ${card.price} 金币`}${!affordable ? '，金币不足' : ''}`}>
-        <span className="upgrade-card-head"><small>{UPGRADES[key].label}</small></span><b>{UPGRADES[key].name}</b><p>{UPGRADES[key].description}</p><em>{upgradeImpact(key, run)}</em>{warning && <span className="reserve-warning">{warning === 'crisis' ? '购买后不足以修复当前失控' : '购买后无法补至参考电量；参考线不是离店要求'}</span>}<span className="shop-price" data-no-translate>{card.price===0?<><Check aria-hidden="true" /><strong>{language==='zh'?'免费选取':'Free pick'}</strong></>:<><Coins aria-hidden="true" /><strong>{card.price}</strong><span>{affordable ? (language==='zh'?'加购':'Buy extra') : (language==='zh'?`还差 ${card.price - run.coins}`:`Need ${card.price - run.coins}`)}</span></>}</span>
+        <b>{UPGRADES[key].name}</b><p>{UPGRADES[key].description}</p>{IMPACT_KEYS.includes(key)&&<em>{upgradeImpact(key, run)}</em>}{warning && <span className="reserve-warning">{warning === 'crisis' ? '购买后不足以修复当前失控' : '购买后无法补至参考电量；参考线不是离店要求'}</span>}<span className="shop-price" data-no-translate>{card.price===0?<><Check aria-hidden="true" /><strong>{language==='zh'?'免费选取':'Free pick'}</strong></>:<><Coins aria-hidden="true" /><strong>{card.price}</strong><span>{affordable ? (language==='zh'?'加购':'Buy extra') : (language==='zh'?`还差 ${card.price - run.coins}`:`Need ${card.price - run.coins}`)}</span></>}</span>
       </button>; })}{!availableShopCards(run).length&&<section className="shop-installed-summary" role="status">
         <h3>{language==='zh'?(run.shopUpgradeBought?'本店选购完成':'已安装能力'):(run.shopUpgradeBought?'Upgrade installed':'Installed upgrades')}</h3>
         <p>{language==='zh'?'本班能力保留生效，仍可充电后离店。':'Your upgrades remain active. You can still charge before leaving.'}</p>
         <ul>{(Object.keys(UPGRADES) as UpgradeKey[]).filter(key=>run.upgrades[key]>0).map(key=><li key={key}><Check aria-hidden="true"/><span>{translateGameText(UPGRADES[key].name,language)}</span></li>)}</ul>
       </section>}</div>
       <div className="shop-service-column"><section className="recharge-panel box-panel">
-        <div><b>{language==='zh'?`配电箱 · ${boxTotal(boxOf(run))}/${BOX_TOTAL_CAP} 级`:`Power box · ${boxTotal(boxOf(run))}/${BOX_TOTAL_CAP}`}</b><span>{(run.freeBoxLevels??0)>0?(language==='zh'?'老周的扳手：本次免费升 1 级':'Old Zhou’s Wrench: next level free'):(language==='zh'?'每店升 1 级 · 一局最多 5 级':'1 level per shop · 5 per run')}</span></div>
+        <div className="shop-step-head"><h3><i>2</i>{language==='zh'?`配电箱 · 升 1 级（可跳过）`:`Power box · 1 level (optional)`}</h3><span>{(run.freeBoxLevels??0)>0?(language==='zh'?'扳手：本次免费':'Wrench: free'):`${boxTotal(boxOf(run))}/${BOX_TOTAL_CAP}`}</span></div>
         {BOX_LINES.map((line:BoxLine)=>{const level=boxOf(run)[line];const price=boxLevelPrice(run,line);const can=canBuyBoxLevel(run,line);return <div key={line} className="box-line">
           <span className="box-line-name">{BOX_LINE_LABELS[line].name}<i className="box-pips" aria-label={`${level}/${BOX_MAX_LEVEL}`}>{Array.from({length:BOX_MAX_LEVEL},(_,i)=><b key={i} className={i<level?'on':''} />)}</i></span>
           <span className="box-line-next">{level<BOX_MAX_LEVEL?BOX_LINE_LABELS[line].levels[level]:(language==='zh'?'已满级':'Maxed')}</span>
           <button disabled={!can} onClick={()=>{const next=buyBoxLevel(run,line);if(next!==run){setLeaveArmed(false);reportMetrics(run,next,language==='zh'?'配电箱升级':'Power box upgrade');setRun(next);playTone(sound,'upgrade');}}}>{level>=BOX_MAX_LEVEL?(language==='zh'?'满级':'Max'):price===0?(language==='zh'?'免费升级':'Free'):`${price} ${language==='zh'?'金币':'coins'}`}</button>
         </div>;})}
       </section><section className="recharge-panel charge-slider-panel">
-        <div><b>{language==='zh'?'充电至':'Charge to'} <output>{chargeTarget}/{run.energyCap}</output></b><span>{chargeUnitPrice(boxOf(run))}{language==='zh'?'金币 / 电':' coins / power'}</span></div>
+        <div className="shop-step-head"><h3><i>3</i>{language==='zh'?'充电至':'Charge to'} <output>{chargeTarget}/{run.energyCap}</output></h3><span>{chargeUnitPrice(boxOf(run))}{language==='zh'?' 币/电':' c/power'}</span></div>
+        <p className={`sector-need ${need.total>chargeTarget?'is-short':''}`} data-no-translate>{language==='zh'?`${need.from}–${need.to} 层约需 ${need.total} 电`:`Floors ${need.from}–${need.to}: about ${need.total} power`}<small title={language==='zh'?`运转 ${need.motor}＋乘客约 ${need.riders}（按每层 ${SECTOR_NEED_RIDERS} 人）`:`Motor ${need.motor} + riders ~${need.riders} (${SECTOR_NEED_RIDERS} per floor)`}>{language==='zh'?`（运转 ${need.motor}＋乘客约 ${need.riders}）`:` (motor ${need.motor} + riders ~${need.riders})`}</small>{need.total>chargeTarget?(language==='zh'?` · 还差 ${need.total-chargeTarget}，途中要补电`:` · ${need.total-chargeTarget} short: charge on the way`):''}</p>
         <label className="charge-control"><span className="sr-only">{language==='zh'?'充电目标':'Charge target'}</span><Slider className="charge-slider" min={Math.min(run.energy,run.energyCap)} max={run.energyCap} step={1} value={[chargeTarget]} disabled={run.energy>=run.energyCap} onValueChange={value=>setChargeChoice({context:chargeContext,target:Array.isArray(value)?value[0]:value})}/></label>
-        <div className="charge-scale"><span>{language==='zh'?'当前':'Now'} {run.energy}</span><span>{language==='zh'?'参考':'Reference'} {Math.min(50,run.energyCap)}</span><span>{run.energyCap}</span></div>
+        <div className="charge-scale"><span>{language==='zh'?'当前':'Now'} {run.energy}</span><span>{run.energyCap}</span></div>
         <button className="charge-confirm" disabled={!chargeUnits||run.coins<chargeCost} onClick={()=>recharge(chargeUnits)}>{language==='zh'?`充入 ${chargeUnits} 电 · ${chargeCost} 金币`:`Add ${chargeUnits} power · ${chargeCost} coins`}</button>
         <p aria-live="polite">{language==='zh'?(chargeCost>run.coins?`还差 ${chargeCost-run.coins} 金币；拖低目标即可少充。`:`充电后剩余 ${run.coins-chargeCost} 金币。`):(chargeCost>run.coins?`Need ${chargeCost-run.coins} more coins; lower the target to buy less.`:`${run.coins-chargeCost} coins left after charging.`)}</p>
-        <p>{language==='zh'?`到店补电最多 ${shopEntryCharge(boxOf(run))} 电，计入本层结算后再判断缺电。下段运转需 ${chargePlan.baseline} 电，人物另计；每次上行至少1人在车内，50电只是参考。`:`Shop power (up to ${shopEntryCharge(boxOf(run))}) counts before the power-loss check. Next motor segment: ${chargePlan.baseline}, plus riders; every ascent needs a rider aboard. 50 is only a reference.`}</p>
       </section>
       {run.calmCharge&&<button className="reserve-use" disabled={run.stress<=0} onClick={()=>{const next=applyCalmCharge(run);setRun(next);reportMetrics(run,next,'手动调节');}}>{language==='zh'?'手动调节 −3躁动 · 每店补满':'Manual relief −3 · refills at shops'}</button>}
-      <section className="recharge-panel reserve-panel"><div><b>应急电池 · {RESERVE_CELL_PRICE}金币</b><span>携带上限1份，不占安装位；离店后主动使用，补{RESERVE_CELL_CHARGE}电，不超过容量。</span></div><div className="recharge-actions"><button disabled={Boolean(run.reserveCell)||run.coins<RESERVE_CELL_PRICE} onClick={()=>{const next=buyReserveCell(run);if(next!==run){setRun(next);setLeaveArmed(false);reportMetrics(run,next,'购买应急电池');}}}>{run.reserveCell?'已携带1份':`购买应急电池 · ${RESERVE_CELL_PRICE}金币`}</button></div></section>
+
       </div></div>
       {metricEvent && <p className="shop-receipt" aria-live="polite">{metricEvent.label}{metricEvent.changes.map((change) => ` · ${change.label} ${signedDelta(change.delta)}${change.capDelta ? `（上限 ${signedDelta(change.capDelta)}）` : ''}`).join('')}</p>}
       </div>
-      <div className="shop-footer">{leaveArmed && !upgradeCrisis && <p className="shop-warning">当前电量低于下一段运转参考；人物耗电与途中回充另计。再点一次确认冒险。</p>}<Button className="story-primary" onClick={finishShopping}>{upgradeCrisis ? emergencyRepairPlan(run).affordable ? `最低抢救 · ${emergencyRepairPlan(run).cost} 金币` : leaveArmed ? '确认结束本班' : '无法支付抢救费 · 结束本班' : leaveArmed ? '确认冒险离开' : '继续上行'}<ArrowUp /></Button></div>
+      <div className="shop-footer">{leaveArmed && !upgradeCrisis && <p className="shop-warning">电量不够跑完下一段的运转；途中补电每十层有上限。再点一次确认离开。</p>}<Button className="story-primary" onClick={finishShopping}>{upgradeCrisis ? emergencyRepairPlan(run).affordable ? `最低抢救 · ${emergencyRepairPlan(run).cost} 金币` : leaveArmed ? '确认结束本班' : '无法支付抢救费 · 结束本班' : leaveArmed ? '确认冒险离开' : '继续上行'}<ArrowUp /></Button></div>
     </DialogContent></Dialog>
     <Dialog open={run.status === 'lost' && doors === 'open'}><DialogContent className="story-dialog result-dialog failure-dialog compact-result" showCloseButton={false}>
       <p className="dialog-kicker">{language==='zh'?'本班结束':'SHIFT ENDED'}</p>

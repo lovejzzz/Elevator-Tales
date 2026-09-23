@@ -34,7 +34,7 @@ export const isRushFloor = (floor: number) => floor >= 17 && floor % 10 >= 7;
 // not a safety guarantee: duration, positions, conflicts and timing still matter.
 export const OFFER_PARTNERS: Record<PassengerKind, PassengerKind[]> = {
   commuter: ['courier', 'coach'], tourist: ['commuter', 'celebrity', 'tourist', 'musician', 'mimic'],
-  courier: ['mechanic', 'commuter'], mechanic: ['courier', 'inspector'], lover: ['lover'],
+  courier: ['mechanic', 'commuter'], mechanic: ['courier', 'inspector'], lover: ['lover', 'tourist', 'child'],
   musician: ['tourist'], thief: ['cop', 'thief', 'drunk'],
   cop: ['thief', 'bomb'], lawyer: ['thief'], drunk: ['nurse', 'thief', 'bomb'],
   nurse: ['drunk', 'child'], child: ['nurse', 'lover'], ghost: ['exorcist'], exorcist: ['ghost'],

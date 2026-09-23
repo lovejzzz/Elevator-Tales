@@ -99,7 +99,7 @@ export function nextOfferBatch(state:RunState,rng:()=>number=Math.random):{state
   const rider={...held,destination:state.floor+held.destination-held.boardedAt,boardedAt:state.floor,calledByLover:false};
   return {state:{...state,reservedRider:undefined},offers:[rider,...offers.slice(1)]};
 }
-export const LOVER_CALL_CHANCE = .25;
+export const LOVER_CALL_CHANCE = .15;
 export const INSPECTOR_COMPLIANCE_REWARD = 1;
 export const INSPECTOR_ENERGY_LIMIT = 3;
 export const COURIER_ARRIVAL_CHARGE = 2;

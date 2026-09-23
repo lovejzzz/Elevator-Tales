@@ -5,7 +5,7 @@ import {V834_EN, V834_ZH} from './release-v834';
 import {V835_EN, V835_ZH} from './release-v835';
 import {V836_EN, V836_ZH} from './release-v836';
 import {V837_EN, V837_ZH} from './release-v837';
-import {V901_EN, V901_ZH, V9_EN, V9_ZH} from './release-v9';
+import {V901_EN, V901_ZH, V902_EN, V902_ZH, V9_EN, V9_ZH} from './release-v9';
 
 export type ChangelogEntry = {
   version: string;
@@ -17,9 +17,10 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '9.0.1';
+export const GAME_VERSION = '9.0.2';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  V902_ZH,
   V901_ZH,
   V9_ZH,
   {version:'8.38',date:'2026-09-07',title:'少一点干扰，更清楚地结束',summary:'充电默认可负担上限，结算页聚焦楼层与死因；合并此前已验证的界面修复。',changes:['充电默认目标为当前电量加上余额可买的整数电量，最多充满；仍为2金币/电，不自动购买。余额或电量变化后更新默认值，手动拖动期间保留选择。','失败页保留楼层、死因、纪录和再来一局；详细归因、收支、剩余金币和升级数折叠。','人物栏保持右侧、电梯居中；修复候客卡布局、退场反馈、姓名与高危标签遮挡、座舱数值拥挤和英文残留。人物、商店价格、收益与结算参数不变。'],experiments:['本次静音浏览器验证中英文12个充电默认值、12个失败布局，覆盖缺电、失控、炸弹、桌面和窄屏；详情与重新开始可用。类型检查、规则回归和构建通过。','此前冻结128局及完整79层实玩记录保留；模拟器补充死亡归因和人物/商品证据。合成结果不能代替玩家体验，也不代表平衡完成。'],watch:['长局比例、部分人物和商品价值仍需研究；这次是体验修复，不宣称所有策略已平衡。']},
@@ -576,6 +577,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  V902_EN,
   V901_EN,
   V9_EN,
   {version:'8.38',date:'2026-09-07',title:'A clearer ending',summary:'Affordable charging defaults and a quieter result screen, with previously verified interface fixes.',changes:['Charging defaults to current power plus whole units affordable from the wallet, capped at capacity. Price remains 2 coins/power; never auto-purchases. Wallet or power changes refresh the default; manual dragging keeps its choice.','Results focus on floor, cause, record and Play again. Detailed diagnosis, income/spending, remaining coins and upgrades are expandable.','Keep candidates right and cabin centered. Include candidate layout, departure feedback, name/risk-label overlap, cabin metric spacing and English copy fixes. Gameplay parameters and item prices unchanged.'],experiments:['Muted browser: 12 charge defaults and 12 ending layouts across English/Chinese, power/agitation/bomb deaths, desktop/narrow screens; details and restart checked. Type check, rule regressions and build passed.','Prior frozen 128-run cohort and full floor-79 browser play retained; simulator improves death attribution and role/item evidence. Synthetic results are not human balance proof.'],watch:['Long-run frequency and weak/strong role and item value remain under study. This is a UX release, not completed balance.']},

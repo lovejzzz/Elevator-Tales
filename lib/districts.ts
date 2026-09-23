@@ -7,7 +7,7 @@ export type District = { id: string; from: number; name: [string, string]; scene
 export const DISTRICT_WEIGHT = 1.5;
 export const DISTRICTS: District[] = [
   { id: 'lobby', from: 1, name: ['大堂', 'The Lobby'], scene: ['旋转门还在转。夜班才刚开始。', 'The revolving door is still turning. The shift has just begun.'], themed: ['commuter', 'courier'] },
-  { id: 'residences', from: 11, name: ['住宅层', 'The Residences'], scene: ['走廊里有人在门口等另一个人回家。', 'Someone in the corridor is waiting for someone else to come home.'], themed: ['lover', 'child'] },
+  { id: 'residences', from: 11, name: ['住宅层', 'The Residences'], scene: ['走廊里有人在门口等另一个人回家。', 'Someone in the corridor is waiting for someone else to come home.'], themed: ['child', 'mechanic'] },
   { id: 'hospital', from: 21, name: ['医院层', 'The Hospital'], scene: ['消毒水的味道。值班表上有一个名字划掉了三次。', 'Antiseptic in the air. One name on the rota has been crossed out three times.'], themed: ['nurse', 'ghost'] },
   { id: 'nightclub', from: 31, name: ['夜店层', 'The Nightclub'], scene: ['低音从墙里渗出来，轿厢跟着轻轻发颤。', 'Bass seeps through the walls; the cabin trembles with it.'], themed: ['musician', 'drunk'] },
   { id: 'offices', from: 41, name: ['写字楼', 'The Offices'], scene: ['一整层的灯都还亮着。没有人真的下班。', 'A whole floor of lights still on. Nobody ever really leaves.'], themed: ['inspector', 'lawyer'] },

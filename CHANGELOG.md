@@ -1,6 +1,14 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.0.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.0.2**. Publication status is tracked separately from the source version.
+
+## v9.0.2 — 2026-09-23 — Ascend guard, fewer Lovers, three-step shop / 上行保护、恋人减少、三步商店
+
+- Ascend guard: a floor whose worst case runs out of power needs a second press; "Charge +N" / "Top up sector" appear right above Ascend. Triggered by a playtest death at 14F with 8 power, 9 needed and 87 unspent coins.
+- Lovers: partner Lover/Tourist/Child instead of always Lover; lone-Lover call 25% → 15% (Matchmaker 50%, Red String 35% unchanged); Residences theme Lover+Child → Child+Mechanic. Lover share on 11–20F ~17–21% → 10–13% (20,000 packets per band).
+- Shop: three numbered steps (ability, power box, charge), next-sector power need shown, duplicate explanations removed, Reserve Cell retired in favour of in-transit charging. Desktop fits without scrolling.
+- Acceptance (3,900 runs, seeds 20260923): styles 91.3% (was 89.9%), coop median 67, agitation deaths 23.1% (now passes), optimizer median 86 (target ≤85), 95.3% runs with ≥2 escapes, 9.1% affluent, median 11 coins left.
+- Watch: optimizer median 86; long ability text on phones.
 
 ## v9.0.1 — 2026-09-23 — Legend portraits / 传奇画像
 

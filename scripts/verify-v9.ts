@@ -10,6 +10,10 @@ import type { Rider, RunState } from '../lib/game-engine';
 import { translateGameText } from '../lib/i18n';
 import { sectorForecast } from '../lib/game-forecast';
 import { motorAdvanceNotice, motorScheduleText } from '../lib/balance-v832';
+import { departureRisk, sectorNeed } from '../lib/departure-guard';
+import { readFileSync } from 'node:fs';
+import { OFFER_PARTNERS } from '../lib/shift-rules';
+import { districtFor } from '../lib/districts';
 
 const seq = (...values: number[]) => { let i = 0; return () => values[i++ % values.length]; };
 const fixed = (v = 0.5) => () => v;
@@ -199,4 +203,30 @@ console.log('PASS daily shift streams reproduce openings and shop draws');
 assert.equal(translateGameText(motorAdvanceNotice(1), 'en'), 'Ahead: motor 3 from floor 11');
 assert.ok(!/[\u3400-\u9fff]/u.test(translateGameText(motorScheduleText(), 'en')), translateGameText(motorScheduleText(), 'en'));
 console.log('PASS generated motor notice and schedule translate');
-console.log(JSON.stringify({ version: 'v9', checks: 13, passed: true }));
+// v9.0.2 ascend guard: the playtest death at 14F (8 power, 9 needed, 87 coins) must be caught and rescuable.
+{
+  const lovers = [rider('lover', 14, 3), rider('lover', 14, 2), rider('tourist', 14, 3), rider('nurse', 14, 7), rider('drunk', 14, 5), rider('lover', 14, 3)];
+  const s = run(14, lovers, { energy: 8, coins: 87 });
+  const risk = departureRisk(s);
+  assert.ok(risk.fatal, 'a worst-case power loss must arm the guard');
+  assert.ok(risk.need >= 1 && risk.affordable >= risk.need, `rescue must be offered and affordable: ${JSON.stringify(risk)}`);
+  assert.equal(departureRisk(E.emergencyCharge(s, risk.need)).fatal, false, 'charging the offered amount clears the guard');
+  assert.equal(departureRisk({ ...s, energy: 40 }).fatal, false, 'a safe floor never asks twice');
+  const ui = readFileSync(new URL('../components/elevator-game.tsx', import.meta.url), 'utf8');
+  assert.ok(/if \(risk\.fatal && !departArmed\)/.test(ui), 'the ascend handler must stop a fatal floor until confirmed');
+  const need = sectorNeed({ ...s, floor: 10, status: 'upgrade' });
+  assert.deepEqual([need.from, need.to, need.riders], [11, 20, 50]);
+  assert.equal(need.motor, Array.from({ length: 10 }, (_, i) => motorCost(11 + i)).reduce((a, b) => a + b, 0));
+}
+console.log('PASS ascend guard catches fatal floors and the shop shows next-sector need');
+// v9.0.2 lover frequency: Lovers bring varied partners, call at 15%, and are no longer a district theme.
+assert.deepEqual(OFFER_PARTNERS.lover, ['lover', 'tourist', 'child']);
+assert.equal(E.LOVER_CALL_CHANCE, .15);
+assert.ok(!districtFor(15).themed.includes('lover'));
+{
+  let lovers = 0, total = 0; const r = (() => { let x = 7; return () => (x = (x * 16807) % 2147483647) / 2147483647; })();
+  for (let i = 0; i < 6000; i++) for (const o of E.makeOffers(11 + i % 10, E.initialRun().upgrades, false, r)) { total++; if (o.kind === 'lover') lovers++; }
+  assert.ok(lovers / total < .13, `lover share 11-20F ${(lovers / total * 100).toFixed(1)}%`);
+}
+console.log('PASS lover share stays below 13% on 11-20F without a waiting Lover');
+console.log(JSON.stringify({ version: 'v9', checks: 15, passed: true }));

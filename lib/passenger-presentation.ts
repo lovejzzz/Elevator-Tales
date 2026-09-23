@@ -24,7 +24,7 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'commuter':moneyNote=`低躁动到站 +${COMMUTER_QUIET_BONUS}金币`;break;
   case 'tourist':moneyNote=`每位邻座：到站+2币；中躁动到站 +${TOURIST_MEDIUM_BONUS}金币`;special='包括其他游客；邻座变化即重算';break;
   case 'courier':special='到站补充2电（不超过上限）';break;
-  case 'lover':moneyNote='每位邻座恋人：到站基价+100%';special='无恋人邻座：每站25%呼唤恋人';break;
+  case 'lover':moneyNote='每位邻座恋人：到站基价+100%';special='无恋人邻座：每站15%呼唤恋人';break;
   case 'thief':moneyNote='无警察：每站+3；受控仅到站+5';pressure.splice(0,1,`每层 +1`,'挨警察免除');break;
   case 'drunk':moneyNote='到站前关门时高躁动：基价+100%';pressure.splice(0,1,'每层 +1','挨护士免除');break;
   case 'child':pressure.splice(0,1,'每层 +1','挨恋人或护士免除');moneyNote=`累计被照顾${CHILD_CARE_WORK}层：到站 +${CHILD_CARE_BONUS}金币`;break;
@@ -99,7 +99,7 @@ export function passengerCardSections(
   case 'commuter':self.push(effect('coins',`低躁动到站 +${COMMUTER_QUIET_BONUS}金币`));break;
   case 'mechanic':self.push(effect('neutral',rider.repairDone?'本次检修已完成':`低躁动检修 ${rider.repairProgress??0}/${REPAIR_WORK}`),effect('energy',`完成：后续${REPAIR_DURATION}层运转少耗1电`),effect('neutral','每人一次；中/高暂停，不清零'));break;
   case 'lover':
-   self.push(effect('neutral','单独时：25% 呼唤恋人'));
+   self.push(effect('neutral','单独时：15% 呼唤恋人'));
    addGreen(['lover'],[effect('coins','到站基价 +100%/人')]);
    break;
   case 'tourist':self.push(effect('coins',`中躁动到站 +${TOURIST_MEDIUM_BONUS}金币`));addGreen(null,[effect('coins','到站 +2金币/人')],'任何邻座');break;
