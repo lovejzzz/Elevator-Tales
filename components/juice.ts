@@ -1,6 +1,8 @@
 // v9.8 juice: decorative DOM effects (fly-ins, particle bursts, pop numbers, banners, speech bubbles).
 // Each effect creates short-lived elements on <body> and removes them when its animation ends.
 // Motion is skipped under prefers-reduced-motion; banners and bubbles still appear, without movement.
+// v9.10: fly-ins, pop numbers and banners move on Motion springs.
+import { animate } from 'motion';
 
 const reduced = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const centre = (el: Element) => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height }; };
@@ -16,11 +18,9 @@ export function flyPortrait(from: Element | null, to: Element | null, src: strin
   const el = layer('juice-fly'); el.style.backgroundImage = `url(${src})`;
   el.style.width = el.style.height = `${size}px`; el.style.left = `${a.x - size / 2}px`; el.style.top = `${a.y - size / 2}px`;
   const scale = Math.max(.6, Math.min(2.2, Math.min(b.w, b.h) * .7 / size));
-  el.animate([
-    { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1 },
-    { transform: `translate(${(b.x - a.x) * .5}px, ${(b.y - a.y) * .5 - 60}px) scale(${(1 + scale) / 2}) rotate(-6deg)`, opacity: 1, offset: .55 },
-    { transform: `translate(${b.x - a.x}px, ${b.y - a.y}px) scale(${scale}) rotate(0deg)`, opacity: 0 },
-  ], { duration: 360, easing: 'cubic-bezier(.3,.7,.3,1)' }).onfinish = () => el.remove();
+  // Two springs: an arc up and across, then a soft settle into the seat.
+  void animate(el, { x: [0, (b.x - a.x) * .5, b.x - a.x], y: [0, (b.y - a.y) * .5 - 50, b.y - a.y], scale: [1, (1 + scale) / 2, scale], rotate: [0, -5, 0] }, { duration: .42, ease: [.3, .7, .3, 1] })
+    .then(() => animate(el, { opacity: 0, scale: scale * 1.08 }, { type: 'spring', stiffness: 500, damping: 30 })).then(() => el.remove());
 }
 
 /** A burst of particles at a point (gold for money, green for links, blue for calm, red for trouble). */
@@ -43,13 +43,11 @@ export function burstAt(el: Element | null, tone: 'gold' | 'green' | 'blue' | 'r
 export function popText(el: Element | null, text: string, tone: 'gold' | 'green' | 'blue' | 'red' = 'gold', big = false) {
   if (!el) return;
   const c = centre(el), t = layer(`juice-pop juice-${tone} ${big ? 'is-big' : ''}`); t.textContent = text; t.style.left = `${c.x}px`; t.style.top = `${c.y}px`;
-  const move = reduced() ? [{ opacity: 1 }, { opacity: 0 }] : [
-    { transform: 'translate(-50%,-50%) scale(.4)', opacity: 0 },
-    { transform: 'translate(-50%,-90%) scale(1.25)', opacity: 1, offset: .25 },
-    { transform: 'translate(-50%,-110%) scale(1)', opacity: 1, offset: .7 },
-    { transform: 'translate(-50%,-160%) scale(.9)', opacity: 0 },
-  ];
-  t.animate(move, { duration: big ? 1400 : 1000, easing: 'ease-out' }).onfinish = () => t.remove();
+  t.style.transform = 'translate(-50%,-50%)';
+  if (reduced()) { void animate(t, { opacity: [1, 1, 0] }, { duration: big ? 1.4 : 1 }).then(() => t.remove()); return; }
+  const inner = document.createElement('span'); inner.textContent = t.textContent; t.textContent = ''; t.appendChild(inner); inner.style.display = 'inline-block';
+  void animate(inner, { scale: [.3, 1] , y: [0, -18] }, { type: 'spring', stiffness: 520, damping: 14 })
+    .then(() => animate(inner, { y: -46, opacity: 0 }, { duration: big ? .9 : .6, ease: 'easeIn', delay: big ? .5 : .25 })).then(() => t.remove());
 }
 
 /** A full-width banner across the cabin: close calls, new records, district title cards. */

@@ -2928,3 +2928,15 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .game-shell .passenger-list .passenger-card.grade-legendary:hover:not(:disabled) { animation:card-deal 420ms var(--deal-delay, 0ms) backwards cubic-bezier(.2,.8,.3,1), legend-glow 6s 500ms ease-in-out infinite alternate!important; }
   .game-shell .passenger-card.grade-fine:hover .card-foil, .game-shell .passenger-card.grade-rare:hover .card-foil, .game-shell .passenger-card.grade-legendary:hover .card-foil { animation-play-state:paused; }
 }
+
+/* v9.10 Motion drives card entrance, hover and seat settling; retire the overlapping CSS keyframes. */
+.game-shell .offer-revealing .passenger-item, .game-shell .passenger-item { animation:none!important; }
+.game-shell .passenger-list .passenger-card, .game-shell .offer-revealing .passenger-card { animation:none!important; translate:none!important; }
+.game-shell .rider-visual { animation:none!important; }
+@media (prefers-reduced-motion:no-preference) {
+  .game-shell .passenger-list .passenger-card.grade-legendary, .game-shell .offer-revealing .passenger-card.grade-legendary, .game-shell .passenger-list .passenger-card.grade-legendary:hover:not(:disabled) { animation:legend-glow 6s ease-in-out infinite alternate!important; }
+}
+.game-shell .passenger-item:hover .passenger-card:not(:disabled) { box-shadow:0 16px 28px #0009, 0 0 0 1px #e0b75f55; }
+/* v9.10 WebGL foil on rare and legendary cards; the CSS foil and glints stay as the fallback. */
+.game-shell .passenger-card .card-shader { position:absolute; inset:0; z-index:1; width:100%; height:100%; pointer-events:none; border-radius:inherit; }
+.game-shell .passenger-card.has-shader .card-foil, .game-shell .passenger-card.has-shader .card-glints { display:none!important; }

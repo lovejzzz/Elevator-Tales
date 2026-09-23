@@ -737,3 +737,35 @@ export const V992_EN: ChangelogEntry = {
   experiments: ['Hovered four cards in turn (including a legendary), three frames each: average card brightness 35–38 with no darkened frame. No rule or value changes.'],
   watch: ['If another browser still flickers, report which one.'],
 };
+
+export const V910_ZH: ChangelogEntry = {
+  version: '9.10', date: '2026-09-23', title: '弹簧动画与着色器箔面',
+  summary: '候客卡、座位和特效改用 Motion 弹簧动画；稀有卡和传奇卡的箔面改用 WebGL 着色器绘制。',
+  changes: [
+    '动画：候客卡出场、悬停上抬、按下回弹，人物落座、画像飞入、“+N”弹出都改为弹簧物理，动作自然收住；动画进行中再次操作会平滑接上，不再跳变。',
+    '稀有卡：着色器绘制彩虹全息，带细密蚀刻纹，鼠标所在处有柔和高光；不悬停时光泽缓慢游走。',
+    '传奇卡：着色器绘制流动的彩色光泽、右上角金色放射纹和零星闪烁的星点。',
+    '箔面画在文字下面，不再给文字染色；设备不支持 WebGL 时自动退回之前的 CSS 箔面。系统“减少动态效果”时不播放动画，箔面静止。',
+  ],
+  experiments: [
+    '依赖：新增 motion 13.4.2（React 动画库）；着色器为自写 WebGL，只用一个共享上下文，逐卡复制到卡片自己的画布，避免多个 WebGL 上下文和混合模式重绘（9.9 闪黑的原因）。',
+    '浏览器检查：传奇卡与三张稀有卡着色器生效；逐帧悬停亮度 29–31，无暗帧；上客飞入、落座、结算正常，控制台无错误。verify、构建通过；规则与数值不变。',
+  ],
+  watch: ['真实音效采样待下载确认后接入。', '低端设备上若卡顿，可降低着色器帧率（现在约 25 帧）。'],
+};
+
+export const V910_EN: ChangelogEntry = {
+  version: '9.10', date: '2026-09-23', title: 'Spring motion and shader foil',
+  summary: 'Offer cards, seats and effects now move on Motion springs; rare and legendary card foil is drawn with a WebGL shader.',
+  changes: [
+    'Motion: offer cards entering, lifting on hover and giving on press, riders settling into seats, portrait fly-ins and “+N” pops all use spring physics and come to rest naturally; interrupting an animation continues smoothly instead of jumping.',
+    'Rare cards: a shader-drawn rainbow hologram with fine etched lines and a soft highlight under the pointer; at rest the sheen drifts slowly.',
+    'Legendary cards: a shader-drawn flowing polychrome, gold sunburst rays from the top-right corner and a few twinkling stars.',
+    'The foil sits under the text so it no longer tints it; without WebGL the previous CSS foil is used. With “reduce motion” nothing animates and the foil is still.',
+  ],
+  experiments: [
+    'Dependency: motion 13.4.2 (React animation library). The shader is hand-written WebGL with one shared context copying into each card’s own canvas, avoiding multiple GL contexts and blend-mode repaints (the cause of the 9.9 black flash).',
+    'Browser checks: shader active on a legendary and three rare cards; hover brightness steady at 29–31 with no dark frame; boarding fly-in, seating and settlement work with no console errors. verify and build pass; no rule or value changes.',
+  ],
+  watch: ['Real sound samples follow once the downloads are approved.', 'If low-end devices stutter, lower the shader frame rate (about 25 fps now).'],
+};
