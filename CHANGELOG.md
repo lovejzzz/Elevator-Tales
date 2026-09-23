@@ -1,6 +1,12 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.2**. Publication status is tracked separately from the source version.
+
+## v9.2 — 2026-09-23 — Voltmeter and cash register / 电压表与收银机
+
+- Power shown as a brass voltmeter (needle = now, dashed = next-floor worst case, red zone = not enough for the next floor); balance shown as cash-register digit windows that roll on change.
+- Short screens (≤820 px tall) flatten the gauge and hide duplicated rail notes; rail overflow 0 at 1440×900, 1366×768, 1280×720, 1024×768, 768×1024, 390×844 in normal and emergency states.
+- Reduced motion disables tremble and roll. No rule changes.
 
 ## v9.1 — 2026-09-23 — Art Deco poster style / Art Deco 海报画风
 

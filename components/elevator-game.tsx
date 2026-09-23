@@ -35,6 +35,7 @@ import { departureRisk, sectorNeed, SECTOR_NEED_RIDERS } from '@/lib/departure-g
 import { offerReveal } from '@/lib/offer-reveal';
 import { shouldPreviewConnection } from '@/lib/connection-preview';
 import { AgitationGauge } from '@/components/agitation-gauge';
+import { PowerGauge, RegisterNumber } from '@/components/power-gauge';
 import { cooperationLabel } from '@/lib/cooperation-label';
 import { agitationBand, musicBeatForAgitation, motorAdvanceNotice, motorScheduleText, REPAIR_WORK, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, RESERVE_CELL_CHARGE } from '@/lib/balance-v832';
 import { consumeReserveCell, nextOfferBatch, retimeRider, oldMovesRemaining, reserveOffer, applyCalmCharge, startRun } from '@/lib/game-engine';
@@ -525,7 +526,7 @@ export default function ElevatorGame() {
     <section className="game-grid">
       <aside className="status-rail">
         <div className="floor-plaque"><span>当前楼层 · BEST {bestFloor}</span><strong>{String(run.floor).padStart(2, '0')}</strong><small>{phase}</small><span className="route-power">运转 {travelEnergyCost(run.floor+1)} 电 / 层</span><span className="route-notice">{motorAdvanceNotice(run.floor)}</span><progress className="floor-progress" aria-label={`距离 ${nextShop} 层商店还有 ${nextShop - run.floor} 站`} max={10} value={run.floor % 10} /></div>
-        <div data-metric="energy" className={`meter-card energy ${energyFatal ? 'meter-danger' : ''}`} title={energyPreview.summary}><div><BatteryCharging aria-hidden="true" /><span className="rail-metric-name">电量</span><b><AnimatedNumber value={run.energy} /><span className="metric-cap">/{run.energyCap}</span></b></div><MetricResponse metric="energy" event={metricEvent} locale={language} /><div className="meter-track"><i style={{ width: `${Math.max(0, Math.min(100, run.energy / run.energyCap * 100))}%` }} /></div><small className="rail-forecast"><span>下一站 <b className={energyFatal ? 'forecast-fatal' : ''}>{energyPreview.range}</b></span></small>
+        <div data-metric="energy" className={`meter-card energy ${energyFatal ? 'meter-danger' : ''}`} title={energyPreview.summary}><div><BatteryCharging aria-hidden="true" /><span className="rail-metric-name">电量</span><b><AnimatedNumber value={run.energy} /><span className="metric-cap">/{run.energyCap}</span></b></div><MetricResponse metric="energy" event={metricEvent} locale={language} /><PowerGauge value={run.energy} cap={run.energyCap} next={run.energy + energyPreview.lowDelta} danger={Math.max(1, -energyPreview.lowDelta)} locale={language} /><small className="rail-forecast"><span>下一站 <b className={energyFatal ? 'forecast-fatal' : ''}>{energyPreview.range}</b></span></small>
           {run.status==='playing'&&<p className={`sector-forecast ${sector.failFloor!==null?'is-danger':sector.projected<8?'is-warn':''}`} data-no-translate>{language==='zh'?(sector.failFloor!==null?`照现在：${sector.failFloor} 层断电`:`到 ${sector.shop} 层商店约剩 ${sector.projected} 电`):(sector.failFloor!==null?`At this rate: out of power at ${sector.failFloor}F`:`About ${sector.projected} power at the ${sector.shop}F shop`)}</p>}
           {run.status==='playing'&&(sector.failFloor!==null||sector.projected<12||energyFatal)&&<div className="emergency-charge" data-no-translate>
             <button disabled={locked||emergencyLeft<=0||run.coins<emergencyPrice} onClick={()=>emergency(1)}>{language==='zh'?`途中补电 +1 · ${emergencyPrice}币`:`Charge +1 · ${emergencyPrice}c`}</button>
@@ -539,7 +540,7 @@ export default function ElevatorGame() {
           <AgitationGauge value={run.stress} cap={run.stressCap} nextLow={run.stress+pressurePreview.lowDelta} nextHigh={run.stress+pressurePreview.highDelta} locale={language}/>
           <small className="rail-forecast"><span>下一站 <b className={stressFatal ? 'forecast-fatal' : ''}>{pressurePreview.range}</b></span></small><div className="agitation-state"><span>每位到站 −1 · 本层最多 −2</span></div>
         </div>
-        <div data-metric="coins" className="score-card wallet-card"><Coins aria-hidden="true" /><span className="rail-metric-name">余额</span><strong><AnimatedNumber value={run.coins} /></strong><MetricResponse metric="coins" event={metricEvent} locale={language} /><span className={`mobile-shop-note ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</span><small className={`wallet-summary ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</small></div>
+        <div data-metric="coins" className="score-card wallet-card"><Coins aria-hidden="true" /><span className="rail-metric-name">余额</span><strong><RegisterNumber value={run.coins} /></strong><MetricResponse metric="coins" event={metricEvent} locale={language} /><span className={`mobile-shop-note ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</span><small className={`wallet-summary ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</small></div>
 
         {(run.serviceTurns??0)>0&&<p className="service-status">{`检修生效 · 余${run.serviceTurns}层`}<br/>运转少耗1电/层</p>}
         <div className="run-tools">
@@ -683,7 +684,7 @@ export default function ElevatorGame() {
           <span className="shop-resource-label"><BatteryCharging aria-hidden="true"/>{language === 'zh' ? '剩余电量' : 'Power left'}</span>
           <div className="shop-power-value"><b>{run.energy}</b><span>/{run.energyCap}</span></div>
         </div>
-        <div className="shop-wallet"><span aria-label={`可用金币 ${run.coins}`}><Coins aria-hidden="true" /><span className="shop-balance-label">金币</span><b key={run.coins}>{run.coins}</b></span><span>收入 {run.earned} · 支出 {run.earned - run.coins}</span></div>
+        <div className="shop-wallet"><span aria-label={`可用金币 ${run.coins}`}><Coins aria-hidden="true" /><span className="shop-balance-label">金币</span><b><RegisterNumber value={run.coins} /></b></span><span>收入 {run.earned} · 支出 {run.earned - run.coins}</span></div>
       </div>
       <div className="shop-scroll-body">
       <DialogHeader className="shop-head"><p className="dialog-kicker" data-no-translate>FLOOR {run.floor} · SHOP{districtFor(run.floor+1).from===run.floor+1?` · ${language==='zh'?'前方':'Ahead'}: ${districtFor(run.floor+1).name[language==='zh'?0:1]}`:''}</p><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle><DialogDescription className="sr-only">{language==='zh'?'选能力、升级配电箱、充电，然后继续上行。':'Pick an ability, upgrade the power box, charge, then ascend.'}</DialogDescription></DialogHeader>

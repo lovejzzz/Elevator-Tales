@@ -257,3 +257,39 @@ export const V91_EN: ChangelogEntry = {
     'The Ghost’s backdrop is slightly lighter than the others; redraw it if it stands out in play.',
   ],
 };
+
+export const V92_ZH: ChangelogEntry = {
+  version: '9.2', date: '2026-09-23', title: '仪表盘：电压表和收银机',
+  summary: '电量改成黄铜电压表，余额改成收银机数字窗；界面和 Art Deco 电梯成为同一套东西。',
+  changes: [
+    '电量电压表：指针是当前电量，虚线指针是下一站最坏情况；表盘红区是“不够跑下一层”的电量，黄区是两倍以内；进入红区时指针会轻微颤动。原来的细电量条移除。',
+    '收银机余额：侧栏和商店的金币改为逐位数字窗，前导零变暗；某一位变化时那一位像收银机一样翻上来。',
+    '矮屏（高度 820 以内）的电压表自动变成扁平样式，并隐藏侧栏里重复的运转耗电说明和补电小字（上行按钮旁的补电提示仍在）；1024×768 下侧栏在紧急状态也不再溢出（此前正常状态就溢出 14 像素）。',
+    '系统设置“减少动态效果”时，指针颤动和数字翻动关闭。',
+  ],
+  experiments: [
+    '浏览器检查：1440×900、1366×768、1280×720、1024×768、768×1024、390×844，正常楼层与“这一层可能断电”两种状态；侧栏溢出全部为 0。',
+    '规则与数值不变；verify、类型检查和构建通过。',
+  ],
+  watch: [
+    '电压表的红 / 黄区按下一站最坏耗电划分，只是提示；真正的保护仍是上行确认。',
+  ],
+};
+
+export const V92_EN: ChangelogEntry = {
+  version: '9.2', date: '2026-09-23', title: 'Instrument panel: a voltmeter and a cash register',
+  summary: 'Power becomes a brass voltmeter and the balance a cash register, so the interface belongs to the same Art Deco lift.',
+  changes: [
+    'Power voltmeter: the needle is current power, the dashed needle the worst case after the next floor; the red zone is power that would not cover the next floor, amber up to twice that; the needle trembles in the red. The thin power bar is gone.',
+    'Cash-register balance: coins in the rail and the shop show one window per digit with dimmed leading zeros; a changed digit rolls up like a register.',
+    'On short screens (height up to 820) the voltmeter flattens and the rail hides its duplicated motor note and charging fine print (the charge prompt by Ascend remains); at 1024×768 the rail no longer overflows even in an emergency (it overflowed 14 px on normal floors before).',
+    'With “reduce motion” the needle tremble and digit roll are off.',
+  ],
+  experiments: [
+    'Browser checks at 1440×900, 1366×768, 1280×720, 1024×768, 768×1024 and 390×844, on a normal floor and a “this floor can run you out” floor; rail overflow 0 everywhere.',
+    'No rule or value changes; verify, type check and build pass.',
+  ],
+  watch: [
+    'The voltmeter zones follow the next floor’s worst-case cost and are only a hint; the real safeguard remains the ascend confirmation.',
+  ],
+};
