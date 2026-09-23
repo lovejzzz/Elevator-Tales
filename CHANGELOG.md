@@ -1,6 +1,10 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.10**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.11**. Publication status is tracked separately from the source version.
+
+## v9.11 — 2026-09-23 — Recorded sound effects / 真实录音音效
+
+- 20 CC0 samples from Kenney Casino Audio and Interface Sounds (licences in public/audio/sfx/) for deal, board, coins, register, sell, stamp, conflict, tick, whoosh; random take + slight pitch variation; lazy-loaded (~136 KB) with synthesized fallback. No rule changes.
 
 ## v9.10 — 2026-09-23 — Spring motion and shader foil / 弹簧动画与着色器箔面
 

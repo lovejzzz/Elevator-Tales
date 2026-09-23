@@ -58,12 +58,54 @@ function noise(b: Bus, o: NoiseOpts) {
   src.onended = () => { live.delete(src); src.disconnect(); f.disconnect(); g.disconnect(); };
 }
 
+// v9.10 recorded samples (Kenney Casino Audio and Interface Sounds, CC0; licences in public/audio/sfx).
+// Loaded on first use; any effect without a decoded sample falls back to its synthesized version.
+export const SAMPLES: Partial<Record<Sfx, { files: string[]; gain: number }>> = {
+  deal: { files: ['card-slide-1', 'card-slide-2', 'card-slide-3', 'card-slide-4'], gain: .55 },
+  board: { files: ['card-place-1', 'card-place-2', 'card-place-3'], gain: .7 },
+  clink: { files: ['chip-lay-1', 'chip-lay-2', 'chip-lay-3'], gain: .45 },
+  register: { files: ['chips-stack-1', 'chips-stack-2'], gain: .8 },
+  sell: { files: ['chips-handle-1', 'chips-handle-2'], gain: .6 },
+  stamp: { files: ['card-shove-1', 'card-shove-2'], gain: .8 },
+  conflict: { files: ['error_004'], gain: .35 },
+  tick: { files: ['tick_001', 'tick_002'], gain: .3 },
+  whoosh: { files: ['card-fan-1'], gain: .45 },
+};
+const SFX_BASE = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/audio/sfx/`;
+const buffers = new Map<string, AudioBuffer>();
+let samplesRequested = false;
+function loadSamples(b: Bus) {
+  if (samplesRequested || typeof fetch === 'undefined') return;
+  samplesRequested = true;
+  for (const file of new Set(Object.values(SAMPLES).flatMap(v => v!.files)))
+    void fetch(`${SFX_BASE}${file}.mp3`).then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.statusText)))).then(data => b.ctx.decodeAudioData(data)).then(buf => { buffers.set(file, buf); }).catch(() => undefined);
+}
+function playSample(b: Bus, name: Sfx, at: number, rate: number): boolean {
+  const spec = SAMPLES[name]; if (!spec) return false;
+  const ready = spec.files.filter(f => buffers.has(f)); if (!ready.length) return false;
+  const src = b.ctx.createBufferSource(); src.buffer = buffers.get(ready[Math.floor(Math.random() * ready.length)])!;
+  src.playbackRate.value = rate * (.96 + Math.random() * .08);
+  const g = b.ctx.createGain(); g.gain.value = spec.gain;
+  src.connect(g); g.connect(b.out); g.connect(b.wet);
+  live.add(src); src.start(at); src.onended = () => { live.delete(src); src.disconnect(); g.disconnect(); };
+  return true;
+}
+/** Warm up the audio bus and start loading samples (call from the click that turns sound on). */
+export function preloadSfx() { try { const b = ensureBus(); if (b) loadSamples(b); } catch { /* optional */ } }
+
 /** Play one effect. `pitch` shifts it in semitones (used for rising coin and link chains). */
 export function playSfx(enabled: boolean, name: Sfx, opts: { pitch?: number; delay?: number } = {}) {
   if (!enabled) return;
   try {
     const b = ensureBus(); if (!b) return;
     const at = b.ctx.currentTime + (opts.delay ?? 0), p = 2 ** ((opts.pitch ?? 0) / 12);
+    loadSamples(b);
+    // Recorded sample first (chips pitch up gently along a chain); a bell tail keeps the register and stamp bright.
+    if (playSample(b, name, at, name === 'clink' ? 2 ** (Math.min(opts.pitch ?? 0, 7) / 24) : 1)) {
+      if (name === 'register') bell(b, 1760, at + .12, .9, .05);
+      if (name === 'stamp') bell(b, 1568, at + .1, .7, .03);
+      return;
+    }
     switch (name) {
       case 'ding': bell(b, 1318.5, at, 1.6, .09); bell(b, 1046.5, at + .32, 1.8, .08); break;
       case 'doorClose': noise(b, { at, dur: .32, gain: .05, freq: 900, sweepTo: 260, q: .8 }); tone(b, 70, { at: at + .28, dur: .12, gain: .08, type: 'triangle', wet: false }); break;

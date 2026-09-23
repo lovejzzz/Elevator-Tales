@@ -15,7 +15,8 @@ import { stressForecast } from '../lib/game-forecast';
 import { netValue } from '../lib/net-value';
 import { drawLegend } from '../lib/legend-unlocks';
 import { QUIPS, quip } from '../lib/quips';
-import { playSfx } from '../lib/game-sfx';
+import { playSfx, SAMPLES } from '../lib/game-sfx';
+import { existsSync } from 'node:fs';
 import { readFileSync } from 'node:fs';
 import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
@@ -342,4 +343,11 @@ console.log('PASS selling abilities and full-kit shops');
   assert.doesNotThrow(() => playSfx(false, 'record'));
 }
 console.log('PASS juice lines and silent-safe sound');
-console.log(JSON.stringify({ version: 'v9', checks: 24, passed: true }));
+// v9.11 recorded samples: every mapped file ships, with its CC0 licence alongside.
+{
+  const dir = new URL('../public/audio/sfx/', import.meta.url);
+  for (const spec of Object.values(SAMPLES)) for (const file of spec!.files) assert.ok(existsSync(new URL(`${file}.mp3`, dir)), `missing sample ${file}.mp3`);
+  assert.ok(existsSync(new URL('LICENSE-kenney-casino-audio.txt', dir)) && existsSync(new URL('LICENSE-kenney-interface-sounds.txt', dir)), 'sample licences ship with the files');
+}
+console.log('PASS recorded samples and licences present');
+console.log(JSON.stringify({ version: 'v9', checks: 25, passed: true }));

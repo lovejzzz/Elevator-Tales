@@ -769,3 +769,33 @@ export const V910_EN: ChangelogEntry = {
   ],
   watch: ['Real sound samples follow once the downloads are approved.', 'If low-end devices stutter, lower the shader frame rate (about 25 fps now).'],
 };
+
+export const V911_ZH: ChangelogEntry = {
+  version: '9.11', date: '2026-09-23', title: '真实录音音效',
+  summary: '发牌、上客、金币、大额收入、卖出、安装能力、红线、结算计数改用真实录音；电梯铃、绿线和弦、安抚等仍用合成音。',
+  changes: [
+    '发牌：纸牌滑过桌面的声音；上客：纸牌落座；金币落袋：筹码一枚枚落下（连续时音调略升）；大额收入：一叠筹码加一声铃；卖出：拨弄筹码；安装能力：推牌加轻铃；新红线：短促错误音；结算楼层计数：机械滴答。',
+    '每次播放随机选同类的不同录音、音高轻微浮动，重复也不会一模一样。',
+    '音效在第一次需要时才加载（共约 136 KB）；加载失败时自动用原来的合成音。',
+  ],
+  experiments: [
+    '素材：Kenney Casino Audio 1.1 与 Interface Sounds（kenney.nl，CC0 公有领域），经你确认后下载，选用 20 个文件转成单声道 64 kbps MP3，授权文件随附在 public/audio/sfx/。',
+    '浏览器检查：开启音效后 20 个文件全部加载成功（HTTP 200），控制台无错误；verify 新增：映射的每个录音文件和授权文件都存在。规则与数值不变。',
+  ],
+  watch: ['音量平衡需要真人听：哪个声音太响或太多请告诉我。'],
+};
+
+export const V911_EN: ChangelogEntry = {
+  version: '9.11', date: '2026-09-23', title: 'Recorded sound effects',
+  summary: 'Dealing, boarding, coins, big payouts, selling, installing abilities, red links and the result count-up now use real recordings; the lift bell, link chord and calming stay synthesized.',
+  changes: [
+    'Dealing: cards sliding across the table; boarding: a card being placed; coins landing: chips dropping one by one (rising slightly along a chain); big payouts: a chip stack plus a bell; selling: chips being handled; installing: a card shove with a light bell; a new red link: a short error tone; the result count-up: a mechanical tick.',
+    'Each play picks a random take of that sound with a slight pitch variation, so repeats never sound identical.',
+    'Samples load on first use (about 136 KB in total); if loading fails, the previous synthesized sounds play instead.',
+  ],
+  experiments: [
+    'Source: Kenney Casino Audio 1.1 and Interface Sounds (kenney.nl, CC0 public domain), downloaded with your approval; 20 files converted to mono 64 kbps MP3, licences included in public/audio/sfx/.',
+    'Browser check: with sound on, all 20 files load (HTTP 200) with no console errors; new verify check that every mapped sample and both licences exist. No rule or value changes.',
+  ],
+  watch: ['Volume balance needs a human ear: tell me which sounds are too loud or too frequent.'],
+};
