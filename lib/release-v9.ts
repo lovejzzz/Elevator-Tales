@@ -521,3 +521,41 @@ export const V96_EN: ChangelogEntry = {
     'Musicians boarded 70% of the time, just over the bound.',
   ],
 };
+
+export const V961_ZH: ChangelogEntry = {
+  version: '9.6.1', date: '2026-09-23', title: '躁动从哪来，一眼看清',
+  summary: '躁动栏直接列出下一站的躁动来源；“高危”写明代价；商店默认只充下一段需要的电，留钱安抚；躁动快失控时给出能撑过的请离/撤回+安抚方案。',
+  changes: [
+    '躁动来源：躁动栏在“下一站”下方列出来源，例如“高危乘客 ×2 +2 · 儿童无人照顾 +1 · 车厢拥挤 +1 · 到站舒缓 −1”。躁动不是只来自相邻的红线——高危乘客、无人照顾的儿童、未受控的小偷、坐满 6 人、音乐家节拍和夜深人躁都会加。',
+    '高危：候客卡写明“高危：车费+2 躁动+1/层”，座位上的“高危”标签悬停也有说明。',
+    '商店充电默认值改为“下一段约需电量”（按每层 4 位乘客估算），不再默认充满；想多充可以拖满。',
+    '躁动保护：这一层可能失控且金币或安抚额度不够时，枚举撤回刚上车的乘客（免费）和请离旧乘客（付赔偿），给出最省钱的能撑过方案，可一键照做；没有方案时提示换座位的方向。',
+  ],
+  experiments: [
+    '试玩记录（9.6，32 层，躁动失控）：截图中 6/8 → 下一站 +3，来源是两位高危乘客 +2、儿童无人照顾 +1、坐满 6 人 +1、驱魔师到站 −1，都与“相邻”无关。30 层商店把 121 金币里的 120 花在充电（90/90），31 层以 78 电、7 金币死于躁动——电够了，钱却不够安抚。',
+    'verify 新增：用截图里的车厢复现，来源必须逐项列出，且最优方案是“撤回刚上车的儿童”（免费，同时去掉无人照顾 +1 和拥挤 +1）。',
+    '规则与数值不变；商店默认充电只影响界面预选。',
+  ],
+  watch: [
+    '看真人是否会用“安抚”和保护给出的方案；如果后期仍经常死于躁动，考虑让护士和音乐家更早出现。',
+  ],
+};
+
+export const V961_EN: ChangelogEntry = {
+  version: '9.6.1', date: '2026-09-23', title: 'See where agitation comes from',
+  summary: 'The agitation panel lists the next floor’s sources; “High risk” states its cost; the shop defaults to the next sector’s power need to leave coins for calming; when agitation is about to boil over, the guard offers a withdraw/dismiss-and-calm plan that survives.',
+  changes: [
+    'Agitation sources: under “Next” the agitation panel lists its sources, e.g. “High-risk riders ×2 +2 · Child uncared for +1 · Cabin crowded +1 · Arrival relief −1”. Agitation does not only come from red links between neighbours: high-risk riders, uncared-for Children, uncontrolled Thieves, a full cabin of 6, the Musician’s beat and late-night unrest all add to it.',
+    'High risk: offer cards read “High risk: fare +2, +1/floor”, and the seat tag explains itself on hover.',
+    'Shop charging now defaults to the next sector’s estimated need (4 riders per floor) instead of full; drag to buy more.',
+    'Agitation guard: when this floor can boil over and coins or calming allowance fall short, it tries withdrawing new riders (free) and dismissing earlier ones (paid) and shows the cheapest plan that survives, with one-tap “Do it”; with no plan it points at reseating.',
+  ],
+  experiments: [
+    'Playtest record (9.6, 32F, agitation): the screenshot’s 6/8 → next +3 came from two high-risk riders +2, an uncared-for Child +1, a full cabin +1 and an arriving Warden −1, none of it about adjacency. At the 30F shop 120 of 121 coins went on charging (90/90); on 31F the run ended in agitation with 78 power and 7 coins: enough power, no money to calm.',
+    'New verify check rebuilds the screenshot cabin: sources must be itemised and the best plan must be withdrawing the new Child (free, removing both the uncared +1 and the crowding +1).',
+    'No rule or value changes; the shop default only changes the preselected amount.',
+  ],
+  watch: [
+    'Watch whether players use calming and the guard’s plans; if late runs still end in agitation, consider Nurses and Musicians appearing earlier.',
+  ],
+};

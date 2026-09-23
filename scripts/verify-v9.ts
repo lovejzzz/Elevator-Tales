@@ -10,7 +10,8 @@ import type { Rider, RunState } from '../lib/game-engine';
 import { translateGameText } from '../lib/i18n';
 import { sectorForecast } from '../lib/game-forecast';
 import { motorAdvanceNotice, motorScheduleText, nightUnrest } from '../lib/balance-v832';
-import { departureRisk, rescuePlan, sectorNeed } from '../lib/departure-guard';
+import { calmRescuePlan, departureRisk, rescuePlan, sectorNeed } from '../lib/departure-guard';
+import { stressForecast } from '../lib/game-forecast';
 import { netValue } from '../lib/net-value';
 import { drawLegend } from '../lib/legend-unlocks';
 import { readFileSync } from 'node:fs';
@@ -218,7 +219,7 @@ console.log('PASS generated motor notice and schedule translate');
   const ui = readFileSync(new URL('../components/elevator-game.tsx', import.meta.url), 'utf8');
   assert.ok(/if \(\(risk\.fatal \|\| stressFatal\) && !departArmed\)/.test(ui), 'the ascend handler must stop a fatal floor until confirmed');
   const need = sectorNeed({ ...s, floor: 10, status: 'upgrade' });
-  assert.deepEqual([need.from, need.to, need.riders], [11, 20, 50]);
+  assert.deepEqual([need.from, need.to, need.riders], [11, 20, 40]);
   assert.equal(need.motor, Array.from({ length: 10 }, (_, i) => motorCost(11 + i)).reduce((a, b) => a + b, 0));
 }
 console.log('PASS ascend guard catches fatal floors and the shop shows next-sector need');
@@ -294,4 +295,17 @@ console.log('PASS legend shuffle bag');
   assert.equal(E.buyCalm(s, 1), s);
 }
 console.log('PASS option A: flat motor, late-night unrest and calming');
-console.log(JSON.stringify({ version: 'v9', checks: 21, passed: true }));
+// v9.6.1 the 9.6 playtest screenshot (30F, 6/8, 1 coin): sources are itemised, and withdrawing the new Child is the rescue.
+{
+  const cab = [rider('child', 30, 2, { boardedAt: 30 }), rider('exorcist', 30, 4, { boardedAt: 28, volatile: true }), rider('lover', 30, 5, { boardedAt: 29, volatile: true }),
+    rider('exorcist', 30, 1, { boardedAt: 27 }), rider('ghost', 30, 4, { boardedAt: 26 }), rider('exorcist', 30, 4, { boardedAt: 28 })];
+  const s = run(30, cab, { stress: 6, coins: 1 });
+  const f = stressForecast(s);
+  const src = Object.fromEntries((f.sources ?? []).map(x => [x.label, x.amount]));
+  assert.equal(src['高危乘客'], 2); assert.equal(src['儿童无人照顾'], 1); assert.equal(src['车厢拥挤'], 1);
+  assert.ok(s.stress + f.highDelta >= s.stressCap, 'the floor is fatal as shown');
+  const plan = calmRescuePlan(s);
+  assert.ok(plan && plan.remove.length === 1 && plan.remove[0].kind === 'child' && plan.remove[0].paid === 0 && plan.calm === 0, JSON.stringify(plan));
+}
+console.log('PASS agitation sources itemised and a real calming rescue found');
+console.log(JSON.stringify({ version: 'v9', checks: 22, passed: true }));

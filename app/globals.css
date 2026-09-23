@@ -2740,3 +2740,8 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .game-shell .status-rail .meter-card .rail-power-line .sector-forecast { margin-left:auto; }
 .game-shell .status-rail .meter-card .rail-power-line .sector-forecast.is-danger { color:#ff9a86; font-weight:700; }
 .game-shell .status-rail .meter-card .rail-power-line .sector-forecast.is-warn { color:#f0c07a; }
+/* v9.6.1 agitation sources on the rail. */
+.game-shell .agitation-sources { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+.game-shell .agitation-sources>span { padding:2px 7px; border-radius:99px; font-size:11px; line-height:1.5; white-space:nowrap; border:1px solid #c99d5244; }
+.game-shell .agitation-sources>span.is-up { color:#ffb09a; border-color:#c8574b66; background:#c8574b14; }
+.game-shell .agitation-sources>span.is-down { color:#9ee3b5; border-color:#5a9e7c66; background:#5a9e7c14; }

@@ -1,6 +1,11 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.6**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.6.1**. Publication status is tracked separately from the source version.
+
+## v9.6.1 — 2026-09-23 — Agitation sources visible / 躁动来源一眼看清
+
+- Agitation panel lists next-floor sources (high-risk riders, uncared Child, crowding, Musician beat, unrest, arrival relief). High-risk tags state "fare +2, +1/floor". Shop charging defaults to the next sector's need (4 riders/floor) instead of full. Agitation guard offers withdraw/dismiss + calm plans.
+- From a 9.6 playtest: the screenshot's +3 came from high-risk ×2, uncared Child and a full cabin, not adjacency; the run spent 120 of 121 coins on power at 30F and died of agitation with 78 power. Verify rebuilds that cabin. No rule changes.
 
 ## v9.6 — 2026-09-23 — Flat motor, late-night unrest, calming / 电机固定、夜深人躁、途中安抚
 

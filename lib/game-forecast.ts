@@ -9,6 +9,7 @@ import { experimentalRiskLinks, type RiskLinkTuning } from './risk-link-experime
 export type StressForecast = {
   range: string;
   details: string;
+  sources?: Array<{ label: string; amount: number; count: number }>;
   summary: string;
   tone: 'safe' | 'caution' | 'danger';
   lowDelta: number;
@@ -78,9 +79,18 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
     arrivalReason,
   ].filter(Boolean);
   const details = reasons.join(' · ');
+  // Grouped sources for the rail: every rider's high-risk line counts as one "high-risk riders" source.
+  const grouped = new Map<string, { label: string; amount: number; count: number }>();
+  const addSource = (label: string, amount: number) => { if (!amount) return; const key = label.endsWith('高危') ? '高危乘客' : label; const g = grouped.get(key) ?? { label: key, amount: 0, count: 0 }; g.amount += amount; g.count += 1; grouped.set(key, g); };
+  effects.forEach(effect => effect.fixed.forEach(line => addSource(line.label, line.amount)));
+  if (beat) addSource('音乐家节拍', beat);
+  cabinLines.forEach(line => addSource(line.label, line.amount));
+  if (redRise) addSource('红线躁动', redRise);
+  if (maxRelief) addSource('到站舒缓', -maxRelief);
+  const sources = [...grouped.values()].sort((a, b) => b.amount - a.amount);
   const summary = details ? `下一层 ${range} · ${details}` : '下一层躁动不变 · 没有已知来源';
   const tone = state.stress + highDelta >= state.stressCap || highDelta >= 2 ? 'danger' : highDelta > 0 ? 'caution' : 'safe';
-  return { range, details, summary, tone, lowDelta, highDelta };
+  return { range, details, summary, tone, lowDelta, highDelta, sources };
 }
 
 export function energyForecast(state: RunState, _legacyWeight?: number, _riskTuning?: RiskLinkTuning): EnergyForecast {

@@ -74,4 +74,5 @@ export const V9_PAIRS: Array<[string, string]> = [
   ['知道了', 'Got it'], ['？？？', '???'],
   ['满员 · 不省电', 'Full · no saving'], ['运转 −1 电', 'Motor −1'],
   ['夜深人躁', 'Late-night unrest'], ['途中安抚', 'Calming'],
+  ['高危乘客', 'High-risk riders'], ['儿童无人照顾', 'Child uncared for'], ['小偷未受控', 'Thief uncontrolled'], ['醉汉未安抚', 'Drifter unsettled'], ['到站舒缓', 'Arrival relief'],
 ];
