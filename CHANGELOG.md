@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.0.3**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.0.4**. Publication status is tracked separately from the source version.
+
+## v9.0.4 — 2026-09-23 — District light and cabin motion / 楼区灯光与车厢动作
+
+- Seven district palettes (cabin tint, lamp glow, floor-number colour) cross-fading at each district boundary.
+- Motion: ascent shake scaled by agitation (0.6–3.2 px), low-power flicker (≤6 worst-case power; faster when fatal), arrival coins flying to the wallet (2–6 per rider), rolling floor number, green links drawing in, breathing riders. All off under reduced motion.
+- Shop icons render as background images (fixes 3 lint errors from v9.0.3). No rule changes.
+- Art direction candidates (Art Deco poster vs noir ink vs current realism) generated for comparison; portraits unchanged pending a choice.
 
 ## v9.0.3 — 2026-09-23 — Shop icons, Insulation friction tip / 商店图标、绝缘衬层冲突小费
 

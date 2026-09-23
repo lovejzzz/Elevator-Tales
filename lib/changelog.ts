@@ -5,7 +5,7 @@ import {V834_EN, V834_ZH} from './release-v834';
 import {V835_EN, V835_ZH} from './release-v835';
 import {V836_EN, V836_ZH} from './release-v836';
 import {V837_EN, V837_ZH} from './release-v837';
-import {V901_EN, V901_ZH, V902_EN, V902_ZH, V903_EN, V903_ZH, V9_EN, V9_ZH} from './release-v9';
+import {V901_EN, V901_ZH, V902_EN, V902_ZH, V903_EN, V903_ZH, V904_EN, V904_ZH, V9_EN, V9_ZH} from './release-v9';
 
 export type ChangelogEntry = {
   version: string;
@@ -17,9 +17,10 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '9.0.3';
+export const GAME_VERSION = '9.0.4';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  V904_ZH,
   V903_ZH,
   V902_ZH,
   V901_ZH,
@@ -578,6 +579,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  V904_EN,
   V903_EN,
   V902_EN,
   V901_EN,

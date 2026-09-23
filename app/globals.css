@@ -2614,7 +2614,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 @media (max-width:700px) { .power-alert:not(.is-fatal) { display:none; } }
 
 /* v9.0.3 painted object icons for shop abilities and power-box lines. */
-.shop-icon { display:block; flex:none; object-fit:cover; border:1px solid #c99d5255; background:#0d1f19; }
+.shop-icon { display:block; flex:none; background:#0d1f19 center/cover no-repeat; border:1px solid #c99d5255; }
 .upgrade-dialog .shop-item-head { display:flex; align-items:center; gap:12px; }
 .upgrade-dialog .shop-item-head .shop-icon { width:64px; height:64px; border-radius:6px; }
 .upgrade-dialog .box-panel .box-line-name { display:grid; grid-template-columns:36px auto; grid-template-rows:auto auto; column-gap:8px; row-gap:3px; align-items:center; }
@@ -2624,3 +2624,36 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .inventory-list section>div>span { margin-left:auto; }
 .inventory-list section.not-installed .inventory-icon { filter:grayscale(.8) brightness(.7); }
 @media (max-width:700px) { .upgrade-dialog .shop-item-head .shop-icon { width:52px; height:52px; } }
+
+/* v9.1 cabin art direction: district light, agitation shake, low-power flicker, coin flight, threads, breathing. */
+.elevator-stage { --district-tint:transparent; --district-lamp:rgba(255,200,120,.0); --district-accent:#ffc86d; }
+.elevator-stage[data-district="lobby"] { --district-tint:#e0a84a; --district-lamp:rgba(255,196,110,.22); --district-accent:#ffc86d; }
+.elevator-stage[data-district="residences"] { --district-tint:#c0607a; --district-lamp:rgba(255,150,175,.22); --district-accent:#ffb3c4; }
+.elevator-stage[data-district="hospital"] { --district-tint:#58c3bd; --district-lamp:rgba(170,255,245,.2); --district-accent:#9ff0e6; }
+.elevator-stage[data-district="nightclub"] { --district-tint:#a548d6; --district-lamp:rgba(230,120,255,.24); --district-accent:#f0a0ff; }
+.elevator-stage[data-district="offices"] { --district-tint:#bcdca0; --district-lamp:rgba(235,255,220,.22); --district-accent:#e6ffd0; }
+.elevator-stage[data-district="hotel"] { --district-tint:#c2393c; --district-lamp:rgba(255,120,110,.22); --district-accent:#ff9c8c; }
+.elevator-stage[data-district="nameless"] { --district-tint:#7b8796; --district-lamp:rgba(200,215,235,.14); --district-accent:#d6e0ee; }
+.elevator-stage[data-district="nameless"] .elevator-image { filter:grayscale(.75) brightness(.72) contrast(1.12); }
+.district-light { position:absolute; inset:0; z-index:1; pointer-events:none; background:radial-gradient(ellipse 60% 45% at 50% 4%,var(--district-lamp),transparent 70%),linear-gradient(var(--district-tint),var(--district-tint)); mix-blend-mode:soft-light; opacity:.85; transition:background 1.4s ease; }
+.elevator-stage .floor-indicator b { color:var(--district-accent); text-shadow:0 0 12px color-mix(in srgb,var(--district-accent) 70%,transparent); transition:color 1.4s ease; }
+.cabin-flicker { position:absolute; inset:0; z-index:1; pointer-events:none; background:#020504; opacity:0; }
+.connection-path.active:not(.conflict-link):not(.preview-link) .connection-core { stroke-dasharray:400; }
+.coin-flight { position:fixed; z-index:80; width:14px; height:14px; border-radius:50%; pointer-events:none; background:radial-gradient(circle at 35% 30%,#fff3c4,#f2c35c 45%,#a8701f 100%); box-shadow:0 0 8px rgba(242,195,92,.7); }
+@media (prefers-reduced-motion:no-preference) {
+  .doors-moving .elevator-image,.doors-moving .standing-grid { animation:cabin-shake 210ms linear infinite; }
+  .power-low .cabin-flicker { animation:cabin-flicker 5.2s steps(1,end) infinite; }
+  .power-fatal .cabin-flicker { animation:cabin-flicker 2.1s steps(1,end) infinite; }
+  .power-fatal .floor-indicator b { animation:indicator-flicker 2.1s steps(1,end) infinite; }
+  .elevator-stage .floor-indicator b { animation:floor-roll 420ms cubic-bezier(.2,.9,.2,1.15); }
+  .connection-path.active:not(.conflict-link):not(.preview-link) .connection-core { animation:link-draw 520ms ease-out both; }
+  .standing-slot.occupied .seat-art .portrait-sheet { animation:rider-breathe 4.6s ease-in-out infinite alternate; transform-origin:50% 85%; }
+  .standing-slot-wrap:nth-child(3n+1) .seat-art .portrait-sheet { animation-delay:-1.5s; }
+  .standing-slot-wrap:nth-child(3n+2) .seat-art .portrait-sheet { animation-delay:-3.1s; }
+}
+@keyframes cabin-shake { 0%,100% { transform:translate(0,0); } 25% { transform:translate(calc(var(--shake) * .6px),calc(var(--shake) * -1px)); } 50% { transform:translate(calc(var(--shake) * -.5px),calc(var(--shake) * .7px)); } 75% { transform:translate(calc(var(--shake) * .4px),calc(var(--shake) * .4px)); } }
+@keyframes cabin-flicker { 0%,100% { opacity:0; } 61% { opacity:.42; } 62% { opacity:0; } 64% { opacity:.3; } 66% { opacity:0; } 88% { opacity:.2; } 89% { opacity:0; } }
+@keyframes indicator-flicker { 0%,100% { opacity:1; } 61% { opacity:.25; } 62% { opacity:1; } 64% { opacity:.4; } 66% { opacity:1; } }
+@keyframes floor-roll { 0% { opacity:0; transform:translateY(70%); filter:blur(2px); } 60% { opacity:1; filter:blur(0); } 100% { transform:translateY(0); } }
+@keyframes link-draw { from { stroke-dashoffset:400; } to { stroke-dashoffset:0; } }
+@keyframes rider-breathe { from { transform:scale(1); } to { transform:scale(1.022) translateY(-1px); } }

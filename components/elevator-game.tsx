@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent } from 'react';
 import { ChevronsUp, ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Check, Coins, Flame, HelpCircle, History, Info, LockKeyhole, Music2, RotateCcw, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -181,6 +181,8 @@ const rescuesCrisis = (key: UpgradeKey, run: RunState) => {
 };
 
 const IMPACT_KEYS: UpgradeKey[] = ['battery', 'calm', 'capacity'];
+/** Cabin lights start to flicker when the worst case leaves this little power after the next floor. */
+const LOW_POWER_FLICKER = 6;
 function upgradeImpact(key: UpgradeKey, run: RunState): string {
   const preview = previewUpgrade(run, key);
   switch (key) {
@@ -323,9 +325,9 @@ export default function ElevatorGame() {
   };
 
   useEffect(() => { const frame=requestAnimationFrame(() => { const savedBest = Math.max(1, Number(localStorage.getItem('elevator-tales-endless-best-floor') || 1)); const savedHighest = Math.max(1, Number(localStorage.getItem('elevator-tales-highest') || 1)); const shouldGuide = savedBest <= 1 || new URLSearchParams(window.location.search).get('tutorial') === '1'; let savedDiscovered: PassengerKind[] = []; try { savedDiscovered=sanitizeDiscoveredPassengers(JSON.parse(localStorage.getItem(DISCOVERED_PASSENGERS_KEY) || '[]')); } catch {} setHighest(savedHighest); setBestFloor(savedBest); setRunStartBest(savedBest); setDiscovered(savedDiscovered); discoveredRef.current = savedDiscovered; setGuidedShift(shouldGuide); const legends = loadUnlockedLegends(savedBest > 1); setUnlockedLegends(legends); setKeepsakesSeen(loadKeepsakesSeen()); try { const saved = JSON.parse(localStorage.getItem(STORIES_KEY) ?? '[]'); if (Array.isArray(saved)) setStoriesUnlocked(saved.filter((k): k is PassengerKind => k in STORIES)); } catch { /* storage unavailable */ } const opening = startRun(shouldGuide, Math.random, legends);
-      // Development-only QA shortcuts: ?qa=shop starts one ascent from the first shop; ?qa=low starts at 14F nearly out of power.
+      // Development-only QA shortcuts: ?qa=shop starts one ascent from the first shop; ?qa=low starts at 14F nearly out of power; ?qa=at&f=N starts on floor N.
       const qaMode = process.env.NODE_ENV !== 'production' ? new URLSearchParams(window.location.search).get('qa') : null;
-      if (qaMode === 'shop' || qaMode === 'low') { const qa = nextOfferBatch({ ...opening.state, ...(qaMode === 'low' ? { floor: 14, coins: 87, earned: 188, energy: 4 } : { floor: 9, coins: 140, earned: 140, energy: 30 }), legendOffer: undefined, legendStatus: undefined }); setGuidedShift(false); setIntroState(false); setRun(qa.state); presentOffers(qa.offers, savedDiscovered); return; }
+      if (qaMode === 'shop' || qaMode === 'low' || qaMode === 'at') { const qaFloor = Math.max(2, Number(new URLSearchParams(window.location.search).get('f')) || 2); const qa = nextOfferBatch({ ...opening.state, ...(qaMode === 'low' ? { floor: 14, coins: 87, earned: 188, energy: 4 } : qaMode === 'at' ? { floor: qaFloor, coins: 60, earned: 60, energy: 60 } : { floor: 9, coins: 140, earned: 140, energy: 30 }), legendOffer: undefined, legendStatus: undefined }); setGuidedShift(false); setIntroState(false); setRun(qa.state); presentOffers(qa.offers, savedDiscovered); return; }
       if (new URLSearchParams(window.location.search).has('daily')) { const key = dailyKey(), seed = dailySeed(key); const d = startRun(false, stream(seed, 'offers', 1), LEGEND_STARTERS); setDaily({ key, seed }); setDailyBest(Number(localStorage.getItem(`elevator-tales-daily-best-${key}`) || 0)); setGuidedShift(false); setRun(d.state); presentOffers(d.offers, savedDiscovered); return; }
       setRun(opening.state); presentOffers(opening.offers, savedDiscovered); });return()=>cancelAnimationFrame(frame); }, []);
   useEffect(() => { const frame=requestAnimationFrame(()=>{ if (run.floor > highest) { setHighest(run.floor); localStorage.setItem('elevator-tales-highest', String(run.floor)); } if (run.floor > bestFloor) { setBestFloor(run.floor); localStorage.setItem('elevator-tales-endless-best-floor', String(run.floor)); } });return()=>cancelAnimationFrame(frame); }, [run.floor, highest, bestFloor]);
@@ -465,6 +467,29 @@ export default function ElevatorGame() {
 
     ];
   }, [locked, sound, run, flash, reportMetrics, fastReveal, presentOffers, runDelivered, keepsakesSeen, unlockedLegends, storiesUnlocked, rngOf, offers, daily, dailyBest, risk.fatal, departArmed]);
+  // Arrival coins fly from each departing rider into the wallet. Purely decorative DOM, removed on finish.
+  useEffect(() => {
+    if (!arriving.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = window.setTimeout(() => {
+      const wallet = document.querySelector('[data-metric="coins"]')?.getBoundingClientRect();
+      if (!wallet || !wallet.width) return;
+      document.querySelectorAll('.arrival-exit .arrival-payout').forEach((payout, index) => {
+        const from = payout.getBoundingClientRect(); const coins = arriving[index]?.coins ?? 0; if (!from.width || coins <= 0) return;
+        const x0 = from.left + from.width / 2, y0 = from.top + from.height / 2, dx = wallet.left + wallet.width / 2 - x0, dy = wallet.top + wallet.height / 2 - y0;
+        const count = Math.min(6, Math.max(2, Math.ceil(coins / 4)));
+        for (let k = 0; k < count; k++) {
+          const coin = document.createElement('span'); coin.className = 'coin-flight'; coin.style.left = `${x0}px`; coin.style.top = `${y0}px`; document.body.appendChild(coin);
+          const spread = (k - (count - 1) / 2) * 16;
+          coin.animate([
+            { transform: 'translate(-50%,-50%) scale(.5)', opacity: 0 },
+            { transform: `translate(calc(-50% + ${dx * .25 + spread}px), calc(-50% + ${dy * .25 - 70}px)) scale(1)`, opacity: 1, offset: .35 },
+            { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.45)`, opacity: .85 },
+          ], { duration: 820, delay: k * 70, easing: 'cubic-bezier(.45,0,.3,1)', fill: 'forwards' }).onfinish = () => coin.remove();
+        }
+      });
+    }, fastReveal ? 60 : 420);
+    return () => { window.clearTimeout(timer); document.querySelectorAll('.coin-flight').forEach(coin => coin.remove()); };
+  }, [arriving, fastReveal]);
   useEffect(() => { const onKey = (event: KeyboardEvent) => {
     if (intro || help || pressureHelp || archive || receiptOpen || passengerDetails || inventoryOpen || changelogOpen || event.repeat) return;
     if (event.key === 'Escape') { setPendingOfferId(null); setSelectedSlot(null); setDragged(null); setDragOverSlot(null); return; }
@@ -531,8 +556,8 @@ export default function ElevatorGame() {
         {metricEvent && <button className="receipt-button" onClick={() => setReceiptOpen(true)}><BookOpen /> 本次变化明细 <span>↗</span></button>}
         <div className="event-log">{run.log.slice(0, 3).map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}</div>
       </aside>
-      <section className={`elevator-stage doors-${doors} ${activeRider ? 'is-placing' : ''} ${agitated ? 'cabin-agitated' : ''}`} aria-label="电梯座舱" aria-busy={doors !== 'open'}>
-        <div className="elevator-image" /><div className="motion-lines" /><div className="floor-indicator"><ArrowUp /><b key={run.floor}>{String(run.floor).padStart(2, '0')}</b></div><div className="cabin-title"><span>CAR № 07</span><i /><span>{occupied} / 6 OCCUPIED</span></div><div className="district-tag" data-no-translate>{districtFor(run.floor).name[language==='zh'?0:1]}</div>
+      <section className={`elevator-stage doors-${doors} ${activeRider ? 'is-placing' : ''} ${agitated ? 'cabin-agitated' : ''} ${run.status==='playing'&&risk.fatal ? 'power-fatal' : run.status==='playing'&&run.energy + energyPreview.lowDelta <= LOW_POWER_FLICKER ? 'power-low' : ''}`} data-district={districtFor(run.floor).id} style={{ '--shake': (0.6 + 2.6 * Math.min(1, run.stress / Math.max(1, run.stressCap))).toFixed(2) } as CSSProperties} aria-label="电梯座舱" aria-busy={doors !== 'open'}>
+        <div className="elevator-image" /><div className="district-light" aria-hidden="true" /><div className="cabin-flicker" aria-hidden="true" /><div className="motion-lines" /><div className="floor-indicator"><ArrowUp /><b key={run.floor}>{String(run.floor).padStart(2, '0')}</b></div><div className="cabin-title"><span>CAR № 07</span><i /><span>{occupied} / 6 OCCUPIED</span></div><div className="district-tag" data-no-translate>{districtFor(run.floor).name[language==='zh'?0:1]}</div>
         {outlook && <div className={`adjacency-key shift-outlook ${nextIsShop ? 'shop-next-outlook' : 'peak-outlook'}`}><span>{outlook}</span><span className="connection-legend">绿线协作 · 红线代价 · 紫箭头复制</span></div>}
         {feedback && (feedback.tone!=='arrival'||arriving.length===0) && <output key={feedback.id} className={`cabin-feedback feedback-${feedback.tone}`}>
           <div className="feedback-label">{feedback.tone === 'error' ? <X /> : feedback.tone === 'combo' ? <Sparkles /> : <Check />}<b>{feedback.label}</b></div>
@@ -629,7 +654,7 @@ export default function ElevatorGame() {
       <div className="inventory-summary"><span>电量上限 <b>{run.energyCap}</b></span><span>站位 <b>6 个</b></span><span>躁动上限 <b>{run.stressCap}</b></span></div>
       <div className="inventory-summary" data-no-translate>{BOX_LINES.map(line=><span key={line}>{language==='zh'?BOX_LINE_LABELS[line].name:({storage:'Storage',transformer:'Transformer',motor:'Motor'} as Record<BoxLine,string>)[line]} <b>{boxOf(run)[line]}/{BOX_MAX_LEVEL}</b></span>)}</div>
       {(run.keepsakes?.length??0)>0&&<p className="keepsake-row" data-no-translate>{language==='zh'?'信物：':'Keepsakes: '}{run.keepsakes!.map(k=><span key={k} className="keepsake-chip" title={keepsakeText(k,language)}>{keepsakeLabel(k,language)} · {keepsakeText(k,language)}</span>)}</p>}
-      <div className="inventory-list">{(Object.keys(UPGRADES) as UpgradeKey[]).filter(key=>!RETIRED_UPGRADES.includes(key)).map(key=><section key={key} className={run.upgrades[key] ? 'installed' : 'not-installed'}><div><img className="shop-icon inventory-icon" src={shopIcon(`ability-${key}`)} alt="" width={36} height={36} loading="lazy" decoding="async" /><b>{UPGRADES[key].name}</b><span>{run.upgrades[key] ? `已装 ×${run.upgrades[key]}` : '未安装'}</span></div><p>{run.upgrades[key] ? installedUpgradeSummary(run,key) : UPGRADES[key].description}</p></section>)}</div>
+      <div className="inventory-list">{(Object.keys(UPGRADES) as UpgradeKey[]).filter(key=>!RETIRED_UPGRADES.includes(key)).map(key=><section key={key} className={run.upgrades[key] ? 'installed' : 'not-installed'}><div><span className="shop-icon inventory-icon" style={{backgroundImage:`url(${shopIcon(`ability-${key}`)})`}} aria-hidden="true" /><b>{UPGRADES[key].name}</b><span>{run.upgrades[key] ? `已装 ×${run.upgrades[key]}` : '未安装'}</span></div><p>{run.upgrades[key] ? installedUpgradeSummary(run,key) : UPGRADES[key].description}</p></section>)}</div>
       <Button className="story-primary" onClick={()=>setInventoryOpen(false)}>返回本班</Button>
     </DialogContent></Dialog>
 
@@ -669,7 +694,7 @@ export default function ElevatorGame() {
       {!availableShopCards(run).length&&<p className="shop-receipt" role="status">{upgradeCount >= UPGRADE_SLOTS ? '六个安装位已满。本班保留当前能力，维修服务仍然可用。' : run.shopExtraBought?'本店已选取并加购能力，下次商店再选。':'本店没有未安装的能力可选。维修服务仍然可用。'}</p>}
       {(run.keepsakes?.length??0)>0&&<p className="keepsake-row" data-no-translate>{language==='zh'?'信物：':'Keepsakes: '}{run.keepsakes!.map(k=><span key={k} className="keepsake-chip" title={keepsakeText(k,language)}>{keepsakeLabel(k,language)}</span>)}</p>}
       <div className="shop-choice-row"><div className="upgrade-grid">{availableShopCards(run).map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, run); const warning = card.price > 0 ? purchaseRepairWarning(run,key,card.price) : null; return <button key={key} className={rescue ? 'crisis-rescue' : ''} disabled={!affordable} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price === 0 ? '免费选取' : `加购 ${card.price} 金币`}${!affordable ? '，金币不足' : ''}`}>
-        <span className="shop-item-head"><img className="shop-icon" src={shopIcon(`ability-${key}`)} alt="" width={64} height={64} loading="lazy" decoding="async" /><b>{UPGRADES[key].name}</b></span><p>{UPGRADES[key].description}</p>{IMPACT_KEYS.includes(key)&&<em>{upgradeImpact(key, run)}</em>}{warning && <span className="reserve-warning">{warning === 'crisis' ? '购买后不足以修复当前失控' : '购买后无法补至参考电量；参考线不是离店要求'}</span>}<span className="shop-price" data-no-translate>{card.price===0?<><Check aria-hidden="true" /><strong>{language==='zh'?'免费选取':'Free pick'}</strong></>:<><Coins aria-hidden="true" /><strong>{card.price}</strong><span>{affordable ? (language==='zh'?'加购':'Buy extra') : (language==='zh'?`还差 ${card.price - run.coins}`:`Need ${card.price - run.coins}`)}</span></>}</span>
+        <span className="shop-item-head"><span className="shop-icon" style={{backgroundImage:`url(${shopIcon(`ability-${key}`)})`}} aria-hidden="true" /><b>{UPGRADES[key].name}</b></span><p>{UPGRADES[key].description}</p>{IMPACT_KEYS.includes(key)&&<em>{upgradeImpact(key, run)}</em>}{warning && <span className="reserve-warning">{warning === 'crisis' ? '购买后不足以修复当前失控' : '购买后无法补至参考电量；参考线不是离店要求'}</span>}<span className="shop-price" data-no-translate>{card.price===0?<><Check aria-hidden="true" /><strong>{language==='zh'?'免费选取':'Free pick'}</strong></>:<><Coins aria-hidden="true" /><strong>{card.price}</strong><span>{affordable ? (language==='zh'?'加购':'Buy extra') : (language==='zh'?`还差 ${card.price - run.coins}`:`Need ${card.price - run.coins}`)}</span></>}</span>
       </button>; })}{!availableShopCards(run).length&&<section className="shop-installed-summary" role="status">
         <h3>{language==='zh'?(run.shopUpgradeBought?'本店选购完成':'已安装能力'):(run.shopUpgradeBought?'Upgrade installed':'Installed upgrades')}</h3>
         <p>{language==='zh'?'本班能力保留生效，仍可充电后离店。':'Your upgrades remain active. You can still charge before leaving.'}</p>
@@ -678,7 +703,7 @@ export default function ElevatorGame() {
       <div className="shop-service-column"><section className="recharge-panel box-panel">
         <div className="shop-step-head"><h3><i>2</i>{language==='zh'?`配电箱 · 升 1 级（可跳过）`:`Power box · 1 level (optional)`}</h3><span>{(run.freeBoxLevels??0)>0?(language==='zh'?'扳手：本次免费':'Wrench: free'):`${boxTotal(boxOf(run))}/${BOX_TOTAL_CAP}`}</span></div>
         {BOX_LINES.map((line:BoxLine)=>{const level=boxOf(run)[line];const price=boxLevelPrice(run,line);const can=canBuyBoxLevel(run,line);return <div key={line} className="box-line">
-          <span className="box-line-name"><img className="shop-icon box-icon" src={shopIcon(`box-${line}`)} alt="" width={36} height={36} loading="lazy" decoding="async" />{BOX_LINE_LABELS[line].name}<i className="box-pips" aria-label={`${level}/${BOX_MAX_LEVEL}`}>{Array.from({length:BOX_MAX_LEVEL},(_,i)=><b key={i} className={i<level?'on':''} />)}</i></span>
+          <span className="box-line-name"><span className="shop-icon box-icon" style={{backgroundImage:`url(${shopIcon(`box-${line}`)})`}} aria-hidden="true" />{BOX_LINE_LABELS[line].name}<i className="box-pips" aria-label={`${level}/${BOX_MAX_LEVEL}`}>{Array.from({length:BOX_MAX_LEVEL},(_,i)=><b key={i} className={i<level?'on':''} />)}</i></span>
           <span className="box-line-next">{level<BOX_MAX_LEVEL?BOX_LINE_LABELS[line].levels[level]:(language==='zh'?'已满级':'Maxed')}</span>
           <button disabled={!can} onClick={()=>{const next=buyBoxLevel(run,line);if(next!==run){setLeaveArmed(false);reportMetrics(run,next,language==='zh'?'配电箱升级':'Power box upgrade');setRun(next);playTone(sound,'upgrade');}}}>{level>=BOX_MAX_LEVEL?(language==='zh'?'满级':'Max'):price===0?(language==='zh'?'免费升级':'Free'):`${price} ${language==='zh'?'金币':'coins'}`}</button>
         </div>;})}

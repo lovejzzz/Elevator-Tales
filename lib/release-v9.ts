@@ -169,3 +169,49 @@ export const V903_EN: ChangelogEntry = {
     'Every style-committed bot reaches about 20 floors less than the numbers-only optimizer: sticking to a style has a cost; playtests should show whether it feels that way to people.',
   ],
 };
+
+export const V904_ZH: ChangelogEntry = {
+  version: '9.0.4', date: '2026-09-23', title: '每个楼区一种灯光，电梯开始有动作',
+  summary: '七个楼区各有自己的灯光和楼层数字颜色；上行时车厢按躁动抖动，电量告急时灯会闪；到站金币飞进钱包。',
+  changes: [
+    '楼区灯光：大堂黄铜、住宅玫瑰、医院冷青、夜店紫、写字楼日光灯绿、酒店红丝绒、无名层褪色灰；进入新楼区时颜色渐变，楼层数字跟着换色。',
+    '上行抖动：车厢在运行时轻微晃动，躁动越高晃得越厉害（0.6–3.2 像素）。',
+    '电量告急：下一站后最坏只剩 6 电以内时车厢灯偶尔闪烁；这一层可能断电时闪得更快，楼层数字也跟着闪。',
+    '到站金币：每位到站乘客按车费飞出 2–6 枚金币落进钱包。',
+    '动作细节：楼层数字像机械翻牌一样滚上来；新连上的绿线从一端画到另一端；车厢里的人物轻微呼吸。',
+    '系统设置了“减少动态效果”时，以上动画全部关闭，只保留颜色变化。',
+    '商店图标改为背景图渲染（与人物画像一致），修复 v9.0.3 引入的 3 条 lint 错误。',
+  ],
+  experiments: [
+    '浏览器检查：七个楼区截图对比（住宅层初版与大堂太像，改为玫瑰色）；第 3–8 层连续上行，到站时出现 3 枚飞行金币且动画结束后全部清除。',
+    '美术方向：生成同一组三位乘客、电梯厢和商店物品的两种候选风格（Art Deco 海报、黑色墨线漫画），与现状写实风格并排对比，等待选择；本版不替换人物画像。',
+    '规则与数值不变；verify、类型检查和构建通过。',
+  ],
+  watch: [
+    '人物画风待定；选定后统一重画约 50 张图。',
+    '仪表化界面（电量做成电压表指针、金币做成收银机）等画风定下再做。',
+  ],
+};
+
+export const V904_EN: ChangelogEntry = {
+  version: '9.0.4', date: '2026-09-23', title: 'A light for every district, and a lift that moves',
+  summary: 'Each of the seven districts has its own light and floor-number colour; the cabin shakes with agitation as it climbs, the lights flicker when power runs low, and arrival coins fly into the wallet.',
+  changes: [
+    'District light: brass Lobby, rose Residences, cold teal Hospital, violet Nightclub, fluorescent-green Offices, red-velvet Hotel, faded grey Nameless Floors; colours cross-fade on entering a district and the floor number follows.',
+    'Ascent shake: the cabin trembles while moving, more as agitation rises (0.6–3.2 px).',
+    'Low power: when the worst case leaves 6 power or less after the next floor, the lights flicker now and then; when this floor can run you out, they flicker faster and the floor number with them.',
+    'Arrival coins: each arriving rider sends 2–6 coins, by fare, flying into the wallet.',
+    'Details: the floor number rolls up like a mechanical counter; new green links draw from end to end; riders in the cabin breathe slightly.',
+    'With “reduce motion” enabled all of the above animation is off; only the colours change.',
+    'Shop icons now render as background images like the portraits, fixing 3 lint errors introduced in v9.0.3.',
+  ],
+  experiments: [
+    'Browser checks: screenshots of all seven districts (the first Residences tint was too close to the Lobby and became rose); ascents from 3F to 8F showed 3 flying coins on arrival, all removed when finished.',
+    'Art direction: the same three riders, cabin and shop item were generated in two candidate styles (Art Deco poster, noir ink graphic novel) and compared side by side with the current realism; awaiting a choice, no portraits replaced in this version.',
+    'No rule or value changes; verify, type check and build pass.',
+  ],
+  watch: [
+    'Character style to be chosen; about 50 images to redraw once it is.',
+    'Diegetic gauges (a voltmeter needle for power, a cash register for coins) wait for the style decision.',
+  ],
+};
