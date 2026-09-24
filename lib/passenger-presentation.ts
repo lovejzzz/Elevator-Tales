@@ -26,7 +26,7 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'courier':special=rider.parcelId?'纸箱在旁：到站付钱并补充2电，箱子越稀有付得越多；空手：每层+1躁动、不付钱，挨着炸弹客可接过炸弹':'到站补充2电（不超过上限）';break;
   case 'parcel':special='无主时到站开箱：内容开箱前看不到，随机金币或电，偶尔是一项能力；越稀有开得越多';break;
   case 'lover':moneyNote='每位邻座恋人：到站基价+100%';special='无恋人邻座：每站15%呼唤恋人';break;
-  case 'thief':moneyNote='无警察：每位邻座每站+2；受控仅到站+5';pressure.splice(0,1,`每层 +1`,'挨警察免除');break;
+  case 'thief':moneyNote='无警察：每层偷邻座 1–4 币；受控仅到站+5';pressure.splice(0,1,`每层 +1`,'挨警察免除');break;
   case 'drunk':moneyNote='到站前关门时高躁动：基价+100%';pressure.splice(0,1,'每层 +1','挨护士免除');break;
   case 'child':pressure.splice(0,1,'每层 +1','挨恋人或护士免除');moneyNote=`累计被照顾${CHILD_CARE_WORK}层：到站 +${CHILD_CARE_BONUS}金币`;break;
   case 'celebrity':moneyNote='恰好1邻座：每站+2';pressure.splice(0,1,`2+邻座：每层 +1`);break;
@@ -107,7 +107,7 @@ export function passengerCardSections(
   case 'tourist':self.push(effect('coins',`中躁动到站 +${TOURIST_MEDIUM_BONUS}金币`));addGreen(null,[effect('coins','到站 +2金币/人')],'任何邻座');break;
   case 'musician':self.push(effect('agitation','低→3 · 高→4 · 最多2点 · 中不变'),effect('neutral','整车节拍，每层一次；多位不叠加'));break;
   case 'thief':
-   self.push(effect('coins','未受控：每位邻座每层 +2'),effect('agitation','未受控：每上1层 +1躁动'));
+   self.push(effect('coins','未受控：每层偷邻座 1–4 币'),effect('agitation','未受控：每上1层 +1躁动'));
    addGreen(['cop'],[effect('coins','途中不产币'),effect('coins','到站 +5'),effect('agitation','不加躁动')]);
    break;
   case 'cop':

@@ -11,11 +11,14 @@ import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_S
 
 export type Rider = { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; bombMs?: number; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
 export type ChangeLine = { label: string; amount: number };
-export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number };
+export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number; power?:number; ability?:UpgradeKey };
+/** v9.18.1: who the Thief robbed on the last floor, for the pickpocket animation. */
+export type TheftReceipt = { thief: number; victims: Array<{ slot: number; coins: number }> };
 export type ShopCard = { key: UpgradeKey; price: number; purchased: boolean };
 export type RunState = {
   floor: number; energy: number; energyCap: number; stress: number; stressCap: number; weightCap: number; coins: number; earned: number; shop: ShopCard[];
   cabin: Array<Rider | null>; swapped: boolean; upgrades: Record<UpgradeKey, number>;
+  lastThefts?: TheftReceipt[];
   /** v9.17.2: an ability found in a box while every slot is full, waiting for the player to swap it in or pass. */
   pendingAbility?: UpgradeKey;
   /** Abilities swapped out for a box's ability; each is sold (refunded) on entering the next shop. */
@@ -112,6 +115,14 @@ export const LOVER_CALL_CHANCE = .15;
 export const INSPECTOR_COMPLIANCE_REWARD = 1;
 export const INSPECTOR_ENERGY_LIMIT = 3;
 export const COURIER_ARRIVAL_CHARGE = 2;
+/** v9.18.1: what a Thief lifts from each adjacent rider per floor, by how full their pockets are (about 2 on average).
+ * Officers, Lawyers, the Don, legends and boxes are never robbed. */
+export const PICKPOCKET: Partial<Record<PassengerKind, number>> = {
+  celebrity: 4, tourist: 3, mystery: 3, shifter: 3,
+  commuter: 2, courier: 2, lover: 2, musician: 2, coach: 2, mimic: 2, bomb: 2,
+  mechanic: 1, nurse: 1, child: 1, drunk: 1, exorcist: 1, inspector: 1, thief: 1, ghost: 0,
+};
+export const pickpocketFrom = (v: Rider | null | undefined) => (!v || v.kind === 'parcel' || ['cop', 'lawyer', 'don'].includes(v.kind) || isLegend(v.kind) ? 0 : PICKPOCKET[v.kind] ?? ECONOMY_RULES.thiefPerVictim);
 /** Bomb timers (v9.18 study): the dealt range, and how many steps an unlocked timer drops per floor at high agitation. */
 export const BOMB_RULES = { fuseMin: 3, fuseMax: 6, highTick: 2,
   /** v9.18 real-time timer: a Bomber aboard counts down in real seconds (base + per stop of his trip) instead of floors.
@@ -662,7 +673,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const shopIncome = shopFloorIncome(state);
   if (shopIncome.crowd) addCoins('共乘票', shopIncome.crowd);
   if (shopIncome.meter) addCoins('长途计价器', shopIncome.meter);
-  const effectCabin = [...cabin];
+  const effectCabin = [...cabin]; const lastThefts: TheftReceipt[] = [];
   effectCabin.forEach((rider, slot) => {
     if (!rider) return;
     const controlledThief = hasNeighbour(effectCabin, slot, ['cop', 'lawyer']);
@@ -674,9 +685,10 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       case 'thief': {
         // v9.17: he picks the pockets of every adjacent rider except Officers, Lawyers, the Don and legends.
         if (controlledThief) break;
-        const victims = neighbours(slot).filter(i => { const v = effectCabin[i]; return v && v.kind !== 'parcel' && !['cop', 'lawyer', 'don'].includes(v.kind) && !isLegend(v.kind); }).length;
-        const take = ECONOMY_RULES.thiefTravel + victims * ECONOMY_RULES.thiefPerVictim;
+        const victims = neighbours(slot).map(i => ({ slot: i, coins: ECONOMY_RULES.thiefPerVictim ? pickpocketFrom(effectCabin[i]) : 0 })).filter(v => v.coins > 0);
+        const take = ECONOMY_RULES.thiefTravel + victims.reduce((n, v) => n + v.coins, 0);
         if (take) addCoins(ECONOMY_RULES.thiefPerVictim ? '小偷顺手牵羊' : '小偷', take);
+        if (victims.length) lastThefts.push({ thief: slot, victims });
         break;
       }
       case 'drunk': break;
@@ -702,12 +714,12 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     let got = rollBox(box, rng, installed);
     // Every slot full: the first such ability waits for the player to swap it in; any other is sold at once.
     if (got.ability && Object.values(installed).filter(Boolean).length - (pendingAbility ? 1 : 0) >= UPGRADE_SLOTS) {
-      if (!pendingAbility) { pendingAbility = got.ability; notes.push(`${say}能力「${UPGRADES[got.ability].name}」（安装位已满，可以替换一项）`); return 0; }
+      if (!pendingAbility) { pendingAbility = got.ability; notes.push(`${say}能力「${UPGRADES[got.ability].name}」（安装位已满，可以替换一项）`); return got; }
       got = { coins: SELL_REFUND, power: 0 };
     }
-    if (got.ability) { wonAbilities.push(got.ability); notes.push(`${say}能力「${UPGRADES[got.ability].name}」`); return 0; }
-    if (got.coins) { addCoins(label, got.coins); notes.push(`${say}${got.coins} 金币`); return got.coins; }
-    adjustEnergy(label, got.power); notes.push(`${say}${got.power} 电的电池`); return 0;
+    if (got.ability) { wonAbilities.push(got.ability); notes.push(`${say}能力「${UPGRADES[got.ability].name}」`); return got; }
+    if (got.coins) { addCoins(label, got.coins); notes.push(`${say}${got.coins} 金币`); return got; }
+    adjustEnergy(label, got.power); notes.push(`${say}${got.power} 电的电池`); return got;
   };
   {
     const before = parcelLinks(cabin);
@@ -753,8 +765,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       if (owner) return nextFloor >= owner.destination ? null : rider;
       if (nextFloor < rider.destination) return rider;
       if (rider.big === 'bottom') return null; // the upper half opens the whole box
-      const coinsWon = receive(rider, '纸箱开箱', '无人认领的纸箱开箱：');
-      lastArrivals.push({ riderId: rider.id, kind: rider.kind, slot, coins: coinsWon });
+      const got = receive(rider, '纸箱开箱', '无人认领的纸箱开箱：');
+      lastArrivals.push({ riderId: rider.id, kind: rider.kind, slot, coins: got.coins, ...(got.power ? { power: got.power } : {}), ...(got.ability ? { ability: got.ability } : {}) });
       return null;
     }
     if (nextFloor < rider.destination) return rider;
@@ -860,7 +872,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if(SHOP_TUNING.bufferGap)state={...state,bufferGapTurns:gapCharge.progress};
   state=consumeFlywheel(state,flywheel);
   const stabilized = stabilizedEnergy(state);
-  const settled: RunState = { ...state, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
+  const settled: RunState = { ...state, lastThefts, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
   // Abilities found in boxes install like a shop pick (effects such as Safety Margin apply at once).
   return wonAbilities.reduce((run, key) => previewUpgrade(run, key), settled);
 }

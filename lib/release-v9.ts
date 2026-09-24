@@ -1179,3 +1179,47 @@ export const V918_EN: ChangelogEntry = {
   ],
   watch: ['Real-time bomb seconds: try ?bomb=6 / 10 (default) / 15 and report which feels thrilling but fair.', 'Skilled players still reach about 100F; the human bot puts ordinary players near 66F, to be confirmed with more records on the current version.', 'Exit coins remain above target, but real players spend everything on power, so that target may need to be set on the human bot.'],
 };
+
+export const V9181_ZH: ChangelogEntry = {
+  version: '9.18.1', date: '2026-09-23', title: '大纸箱整卡、小偷按人偷钱并有动画、开箱小票、结束动画',
+  summary: '按试玩反馈修改：大纸箱是一整张跨两格的卡，没有中间接缝；小偷按邻座口袋偷不同的钱，每层有金币飞过去的动画；开出电或能力时小票照实显示；人物耗电带减号；“险！”改成红色“危！”；无解的补电按钮变灰；输的时候先播结束动画。',
+  changes: [
+    '大纸箱：换成一整个没有接缝的高包裹（普通、稀有、传奇三张新画），在车厢里画成一张跨上下两格的整卡，不再被切成上下两半拉伸；拖拽时影子是两格高，放置时整列一起高亮，松手飞进整列。',
+    '小偷：每层按邻座口袋偷钱——名人 4，游客、神秘人、百变人 3，大多数人 2，维修工、护士、儿童、醉汉、驱魔师、检查员、小偷 1，幽灵偷不到；每笔钱都有一枚金币从被偷的人飞向小偷，小偷头上弹出“顺手牵羊 +N”。',
+    '开箱小票：纸箱开出电时显示“+N 电”，开出能力时显示能力名，不再显示“+0 金币”。',
+    '人物卡和座位上的耗电数字前加减号（−1、−2）。',
+    '险情字幕从“险！”改为红色“危！”（英文 Danger!）。',
+    '断电警告：钱或额度不够时“补电”按钮彻底变灰；无论怎么安排都会断电时，警告框文字居中。',
+    '结束动画：断电时灯光闪烁熄灭、轿厢下坠；躁动失控时红光脉冲、车厢摇晃；炸弹爆炸时白光爆闪；约 1.7 秒后再弹出结算。',
+    '修复：窄屏布局下稀有、传奇座位的闪卡层会把名字挤到下方（被数值栏挡住）。',
+  ],
+  experiments: [
+    '试玩截图里炸弹客还显示“层数”，是因为页面仍是 v9.17.2 的缓存（实时倒计时在 v9.18 上线）；强制刷新即可看到读秒。',
+    '新试玩记录（v9.17.2，49 层断电，全程收入 558）加入校准数据，现有 7 份：真人每层 4.9 人、61% 低躁动、29% 高躁动、出商店剩约 5 金币；真人型模拟玩家中位 72 层。',
+    '验收（3,600 局）：均衡型中位 100 层，死因 断电/躁动/炸弹 28.5/69.5/2.0%，与 9.18 一致（小偷平均每位邻座仍约 2 金币）。',
+    'verify 新增 1 项（共 34 项）：名人 4 + 幽灵 0 + 儿童 1 = 5 金币并记录每一笔；开出电的小票写电量、开出能力的小票写能力。浏览器实测：金币 +4、+3、+1 从三位邻座飞向小偷并弹出“顺手牵羊 +8”；传奇大纸箱整卡占满一列；无解时补电按钮灰色且文字居中；断电先播熄灯动画再弹结算。',
+  ],
+  watch: ['大纸箱整卡在各种屏幕宽度下的排版，需要在你的大屏上再看一眼。'],
+};
+
+export const V9181_EN: ChangelogEntry = {
+  version: '9.18.1', date: '2026-09-23', title: 'One-piece crates, pocket-based pickpocketing with animation, box receipts, ending animations',
+  summary: 'From playtest feedback: a crate is one card across two seats with no seam; the Thief steals by each neighbour’s pockets with coins flying every floor; receipts show power or abilities; rider power shows a minus sign; the close-call banner is a red “Danger!”; hopeless charge buttons turn grey; a lost run plays its ending first.',
+  changes: [
+    'Crates: redrawn as one tall seamless parcel (new common, rare and legendary art) and drawn as a single card spanning the upper and lower seat instead of two stretched halves; dragging shows a two-seat ghost, placing highlights the whole column, and it lands on the column.',
+    'Thief: steals by pocket each floor — Celebrity 4; Tourist, Mystery, Shifter 3; most riders 2; Mechanic, Nurse, Child, Drifter, Warden, Inspector, Thief 1; nothing from a Ghost; each coin flies from the victim to the Thief, who shows “Pickpocket +N”.',
+    'Box receipts: a box holding power shows “+N power”, one holding an ability shows its name, instead of “+0 coins”.',
+    'Rider power on cards and seats carries a minus sign (−1, −2).',
+    'The close-call banner is now a red “Danger!” instead of “Close call!”, in both languages.',
+    'Power alert: a charge the wallet or cap cannot cover turns fully grey; when no arrangement survives, the alert text is centred.',
+    'Endings: running out of power flickers the lights out and drops the car; an agitation loss pulses red and shakes; a bomb flashes white; the result card follows about 1.7 seconds later.',
+    'Fix: in the narrow layout the foil on rare and legendary seats pushed the name down under the numbers.',
+  ],
+  experiments: [
+    'The Bomber still counted floors in the screenshots because the page was a cached v9.17.2 (the real-time timer shipped in v9.18); a hard refresh shows seconds.',
+    'The new record (v9.17.2, 49F, power, 558 earned) joins the calibration data, now 7 runs: 4.9 riders a floor, 61% low and 29% high agitation, about 5 coins kept after shops; the human bot’s median is 72F.',
+    'Acceptance (3,600 runs): balanced median 100F, deaths power / agitation / bomb 28.5 / 69.5 / 2.0%, matching 9.18 (the Thief still averages about 2 coins a neighbour).',
+    'verify: one new check (34 in all): Celebrity 4 + Ghost 0 + Child 1 = 5 coins with each theft recorded; power and ability receipts. Browser: coins +4, +3, +1 fly from three neighbours to the Thief and “Pickpocket +8” pops; a legendary crate fills its column as one card; a hopeless alert greys its button and centres its text; a power loss plays the lights-out ending before the result card.',
+  ],
+  watch: ['The crate card’s layout at every screen width, to be checked again on a large screen.'],
+};

@@ -23,6 +23,16 @@ export function flyPortrait(from: Element | null, to: Element | null, src: strin
     .then(() => animate(el, { opacity: 0, scale: scale * 1.08 }, { type: 'spring', stiffness: 500, damping: 30 })).then(() => el.remove());
 }
 
+/** v9.18.1 pickpocket: a coin (with its amount) hops from one seat to another. */
+export function flyCoin(from: Element | null, to: Element | null, label: string, delay = 0) {
+  if (!from || !to) return;
+  const a = centre(from), b = centre(to), el = layer('juice-coin'); el.textContent = label;
+  el.style.left = `${a.x}px`; el.style.top = `${a.y}px`;
+  if (reduced()) { void animate(el, { opacity: [0, 1, 0] }, { duration: .9, delay }).then(() => el.remove()); return; }
+  void animate(el, { x: [0, (b.x - a.x) * .5, b.x - a.x], y: [0, (b.y - a.y) * .5 - 46, b.y - a.y], scale: [.6, 1.15, .8], opacity: [0, 1, 1] }, { duration: .62, delay, ease: [.3, .7, .3, 1] })
+    .then(() => animate(el, { opacity: 0, scale: .4 }, { duration: .18 })).then(() => el.remove());
+}
+
 /** A burst of particles at a point (gold for money, green for links, blue for calm, red for trouble). */
 export function burst(x: number, y: number, tone: 'gold' | 'green' | 'blue' | 'red' = 'gold', count = 14, spread = 70) {
   if (reduced()) return;

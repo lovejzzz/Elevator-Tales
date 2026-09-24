@@ -587,4 +587,17 @@ console.log('PASS hidden box contents, ability finds and swaps');
   E.BOMB_RULES.realtime = false;
 }
 console.log('PASS real-time Bomber timer');
-console.log(JSON.stringify({ version: 'v9', checks: 33, passed: true }));
+// v9.18.1 pickpocketing by pocket, theft receipts for the animation, and box receipts that name power or an ability.
+{
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 29, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  const picked = E.resolveFloor(run(30, [R('celebrity', 'c', 34), R('thief', 't', 34), R('ghost', 'g', 34), null, R('child', 'k', 34)]), fixed());
+  assert.equal(lines(picked, 'lastEarnings')['小偷顺手牵羊'], 4 + 0 + 1, 'Celebrity 4, Ghost 0, Child 1');
+  assert.deepEqual(picked.lastThefts, [{ thief: 1, victims: [{ slot: 0, coins: 4 }, { slot: 4, coins: 1 }] }]);
+  assert.equal(E.pickpocketFrom(R('cop', 'o', 34)), 0);
+  const power = E.resolveFloor(run(30, [R('parcel', 'q', 31)], { energy: 30 }), fixed(0.9));
+  assert.ok(power.lastArrivals?.[0].power && power.lastArrivals[0].coins === 0, 'a power box says how much power, not +0 coins');
+  const ability = E.resolveFloor(run(30, [R('parcel', 'q', 31, { tier: 'legendary' })], { energy: 30 }), fixed(0.1));
+  assert.ok(ability.lastArrivals?.[0].ability, 'an ability box names the ability');
+}
+console.log('PASS pickpocketing by pocket and box receipts');
+console.log(JSON.stringify({ version: 'v9', checks: 34, passed: true }));

@@ -1,6 +1,11 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.18**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.18.1**. Publication status is tracked separately from the source version.
+
+## v9.18.1 — 2026-09-23 — One-piece crates, pickpocket animation, endings / 大纸箱整卡、小偷动画、结束动画
+
+- Crates redrawn seamless and shown as one two-seat card (tall drag ghost, column highlight). Thief steals by pocket (Celebrity 4 … Ghost 0) with coins flying each floor. Box receipts show power/ability. Minus sign on rider power; red "危！/Danger!" banner; hopeless charge button grey, alert centred; ending animations per cause before the result card. Fix: foil canvas pushing seat names down in the narrow layout.
+- Calibration data now 7 real runs (human bot median 72F); acceptance unchanged from 9.18; verify 34 checks.
 
 ## v9.18 — 2026-09-23 — Real-time bomb timers, late pressure rework, calibrated simulator / 炸弹实时倒计时、后期压力、模拟器校准
 

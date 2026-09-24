@@ -4,7 +4,7 @@
 import { PASSENGERS, isLegend, passengerCategory, type PassengerKind } from './game-data';
 import { riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
 import { hasNeighbour, neighbourCount, type Rider, type RunState } from './game-engine';
-import { ECONOMY_RULES, CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
+import { CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
 import { RISK_PARTNERS } from './shift-rules';
 import { LEGEND_RULES } from './legends';
 import type { GameLocale } from './i18n';
@@ -48,7 +48,7 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     case 'mechanic': return rider.repairDone ? { line: L(`检修完成 · ${REPAIR_DURATION} 层省电`, `Repaired · ${REPAIR_DURATION} floors cheaper`) } : { line: L(`低躁动检修 → ${REPAIR_DURATION} 层运转 −1`, `Calm repair → motor −1 for ${REPAIR_DURATION}`), progress: `${rider.repairProgress ?? 0}/${REPAIR_WORK}` };
     case 'lover': return { line: L('恋人相邻：基价翻倍', 'Beside a Lover: fare ×2') };
     case 'musician': return { line: L('躁动拉向中档 · 中档 +2/层', 'Pulls agitation to medium · +2/floor there') };
-    case 'thief': return { line: L(`没人管：每位邻座 +${ECONOMY_RULES.thiefPerVictim} 币/层 · +1 躁动 · 挨纸箱就偷走`, `Unguarded: +${ECONOMY_RULES.thiefPerVictim} per neighbour/floor · +1 agitation · steals boxes`) };
+    case 'thief': return { line: L('没人管：每层偷邻座 1–4 币 · +1 躁动 · 挨纸箱就偷走', 'Unguarded: steals 1–4 per neighbour a floor · +1 agitation · steals boxes') };
     case 'cop': return { line: L('管住小偷 · 锁住炸弹', 'Controls Thieves · locks Bombs') };
     case 'lawyer': return { line: L('管住小偷 · 红线少扣 2 币', 'Controls Thieves · red links −2 coin loss') };
     case 'drunk': return { line: L('高躁动到站：基价翻倍', 'Arrives at high agitation: fare ×2') };

@@ -65,7 +65,7 @@ const shopFloor = (floor: number) => E.nextShopFloor(floor);
 const futureMotor = (state: RunState, floor: number) => boxedMotorCost(motorCost(floor), E.boxOf(state), floor);
 
 function transitIncome(r: Rider, cabin: Array<Rider | null>, slot: number) {
-  if (r.kind === 'thief' && !E.hasNeighbour(cabin, slot, ['cop', 'lawyer'])) return ECONOMY_RULES.thiefTravel + ECONOMY_RULES.thiefPerVictim * E.neighbours(slot).filter(i => { const v = cabin[i]; return v && v.kind !== 'parcel' && !['cop', 'lawyer', 'don'].includes(v.kind) && !isLegend(v.kind); }).length;
+  if (r.kind === 'thief' && !E.hasNeighbour(cabin, slot, ['cop', 'lawyer'])) return ECONOMY_RULES.thiefTravel + E.neighbours(slot).reduce((n, i) => n + E.pickpocketFrom(cabin[i]), 0);
   if (r.kind === 'celebrity' && E.neighbourCount(cabin, slot) === 1) return 2;
   if (r.kind === 'don') return 3;
   return 0;

@@ -3036,3 +3036,46 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 .elevator-stage.is-shaking { animation: stage-shake .7s cubic-bezier(.36,.07,.19,.97); }
 @keyframes stage-shake { 10%,90% { transform: translate(-2px,1px); } 20%,80% { transform: translate(4px,-2px); } 30%,50%,70% { transform: translate(-7px,3px); } 40%,60% { transform: translate(7px,-3px); } }
 @media (prefers-reduced-motion: reduce) { .fuse.fuse-critical, .elevator-stage.is-shaking { animation: none; } }
+
+/* v9.18.1 “危！” danger banner title in red (was a pale “险！”). */
+.juice-banner-red strong { color:#ff3b30; text-shadow:0 0 18px #ff3b3099, 0 2px 0 #3a0703; }
+
+/* v9.18.1 power alert: a charge the wallet or sector cap cannot cover is plainly grey; with no way out at all the
+   whole box centres its text. */
+.power-alert button:disabled { background:#2b2f2c !important; color:#7d847f !important; border-color:#4a4f4b !important; box-shadow:none !important; filter:grayscale(1); cursor:not-allowed; opacity:.75; }
+.power-alert.is-hopeless { text-align:center; }
+.power-alert.is-hopeless p, .power-alert.is-hopeless .power-alert-actions, .power-alert.is-hopeless .power-alert-rescue { justify-content:center; text-align:center; }
+
+/* v9.18.1 pickpocket coin hopping from a victim to the Thief. */
+.juice-coin { position:fixed; z-index:60; pointer-events:none; transform:translate(-50%,-50%); padding:3px 8px; border-radius:999px; background:radial-gradient(circle at 35% 30%,#ffe9a8,#e0a93a 55%,#8a5a12); color:#2a1703; font:800 13px/1 var(--font-mono, monospace); box-shadow:0 0 12px #f5c55a99; }
+
+/* v9.18.1 crate: one card over both seats of its column (the two seats underneath stay as click and drop targets). */
+.crate-grid { z-index:7; pointer-events:none; }
+.crate-grid .crate-info { pointer-events:auto; }
+.standing-slot.seat-crate::before, .standing-slot.seat-crate::after { display:none !important; }
+.crate-grid .crate-card { pointer-events:none; }
+.crate-grid .crate-card .rider-visual { animation:none; }
+.crate-card .crate-art { display:block; }
+.crate-card .crate-image { position:absolute; inset:0; background-repeat:no-repeat; background-position:center 55%; background-size:contain; }
+.standing-slot.seat-crate { background:transparent !important; border-color:transparent !important; box-shadow:none !important; }
+.standing-slot.seat-crate .crate-half { display:block; position:absolute; inset:0; }
+
+/* v9.18.1 endings, played before the result card. */
+.elevator-stage.ending-power::after { content:''; position:absolute; inset:0; z-index:40; pointer-events:none; background:#000; animation:ending-power 1.6s ease-in forwards; }
+.elevator-stage.ending-power { animation:ending-drop 1.6s cubic-bezier(.5,0,.8,.4) forwards; }
+@keyframes ending-power { 0% { opacity:0; } 12% { opacity:.7; } 18% { opacity:.1; } 30% { opacity:.8; } 36% { opacity:.25; } 60% { opacity:.85; } 100% { opacity:.92; } }
+@keyframes ending-drop { 0%,55% { transform:translateY(0); } 70% { transform:translateY(10px); } 100% { transform:translateY(18px); } }
+.elevator-stage.ending-agitation::after { content:''; position:absolute; inset:0; z-index:40; pointer-events:none; background:radial-gradient(ellipse at center,transparent 25%,#d11a0a 100%); animation:ending-riot .4s ease-in-out 4 alternate; }
+.elevator-stage.ending-agitation { animation:stage-shake .45s cubic-bezier(.36,.07,.19,.97) 3; }
+@keyframes ending-riot { from { opacity:.2; } to { opacity:.85; } }
+.elevator-stage.ending-bomb::after { content:''; position:absolute; inset:0; z-index:40; pointer-events:none; background:radial-gradient(circle at 50% 55%,#fff 0%,#ffd28a 22%,#ff5a1f 45%,#2a0500 80%); animation:ending-bomb 1.6s ease-out forwards; }
+@keyframes ending-bomb { 0% { opacity:0; transform:scale(.3); } 12% { opacity:1; transform:scale(1.1); } 40% { opacity:.85; } 100% { opacity:.55; transform:scale(1.2); } }
+@media (prefers-reduced-motion: reduce) { .elevator-stage.ending-power, .elevator-stage.ending-agitation { animation:none; } .elevator-stage.ending-power::after, .elevator-stage.ending-agitation::after, .elevator-stage.ending-bomb::after { animation:none; opacity:.6; } }
+
+/* v9.18.1 fix: the foil canvas on rare/legendary seats is an overlay, never a grid row (in the narrow layout the seat
+   is a grid and the canvas pushed the name ~80px down). */
+.rider-visual > .card-shader { position:absolute !important; inset:0; width:100%; height:100%; grid-area:1 / 1 / -1 / -1; pointer-events:none; }
+.crate-card .rider-visual { display:flex !important; flex-direction:column; align-items:stretch; }
+.crate-card .crate-art { position:absolute !important; inset:0; z-index:0 !important; }
+.crate-card .seat-metrics { margin-top:auto; }
+.crate-card .seat-overlay { position:absolute; left:0; right:0; bottom:44px; display:flex; justify-content:center; }
