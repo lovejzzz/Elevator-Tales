@@ -48,7 +48,7 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     case 'mechanic': return rider.repairDone ? { line: L(`检修完成 · ${REPAIR_DURATION} 层省电`, `Repaired · ${REPAIR_DURATION} floors cheaper`) } : { line: L(`低躁动检修 → ${REPAIR_DURATION} 层运转 −1`, `Calm repair → motor −1 for ${REPAIR_DURATION}`), progress: `${rider.repairProgress ?? 0}/${REPAIR_WORK}` };
     case 'lover': return { line: L('恋人相邻：基价翻倍', 'Beside a Lover: fare ×2') };
     case 'musician': return { line: L('躁动拉向中档 · 中档 +2币/层', 'Pulls agitation to medium · +2 coins/floor there') };
-    case 'thief': return { line: L('没人管：每层偷邻座 1–4 币 · +1 躁动 · 挨纸箱就偷走', 'Unguarded: steals 1–4 per neighbour a floor · +1 agitation · steals boxes') };
+    case 'thief': return { line: L('没人管：每层偷邻座 1–4 币 · +1 躁动 · 挨纸箱就偷走', 'Unguarded: steals 1–4 per neighbor a floor · +1 agitation · steals boxes') };
     case 'cop': return { line: L('管住小偷 · 锁住炸弹', 'Controls Thieves · locks Bombs') };
     case 'lawyer': return { line: L('管住小偷 · 红线少扣 2 币', 'Controls Thieves · red links −2 coin loss') };
     case 'drunk': return { line: L('高躁动到站：基价翻倍', 'Arrives at high agitation: fare ×2') };
@@ -70,7 +70,7 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     case 'matron': return { line: L('全车 −1 躁动/层 · 安静多赚', 'Cabin −1 agitation/floor · calm pays') };
     case 'nightingale': return { line: L(`中躁动 +${LEGEND_RULES.nightingaleMediumCoins}币/层`, `+${LEGEND_RULES.nightingaleMediumCoins} coins/floor at medium`) };
     case 'medium': return { line: L('幽灵提前出现 · 身边幽灵受控', 'Ghosts come early · controls adjacent') };
-    case 'tycoon': return { line: L(`预付 ${LEGEND_RULES.tycoonPrepay}币 · 安静送达再付 ${LEGEND_RULES.tycoonBalance}币 · 邻座超过1人 +1躁动`, `Prepays ${LEGEND_RULES.tycoonPrepay} coins · ${LEGEND_RULES.tycoonBalance} more if calm · 2+ neighbours: +1 agitation`) };
+    case 'tycoon': return { line: L(`预付 ${LEGEND_RULES.tycoonPrepay}币 · 安静送达再付 ${LEGEND_RULES.tycoonBalance}币 · 邻座超过1人 +1躁动`, `Prepays ${LEGEND_RULES.tycoonPrepay} coins · ${LEGEND_RULES.tycoonBalance} more if calm · 2+ neighbors: +1 agitation`) };
     case 'stranger': return { line: L('每层随机小惊喜', 'A small surprise every floor') };
   }
 }

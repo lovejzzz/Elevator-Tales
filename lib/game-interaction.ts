@@ -2,7 +2,7 @@ import { riskPartnerships } from './shift-rules';
 import { bondStatus, conflictLinks, riderProfile, type ConflictEffect } from './rider-profile';
 import { ADJACENT, PASSENGERS, type PassengerKind } from './game-data';
 import { hasNeighbour, isBigParcel, seatRider, parcelLayoutOk, parcelLinks, isFreeReseat, neighbourCount, oldMovesRemaining, riderAgitation, type Rider, type RunState } from './game-engine';
-import { agitationBand } from './balance-v832';
+import { agitationBand, crowdingThreshold, V9_AGITATION } from './balance-v832';
 
 const RED_SHORT: Record<ConflictEffect,string> = { agitation:'+1躁动/层', energy:'+1耗电/层', coins:'−2金币/层', overload:'两人耗电×2', gamble:'两人耗电×2' };
 
@@ -132,7 +132,12 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
   // Includes neighbours this placement newly upsets (e.g. a Celebrity now crowded).
   const sitBefore=new Set(situationalAgitation(state,state.cabin).map(x=>x.key));
   situationalAgitation(state,cabin).filter(x=>!sitBefore.has(x.key)).forEach(x=>warnings.push(x.text));
-  if(warnings.length&&!newlyEyed){message+=` 注意：${warnings.join('；')}。`;celebrate=false;}
+  // Filling the cabin to the crowding line adds cabin-wide agitation every floor.
+  const crowdLine=crowdingThreshold(state.floor+1);
+  if(source<0&&cabin.filter(Boolean).length>=crowdLine&&state.cabin.filter(Boolean).length<crowdLine)warnings.push(`车厢坐满 +${V9_AGITATION.crowding}躁动/层`);
+  // Two Couriers contesting one box used to print the same line twice; merge repeats into “×2”.
+  const merged=[...new Set(warnings)].map(w=>{const n=warnings.filter(x=>x===w).length;return n>1?`${w} ×${n}`:w;});
+  if(merged.length&&!newlyEyed){message+=` 注意：${merged.join('；')}。`;celebrate=false;}
   const slots = new Set(source >= 0 ? [source, target] : [target]);
   // Only the moved rider reacts; a new link announces itself by drawing in, so seated partners do not flash.
   if(source>=0&&oldMovesUsed>(state.oldMovesUsed??Number(state.swapped)))message+=` 旧乘客换位剩余${Math.max(0,1+Number(Boolean(state.upgrades.rails))-oldMovesUsed)}次。`;

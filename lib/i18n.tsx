@@ -66,8 +66,8 @@ const exactPairs: Array<[string, string]> = [
   // Passenger names.
   ['通勤者', 'Commuter'], ['游客', 'Tourist'], ['快递员', 'Courier'], ['维修工', 'Mechanic'],
   ['恋人', 'Lover'], ['音乐家', 'Musician'], ['小偷', 'Thief'], ['警察', 'Officer'],
-  ['律师', 'Lawyer'], ['醉汉', 'Drunk'], ['护士', 'Nurse'], ['儿童', 'Child'],
-  ['幽灵', 'Ghost'], ['驱魔师', 'Exorcist'], ['教练', 'Coach'], ['名人', 'Celebrity'],
+  ['律师', 'Counsel'], ['醉汉', 'Drifter'], ['护士', 'Nurse'], ['儿童', 'Child'],
+  ['幽灵', 'Ghost'], ['驱魔师', 'Warden'], ['教练', 'Coach'], ['名人', 'Celebrity'],
   ['检查员', 'Inspector'], ['炸弹客', 'Bomb Carrier'], ['神秘人', 'Mystery'], ['百变人', 'Shifter'], ['复制人', 'Mimic'],
 
   // Compact candidate-card grammar.
@@ -344,7 +344,7 @@ const exactPairs: Array<[string, string]> = [
   ['请竖屏游玩', 'Please rotate to portrait'],
   ['这个横屏尺寸太矮，转回竖屏即可继续；本班进度保留。', 'This landscape viewport is too short. Rotate back to portrait to continue; your run is preserved.'],
   ['乘客档案', 'Passenger Archive'], ['玩法说明', 'How to Play'], ['关闭音乐', 'Mute music'], ['打开音乐', 'Enable music'], ['关闭音效', 'Mute effects'], ['打开音效', 'Enable effects'], ['关闭声音', 'Mute sound'], ['打开声音', 'Enable sound'],
-  ['临时夜班', 'Temporary Shift'], ['无尽夜班', 'Endless Shift'], ['午夜启程', 'Midnight Departure'], ['无尽班次', 'Endless Shift'], ['电量', 'Power'], ['躁动', 'Agitation'], ['余额', 'Balance'],
+  ['临时夜班', 'Temporary Shift'], ['无尽夜班', 'Endless Shift'], ['午夜启程', 'Midnight Departure'], ['无尽班次', 'Endless Shift'], ['电量', 'Power'], ['躁动', 'Agitation'], ['余额', 'Coins'],
   ['本次变化明细', 'Decision details'], ['电梯座舱', 'Elevator cabin'], ['绿实线协作 · 红虚线冲突', 'Solid green: cooperation · dashed red: conflict'],
   ['绿实线协作 · 红虚线显示代价', 'Solid green: cooperation · dashed red: cost'],
   ['绿线发奖励；红线图标直接显示每层代价。两者分别结算，多条都可叠加。', 'Green links pay rewards; red-link icons show their per-floor cost. They resolve independently, and multiple links stack.'],
@@ -375,7 +375,7 @@ const exactPairs: Array<[string, string]> = [
   ['选人安排站位', 'Choose riders and positions'], ['绿线协作 · 红线冲突', 'Green cooperation · red conflict'], ['权衡代价后上行', 'Weigh the cost, then ascend'],
   ['开始午夜班次', 'Start the Midnight Shift'], ['先阅读值班手册', 'Read the shift manual first'], ['值班手册', 'Shift Manual'],
   ['楼层就是成绩；金币是购买升级的预算。没有最后一层。', 'Your floor is your score. Coins fund upgrades. There is no final floor.'],
-  ['拖拽安排', 'Arrange by drag'], ['还剩几站', 'Floors remaining'], ['三个值，六个站位', 'Three stats, six positions'], ['人数与躁动', 'Crowding and agitation'],
+  ['拖拽安排', 'Arrange by drag'], ['还剩几站', 'Stops remaining'], ['三个值，六个站位', 'Three stats, six positions'], ['人数与躁动', 'Crowding and agitation'],
   ['人物直接影响躁动', 'Riders directly affect agitation'], ['十层补给', 'Supply every ten floors'], ['协作、冲突与堆叠', 'Cooperation, conflict, and stacking'],
   ['到层请离', 'Dismiss on a floor'], ['空驶休整', 'Empty-car rest'], ['先准备，再闯高压段', 'Prepare before pressure waves'], ['默契契约 · 协作送达', 'Cooperation Pact · linked arrivals'],
   ['人多、等得久，就会躁动。', 'Crowds and long waits raise agitation.'], ['会增加躁动', 'Raises agitation'], ['轿厢拥挤', 'Cabin crowding'], ['班次压力 · 提前准备', 'Shift pressure · prepare ahead'],
@@ -504,7 +504,7 @@ const phrasePairs: Array<[string, string]> = [
   ['拥挤 +', 'Crowding +'], ['宽松 −1 / 站', 'Spacious −1/floor'], [' 人：不拥挤', ' riders: no crowding'], [' · 疲劳 +', ' · fatigue +'],
   ['空驶休整剩余 ', 'Empty-car rests remaining: '], [' 次，查看规则', ' · view rules'], ['前往 ', 'To '],
   ['金币增加 ', 'Coins gained '], ['电量 ', 'Power '], ['躁动 ', 'Agitation '], ['到站收益', 'arrival fare'], ['每站耗电', 'power/floor'], ['下一站躁动', 'next-floor agitation'],
-  [' 号位，', ' position, '], ['号空位', ' empty position'], ['，可联动', ', link available'], ['还剩 ', ''], [' 站', ' floors'], ['炸弹倒计时 ', 'Bomb timer '],
+  [' 号位，', ' position, '], ['号空位', ' empty position'], ['，可联动', ', link available'], ['还剩 ', ''], [' 站', ' stops'], ['炸弹倒计时 ', 'Bomb timer '],
   ['复制 ', 'Copied '], [' 项', ' fields'], ['激励 ', 'Coaching '], [' 人', ' riders'], ['协作到站 +', 'Linked arrival +'], ['耗电 ', 'Power '], [' · 躁动 +', ' · agitation +'],
   ['查看', 'View '], ['详情', ' details'], ['规则', ' rules'], ['查看第 ', 'View #'], [' 位', ''], ['上车可联动 · ', 'Board to link · '], ['已选', 'Selected '], [' · 点下方空位', ' · choose a position below'],
   ['到站每邻', 'Cooperates with '], ['每条协作连接奖励 ', 'Reward per cooperation link: '], [' 金币', ' coins'], ['，当前 ', '; '], [' 条生效', ' active'], ['；送达减少 ', '; arrival reduces '],
@@ -535,24 +535,31 @@ const phrases = [...V9_PAIRS, ...V837_PAIRS, ...V835_PAIRS, ...V832_PAIRS, ...ph
 
 export function translateGameText(value: string, locale: GameLocale): string {
   if (locale === 'zh') return value;
-  const normalizePunctuation = (text: string) => text.replaceAll('。', '.').replaceAll('；', ';').replaceAll('，', ',').replaceAll('：', ':');
-  if (!/[\u3400-\u9fff]/u.test(value)) return normalizePunctuation(value);
+  const normalizePunctuation = (text: string) => text.replaceAll('。', '.').replaceAll('；', ';').replaceAll('，', ',').replaceAll('：', ':').replaceAll('、', ', ');
+  // v9.18.4: older phrase tables used Drunk / Lawyer / Exorcist; the cards call them Drifter / Counsel / Warden.
+  const canon = (text: string) => text.replace(/([Nn])eighbour/g, '$1eighbor').replace(/\bDrunk(s?)\b/g, 'Drifter$1').replace(/\bLawyers?\b/g, 'Counsel').replace(/\bExorcist(s?)\b/g, 'Warden$1');
+  if (!/[\u3400-\u9fff]/u.test(value)) return canon(normalizePunctuation(value));
   const leading = value.match(/^\s*/)?.[0] ?? '';
   const trailing = value.match(/\s*$/)?.[0] ?? '';
   const end = trailing.length ? value.length - trailing.length : value.length;
   const core = value.slice(leading.length, end);
   const direct = exact.get(core);
-  if (direct) return `${leading}${direct}${trailing}`;
+  if (direct) return `${leading}${canon(direct)}${trailing}`;
+  // v9.18.4: repeated floor notes are merged as “note ×2” (and joined with “ · ”); translate each note without its count.
+  // Only for known notes (exact phrases), so counted labels such as “协作邻座 ×1 · …” keep their own patterns.
+  const counted = (part: string) => { const m = part.match(/^(.*?) ×(\d+)$/u); return Boolean(m && exact.has(m[1])); };
+  if (core.split(' · ').some(counted) && core.split(' · ').every(part => counted(part) || exact.has(part))) return `${leading}${core.split(' · ').map(part => { const m = part.match(/^(.*?) ×(\d+)$/u); return m && exact.has(m[1]) ? `${translateGameText(m[1], 'en')} ×${m[2]}` : translateGameText(part, 'en'); }).join(' · ')}${trailing}`;
   let translated = value
     // v9.18.4 placement warnings appended after the main message.
     .replace(/^(.+?) 注意：(.+)。$/u, (_m, head: string, body: string) => `${translateGameText(head, 'en')} Heads-up: ${body.split('；').map(part => part
       .replace(/^与(.+?)红线 (.+)$/u, (_p, who: string, effect: string) => `red link with the ${translateGameText(who, 'en')} (${({ '+1躁动/层': '+1 agitation/floor', '+1耗电/层': '+1 power/floor', '−2金币/层': '−2 coins/floor', '两人耗电×2': 'both use ×2 power' } as Record<string, string>)[effect] ?? effect})`)
-      .replace(/^(.+?) \+(\d+)躁动\/层$/u, (_p, why: string, n: string) => `${translateGameText(why, 'en')} +${n} agitation/floor`)).join('; ')}.`)
+      .replace(/^(.+?) \+(\d+)躁动\/层( ×\d+)?$/u, (_p, why: string, n: string, times?: string) => `${translateGameText(why, 'en')} +${n} agitation/floor${times ?? ''}`)).join('; ')}.`)
     .replace(/^(.+?)已站到 (\d+) 号位。$/u, (_m, who: string, n: string) => `${translateGameText(who, 'en')} takes seat ${n}.`)
     .replace(/^安抚 (\d+) 人 · 各 −1躁动\/层$/u, (_m, n: string) => `Soothing ${n} · −1 agitation each/floor`)
     .replace(/^加急安抚 −1 躁动，支付 (\d+) 金币；下一点更贵。$/u, 'Overtime calming −1 agitation for $1 coins; the next point costs more.')
     .replace(/^调度印章 · 本段还剩 (\d+) 次 · 选中本层新上车的人改路程$/u, 'Dispatch stamp · $1 left this sector · select a rider who boarded this floor to change their trip')
     .replace(/^留到下一批 · 调度剩 (\d+) 次$/u, 'Hold for the next batch · $1 dispatch left')
+    .replace(/^调度完成：(提前|延后) 1 站，车费与倒计时不变，撤回不退次数。$/u, (_m, way: string) => `Dispatched: ${way === '提前' ? 'one stop earlier' : 'one stop later'}; fare and fuse unchanged, and undoing does not refund the use.`)
     // v9.18.3 seat labels with coin units, and the incident note.
     .replace(/^红线 −2金币$/u, 'Red link −2 coins')
     .replace(/^长途送货 (\d+) 站$/u, 'Long route: $1 stops')
@@ -572,7 +579,8 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^(\d+)层起夜深人躁：每三层\+1躁动，(\d+)层起每两层，(\d+)层起每层(.*?)(；有乘客到站的那一层少1)?。$/u, (_m, a: string, b: string, c: string, rest: string, arr?: string) => `Late-night unrest from floor ${a}: +1 agitation every third floor, every second floor from ${b}, every floor from ${c}${rest.replace(/，(\d+)层起每层\+(\d+)/gu, ', +$2 per floor from $1')}${arr ? '; one less on any floor where a rider gets off' : ''}.`)
     .replace(/^(\d+)位邻座 · 到站\+(\d+)币$/u, (_m, n: string, c: string) => `${n} ${n === '1' ? 'neighbor' : 'neighbors'} · +${c} on arrival`)
     .replace(/^遇见过的乘客会录入档案；第一次把人送到站，就能读到他的故事。最高抵达 (\d+)F · 故事 (\d+)\/(\d+)。$/u, 'Riders you meet join the archive; deliver someone once to read their story. Best floor $1F · Stories $2/$3.')
-    .replace(/你带着 (\d+) 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 20 电。/u, 'You left with $1 coins: when power runs short, use in-transit charging in the power panel, up to 20 per ten floors.')
+    .replace(/你带着 (\d+) 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 (\d+) 电。/u, 'You left with $1 coins: when power runs short, use in-transit charging in the power panel, up to $2 per ten floors.')
+    .replace(/本段途中补电已用满（每十层 (\d+) 电）：离店前要充够到下个商店的电量，配电箱升级别挤掉充电的钱。/u, 'In-transit charging for this sector was used up ($1 per ten floors): leave each shop with enough power for the next one, and do not let power-box upgrades eat the charging money.')
     .replace(/^运转：(.+)。每十层可维修，人物耗电另计。$/u, (_m, body: string) => `Motor: ${body
       .replace(/(\d+)层起每(\d+)层\+1电（(\d+)层(\d+)电）/gu, 'from floor $1, +1 every $2 floors (floor $3: $4)')
       .replace(/(\d+)–(\d+)层(\d+)电/gu, 'floors $1–$2: $3')
@@ -690,6 +698,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
   for (const [source, target] of phrases) translated = translated.replaceAll(source, target);
   // Labels built as name + 到站/耗电 translate to run-together words ("MechanicArrival"); separate them.
   translated = translated.replace(/([a-z])(Arrival|Power|Agitation)\b/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`);
+  translated = canon(translated);
   // A Chinese full stop has no following space; after translation, sentences would run together ("+2.Late").
   return normalizePunctuation(translated).replace(/([0-9a-z)])\.(?=[A-Z])/g, '$1. ');
 }

@@ -681,4 +681,17 @@ console.log('PASS locked Bomber: timer stops, defusal bonus drains');
   assert.ok(E.dispatchRemaining({ ...run(30, []), dispatchSector: 3, dispatchCount: 1 }) === 1 && E.dispatchRemaining(run(30, [])) === 2, 'Dispatch uses left per sector');
 }
 console.log('PASS overtime calming price ladder, placement warnings, Dispatch uses');
-console.log(JSON.stringify({ version: 'v9', checks: 38, passed: true }));
+// v9.18.5: playtests 6–10 — crowding warning, merged notes, fixed engine messages all have English, charge default puts power first.
+{
+  const R = (kind: PassengerKind, id: string, dest: number): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 30, fareBonus: 0, stash: 0, volatile: false });
+  const five = run(30, [R('commuter', 'a', 34), R('commuter', 'b', 34), R('commuter', 'c', 34), R('commuter', 'd', 34), R('commuter', 'e', 34), null]);
+  const sixth = planPlacement(five, R('commuter', 'f', 33), 5);
+  assert.ok(sixth.ok && /车厢坐满 \+1躁动\/层/.test(sixth.next.message), 'filling the cabin to the crowding line is announced');
+  const src = readFileSync('lib/game-engine.ts', 'utf8') + readFileSync('lib/game-interaction.ts', 'utf8');
+  const leaks = [...src.matchAll(/(?:notes\.(?:push|unshift)|message:|message=|stressReasons\.push|return reject)\(?\s*'([^'\n]*[\u3400-\u9fff][^'\n]*)'/g)].map(m => m[1]).filter(text => /[\u3400-\u9fff]/.test(translateGameText(text, 'en')));
+  assert.deepEqual(leaks, [], 'every fixed engine message has an English translation');
+  assert.equal(translateGameText('幽灵受控，不再延误邻座 ×2', 'en'), 'Ghost under control: no more delays for neighbors ×2', 'merged notes translate with their count');
+  assert.ok(!/Drunk|Lawyer|Exorcist|neighbour/.test(translateGameText('醉汉安抚 · 律师 · 驱魔师 · 教练邻座 2 位（+100%）', 'en')), 'English uses the card names and US spelling');
+}
+console.log('PASS crowding warning, merged notes, English coverage of engine messages');
+console.log(JSON.stringify({ version: 'v9', checks: 39, passed: true }));

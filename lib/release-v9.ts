@@ -1377,3 +1377,51 @@ export const V9184_EN: ChangelogEntry = {
   ],
   watch: ['Whether overtime calming makes skilled late games too long (the simulator never uses it).', 'Whether placement warnings are too long or too frequent.', 'The 5-level power-box cap versus power needs after 91F (about 119, cap 90–110) still make the late game feel decided.'],
 };
+
+export const V9185_ZH: ChangelogEntry = {
+  version: '9.18.5', date: '2026-09-24', title: '十局试玩收尾：英文界面、手机布局、充电优先、更多放人提示',
+  summary: '第 6–10 局分别在英文界面、手机竖屏、每日班次和两局长局里试玩，这一版修掉了其中发现的问题：英文角色名统一、手机上名字不再断行、钱不够时商店先保证电量、升级配电箱前提醒先充电、车厢坐满和邻座被挤都会提示，结束建议写得更准。',
+  changes: [
+    '商店充电：默认充电目标先保证充到下一段所需的电量，安抚预留只从充完之后剩下的钱里扣（之前钱少时会默认充 0 电，钱又花在安抚上，带着很少的电离店）。',
+    '商店配电箱：如果升级后剩下的钱不够充到下一段所需电量，配电箱区写“先充电：升级后只剩 X 币，充到下段约需的 N 电要 Y 币。”',
+    '放人提示：放下第 6 位乘客导致车厢坐满时提示“注意：车厢坐满 +1躁动/层”；同一句提示重复时合并成“… ×2”。',
+    '结束说明：断电时按真实上限写途中补电（蓄电满级时每十层 10 电），这一段已经用满时改为提醒离店前充够电；躁动失控时列出所有并列最大的来源（最多 3 个），并挑最能操作的一条给建议，新增快递员和大亨的建议。',
+    '紧急维修：改为“最低抢救只降到上限以下1点；想再降，用下方的‘安抚’（正常价格，计入本段额度）”。之前写“不可继续购买舒缓”，会让人以为抢救后什么都做不了。',
+    '调度印章：改路程后提示“调度完成：提前 1 站……”（之前沿用退役能力的“改签完成”）。',
+    '英文界面：角色名统一为卡片上的 Drifter、Counsel、Warden（之前句子里还有 Drunk、Lawyer、Exorcist）；钱包标签改为“Coins”，不再截成“Balan”；±1 写“coin”；座位写“stops”；统一美式拼写 neighbor；顿号转成逗号；补齐“幽灵受控”“幽灵拖延邻座”“手动调节已使用”三句的英文。',
+    '手机竖屏：座位上的名字不再断成两行；楼层地名牌移到电梯左上角，不再压在上排中间的名字后面；商店顶部“剩余电量”不换行；到站后自动滚回候客卡之前，先清掉还没消失的飘字，不再落到候客卡上。',
+    '电脑商店：能力位已满时，“能力位已满”不再断行。',
+    '同一层里相同的楼层提示（例如两只受控幽灵）合并成“… ×2”。',
+  ],
+  experiments: [
+    'AI 浏览器试玩第 6–10 局：57 层电量（英文界面，谨慎规则）、48 层电量（手机 375×812，谨慎规则）、92 层电量（每日班次，与第 3 局同一套乘客）、106 层躁动（改进规则）、111 层躁动（灵媒 + 幽灵，80 层后手动；十局最高）。每局笔记和修改记录在 docs/playtests/ai-playtest-notes.md，文末有十局总结。',
+    '实战验证 v9.18.4：调度印章两种用法（炸弹客提前 1 站送达、游客留到下一批）都正常；加急安抚在第 8、10 局触发，价格 40 → 60、48 → 52 → 78 → 104 币依次上涨；放人提示在实战里挡住了多次错误摆放（大亨嫌挤、名人被围、快递员争纸箱）。',
+    '规则数值没有改动，模拟器验收沿用 v9.18.4 的结果（均衡型中位 100 层）。',
+    'verify 新增 1 项（共 39 项）：车厢坐满提示；引擎里所有固定提示都必须有完整英文（扫描到 18 句）；合并后的提示带次数也能翻译；英文不再出现 Drunk / Lawyer / Exorcist / neighbour。浏览器实测：英文钱包标签宽 41.5 像素放得下；手机座位名字高 15 像素（单行）；商店“能力位已满”高 21 像素（单行）；钱少时配电箱区出现“先充电”提醒。',
+  ],
+  watch: ['谨慎型玩家只带估算为正的乘客时仍然很穷（第 6、7 局 30 层只有 50–60 金币）。', '配电箱 5 级上限和 91 层后的电量需求仍是后期最硬的墙。', '快递员在前期仍然常见，车上有通勤者时更常连着出现。'],
+};
+
+export const V9185_EN: ChangelogEntry = {
+  version: '9.18.5', date: '2026-09-24', title: 'Finishing ten playtests: English text, phone layout, power first, more placement warnings',
+  summary: 'Runs 6–10 were played in English, on a phone-sized screen, on the daily shift and in two long runs; this release fixes what they found: consistent English rider names, phone seat names on one line, the shop charging power first when coins are short, a reminder to charge before a power-box upgrade, warnings when the cabin fills or a neighbor gets crowded, and more accurate endings.',
+  changes: [
+    'Shop charging: the default target first covers the next sector’s power need; the calming reserve only holds back coins left after that (short of coins, it used to default to charging nothing, the coins went on calming, and the run left with little power).',
+    'Shop power box: when an upgrade would leave too little to charge for the next sector, the box panel says “Charge first: after an upgrade you would have X coins, and charging to the next sector’s N power costs Y.”',
+    'Placement warnings: seating a sixth rider so the cabin is full adds “Heads-up: Cabin full +1 agitation/floor”; a repeated warning is merged as “… ×2”.',
+    'Endings: running out of power names the real in-transit cap (10 per ten floors with full Storage), or, if this sector’s allowance was already used, reminds you to leave shops with enough power; an agitation overload lists every source tied for the top (up to 3) and gives the most actionable advice, now including the Courier and the Tycoon.',
+    'Emergency repair: now reads “the minimum rescue stops 1 below the cap; to go lower, use Calm below (normal price, counts toward this sector’s allowance)”, instead of “Further relief cannot be bought”, which made players give up.',
+    'Dispatch stamp: changing a trip now says “Dispatched: one stop earlier …” instead of the retired ability’s “Rebooked”.',
+    'English: rider names follow the cards (Drifter, Counsel, Warden) instead of also Drunk, Lawyer, Exorcist; the wallet label reads “Coins” instead of the cut-off “Balan”; ±1 reads “coin”; seats read “stops”; US spelling “neighbor”; the Chinese enumeration comma becomes “, ”; the Ghost-controlled, Ghost-delay and manual-relief notes are fully translated.',
+    'Phone layout: seat names no longer break over two lines; the district plaque moves to the cabin’s top-left corner instead of sitting behind the top-middle name; the shop header’s power label stays on one line; floating pops are cleared before the page scrolls back to the waiting cards, so they no longer land on them.',
+    'Desktop shop: “Slots full” no longer wraps.',
+    'Repeated floor notes (two controlled Ghosts, for example) are merged as “… ×2”.',
+  ],
+  experiments: [
+    'AI browser playtests 6–10: 57F power (English UI, cautious rule), 48F power (phone 375×812, cautious rule), 92F power (daily shift, same riders as run 3), 106F agitation (improved rule), 111F agitation (Medium + Ghosts, by hand after 80F; the best of the ten). Notes and fixes per run are in docs/playtests/ai-playtest-notes.md, with a ten-run summary at the end.',
+    'v9.18.4 checked in play: both Dispatch uses (a Bomber delivered one stop early, a Tourist held for the next batch); overtime calming triggered in runs 8 and 10, rising 40 → 60 and 48 → 52 → 78 → 104 coins; placement warnings stopped several bad seats (a crowded Tycoon, a crowded Celebrity, Couriers fighting over a box).',
+    'No rule values changed; simulator acceptance stands as in v9.18.4 (balanced median 100F).',
+    'verify: 1 new check (39 in all): the cabin-full warning; every fixed engine message has full English (18 scanned); merged notes translate with their count; English no longer shows Drunk / Lawyer / Exorcist / neighbour. Browser: the English wallet label is 41.5 px and fits; phone seat names are 15 px tall (one line); the shop’s slots-full label is 21 px (one line); the “charge first” note appears when coins are short.',
+  ],
+  watch: ['Cautious players who only take positive estimates are still poor (runs 6 and 7: 50–60 coins at 30F).', 'The 5-level power-box cap versus power needs after 91F is still the hardest late wall.', 'Couriers remain common early, more so in a row when a Commuter is aboard.'],
+};

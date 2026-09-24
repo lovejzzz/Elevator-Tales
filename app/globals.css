@@ -1283,7 +1283,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
  .game-shell .status-rail .rest-stops b { color:#d5ead8; font-size:13px; }
  .game-shell .status-rail .wallet-card {
   display:grid;
-  grid-template-columns:38px minmax(0,1fr) auto;
+  grid-template-columns:30px minmax(0,1fr) auto;
   grid-template-rows:38px auto;
   align-items:center;
   column-gap:8px;
@@ -3230,3 +3230,17 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 }
 .standing-slot.is-inspected { animation:inspected-stamp .9s ease-out; }
 @keyframes inspected-stamp { 0% { box-shadow:inset 0 0 0 3px #9ee3b5, 0 0 22px #9ee3b588; } 100% { box-shadow:none; } }
+/* v9.18.4: power-box upgrade would eat the charging money */
+.box-charge-warning { margin:6px 0 0; font-size:11.5px; line-height:1.4; color:#f0c27a; }
+/* v9.18.4: on phones a seat is ~109px wide; symmetric 34px padding left 31px for the name, so "快递员" broke into two lines. */
+@media (max-width:560px) {
+  .game-shell .standing-slot .seat-heading { padding-left:4px !important; padding-right:24px !important; }
+  .game-shell .standing-slot .seat-heading .rider-name { white-space:nowrap; font-size:13px; letter-spacing:0; }
+  /* The district plaque sat behind the top-middle rider's name; park it in the top-left corner. */
+  .game-shell .district-tag { top:12px; left:10px; transform:none; }
+  /* Shop header: “剩余电量” broke after three characters in a 102px card. */
+  .shop-resource-label { white-space:nowrap; font-size:12px; }
+}
+/* v9.18.4: “能力位已满” broke after four characters in the price slot. */
+.shop-price.is-slots-full strong { white-space:nowrap; font-size:15px; }
+.shop-price.is-slots-full span { white-space:nowrap; }

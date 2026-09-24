@@ -1,6 +1,17 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.18.4**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.18.5**. Publication status is tracked separately from the source version.
+
+## v9.18.5 — 2026-09-24 — Finishing ten playtests: English, phone layout, power first, more warnings / 十局试玩收尾：英文界面、手机布局、充电优先、更多放人提示
+
+- Runs 6–10 (English UI 57F, phone 375×812 48F, daily 92F, 106F, 111F — best of ten); notes and a ten-run summary in `docs/playtests/ai-playtest-notes.md`.
+- Shop: default charge covers the next sector before any calming reserve; “Charge first” note when a power-box upgrade would eat the charging money; “Slots full” on one line.
+- Warnings: cabin-full (+1 agitation/floor); repeated warnings and floor notes merged as “×2”.
+- Endings: power-out advice uses the real in-transit cap and says when it was used up; agitation overload lists tied top sources with actionable advice (Courier, Tycoon added). Emergency repair no longer claims relief cannot be bought.
+- Dispatch message says “Dispatched”. English: Drifter / Counsel / Warden everywhere, “Coins” wallet label, coin/coins, stops, neighbor, comma, three untranslated notes fixed.
+- Phone: seat names on one line, district plaque moved, shop label on one line, pops cleared before the scroll back.
+- No rule values changed (acceptance as v9.18.4). verify 39 checks, including a scan that every fixed engine message has English.
+- Watch: cautious players stay poor; power-box cap vs 91F+ needs; early Couriers.
 
 ## v9.18.4 — 2026-09-24 — Polish from five playtests: Dispatch works, placement warnings, overtime calming / 五局试玩打磨：调度印章能用了、放人提示、加急安抚
 

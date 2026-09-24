@@ -86,7 +86,7 @@ const dispatchTick = (state: RunState, sector: number) => state.upgrades.dispatc
 export function retimeRider(state:RunState,id:string,delta:number):RunState {
   const r=state.cabin.find(r=>r?.id===id),sector=Math.floor(state.floor/10);
   if(state.status!=='playing'||!(state.upgrades.retime||state.upgrades.dispatch)||!r||r.boardedAt!==state.floor||(state.upgrades.dispatch?dispatchUsed(state,sector):state.retimeUsedSector===sector)||isLegend(r.kind)||![-1,1].includes(delta)||r.destination+delta<=state.floor)return state;
-  return {...state,...dispatchTick(state,sector),cabin:state.cabin.map(p=>p?.id===id?{...p,destination:p.destination+delta}:p),retimeUsedSector:state.upgrades.dispatch?state.retimeUsedSector:sector,rebooked:{...state.rebooked,[id]:r.destination+delta},message:'改签完成：车费与倒计时不变，撤回不退次数。'};
+  return {...state,...dispatchTick(state,sector),cabin:state.cabin.map(p=>p?.id===id?{...p,destination:p.destination+delta}:p),retimeUsedSector:state.upgrades.dispatch?state.retimeUsedSector:sector,rebooked:{...state.rebooked,[id]:r.destination+delta},message:state.upgrades.dispatch?`调度完成：${delta<0?'提前':'延后'} 1 站，车费与倒计时不变，撤回不退次数。`:'改签完成：车费与倒计时不变，撤回不退次数。'};
 }
 export function settleBuffer(raw:number,cap:number,stored:number,enabled:boolean) {
   const released=enabled?Math.min(stored,Math.max(0,cap-raw)):0;
@@ -915,7 +915,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   else if (energy < 0 || (!checkpoint && energy === 0)) { status = 'lost'; message = '电量耗尽，轿厢停在了楼层之间。'; }
   else if (!checkpoint && stress >= state.stressCap) { status = 'lost'; message = '躁动达到上限，午夜班次失控。'; }
   if (stressReasons.length && status === 'playing') message = stressReasons.slice(0, 2).join(' · ');
-  else if (notes.length && status === 'playing') message = notes.slice(0, 2).join(' · ');
+  // v9.18.4: two controlled Ghosts printed the same note twice; merge repeats into “×2”.
+  else if (notes.length && status === 'playing') message = [...new Set(notes)].map(n => { const k = notes.filter(x => x === n).length; return k > 1 ? `${n} ×${k}` : n; }).slice(0, 2).join(' · ');
   const lastEarnings = { total: coins - state.coins, sources: earningSources }; const lastPressure = { delta: stress - state.stress, sources: pressureSources }; const lastEnergy = { delta: energy - state.energy, sources: energySources }; const incomeNote = lastEarnings.total ? `${lastEarnings.total>0?'+':''}${lastEarnings.total} 金币 · ` : '';
   cabin = cabin.map(rider => rider?.kind === 'shifter' ? { ...rider, traits: randomTraits('shifter', unlockedAt(nextFloor), rng, (rider.traits?.revision ?? 0) + 1) } : rider);
   if (cabin.some(rider => rider?.kind === 'shifter') && status === 'playing') message += ' 百变人已变化，关门前查看新属性。';
@@ -968,22 +969,25 @@ export function failureLesson(state: RunState): string {
     const spent = state.lastEnergy.sources.reduce((sum,line)=>sum+Math.max(0,-line.amount),0);
     const ledger = `电量耗尽 · 本层总扣电 ${spent}（运转 ${motor}、人物与红线 ${people}）；抵消与回电 +${restored}；净变化 ${state.lastEnergy.delta}。`;
     if (state.reserveCell) return ledger+'还有一份未使用的应急电池。关门前可用它补电。';
-    if (state.coins >= 8) return ledger+`你带着 ${state.coins} 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 20 电。`;
+    // v9.18.4: name the real in-transit cap (10 with full Storage) and say when it was already used up.
+    const cap = emergencySectorCap(boxOf(state)), usedUp = emergencySectorLeft(state) <= 0;
+    if (usedUp) return ledger+`本段途中补电已用满（每十层 ${cap} 电）：离店前要充够到下个商店的电量，配电箱升级别挤掉充电的钱。`;
+    if (state.coins >= 8) return ledger+`你带着 ${state.coins} 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 ${cap} 电。`;
     return ledger+'离店时要预留到下个商店的电量；电量栏会显示到店约剩多少。';
   }
   if (state.message.includes('躁动')) {
-    const source = state.lastPressure.sources.filter((line) => line.amount > 0).sort((a, b) => b.amount - a.amount)[0];
-    // v9.18.4: advice that matches the source, instead of one generic Nurse tip.
-    const label = source?.label ?? '';
-    const advice = label.includes('被围') ? '名人只留1位邻座，可避免围观新增躁动。'
-      : label.includes('夜深人躁') ? '夜深人躁是整车压力，护士挡不住：多带短途乘客靠到站舒缓（每位 −1，每层最多 −2），商店里用满安抚额度，手动调节留到最紧的一层。'
-      : label.includes('无人照顾') ? '儿童要挨着护士或恋人。'
-      : label.includes('未安抚') ? '醉汉要挨着护士。'
-      : label.includes('未受控') ? '让警察或律师挨着小偷，被管住的小偷反而每层帮全车 −1。'
-      : label.includes('红线') ? '把红线两端的人分开，或请离其中一位。'
-      : label.includes('急躁') ? '急躁乘客每层 +1，路程越长越亏；后期优先带短途的。'
-      : '护士需贴邻抵消新增躁动；音乐家影响整车，高档最多减2，并不保证安全。';
-    return source ? `躁动失控 · 最后一层主要来源：${source.label} +${source.amount}。${advice}` : '躁动失控 · 下一班优先处理急躁乘客与红色冲突。';
+    // v9.18.4: name every source tied for the top, and give the advice for the most actionable one.
+    const positive = state.lastPressure.sources.filter((line) => line.amount > 0).sort((a, b) => b.amount - a.amount);
+    if (!positive.length) return '躁动失控 · 下一班优先处理急躁乘客与红色冲突。';
+    const top = positive.filter(line => line.amount === positive[0].amount).slice(0, 3);
+    const ADVICE: Array<[RegExp, string]> = [
+      [/无人照顾/, '儿童要挨着护士或恋人。'], [/未安抚/, '醉汉要挨着护士。'], [/未受控/, '让警察或律师挨着小偷，被管住的小偷反而每层帮全车 −1。'],
+      [/红线/, '把红线两端的人分开，或请离其中一位。'], [/找纸箱|争纸箱/, '快递员要挨着他自己的纸箱，纸箱没上车就别带他。'], [/被围/, '名人只留1位邻座，可避免围观新增躁动。'],
+      [/嫌挤/, '大亨最多留1位邻座。'], [/急躁/, '急躁乘客每层 +1，路程越长越亏；后期优先带短途的。'],
+      [/夜深人躁/, '夜深人躁是整车压力，护士挡不住：多带短途乘客靠到站舒缓（每位 −1，每层最多 −2），商店里用满安抚额度，手动调节留到最紧的一层。'],
+    ];
+    const advice = ADVICE.find(([re]) => top.some(line => re.test(line.label)))?.[1] ?? '护士需贴邻抵消新增躁动；音乐家影响整车，高档最多减2，并不保证安全。';
+    return `躁动失控 · 最后一层主要来源：${top.map(line => `${line.label} +${line.amount}`).join('、')}。${advice}`;
   }
   return '班次中断 · 下一班留意关门前的电量与躁动预报。';
 }
