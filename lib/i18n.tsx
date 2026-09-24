@@ -544,6 +544,15 @@ export function translateGameText(value: string, locale: GameLocale): string {
   const direct = exact.get(core);
   if (direct) return `${leading}${direct}${trailing}`;
   let translated = value
+    // v9.18.3 seat labels with coin units, and the incident note.
+    .replace(/^红线 −2金币$/u, 'Red link −2 coins')
+    .replace(/^长途送货 (\d+) 站$/u, 'Long route: $1 stops')
+    .replace(/^红线 (🔥|⚡) \+1$/u, 'Red link $1 +1')
+    .replace(/^顺手牵羊 \+(\d+)金币\/层$/u, 'Picking pockets +$1 coins/floor')
+    .replace(/^暂存\+(\d+)币\/层 · 链接加躁动$/u, 'Bank +$1 coins/floor · links add agitation')
+    .replace(/^暂存 (\d+) 币$/u, 'Banked $1 coins')
+    .replace(/车厢事故：(.+?)受不了混乱，提前下车，未付车费/gu, (_m, name: string) => `Incident: the ${translateGameText(name, 'en')} could not stand the chaos and left without paying`)
+    .replace(/车厢事故：(.+?)提前下车/gu, (_m, name: string) => `Incident: the ${translateGameText(name, 'en')} left early`)
     // v9: motor notices and the schedule are generated from motorCost, so translate by pattern.
     .replace(/^预告：(\d+)层起运转(\d+)电$/u, 'Ahead: motor $2 from floor $1')
     .replace(/^运转固定(\d+)电$/u, 'Motor fixed at $1')

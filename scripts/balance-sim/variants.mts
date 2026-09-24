@@ -11,6 +11,17 @@ const parcel = (fare: number, coins: number, power: number) => () => { PASSENGER
 
 export const VARIANTS: Record<string, () => void> = {
   baseline: () => {},
+  // v9.18.3 Courier routes by box tier: trip ranges (common / rare / legendary) and a per-stop delivery fee.
+  tripOld: () => { PARCEL_RULES.trips = { common: [1, 3], rare: [1, 3], legendary: [1, 3] }; PARCEL_RULES.crateExtraStop = 0; },
+  tripMild: () => { PARCEL_RULES.trips = { common: [1, 3], rare: [2, 4], legendary: [3, 5] }; },
+  fee2: () => { PARCEL_RULES.stopFee = 2; },
+  fee3: () => { PARCEL_RULES.stopFee = 3; },
+  fee4: () => { PARCEL_RULES.stopFee = 4; },
+  mildFee2: () => { VARIANTS.tripMild(); PARCEL_RULES.stopFee = 2; },
+  mildFee3: () => { VARIANTS.tripMild(); PARCEL_RULES.stopFee = 3; },
+  wideFee2: () => { PARCEL_RULES.trips = { common: [1, 4], rare: [2, 5], legendary: [3, 6] }; PARCEL_RULES.stopFee = 2; },
+  wideFee3: () => { PARCEL_RULES.trips = { common: [1, 4], rare: [2, 5], legendary: [3, 6] }; PARCEL_RULES.stopFee = 3; },
+  midFee2: () => { PARCEL_RULES.trips = { common: [2, 3], rare: [3, 4], legendary: [4, 5] }; PARCEL_RULES.stopFee = 2; },
   // v9.16 Courier parcel study: parcel off (pre-9.16 Courier), then Courier fare × unclaimed-parcel payout (coins / power).
   noParcel: () => { PARCEL_RULES.enabled = false; },
   // v9.17 Courier study: two-part box odds / reward, Thief pickpocketing, Inspector coins.

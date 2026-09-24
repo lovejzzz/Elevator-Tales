@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.18.2**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.18.3**. Publication status is tracked separately from the source version.
+
+## v9.18.3 — 2026-09-24 — Readable links, box animations, cleaner sound; farther boxes / 连线看得清、开箱动画、音效修复、好箱子送得远
+
+- Link labels moved to an HTML layer above the riders (gold coin, “+2 coins”); Thief–Tourist and Thief–Inspector −2 red links removed (Tourist now avoids the Drifter, 🔥+1), so a held Thief shows nothing. Coin units on value tags, ability lines, banked coins and red links. In-place box-opening animation for Child / unclaimed / Mimic / Mechanic (Thief: box flies to him); exit receipt unit on one line. Mystery fare shown as a scramble (no band; Mimic copies stay sealed). Mimic copies the fare above without its own short-trip discount (under a Bomber 30, was 24). Incident riders get a red exit card and a receipt line. No “Danger!” banner on arriving at a shop. Shop: fixed window, chosen cards stay in place, hover/press feedback, charge/upgrade/calm effects.
+- Courier routes by box tier: common 1–4, rare 2–5, legendary 3–6 stops, crate +1; delivered box pays 3 coins per stop beyond 2 (study: 11 settings × 6 bots × 250; no-fee 2–4/3–5/4–6 cut Courier boarding 41% → 16%).
+- Sound: make-up-gain compressor replaced by a limiter + 11 kHz low-pass; register synthesized again; recordings about half level; bell partials ≤ 9 kHz; softer fuse and defusal. Offline render of a busy floor end: peak 0.76 → 0.32, largest jump 0.84 → 0.17.
+- Acceptance 4,200 runs vs 9.18.2: balanced 100 → 100F, deaths 30.4/67.8/1.8%, novice 43 → 41, human 71 → 67. Calibration data 9 real runs; verify 36 checks.
 
 ## v9.18.2 — 2026-09-24 — Rules you can see; held Thief calms / 规则看得见、受管小偷降躁动
 

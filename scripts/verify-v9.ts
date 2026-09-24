@@ -624,4 +624,22 @@ console.log('PASS pickpocketing by pocket and box receipts');
   E.BOMB_RULES.realtime = false;
 }
 console.log('PASS visible rules: pickpocket links, fare lines, haunts, held Thief, bomb fuse length');
-console.log(JSON.stringify({ version: 'v9', checks: 35, passed: true }));
+// v9.18.3: a Mimic copies the fare above exactly (no second short-trip discount); better boxes travel farther; every
+// box opened, used or taken is recorded for its animation; an incident names the rider who left without paying.
+{
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 63, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  const mim = [R('bomb', 'b', 67, { fuse: 5 }), null, null, R('mimic', 'm', 66, { localFareRatio: 0.8 }), null, null];
+  assert.equal(riderProfile(mim[3]!, mim, 3).fare, PASSENGERS.bomb.fare, 'a short-trip Mimic under a Bomber copies the full Bomber fare');
+  let st = 918273; const rng = () => { st = (st + 0x6d2b79f5) | 0; let t = Math.imul(st ^ (st >>> 15), 1 | st); t ^= t + Math.imul(t ^ (t >>> 7), 61 | t); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; const trips: Record<string, number[]> = { common: [], rare: [], legendary: [] };
+  for (let i = 0; i < 6000; i++) for (const o of E.makeOffers(12, E.EMPTY_UPGRADES, false, rng)) if (o.kind === 'courier') trips[o.tier ?? 'common'].push(o.destination - 12 - (o.parcelBig ? E.PARCEL_RULES.crateExtraStop : 0));
+  for (const tier of ['common', 'rare', 'legendary'] as const) { const [lo, hi] = E.PARCEL_RULES.trips[tier]; assert.ok(trips[tier].length && trips[tier].every(t => t >= lo && t <= hi), `${tier} Courier trips stay in ${lo}–${hi}`); }
+  const route = [R('courier', 'k', 70, { parcelId: 'k-p', routeStops: 5 }), R('parcel', 'k-p', 70, { ownerId: 'k' }), null, null, null, null];
+  assert.equal(E.fareBreakdown(route[0]!, route, 0).find(l => l.label.startsWith('长途送货'))?.amount, E.PARCEL_RULES.stopFee * 3, 'a 5-stop route pays the fee for 3 stops');
+  assert.ok(!E.fareBreakdown(route[0]!, [route[0], null, null, null, null, null], 0).some(l => l.label.startsWith('长途送货')), 'no fee without the box');
+  const child = E.resolveFloor(run(20, [R('parcel', 'q', 30, { tier: 'rare' }), R('child', 'c', 30), null, null, null, null]), fixed());
+  assert.equal(child.lastBoxEvents?.[0].by, 'child'); assert.equal(child.lastBoxEvents?.[0].slot, 0);
+  const inc = E.resolveFloor(run(74, [R('bomb', 'b', 76, { fuse: 5 }), null, null, null, null, R('commuter', 'a', 76)], { stress: 6, stressCap: 10 }), fixed(0.05));
+  assert.ok(inc.lastIncident && inc.cabin.every(r => r?.id !== inc.lastIncident!.riderId), 'the incident rider is named and gone');
+}
+console.log('PASS Mimic copies exactly, box trips by tier, box events, incident receipt');
+console.log(JSON.stringify({ version: 'v9', checks: 36, passed: true }));

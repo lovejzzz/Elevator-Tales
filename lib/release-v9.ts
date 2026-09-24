@@ -1265,3 +1265,57 @@ export const V9182_EN: ChangelogEntry = {
   ],
   watch: ['Whether Officer + Thief calming becomes its own style; if too weak, −2 a floor also stayed balanced in simulation.'],
 };
+
+export const V9183_ZH: ChangelogEntry = {
+  version: '9.18.3', date: '2026-09-24', title: '看得清的连线、开箱动画、更干净的音效；好箱子送得更远',
+  summary: '连线上的金额改到人物前面，带金币图标和“金币”单位；纸箱无论怎样打开都在原地播放开箱动画；车厢事故会显示是谁提前下车；商店不再一变化就改变大小；音效去掉了爆音和沙沙声。快递员的路程按箱子稀有度拉长，远路多付钱。',
+  changes: [
+    '连线标签：从被拉伸的图形文字改成人物上方的一层标签，不会被人物挡住；金额带金色金币图标，写成“+2 金币”；红线写成“−2 金币”“🔥 +1”等。',
+    '小偷：不再和游客、检查员之间有“−2 金币”红线，连线上只显示他偷到的“+N 金币”；被警察管住时，把游客放到他旁边也不会再出现“−2”。游客的红线改为醉汉（🔥 +1）。座位上写“顺手牵羊 +N金币/层”，偷钱动画也写“+N 金币”。',
+    '单位：人物卡上“送达 净+10 金币”“配快递员 +14 金币”；各人物能力行的金额都加上“币”（通勤者、游客、音乐家、儿童、名人、检查员、月老、教父、夜莺、大亨）；暂存写成“暂存 N 币”；红线写成“红线 −2金币”。',
+    '开箱动画：纸箱被小孩拆开、到站无人认领、被复制人打开、被维修工拆成零件时，都在它原来的位置弹出纸箱、盖子飞起、火花，再浮出里面的东西（金币、电或能力）；被小偷带走时纸箱飞到小偷身上。到站卡片上“+4 电”不再把“电”挤到下一行。',
+    '神秘人：不再显示“20–24”这样的车费档位，改成“车费”后面一串跳动的乱码，到站才揭晓；座位和卡面上的“?”也换成乱码。复制人复制神秘人时同样保密（之前会露出数字）。',
+    '复制人：复制正上方乘客实际的车费，不再叠加自己的短途折扣。复制人在炸弹客下面时车费 30（之前 30 × 0.8 = 24，看起来像没复制）。',
+    '快递员：箱子越好送得越远——普通 1–4 站，稀有 2–5 站，传奇 3–6 站，大纸箱再多 1 站（31 层、51 层后的路程加长照常叠加）；带着箱子送达时，路程超过 2 站的部分每站多付 3 金币，收入明细里写成“长途送货 N 站”。',
+    '车厢事故：高躁动时 20% 的事故里提前下车的乘客，现在和到站乘客一样出现在原位，红色卡片写“提前下车 · 受不了混乱 · 未付车费”，座位闪红光；“本次变化明细”里单独一栏。',
+    '进商店那一层不再闪红色“危！”（商店会补电和安抚）。',
+    '商店：窗口固定大小，选能力、充电、升级配电箱都不会再改变窗口；选过的能力卡留在原位标“已装上”，不再消失让其他卡挤过来；所有按钮都有悬停上浮、发光和按下回弹；充电时电量框发光并飘出“+N 电”，升级配电箱时那一行跳动，安抚时躁动框发光。',
+    '音效：去掉了原来 −18 dB 的压缩器（它会自动把声音再放大约 8 dB，连带放大了尖锐的起音和混响里的沙沙声），改成只在接近满幅时才压的限幅器，再加一道 11 kHz 低通；“收银”改回合成音（筹码堆叠的录音听起来像爆音，每层收入满 20 都会响，每位炸弹客到站都会触发）；其余录音音量减半；铃声去掉 9 kHz 以上的泛音；引线声改成柔和的中频噼啪；拆弹和弦去掉开头的噪声；新增开箱音效；同时超过 40 个声音时跳过装饰性的音效。',
+  ],
+  experiments: [
+    '音效离线渲染（开发版里的 renderSfxOffline，用同一条混音链渲染后测峰值和相邻采样最大跳变）：设想中最吵的一层结束（关门、嗡鸣、3 次引线、开门、铃、拆弹、收银、10 声金币、开箱、纪录、盖章）峰值 0.76 → 0.32，最大跳变 0.84 → 0.17；单独“收银” 0.71 → 0.13，“金币” 0.44 → 0.19。',
+    '快递员路程（6 类玩家 × 250 局 × 11 组）：只把路程拉长到 2–4/3–5/4–6 且不加钱，均衡型带快递员 41% → 16%，新手 48 → 33 层；1–3/2–4/3–5 加每站 2 金币为 42% / 41 层；采用 1–4/2–5/3–6 加每站 3 金币：37% / 41 层，均衡型 100 层不变。',
+    '验收（14 组 × 300 局，同一种子，对照 v9.18.2）：均衡型中位 100 → 100 层，死因电量 / 躁动 / 炸弹 32.2 / 66.2 / 1.6% → 30.4 / 67.8 / 1.8%；新手 43 → 41；真人型 71 → 67；均衡型离店金币 226 → 206；上车率全部在 15–65%。预测审计 22,439 次上行：上行警告 12 次后来撑过去了（与之前相当）。',
+    '新试玩记录（v9.18.2，81 层躁动，全程收入 1100）加入校准数据，现有 9 份（15–81 层）。',
+    '试玩说明：记录里第 74 层炸弹客还剩 1 站、躁动 6（高躁动），下一层他不见了而金币没变——这是高躁动 20% 的车厢事故让他提前下车；以前只在一行文字里提到，现在会显示。第 76 层上车的炸弹客在第 77 层被请离（花 8 币）。',
+    'verify 新增 1 项（共 36 项）：复制人照抄炸弹客 30；各稀有度路程范围；长途送货费（5 站付 3 站的钱，没箱子不付）；小孩开箱记录；事故记录。红线表改为 29 对（去掉小偷—游客、小偷—检查员，加游客—醉汉）。浏览器实测：连线标签在人物前、被管住的小偷旁放游客没有“−2”、三位邻座“+2/+2/+1 金币”、小孩开两个箱子的动画、复制人“+11 金币”一行、事故卡片、进商店不闪“危”、商店窗口 1229×787 全程不变、英文界面没有中文残留。',
+  ],
+  watch: ['快递员路程加长后上车率 37%（之前 42%），留意试玩里是否太少人带快递员。', '开箱动画和到站卡片同时出现时是否太挤。', '手机窄屏上横向连线标签会压到下面一排的数字栏上沿。'],
+};
+
+export const V9183_EN: ChangelogEntry = {
+  version: '9.18.3', date: '2026-09-24', title: 'Readable links, box-opening animations, cleaner sound; better boxes travel farther',
+  summary: 'Link amounts now sit above the riders with a gold coin and the word “coins”; every box that opens plays an animation where it sat; an incident shows who left early; the shop no longer changes size as you use it; sound effects lose their crackle and hiss. Couriers ride farther for better boxes and are paid for the extra stops.',
+  changes: [
+    'Link labels: a layer above the riders instead of stretched vector text, so riders never cover them; money shows a gold coin icon and reads “+2 coins”; red links read “−2 coins”, “🔥 +1” and so on.',
+    'Thief: no more “−2 coins” red link with the Tourist or the Inspector, so a link shows only what he steals (“+N coins”); with an Officer holding him, seating a Tourist next to him no longer shows “−2”. The Tourist’s red link is now the Drifter (🔥 +1). His seat reads “Picking pockets +N coins/floor” and the pickpocket animation says “+N coins”.',
+    'Units: card tags read “On arrival +10 coins” and “w/ Courier +14 coins”; ability lines name coins (Commuter, Tourist, Musician, Child, Celebrity, Inspector, Matchmaker, Don, Nightingale, Tycoon); banked coins read “Banked N coins”; red links “Red link −2 coins”.',
+    'Box animation: when a Child opens a box, an unclaimed box reaches its floor, a Mimic opens his copy or a Mechanic strips one for parts, the box pops up where it sat, its lid flies off, sparks burst and the contents rise out (coins, power or an ability); a box a Thief takes flies to him. Exit receipts keep “+4 power” on one line.',
+    'Mystery: no more fare band such as “20–24”; the card reads “Fare” followed by a flickering scramble until arrival, and the “?” on the seat and card scrambles too. A Mimic copying a Mystery stays sealed (it used to show the number).',
+    'Mimic: copies the fare above exactly as that rider is paid, without its own short-trip discount. Under a Bomber a Mimic now gets 30 (it was 30 × 0.8 = 24, which looked like no copy).',
+    'Courier: better boxes travel farther: common 1–4 stops, rare 2–5, legendary 3–6, a crate 1 more (the longer trips from floors 31 and 51 still add). Delivering his box, he pays 3 coins more per stop beyond 2, shown as “Long route: N stops” in the fare lines.',
+    'Incidents: a rider who leaves early in a high-agitation incident (20%) now appears in place like an arrival, on a red card “Left early · Chaos · no fare”, and the seat flashes red; the decision receipt lists it separately.',
+    'Arriving at a shop no longer flashes the red “Danger!” banner (the shop recharges and calms).',
+    'Shop: a fixed-size window, so picking an ability, charging or upgrading the power box never resizes it; a chosen ability card stays in place marked “Installed” instead of vanishing and letting the others shift; every button lifts, glows and presses in; charging makes the power panel glow with “+N power”, a box upgrade bumps its row and calming glows the agitation panel.',
+    'Sound: the −18 dB compressor is gone (it added about 8 dB of automatic make-up gain, lifting sharp attacks and the reverb’s hiss with it) in favour of a limiter that only acts near full scale, plus an 11 kHz low-pass. The cash register is synthesized again (the chip-stack recording read as crackle and played on every floor paying 20 or more, including every Bomber delivery); the other recordings play at about half their old level; bells drop partials above 9 kHz; the fuse is a soft mid-band crackle; the defusal chord opens without a noise burst; boxes have their own opening sound; past 40 simultaneous voices, decorative effects are skipped.',
+  ],
+  experiments: [
+    'Offline sound renders (renderSfxOffline in development builds: the same mixing chain, measuring peak and the largest sample-to-sample jump): the loudest floor ending we could stage (doors, hum, three fuse crackles, ding, defusal, register, ten coins, box, record, stamp) peaked at 0.76 → 0.32 with the largest jump 0.84 → 0.17; the register alone 0.71 → 0.13, a coin 0.44 → 0.19.',
+    'Courier routes (6 player types × 250 runs × 11 settings): lengthening trips to 2–4 / 3–5 / 4–6 with no extra pay cut the balanced bot’s Courier boarding from 41% to 16% and the novice from 48F to 33F; 1–3 / 2–4 / 3–5 with 2 coins a stop gave 42% / 41F; adopted 1–4 / 2–5 / 3–6 with 3 coins a stop: 37% / 41F, balanced still 100F.',
+    'Acceptance (14 groups × 300 runs, same seeds, against v9.18.2): balanced median 100 → 100F; deaths power / agitation / bomb 32.2 / 66.2 / 1.6% → 30.4 / 67.8 / 1.8%; novice 43 → 41; human 71 → 67; balanced exit coins 226 → 206; all boarding rates within 15–65%. Forecast audit over 22,439 ascents: 12 guard warnings on floors that were survived (as before).',
+    'The new record (v9.18.2, 81F, agitation, 1,100 earned) joins the calibration data, now 9 runs (15–81F).',
+    'Playtest note: on floor 74 the Bomber had 1 stop left at agitation 6 (high) and was gone the next floor with no coins paid: the 20% high-agitation incident sent him off early. It was only mentioned in a text line before and is now shown. The Bomber boarded at 76F was dismissed at 77F (8 coins).',
+    'verify: one new check (36 in all): a Mimic copies the Bomber’s 30; trip ranges per tier; the long-route fee (a 5-stop route pays for 3 stops, nothing without the box); Child box events; incident records. The red-link table is now 29 pairs (Thief with Tourist and with Inspector removed, Tourist with Drifter added). Browser: labels above riders; no “−2” beside a held Thief; “+2 / +2 / +1 coins” for three neighbours; a Child opening two boxes; a Mimic’s “+11 coins” on one line; the incident card; no “Danger!” on arriving at a shop; the shop window stays 1229×787 throughout; no Chinese left in English labels.',
+  ],
+  watch: ['Courier boarding is 37% with longer routes (42% before); watch whether playtesters skip Couriers.', 'Whether a box animation and an exit card together feel crowded.', 'On narrow phones a horizontal link label overlaps the top edge of the lower row’s number bar.'],
+};

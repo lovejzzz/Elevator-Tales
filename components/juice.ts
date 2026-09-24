@@ -118,4 +118,24 @@ export function explode(anchor: Element | null) {
   }
 }
 
+/** v9.18.3 box opening, played where the box sat: the box pops up and shakes, its lid flies off, sparks burst and
+ * what was inside rises out of it. `label` is the contents ("+12 金币", "+4 电", an ability, "零件"). */
+export function openBoxFx(anchor: Element | null, src: string, label: string, tone: 'gold' | 'green' | 'blue' | 'red' = 'gold', delay = 0) {
+  if (!anchor) return;
+  // Measured when it starts: at settlement the cabin is still finishing its travel animation.
+  window.setTimeout(() => openBoxNow(anchor, src, label, tone), delay * 1000);
+}
+function openBoxNow(anchor: Element, src: string, label: string, tone: 'gold' | 'green' | 'blue' | 'red') {
+  const delay = 0, c = centre(anchor), size = Math.round(Math.max(56, Math.min(120, Math.min(c.w, c.h) * .62)));
+  const box = layer('juice-box'); box.style.left = `${c.x - size / 2}px`; box.style.top = `${c.y - size / 2}px`; box.style.width = box.style.height = `${size}px`;
+  const body = document.createElement('span'), lid = document.createElement('span');
+  body.className = 'juice-box-body'; lid.className = 'juice-box-lid';
+  for (const part of [body, lid]) { part.style.backgroundImage = `url(${src})`; part.style.backgroundSize = `${size}px ${size}px`; box.appendChild(part); }
+  const reveal = () => { burst(c.x, c.y - size * .25, tone, 18, 90); if (label) popText(anchor, label, tone, true); };
+  if (reduced()) { void animate(box, { opacity: [0, 1, 1, 0] }, { duration: 1.1, delay }).then(() => box.remove()); window.setTimeout(reveal, (delay + .3) * 1000); return; }
+  void animate(box, { scale: [.4, 1.14, 1, 1.05, .92], rotate: [0, -9, 8, -4, 0], opacity: [0, 1, 1, 1, 0] }, { duration: 1.25, delay, times: [0, .18, .36, .5, 1] }).then(() => box.remove());
+  void animate(lid, { y: [0, 0, -size * .95], rotate: [0, 0, -38], opacity: [1, 1, 0] }, { duration: .85, delay: delay + .3, times: [0, .15, 1], ease: 'easeOut' });
+  window.setTimeout(reveal, (delay + .45) * 1000);
+}
+
 export function clearJuice() { document.querySelectorAll('.juice').forEach(el => el.remove()); }

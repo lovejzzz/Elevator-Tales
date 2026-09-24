@@ -12,18 +12,18 @@ const allDefinedKinds=Object.keys(BONDS) as PassengerKind[]; // includes archive
 const greenPairs=new Set(allDefinedKinds.flatMap(kind=>BONDS[kind].likes.map(target=>pairKey(kind,target))));
 const redPairs=new Set(allDefinedKinds.flatMap(kind=>BONDS[kind].avoids.map(target=>pairKey(kind,target))));
 assert.equal(greenPairs.size,18);
-assert.equal(redPairs.size,30);
+assert.equal(redPairs.size,29); // v9.18.3: Thief/Tourist and Thief/Inspector removed, Tourist/Drifter added
 assert.deepEqual([...greenPairs].filter(pair=>redPairs.has(pair)),[],'one pair must never be both a static green and red relationship');
 assert.deepEqual(new Set(Object.keys(CONFLICT_EFFECTS)),redPairs,'every static red pair needs an explicit effect');
 
 const effectCounts=Object.values(CONFLICT_EFFECTS).reduce<Record<ConflictEffect,number>>((counts,effect)=>({...counts,[effect]:counts[effect]+1}),{agitation:0,energy:0,coins:0,overload:0,gamble:0});
-assert.deepEqual(effectCounts,{agitation:10,energy:8,coins:9,overload:2,gamble:1});
+assert.deepEqual(effectCounts,{agitation:11,energy:8,coins:7,overload:2,gamble:1});
 
-for(const kind of ['tourist','lover','musician','nurse'] as const){
+for(const kind of ['tourist','lover','musician','nurse','thief'] as const){
  const cabin=[rider('inspector','inspector'),rider(kind,kind),null,null,null,null];
  assert.equal(conflictLinks(cabin).length,0,'Quiet-work Inspector must not retain retired conflicts with '+kind);
 }
-for(const kind of ['thief','drunk','celebrity','ghost','mystery'] as const){
+for(const kind of ['drunk','celebrity','ghost','mystery'] as const){
  const cabin=[rider('inspector','inspector'),rider(kind,kind),null,null,null,null];
  assert.equal(conflictLinks(cabin).length,1,'Inspector still has a conditional placement cost with '+kind);
 }
@@ -37,7 +37,7 @@ const energyRun=state(energyCabin);
 assert.equal(energyBreakdown(energyRun).conflict,1);
 assert.equal(amount(resolveFloor(energyRun,()=>.9).lastEnergy.sources,'红线额外耗电'),-1);
 
-const coinCabin=[rider('tourist','tourist'),rider('thief','thief'),null,null,null,null];
+const coinCabin=[rider('drunk','drunk'),rider('inspector','inspector'),null,null,null,null];
 const coinResult=resolveFloor(state(coinCabin),()=>.9);
 assert.equal(amount(coinResult.lastEarnings.sources,'红线金币损失'),-2);
 
@@ -60,7 +60,7 @@ assert.equal(amount(resolveFloor(state(independentCabin),()=>.9).lastPressure.so
 const doubleAgitation=[rider('drunk','left'),rider('commuter','center'),rider('drunk','right'),null,null,null];
 assert.equal(amount(resolveFloor(state(doubleAgitation),()=>.9).lastPressure.sources,'红线躁动'),2,'two identical red lines stack');
 
-const doubleCoins=[rider('thief','left'),rider('tourist','center'),rider('thief','right'),null,null,null];
+const doubleCoins=[rider('inspector','left'),rider('drunk','center'),rider('inspector','right'),null,null,null];
 assert.equal(amount(resolveFloor(state(doubleCoins),()=>.9).lastEarnings.sources,'红线金币损失'),-4,'coin losses stack per red line');
 
 const doubleEnergy=[rider('ghost','left'),rider('courier','center'),rider('ghost','right'),null,null,null];
@@ -79,3 +79,7 @@ const dynamicCabin=[rider('commuter','commuter'),rider('shifter','shifter',{trai
 assert.equal(conflictLinks(dynamicCabin)[0]?.effect,'coins','dynamic riders keep their visible randomized red-line effect');
 
 console.log(JSON.stringify({version:'v8.32',activeRoles:PASSENGER_ORDER.length,definedRoles:allDefinedKinds.length,greenPairs:greenPairs.size,redPairs:redPairs.size,effectCounts,representativeEffects:5,stackingChecks:5,greenRedIndependent:true,multipliers:'linear-from-base'}));
+
+// v9.18.3: a Thief's neighbours lose nothing to red links; his pickpocketing is the whole interaction.
+assert.equal(conflictLinks([rider('tourist','t'),rider('thief','s'),null,null,null,null]).length,0,'no Thief/Tourist red link');
+assert.equal(conflictLinks([rider('inspector','i'),rider('thief','s'),null,null,null,null]).length,0,'no Thief/Inspector red link');

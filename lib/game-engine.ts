@@ -9,11 +9,16 @@ import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_T
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
 
-export type Rider = { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; bombMs?: number; bombMsTotal?: number; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
+export type Rider = { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; routeStops?: number; bombMs?: number; bombMsTotal?: number; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
 export type ChangeLine = { label: string; amount: number };
-export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number; power?:number; ability?:UpgradeKey };
+export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number; power?:number; ability?:UpgradeKey; /** UI only: an incident exit card (never set by the engine). */ incident?:boolean };
 /** v9.18.1: who the Thief robbed on the last floor, for the pickpocket animation. */
 export type TheftReceipt = { thief: number; victims: Array<{ slot: number; coins: number }> };
+/** v9.18.3: every box opened, used or taken on the last floor, for the in-place box animation. `slot` is where the box
+ * (or, for a Mimic's copy, the Mimic) sat; `thief` is where the Thief who took it sat. */
+export type BoxEvent = { slot: number; by: 'arrival' | 'child' | 'mimic' | 'mechanic' | 'thief'; coins?: number; power?: number; ability?: UpgradeKey; thief?: number; big?: boolean; tier?: BoxTier };
+/** v9.18.3: a rider who left early in a high-agitation incident (no fare), for the exit card. */
+export type IncidentReceipt = { riderId: string; kind: PassengerKind; slot: number };
 export type ShopCard = { key: UpgradeKey; price: number; purchased: boolean };
 export type RunState = {
   floor: number; energy: number; energyCap: number; stress: number; stressCap: number; weightCap: number; coins: number; earned: number; shop: ShopCard[];
@@ -21,6 +26,8 @@ export type RunState = {
   lastThefts?: TheftReceipt[];
   /** v9.18.2: which rider each uncontrolled Ghost delayed on the last floor, for the haunting animation. */
   lastHaunts?: Array<{ ghost: number; victim: number }>;
+  lastBoxEvents?: BoxEvent[];
+  lastIncident?: IncidentReceipt;
   /** v9.17.2: an ability found in a box while every slot is full, waiting for the player to swap it in or pass. */
   pendingAbility?: UpgradeKey;
   /** Abilities swapped out for a box's ability; each is sold (refunded) on entering the next shop. */
@@ -193,6 +200,12 @@ export const PARCEL_RULES = {
   /** v9.17.2: contents are hidden until opened and rolled then: coins or half as much power, between half and
    * one and a half times the tier's average; sometimes an ability instead, likelier for rarer boxes and crates. */
   abilityChance: { common: 0.03, rare: 0.1, legendary: 0.25 }, crateAbilityBonus: 0.05,
+  /** v9.18.3: better boxes travel farther. A Courier's trip (stops) by his box's tier; a crate rides one stop more.
+   * Study (scripts/balance-sim variants tripOld … wideFee3, 6 bots × 250 runs each): 2–4/3–5/4–6 without a fee cut
+   * Courier boarding 41% → 16% and the novice 48 → 33F; these ranges with a 3-coin fee keep 37% and 41F. */
+  trips: { common: [1, 4], rare: [2, 5], legendary: [3, 6] } as Record<BoxTier, [number, number]>, crateExtraStop: 1,
+  /** v9.18.3: a Courier who delivers his box pays this much more per stop of his route beyond `freeStops`. */
+  stopFee: 3, freeStops: 2,
 };
 /** A box is one parcel card: a single seat, or a two-part box whose halves share a boxId. */
 export const boxIdOf = (r: Rider) => r.boxId ?? r.id;
@@ -561,8 +574,11 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
     const courier = shuffled[courierAt], parcelId = courier.id + '-parcel';
     const big = rng() < PARCEL_RULES.bigChance, roll = rng();
     const tier = roll < PARCEL_RULES.legendaryChance ? 'legendary' as const : roll < PARCEL_RULES.legendaryChance + PARCEL_RULES.rareChance ? 'rare' as const : undefined;
-    shuffled[courierAt] = { ...courier, parcelId, ...(big ? { parcelBig: true } : {}), ...(tier ? { tier } : {}) };
-    shuffled.splice(courierAt + 1, 0, { id: parcelId, kind: 'parcel', ownerId: courier.id, destination: courier.destination, patience: 0, volatile: false, boardedAt: floor, fareBonus: 0, stash: 0, ...(big ? { big: 'top' as const, boxId: parcelId } : {}), ...(tier ? { tier } : {}) });
+    const [lo, hi] = PARCEL_RULES.trips[tier ?? 'common'];
+    const trip = rand(lo, hi, rng) + (big ? PARCEL_RULES.crateExtraStop : 0) + journeyExtension(floor);
+    const destination = floor + expressTrip(trip, upgrades.express);
+    shuffled[courierAt] = { ...courier, destination, routeStops: destination - floor, localFareRatio: undefined, parcelId, ...(big ? { parcelBig: true } : {}), ...(tier ? { tier } : {}) };
+    shuffled.splice(courierAt + 1, 0, { id: parcelId, kind: 'parcel', ownerId: courier.id, destination, patience: 0, volatile: false, boardedAt: floor, fareBonus: 0, stash: 0, ...(big ? { big: 'top' as const, boxId: parcelId } : {}), ...(tier ? { tier } : {}) });
   }
   // A legend waits as a fourth card on floor 1 only; it never replaces an ordinary offer.
   const pool = floor === 1 ? (context.legendPool ?? LEGEND_POOL_DEFAULT) : [];
@@ -730,6 +746,9 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const stolen = new Set<number>(), thiefTips = new Map<number, number>();
   // v9.17.2 hidden contents, rolled on opening. Abilities won this floor are installed after settlement.
   const wonAbilities: UpgradeKey[] = []; let pendingAbility = state.pendingAbility;
+  const lastBoxEvents: BoxEvent[] = []; let lastIncident: IncidentReceipt | undefined;
+  const boxEvent = (slot: number, by: BoxEvent['by'], box: { big?: unknown; tier?: BoxTier }, got?: { coins?: number; power?: number; ability?: UpgradeKey }) =>
+    lastBoxEvents.push({ slot, by, ...(got?.ability ? { ability: got.ability } : got?.power ? { power: got.power } : got ? { coins: got.coins ?? 0 } : {}), ...(box.big ? { big: true } : {}), ...(box.tier ? { tier: box.tier } : {}) });
   const receive = (box: { big?: unknown; tier?: BoxTier }, label: string, say: string) => {
     const installed = { ...state.upgrades }; wonAbilities.forEach(k => { installed[k] = 1; }); if (pendingAbility) installed[pendingAbility] = 1;
     let got = rollBox(box, rng, installed);
@@ -745,17 +764,19 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   {
     const before = parcelLinks(cabin);
     const delivering = (box: Box) => { const c = before.carrier.get(box.slots[0]); return c !== undefined && nextFloor >= cabin[c]!.destination; };
-    const openBox = (box: Box, by: string) => { receive(box, `${by}拆开纸箱`, `${by}拆开纸箱：`); box.slots.forEach(p => { cabin[p] = null; }); };
+    const openBox = (box: Box, by: string) => { const got = receive(box, `${by}拆开纸箱`, `${by}拆开纸箱：`); boxEvent(Math.min(...box.slots), 'child', box, got); box.slots.forEach(p => { cabin[p] = null; }); };
     for (const box of before.boxes) {
       if (delivering(box)) continue;
       const thief = before.eyed.get(box.slots[0]);
       if (thief !== undefined && nextFloor >= cabin[thief]!.destination) {
         box.slots.forEach(p => stolen.add(p)); thiefTips.set(thief, Math.max(1, Math.floor(boxCoins(box) * (0.5 + rng()) * PARCEL_RULES.thiefShare)));
+        lastBoxEvents.push({ slot: Math.min(...box.slots), by: 'thief', thief, ...(box.big ? { big: true } : {}), ...(box.tier ? { tier: box.tier } : {}) });
         notes.push('小偷带走了纸箱'); continue;
       }
       if (PARCEL_RULES.childOpens && box.touching.some(i => cabin[i]?.kind === 'child')) { openBox(box, '小孩'); continue; }
       const mechanic = box.touching.find(i => cabin[i]?.kind === 'mechanic' && !cabin[i]!.repairDone);
       if (PARCEL_RULES.mechanicParts && mechanic !== undefined && !before.carrier.has(box.slots[0]) && !cabin.some(r => Boolean(box.ownerId) && r?.id === box.ownerId)) {
+        boxEvent(Math.min(...box.slots), 'mechanic', box);
         box.slots.forEach(p => { cabin[p] = null; });
         cabin[mechanic] = { ...cabin[mechanic]!, repairDone: true, repairProgress: REPAIR_WORK };
         serviceTurns = Math.min(REPAIR_DURATION_CAP, serviceTurns + REPAIR_DURATION);
@@ -787,6 +808,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       if (nextFloor < rider.destination) return rider;
       if (rider.big === 'bottom') return null; // the upper half opens the whole box
       const got = receive(rider, '纸箱开箱', '无人认领的纸箱开箱：');
+      boxEvent(slot, 'arrival', rider, got);
       lastArrivals.push({ riderId: rider.id, kind: rider.kind, slot, coins: got.coins, ...(got.power ? { power: got.power } : {}), ...(got.ability ? { ability: got.ability } : {}) });
       return null;
     }
@@ -805,7 +827,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     // A Mimic under a box carries a copy of it and opens the copy as he leaves.
     const above = slot >= 3 ? cabin[slot - 3] : null;
     if (rider.kind === 'mimic' && PARCEL_RULES.mimicCopiesBox && above?.kind === 'parcel') {
-      receive(above, '复制人的复制箱', '复制人打开复制箱：');
+      boxEvent(slot, 'mimic', above, receive(above, '复制人的复制箱', '复制人打开复制箱：'));
     }
     addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare - appetitePremium - (rider.stash ?? 0));
     if (rider.stash) addCoins('坏人暂存兑现', rider.stash);
@@ -853,6 +875,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       const slot = victims[rand(0, victims.length - 1, rng)];
       notes.unshift(`车厢事故：${PASSENGERS[cabin[slot]!.kind].name}受不了混乱，提前下车，未付车费`);
       stressReasons.unshift(`车厢事故：${PASSENGERS[cabin[slot]!.kind].name}提前下车`);
+      lastIncident = { riderId: cabin[slot]!.id, kind: cabin[slot]!.kind, slot };
       cabin = cabin.map((rider, i) => i === slot ? null : rider);
     }
   }
@@ -894,7 +917,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if(SHOP_TUNING.bufferGap)state={...state,bufferGapTurns:gapCharge.progress};
   state=consumeFlywheel(state,flywheel);
   const stabilized = stabilizedEnergy(state);
-  const settled: RunState = { ...state, lastThefts, lastHaunts, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
+  const settled: RunState = { ...state, lastThefts, lastHaunts, lastBoxEvents, lastIncident, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
   // Abilities found in boxes install like a shop pick (effects such as Safety Margin apply at once).
   return wonAbilities.reduce((run, key) => previewUpgrade(run, key), settled);
 }
@@ -1138,6 +1161,7 @@ export function fareBreakdown(rider: Rider, cabin: Array<Rider | null>, slot: nu
     const links = parcelLinks(cabin), carried = (links.served.get(slot) ?? []).map(p => cabin[p]!);
     if (!carried.length && !links.bombs.has(slot)) return [{ label: '身边没有纸箱：不付钱', amount: 0 }];
     if (carried.length) add('纸箱送货费', Math.max(...carried.map(boxCoins)) - PARCEL_RULES.values.small.common);
+    if (carried.length && rider.routeStops) add(`长途送货 ${rider.routeStops} 站`, PARCEL_RULES.stopFee * Math.max(0, rider.routeStops - PARCEL_RULES.freeStops));
     if (carried.some(p => p.inspected)) add('检查员验货', PARCEL_RULES.inspectCoins);
   }
   const baseFare = riderProfile(rider, cabin, slot).fare;

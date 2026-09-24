@@ -11,12 +11,12 @@ export type CopiedTrait = { sourceId: string; sourceKind: PassengerKind; field: 
 export const COPY_LABELS: Record<CopyField,string> = {energy:'每站耗电',fare:'车费',agitation:'躁动与联动偏好',weight:'旧属性（已停用）',bond:'联动偏好'};
 export const BONDS: Record<PassengerKind,Bond> = {
  commuter:{likes:['courier'],avoids:['drunk','celebrity']},
- tourist:{likes:['celebrity'],avoids:['thief']},
+ tourist:{likes:['celebrity'],avoids:['drunk']},
  courier:{likes:['mechanic'],avoids:['ghost','drunk']},
  mechanic:{likes:['inspector'],avoids:['drunk','celebrity']},
  lover:{likes:['lover'],avoids:['ghost']},
  musician:{likes:['tourist'],avoids:['bomb']},
- thief:{likes:['cop'],avoids:['inspector','ghost']},
+ thief:{likes:['cop'],avoids:['ghost']},
  cop:{likes:['thief','bomb'],avoids:['drunk','celebrity']},
  lawyer:{likes:['thief'],avoids:['ghost','cop']},
  drunk:{likes:['nurse'],avoids:['inspector']},
@@ -26,7 +26,7 @@ export const BONDS: Record<PassengerKind,Bond> = {
  exorcist:{likes:['ghost'],avoids:['drunk','mystery']},
  coach:{likes:['commuter','courier'],avoids:['celebrity','musician']},
  celebrity:{likes:['tourist'],avoids:['inspector']},
- inspector:{likes:['mechanic'],avoids:['thief']},
+ inspector:{likes:['mechanic'],avoids:['drunk']},
  bomb:{likes:['cop'],avoids:['child','mechanic']},
  mystery:{likes:['coach'],avoids:['inspector']},
  shifter:{likes:['nurse'],avoids:['cop']},
@@ -39,10 +39,11 @@ const effectPairs=(effect:ConflictEffect,pairs:Array<[PassengerKind,PassengerKin
 export const CONFLICT_EFFECTS:Record<string,ConflictEffect>=Object.fromEntries([
  ...effectPairs('agitation',[
   ['commuter','drunk'],['lover','ghost'],['cop','drunk'],['nurse','ghost'],['child','bomb'],['exorcist','drunk'],
-  ['shifter','cop'],['musician','bomb'],['cop','celebrity'],['child','drunk'],
+  ['shifter','cop'],['musician','bomb'],['cop','celebrity'],['child','drunk'],['tourist','drunk'],
  ]),
  ...effectPairs('coins',[
-  ['tourist','thief'],['thief','inspector'],['drunk','inspector'],['celebrity','inspector'],
+  // v9.18.3: a Thief's neighbours are handled by pickpocketing alone (no −2 red link on top of the steal).
+  ['drunk','inspector'],['celebrity','inspector'],
   ['mystery','inspector'],['commuter','celebrity'],['courier','drunk'],['thief','ghost'],
   ['lawyer','cop'],
  ]),
@@ -84,6 +85,9 @@ export function riderProfile(rider:Rider,cabin:Array<Rider|null>=[],slot=cabin.f
    if(field==='energy')result.energy=profile.energy;
    if(field==='fare'){result.fare=ticketFare(source,profile.fare);result.hidden=profile.hidden;}
    result.copies.push({sourceId:source.id,sourceKind:source.kind,field});
+   // v9.18.3: the copy is the fare above exactly as that rider would be paid; the Mimic's own short-trip
+   // discount is not applied a second time (a Mimic under a 30-coin Bomber is paid 30, not 24).
+   return result;
  }
  result.fare=ticketFare(rider,result.fare);
  return result;

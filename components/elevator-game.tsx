@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react';
-import { ChevronsUp, ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Check, Coins, Flame, HelpCircle, History, Info, LockKeyhole, Music2, RotateCcw, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
+import { ChevronsUp, ArrowUp, Layers, Package, UserMinus, BatteryCharging, BookOpen, Check, Coins, Flame, HelpCircle, History, Info, LockKeyhole, Music2, RotateCcw, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -37,8 +37,9 @@ import { motion, useReducedMotion } from 'motion/react';
 import { CardShader } from '@/components/card-shader';
 import { fuseState } from '@/lib/bomb-state';
 import { beginPointerDrag } from '@/components/pointer-drag';
-import { banner, bubble, burstAt, clearJuice, explode, flashClass, flyCoin, popText } from '@/components/juice';
+import { banner, bubble, burstAt, clearJuice, explode, flashClass, flyCoin, flyPortrait, openBoxFx, popText } from '@/components/juice';
 import { BombTimer } from '@/components/bomb-timer';
+import { Scramble } from '@/components/scramble';
 import { quip } from '@/lib/quips';
 import { calmRescuePlan, departureRisk, rescuePlan, sectorNeed, SECTOR_NEED_RIDERS } from '@/lib/departure-guard';
 import { offerReveal } from '@/lib/offer-reveal';
@@ -112,7 +113,7 @@ function PassengerRuleBlocks({ rules, locale }: { rules: PassengerRuleBlock[]; l
 // Language-neutral: a bare '不变' leaked into English in composed labels.
 const signedDelta = (value: number) => value > 0 ? `+${value}` : value < 0 ? `−${Math.abs(value)}` : '±0';
 const compactDelta = (value: number) => value > 0 ? `+${value}` : value < 0 ? `−${Math.abs(value)}` : '0';
-const conflictGlyph=(effect:ConflictEffect)=>({agitation:'🔥 +1',energy:'⚡ +1',coins:'🪙 −2',overload:'⚡ ×2',gamble:'⚡×2 · 基价+100%'}[effect]);
+const conflictGlyph=(effect:ConflictEffect)=>({agitation:'🔥 +1',energy:'⚡ +1',coins:'−2金币',overload:'⚡ ×2',gamble:'⚡×2 · 基价+100%'}[effect]);
 type MetricEvent = { id: number; label: string; changes: MetricChange[] };
 
 function MetricResponse({ metric, event, locale }: { metric: MetricKey; event: MetricEvent | null; locale: GameLocale }) {
@@ -172,12 +173,12 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
       {rider.localFareRatio&&<span className="cc-tag">{zh?'短途':'Local'}</span>}
     </span></span></span>
     {legend ? <span className="cc-values cc-legend-values"><span>{zh?'不付车费 · 不耗电':'No fare · no power'}{rider.kind==='medium'?'':''}</span></span> : <span className="cc-values">
-      <b className="cc-fare" aria-label={brief.coins===null?(zh?'车费到站揭晓':'Fare sealed'):`${zh?'车费':'Fare'} ${brief.coins}`}><Coins aria-hidden="true" />{brief.coins===null?'?':brief.coins}{brief.tip>0&&<small>+{brief.tip}</small>}</b>
+      <b className="cc-fare" aria-label={brief.coins===null?(zh?'车费到站揭晓':'Fare sealed'):`${zh?'车费':'Fare'} ${brief.coins}`}><Coins aria-hidden="true" />{brief.coins===null?<Scramble />:brief.coins}{brief.tip>0&&<small>+{brief.tip}</small>}</b>
       <span className="cc-energy" aria-label={`${zh?'每层耗电':'Power per floor'} ${brief.energy}`}><BatteryCharging aria-hidden="true" />{brief.energy>0?`−${brief.energy}`:brief.energy}</span>
       {brief.agitation>0&&<span className="cc-agitation" aria-label={`${zh?'每层躁动':'Agitation per floor'} +${brief.agitation}`}><Flame aria-hidden="true" />+{brief.agitation}</span>}
-      {net!==null&&<span className={`cc-net ${net>0?'is-pos':net<0?'is-neg':''}`} title={zh?`送到站时的净收益估算（不是上车就给钱）：到站车费，加上和已上车乘客配对、邻座的加成，减去这一路的电费${netIncludesAgitation(rider,run)||rider.kind==='nurse'?'，再算上他让车厢躁动的变化（每点每层按 3 币）':''}。按现在车厢里的人和最好的空位计算。`:`Estimated net on delivery (nothing is paid on boarding): arrival fare plus pairing / neighbour bonuses with riders aboard, minus the power for the trip${netIncludesAgitation(rider,run)||rider.kind==='nurse'?', and the change in cabin agitation (3 coins per point per floor)':''}. Based on who is aboard now and the best empty seat.`}>{(netIncludesAgitation(rider,run)||rider.kind==='nurse')&&<Flame aria-hidden="true" className="cc-net-flame" />}{zh?`送达 净${net>0?'+':net<0?'−':'±'}${Math.abs(net)}`:`On arrival ${net>0?'+':net<0?'−':'±'}${Math.abs(net)}`}</span>}{paired&&<span className={`cc-net cc-net-paired ${paired.value>0?'is-pos':paired.value<0?'is-neg':''}`} title={paired.partner==='parcel'?(zh?'带上他的纸箱、放在他旁边时，两张卡合计送达的净收益估算（已减去纸箱的电费）。':'Estimated net on delivery for the pair with his parcel beside him (the parcel’s power included).'):zh?`如果旁边坐上一位${riderName(paired.partner,'zh')}，这位乘客送达时的净收益估算；配对的加成双方都算。`:`Estimated net on delivery if a ${riderName(paired.partner,'en')} sits beside them; the pairing bonus counts for both.`}>{(()=>{const partnerName=paired.partner==='parcel'?displayName({kind:'parcel',big:rider.parcelBig?'top':undefined},locale):riderName(paired.partner,locale);return zh?`配${partnerName} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)}`:`w/ ${partnerName} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)}`;})()}</span>}
+      {net!==null&&<span className={`cc-net ${net>0?'is-pos':net<0?'is-neg':''}`} title={zh?`送到站时的净收益估算（不是上车就给钱）：到站车费，加上和已上车乘客配对、邻座的加成，减去这一路的电费${netIncludesAgitation(rider,run)||rider.kind==='nurse'?'，再算上他让车厢躁动的变化（每点每层按 3 币）':''}。按现在车厢里的人和最好的空位计算。`:`Estimated net on delivery (nothing is paid on boarding): arrival fare plus pairing / neighbour bonuses with riders aboard, minus the power for the trip${netIncludesAgitation(rider,run)||rider.kind==='nurse'?', and the change in cabin agitation (3 coins per point per floor)':''}. Based on who is aboard now and the best empty seat.`}>{(netIncludesAgitation(rider,run)||rider.kind==='nurse')&&<Flame aria-hidden="true" className="cc-net-flame" />}{zh?`送达 净${net>0?'+':net<0?'−':'±'}${Math.abs(net)} 金币`:`On arrival ${net>0?'+':net<0?'−':'±'}${Math.abs(net)} coins`}</span>}{paired&&<span className={`cc-net cc-net-paired ${paired.value>0?'is-pos':paired.value<0?'is-neg':''}`} title={paired.partner==='parcel'?(zh?'带上他的纸箱、放在他旁边时，两张卡合计送达的净收益估算（已减去纸箱的电费）。':'Estimated net on delivery for the pair with his parcel beside him (the parcel’s power included).'):zh?`如果旁边坐上一位${riderName(paired.partner,'zh')}，这位乘客送达时的净收益估算；配对的加成双方都算。`:`Estimated net on delivery if a ${riderName(paired.partner,'en')} sits beside them; the pairing bonus counts for both.`}>{(()=>{const partnerName=paired.partner==='parcel'?displayName({kind:'parcel',big:rider.parcelBig?'top':undefined},locale):riderName(paired.partner,locale);return zh?`配${partnerName} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)} 金币`:`w/ ${partnerName} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)} coins`;})()}</span>}
     </span>}
-    <span className="cc-line">{summary.line}{(()=>{const progress=rider.kind==='bomb'&&rider.bombMs!==undefined?`⏱ ${Math.ceil(rider.bombMs/1000)}s`:summary.progress;return progress&&<em>{progress}</em>;})()}</span>
+    <span className="cc-line">{summary.line}{summary.sealed&&<> <Scramble className="scramble-line" />{zh?' · 到站揭晓':' · revealed on arrival'}</>}{(()=>{const progress=rider.kind==='bomb'&&rider.bombMs!==undefined?`⏱ ${Math.ceil(rider.bombMs/1000)}s`:summary.progress;return progress&&<em>{progress}</em>;})()}</span>
     {legend&&<span className="cc-keepsake-effect"><b>{zh?'送到 10 层得信物 · ':'Deliver to 10F for keepsake · '}{keepsakeName(rider.kind as LegendKind,locale)}{zh?'：':': '}</b>{keepsakeTitle(rider.kind as LegendKind,locale)}</span>}
     {summary.chips.length>0&&<span className="cc-chips">{summary.chips.map((chip,index)=><span key={index} className={`cc-chip chip-${chip.tone}`} title={chip.title}>{chip.tone==='green'?'+':chip.tone==='risk'?'⛓':''}<ChipIcon icon={chip.icon}/>{chip.label}</span>)}</span>}
     {action&&<span className="cc-action">{action}</span>}
@@ -211,7 +212,7 @@ function riderState(cabin: Array<Rider | null>, slot: number, bonus: number, agi
   }
   if (rider.disguised) return { label: '乔装的炸弹客 · 没有倒计时', tone: 'neutral' };
   if(rider.kind==='mimic')return {label:bond.copies.length?`↑ ${PASSENGERS[bond.copies[0].sourceKind].name} · ${bond.copies[0].field==='energy'?'耗电':'车费'}`:'↑ 等待正上方',tone:'neutral'};
-  if (riskPartnerships(cabin).members.includes(slot)) return {label: `暂存+${agitationBand(agitation)==='high'?3:2}/层 · 链接加躁动`, tone:'warn'};
+  if (riskPartnerships(cabin).members.includes(slot)) return {label: `暂存+${agitationBand(agitation)==='high'?3:2}币/层 · 链接加躁动`, tone:'warn'};
   if (conflicts.length) return {label:conflicts.length===1?`红线 ${conflictGlyph(conflicts[0].effect)}`:`${conflicts.length} 条红线`,tone:'warn'};
   if(rider.kind==='mystery')return {label:bond.supported?cooperationLabel(bond.supportCount,bonus):'车费待揭晓',tone:bond.supported?'active':'neutral'};
   if(rider.kind==='shifter')return {label:`耗电 ${bond.energy} · 躁动 +${bond.agitation}`,tone:'warn'};
@@ -220,7 +221,7 @@ function riderState(cabin: Array<Rider | null>, slot: number, bonus: number, agi
     case 'operator': return cabin.filter(Boolean).length >= 6 ? { label: '满员 · 不省电', tone: 'warn' } : { label: '运转 −1 电', tone: 'active' };
     case 'courier': return { label: '到站补充2电', tone: 'active' };
     case 'lover': return hasNeighbour(cabin, slot, ['lover']) ? { label: '已配对', tone: 'active' } : { label: '正在呼唤同伴', tone: 'neutral' };
-    case 'thief': return hasNeighbour(cabin, slot, ['cop', 'lawyer']) ? { label: '被管住 · 不偷钱 · 全车 −1躁动/层', tone: 'active' } : { label: `顺手牵羊 +${neighbours(slot).reduce((n, i) => n + pickpocketFrom(cabin[i]), 0)}/层`, tone: 'warn' };
+    case 'thief': return hasNeighbour(cabin, slot, ['cop', 'lawyer']) ? { label: '被管住 · 不偷钱 · 全车 −1躁动/层', tone: 'active' } : { label: `顺手牵羊 +${neighbours(slot).reduce((n, i) => n + pickpocketFrom(cabin[i]), 0)}金币/层`, tone: 'warn' };
     case 'cop': return hasNeighbour(cabin, slot, ['thief', 'bomb']) ? { label: '正在控制', tone: 'active' } : null;
     case 'lawyer': return { label: '红线损失抵消最多2币', tone: 'active' };
     case 'drunk': if (agitationBand(agitation)==='high') return { label: '高躁动 · 基价+100%', tone: 'active' }; return hasNeighbour(cabin, slot, ['nurse']) ? { label: '已被安抚', tone: 'active' } : { label: '未安抚 · 每层+1', tone: 'warn' };
@@ -441,6 +442,11 @@ export default function ElevatorGame() {
   const rescue = useMemo(() => (risk.fatal && risk.affordable < risk.need ? rescuePlan(run) : null), [run, risk]);
   // A floor that can end the run needs a second press; any change to the run disarms it.
   const [departArmedFor, setDepartArmedFor] = useState<RunState | null>(null);
+  // v9.18.3: the ability cards drawn at this shop visit stay on screen after one is chosen or bought (no reflow).
+  const [shopKeys, setShopKeys] = useState<{ sig: string; keys: UpgradeKey[] }>({ sig: '', keys: [] });
+  const shopSig = run.status === 'upgrade' && run.shop.length ? `${run.floor}:${run.shop.map(c => c.key).join(',')}` : null;
+  if (shopSig && shopSig !== shopKeys.sig) setShopKeys({ sig: shopSig, keys: run.shop.map(c => c.key) });
+  const shownShopKeys = shopKeys.sig.startsWith(`${run.floor}:`) ? shopKeys.keys : run.shop.map(c => c.key);
   const departArmed = departArmedFor === run;
   const emergencyLeft = run.status === 'playing' ? emergencyAllowance(run) : 0;
   const emergencyPrice = emergencyUnitPrice(boxOf(run));
@@ -587,8 +593,22 @@ export default function ElevatorGame() {
     (after.lastThefts ?? []).forEach((theft, t) => {
       const seats = document.querySelectorAll('.standing-slot'), thiefSeat = seats[theft.thief] ?? null;
       theft.victims.forEach((v, i) => flyCoin(seats[v.slot] ?? null, thiefSeat, `+${v.coins}`, .15 + t * .2 + i * .12));
-      window.setTimeout(() => { popText(thiefSeat, zh ? `顺手牵羊 +${theft.victims.reduce((n, v) => n + v.coins, 0)}` : `Pickpocket +${theft.victims.reduce((n, v) => n + v.coins, 0)}`, 'gold'); playSfx(on, 'clink'); }, 800 + t * 200);
+      window.setTimeout(() => { popText(thiefSeat, zh ? `顺手牵羊 +${theft.victims.reduce((n, v) => n + v.coins, 0)} 金币` : `Pickpocket +${theft.victims.reduce((n, v) => n + v.coins, 0)} coins`, 'gold'); playSfx(on, 'clink'); }, 800 + t * 200);
     });
+    // v9.18.3 boxes: every box opened (or used, or taken) plays where it sat, with what was inside.
+    (after.lastBoxEvents ?? []).forEach((ev, k) => {
+      const seats = document.querySelectorAll('.standing-slot'), seat = seats[ev.slot] ?? null, delay = .15 + k * .25;
+      const src = riderPortraitSrc({ kind: 'parcel', big: ev.big ? 'top' : undefined, tier: ev.tier === 'common' ? undefined : ev.tier });
+      if (ev.by === 'thief') { window.setTimeout(() => { flyPortrait(seat, seats[ev.thief ?? ev.slot] ?? null, src); popText(seats[ev.thief ?? ev.slot] ?? null, zh ? '带走纸箱' : 'Took the box', 'gold'); }, delay * 1000); return; }
+      // An unclaimed box that reached its floor already shows its contents on the exit card.
+      const label = ev.by === 'arrival' ? '' : ev.by === 'mechanic' ? (zh ? '拆成零件 · 检修完成' : 'Parts · repair done') : ev.ability ? `${zh ? '能力：' : 'Ability: '}${translateGameText(UPGRADES[ev.ability].name, language)}` : ev.power ? (zh ? `+${ev.power} 电` : `+${ev.power} power`) : (zh ? `+${ev.coins ?? 0} 金币` : `+${ev.coins ?? 0} coins`);
+      const who = ev.by === 'child' ? (zh ? '小孩拆开了纸箱' : 'The Child opened it') : ev.by === 'mimic' ? (zh ? '复制人打开复制箱' : 'The Mimic’s copy') : '';
+      openBoxFx(seat, src, label, ev.by === 'mechanic' || ev.power ? 'blue' : ev.ability ? 'green' : 'gold', delay);
+      playSfx(on, 'boxOpen', { delay: delay + .3, pitch: k * 2 });
+      if (who) window.setTimeout(() => bubble(seat, who, 1400), delay * 1000);
+    });
+    // v9.18.3 incident: the rider who left without paying gets a red flash where they sat (the exit card says why).
+    if (after.lastIncident) { const seat = document.querySelectorAll('.standing-slot')[after.lastIncident.slot] ?? null; window.setTimeout(() => { flashClass(seat, 'is-incident', 1400); playSfx(on, 'conflict'); }, 250); }
     if (after.status !== 'lost') { playSfx(on, 'doorOpen', { delay: .05 }); playSfx(on, 'ding', { delay: .12 }); }
     const arrivals = after.lastArrivals ?? [];
     streakRef.current = arrivals.length ? streakRef.current + 1 : 0;
@@ -601,7 +621,8 @@ export default function ElevatorGame() {
     if (after.floor > runStartBest && runStartBest > 1 && !recordAnnounced.current) {
       recordAnnounced.current = true;
       window.setTimeout(() => { banner(stage, zh ? '新纪录！' : 'New record!', zh ? `第 ${after.floor} 层` : `Floor ${after.floor}`, 'gold'); playSfx(on, 'record'); burstAt(document.querySelector('.floor-indicator'), 'gold', 22, 110); }, 260);
-    } else if (after.energy <= 3 || after.stress >= after.stressCap - 1) {
+    } else if (after.status === 'playing' && (after.energy <= 3 || after.stress >= after.stressCap - 1)) {
+      // v9.18.3: never on arriving at a shop (the shop refills and calms; the warning flashed over the shop screen).
       window.setTimeout(() => { banner(stage, zh ? '危！' : 'Danger!', after.energy <= 3 ? (zh ? `电量只剩 ${after.energy}` : `${after.energy} power left`) : (zh ? `躁动 ${after.stress}/${after.stressCap}` : `Agitation ${after.stress}/${after.stressCap}`), 'red', 1600); playSfx(on, 'heartbeat'); flashClass(stage, 'cabin-closecall', 1400); }, 260);
     } else if (districtFor(after.floor).from === after.floor && after.floor > 1) {
       const d = districtFor(after.floor);
@@ -609,6 +630,8 @@ export default function ElevatorGame() {
     }
     if (bandUp) { playSfx(on, 'rumble', { delay: .2 }); flashClass(stage, 'cabin-rumble', 900); }
   };
+  // Development-only QA hook: read or replace the run, and present offers (used for browser checks of exact cabins).
+  useEffect(() => { if (process.env.NODE_ENV === 'production') return; (window as unknown as { __elevatorQa?: unknown }).__elevatorQa = { run, setRun, presentOffers }; }, [run, presentOffers]);
   const celebrateRef = useRef(celebrateFloor);
   useEffect(() => { celebrateRef.current = celebrateFloor; });
   // Bookkeeping for a lost run (daily best, legend unlocks), shared by ascents and the real-time bomb timer.
@@ -678,8 +701,9 @@ export default function ElevatorGame() {
         if (newStories.length) { const next = [...storiesUnlocked, ...newStories]; setStoriesUnlocked(next); saveList(STORIES_KEY, next); }
         const seen = [...new Set([...keepsakesSeen, ...(resolved.keepsakes ?? [])])]; if (seen.length !== keepsakesSeen.length) { setKeepsakesSeen(seen); saveList(KEEPSAKES_SEEN_KEY, seen); }
         if (resolved.status === 'lost') settleLossRef.current(resolved, deliveredNow, seen);
-        setRun(delivered); setArriving(resolved.lastArrivals??[]); setDoors('opening');
-        journeyTimers.current.push(setTimeout(()=>{setArriving([]);setDoors('open');busyRef.current=false;if(!document.querySelector('[role="dialog"]'))scrollMobileTarget('.candidate-panel','start');},resolved.lastArrivals?.length?(reduced?800:1600):(reduced?40:260)));
+        const exits=[...(resolved.lastArrivals??[]),...(resolved.lastIncident?[{...resolved.lastIncident,coins:0,incident:true}]:[])];
+        setRun(delivered); setArriving(exits); setDoors('opening');
+        journeyTimers.current.push(setTimeout(()=>{setArriving([]);setDoors('open');busyRef.current=false;if(!document.querySelector('[role="dialog"]'))scrollMobileTarget('.candidate-panel','start');},exits.length?(reduced?800:1600):(reduced?40:260)));
         reportMetrics(run, resolved, `${resolved.floor} 层 · 到站结算`);
         flash({ tone: 'arrival', label: `${String(resolved.floor).padStart(2, '0')}F · 本层结算`, slots: [], coins: resolved.lastEarnings.total, energy: resolved.lastEnergy.delta, pressure: resolved.lastPressure.delta });
         playTone(soundEnabled.current, resolved.status === 'lost' ? 'danger' : 'arrive');
@@ -746,7 +770,9 @@ export default function ElevatorGame() {
   const copyText = (text: string, label: string) => { try { void navigator.clipboard.writeText(text).then(()=>setCopied(label),()=>setCopied('manual:'+text)); } catch { setCopied('manual:'+text); } };
   const shareLine = () => language==='zh' ? `Elevator Tales ${daily?`每日班次 ${daily.key}`:'无尽夜班'}：到达 ${run.floor} 层（${({bomb:'炸弹倒计时归零',both:'电量与躁动同时失控',power:'电量耗尽',agitation:'躁动失控'} as Record<string,string>)[failureCause]}）` : `Elevator Tales ${daily?`daily shift ${daily.key}`:'endless shift'}: reached floor ${run.floor} (${({bomb:'bomb timer',both:'power and agitation',power:'out of power',agitation:'agitation'} as Record<string,string>)[failureCause]})`;
   const runRecordJson = () => JSON.stringify({ game: 'Elevator Tales', version: GAME_VERSION, daily: daily?.key ?? null, floor: run.floor, cause: failureCause, coins: run.coins, earned: run.earned, upgrades: Object.entries(run.upgrades).filter(([,v])=>v).map(([k])=>k), box: boxOf(run), keepsakes: run.keepsakes ?? [], legend: run.legendOffer ?? null, legendStatus: run.legendStatus ?? null, floors: recordRef.current }, null, 1);
-  const recharge = (units:number) => {const next=chargeBattery(run,units);if(next===run)return;setLeaveArmed(false);reportMetrics(run,next,'商店充电');setRun(next);playTone(sound,'upgrade');};
+  const recharge = (units:number) => {const next=chargeBattery(run,units);if(next===run)return;setLeaveArmed(false);reportMetrics(run,next,'商店充电');setRun(next);playTone(sound,'upgrade');
+    // v9.18.3 shop feedback: the power panel glows and shows what was added.
+    const panel=document.querySelector('.upgrade-dialog .shop-power');flashClass(panel,'is-charged',700);burstAt(panel,'blue',14,70);popText(panel,language==='zh'?`+${next.energy-run.energy} 电`:`+${next.energy-run.energy} power`,'blue');playSfx(sound,'calm');};
   const confirmDismiss = () => {
     if(!detailRider||!canDismiss)return;
     const updated=dismissRider(run,detailRider.id);if(updated===run)return;
@@ -754,6 +780,31 @@ export default function ElevatorGame() {
     flash({tone:'place',label:`已请离 · 赔偿 ${penalty} 金币`,slots:[]});playTone(sound,'place');
   };
 
+  // v9.18.3: one pass over the adjacent pairs feeds both the link lines (SVG) and their labels (an HTML layer above
+  // the seats, so labels are never stretched by the SVG's aspect ratio or hidden behind a portrait).
+  const linkPreviewing=Boolean(hoveredPlan?.ok&&hoveredPlan.changed);
+  const linkCabin=linkPreviewing?hoveredPlan!.next.cabin:run.cabin;
+  const edgeView=ADJACENT.map(([first,second])=>{
+    const active=activeConnection(run.cabin,first,second); const currentConflict=conflictLinks(run.cabin).find(link=>link.first===first&&link.second===second);
+    const preview=linkPreviewing&&activeConnection(linkCabin,first,second);
+    const previewConflict=linkPreviewing?conflictLinks(linkCabin).find(link=>link.first===first&&link.second===second):undefined;
+    return { first, second, shownActive: linkPreviewing?preview:active, steal: stealLink(linkCabin,first,second), partnership: riskPartnerships(linkCabin).edges.some(([a,b])=>a===first&&b===second), copy: copyConnection(linkCabin,first,second), shownConflict: linkPreviewing?previewConflict:currentConflict, previewEdge: shouldPreviewConnection(linkPreviewing,active,preview,currentConflict?.effect??null,previewConflict?.effect??null) };
+  });
+  const zhUI=language==='zh';
+  const coinWord=zhUI?'金币':'coins';
+  const conflictLabel=(effect:ConflictEffect)=>({
+    agitation:<span className="ll-part ll-agitation"><Flame aria-hidden="true"/>+1</span>,
+    energy:<span className="ll-part ll-energy"><BatteryCharging aria-hidden="true"/>−1</span>,
+    coins:<span className="ll-part ll-loss"><Coins aria-hidden="true"/>−2 {coinWord}</span>,
+    overload:<span className="ll-part ll-energy"><BatteryCharging aria-hidden="true"/>×2</span>,
+    gamble:<span className="ll-part ll-energy"><BatteryCharging aria-hidden="true"/>×2 · {zhUI?'基价+100%':'base +100%'}</span>,
+  }[effect]);
+  const linkLabels=edgeView.flatMap(e=>{
+    const parts=[e.partnership&&<span key="p" className="ll-part ll-agitation"><Flame aria-hidden="true"/>+1</span>, e.shownConflict&&<span key="c">{conflictLabel(e.shownConflict.effect)}</span>, e.steal==='box'?<span key="s" className="ll-part ll-steal"><Package aria-hidden="true"/>{zhUI?'偷纸箱':'takes box'}</span>:e.steal?<span key="s" className="ll-part ll-steal"><Coins aria-hidden="true"/>+{e.steal} {coinWord}</span>:null].filter(Boolean);
+    if(!parts.length)return [];
+    const [x1,y1]=CONNECTION_POINTS[e.first],[x2,y2]=CONNECTION_POINTS[e.second];
+    return [<span key={`${e.first}-${e.second}`} className={`link-label ${e.steal?'is-steal':''} ${x1===x2?'is-vertical':''}`} style={{left:`${(x1+x2)/6}%`,top:`${(y1+y2)/4}%`}}>{parts}</span>];
+  });
   const content = <main className={`game-shell ${cooperationRelief(run) ? 'has-contract' : ''} ${difficultyTier(run.floor) % 2 ? 'phase-dawn' : ''}`}>
     <div className="ambient-grain" />
     <div className="rotate-notice"><RotateCcw/><h2>请竖屏游玩</h2><p>这个横屏尺寸太矮，转回竖屏即可继续；本班进度保留。</p></div>
@@ -796,30 +847,18 @@ export default function ElevatorGame() {
           {feedback.tone === 'arrival' && <p className="feedback-cause">{[earningSummary,positiveEnergySummary||(!earningSummary?energySummary:''),pressureSummary].filter(Boolean).join(' · ')}</p>}
         </output>}
         {doors === 'moving' && <div className="travel-caption"><ArrowUp />前往 {String(run.floor + 1).padStart(2, '0')}F</div>}
-        <div className="standing-grid"><svg className="adjacency-map" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true">{ADJACENT.map(([first, second]) => {
-          const previewing=Boolean(hoveredPlan?.ok&&hoveredPlan.changed);
-          const active = activeConnection(run.cabin, first, second); const currentConflict=conflictLinks(run.cabin).find(link=>link.first===first&&link.second===second);
-          const preview = previewing && activeConnection(hoveredPlan!.next.cabin, first, second);
-          const previewConflict=previewing?conflictLinks(hoveredPlan!.next.cabin).find(link=>link.first===first&&link.second===second):undefined;
-          const shownActive=previewing?preview:active;
-          const shownCabin=previewing ? hoveredPlan!.next.cabin : run.cabin;
-          const partnership = riskPartnerships(shownCabin).edges.some(([a,b])=>a===first&&b===second);
-          const copy=copyConnection(shownCabin,first,second);
-          const shownConflict=previewing?previewConflict:currentConflict;
-          const previewEdge=shouldPreviewConnection(previewing,active,preview,currentConflict?.effect??null,previewConflict?.effect??null);
+        <div className="standing-grid"><svg className="adjacency-map" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true">{edgeView.map(({ first, second, shownActive, steal, partnership, copy, shownConflict, previewEdge }) => {
           const [x1,y1]=CONNECTION_POINTS[first]; const [x2,y2]=CONNECTION_POINTS[second];
-          const steal=stealLink(shownCabin,first,second);
-          const cost=[partnership?'🔥 +1':'',shownConflict?conflictGlyph(shownConflict.effect):'',steal==='box'?'📦':steal?`🪙+${steal}`:''].filter(Boolean).join(' · ');
-          return <g key={`${first}-${second}`} className={`connection-path ${shownActive ? 'active' : ''} ${steal ? 'steal-link' : ''} ${partnership ? 'partnership-link' : ''} ${copy?'copy-link':''} ${shownConflict?'conflict-link':''} ${previewEdge ? 'preview-link' : ''}`}><line className="connection-underlay" x1={x1} y1={y1} x2={x2} y2={y2}/><line className="connection-core" x1={x1} y1={y1} x2={x2} y2={y2}/>{(shownActive||shownConflict||steal)&&!copy&&<circle className="connection-node" cx={(x1+x2)/2} cy={(y1+y2)/2} r="3"/>}{copy&&<path className="copy-direction" d={`M ${x1-5} 104 L ${x1} 96 L ${x1+5} 104`}/>} {cost&&<text className="connection-effect" x={(x1+x2)/2+(copy?12:0)} y={(y1+y2)/2-6} textAnchor={copy?'start':'middle'}>{cost}</text>}</g>;
+          return <g key={`${first}-${second}`} className={`connection-path ${shownActive ? 'active' : ''} ${steal ? 'steal-link' : ''} ${partnership ? 'partnership-link' : ''} ${copy?'copy-link':''} ${shownConflict?'conflict-link':''} ${previewEdge ? 'preview-link' : ''}`}><line className="connection-underlay" x1={x1} y1={y1} x2={x2} y2={y2}/><line className="connection-core" x1={x1} y1={y1} x2={x2} y2={y2}/>{(shownActive||shownConflict||steal)&&!copy&&<circle className="connection-node" cx={(x1+x2)/2} cy={(y1+y2)/2} r="3"/>}{copy&&<path className="copy-direction" d={`M ${x1-5} 104 L ${x1} 96 L ${x1+5} 104`}/>}</g>;
         })}</svg>{run.cabin.map((rider, index) => {
           const state = riderState(run.cabin, index, cooperationBonus(run), run.stress, run.floor); const plan = placementPlans[index]; const synergy = plan?.ok && plan.changed && plan.tone === 'combo'; const agitation=riderAgitation(run,index); const seatBrief=rider?{...passengerBrief(rider,run.floor,run.cabin,cooperationBonus(run),cooperationRelief(run),eventPressureMultiplier(run),run.stress),energy:seatEnergyCosts[index].total}:null;
           const target = Boolean(activeRider) && (dragOverSlot === index || (isBigParcel(activeRider) && dragOverSlot !== null && dragOverSlot % 3 === index % 3)); const reaction = feedback?.slots.includes(index) ? feedback : null;
           const agitationValue=agitation.low===agitation.high?signedDelta(agitation.low):`${signedDelta(agitation.low)}～${signedDelta(agitation.high)}`;
           const compactAgitationValue=agitation.low===agitation.high?compactDelta(agitation.low):`${compactDelta(agitation.low)}～${compactDelta(agitation.high)}`;
           return <div key={index} className="standing-slot-wrap"><button disabled={locked} className={`standing-slot ${rider?.big ? 'seat-crate' : ''} ${rider ? `category-${passengerCategory(rider.kind)} seat-grade-${riderCardGrade(rider)}` : ''} ${rider ? 'occupied' : ''} ${rider?.boardedAt === run.floor ? 'newly-boarded' : ''} ${synergy ? 'synergy-target' : ''} ${plan ? plan.ok ? 'drop-valid' : 'drop-blocked' : ''} ${selectedSlot === index ? 'selected' : ''} ${target ? 'drag-target' : ''}`} onClick={() => clickSlot(index)} draggable={false} onPointerDown={(event) => { if (rider && !locked && (!run.swapped || rider.boardedAt === run.floor)) pointerDrag(event, { type: 'slot', slot: index }, rider); }} onMouseEnter={() => activeRider && window.matchMedia('(min-width: 701px) and (hover: hover)').matches && setDragOverSlot(index)} onMouseLeave={() => !dragged && setDragOverSlot(null)} onDragOver={(event) => { if (!locked && dragged) { event.preventDefault(); event.dataTransfer.dropEffect = plan?.ok ? 'move' : 'none'; setDragOverSlot(index); } }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOverSlot((current) => current === index ? null : current); }} onDrop={(event) => dropOnSlot(event, index)} aria-label={rider ? `${index + 1}号位，${PASSENGERS[rider.kind].name}，到站收益${seatBrief?.expectedFare??'未知'}，每站耗电${seatBrief?.energy}，下一站躁动${agitationValue}${state ? `，${state.label}` : ''}` : `${index + 1}号空位${synergy ? '，可联动' : ''}`}>
-            {rider?.big ? <span className="crate-half" aria-hidden="true" /> : rider && seatBrief ? <motion.span className={`rider-visual ${rider.kind==='bomb'?'rider-bomb':''} ${rider.volatile?'rider-high-risk':''}`} key={rider.id} initial={reduceMotion ? false : { opacity: 0, scale: 1.04, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 520, damping: 34 }}>{(riderCardGrade(rider)==='rare'||riderCardGrade(rider)==='legendary')&&<CardShader legendary={riderCardGrade(rider)==='legendary'} />}<span className="seat-heading"><span className="rider-name" data-no-translate>{displayName(rider,language)}{riderCardGrade(rider)!=='standard'&&<span className={`card-gem gem-${riderCardGrade(rider)}`} aria-hidden="true" />}</span>{rider.volatile&&<span className="seat-risk-tag" title="急躁的乘客：车费更高，但在车上每层 +1 躁动；护士相邻可以抵消"><Flame aria-hidden="true" />急躁</span>}</span><span className="slot-destination">还剩 {Math.max(0, rider.destination - run.floor)} 站</span><span className="seat-art"><Portrait kind={rider.kind} rider={rider} large />{(Boolean(rider.stash) || (state && rider.kind !== 'bomb') || rider.fuse !== undefined) && <span className="seat-overlay">{Boolean(rider.stash)&&<span className="seat-stash">暂存 {rider.stash}</span>}{state && rider.kind !== 'bomb' && <span className={`slot-state ${state.tone}`}>{state.label}</span>}{rider.fuse !== undefined && (()=>{const fs=fuseState(run.cabin,index,run.floor,run.stress);
+            {rider?.big ? <span className="crate-half" aria-hidden="true" /> : rider && seatBrief ? <motion.span className={`rider-visual ${rider.kind==='bomb'?'rider-bomb':''} ${rider.volatile?'rider-high-risk':''}`} key={rider.id} initial={reduceMotion ? false : { opacity: 0, scale: 1.04, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 520, damping: 34 }}>{(riderCardGrade(rider)==='rare'||riderCardGrade(rider)==='legendary')&&<CardShader legendary={riderCardGrade(rider)==='legendary'} />}<span className="seat-heading"><span className="rider-name" data-no-translate>{displayName(rider,language)}{riderCardGrade(rider)!=='standard'&&<span className={`card-gem gem-${riderCardGrade(rider)}`} aria-hidden="true" />}</span>{rider.volatile&&<span className="seat-risk-tag" title="急躁的乘客：车费更高，但在车上每层 +1 躁动；护士相邻可以抵消"><Flame aria-hidden="true" />急躁</span>}</span><span className="slot-destination">还剩 {Math.max(0, rider.destination - run.floor)} 站</span><span className="seat-art"><Portrait kind={rider.kind} rider={rider} large />{(Boolean(rider.stash) || (state && rider.kind !== 'bomb') || rider.fuse !== undefined) && <span className="seat-overlay">{Boolean(rider.stash)&&<span className="seat-stash">{`暂存 ${rider.stash} 币`}</span>}{state && rider.kind !== 'bomb' && <span className={`slot-state ${state.tone}`}>{state.label}</span>}{rider.fuse !== undefined && (()=>{const fs=fuseState(run.cabin,index,run.floor,run.stress);
             // v9.18.2 real-time Bomber: the bomb with its readout and burning fuse, plus a one-line caption for its state.
-            if (rider.bombMs!==undefined&&fs) { const total=rider.bombMsTotal??bombSeconds(Math.max(1,rider.destination-rider.boardedAt))*1000; return <span className="bomb-seat"><BombTimer ms={rider.bombMs} total={total} running={bombAboard&&!bombPaused&&fs!=='locked'} speed={bombTick(run.stress)} state={fs as 'live'|'late'|'locked'|'carried'} /><span className={`bomb-caption bomb-caption-${fs}`}>{fs==='locked'?'警察锁住了倒计时':fs==='carried'?'快递员会带走炸弹':fs==='late'?'来不及！':`还剩 ${Math.max(0,rider.destination-run.floor)} 站`}</span></span>; }const fuseText=rider.bombMs!==undefined?`${Math.ceil(rider.bombMs/1000)}秒`:rider.fuse;const critical=rider.bombMs!==undefined&&rider.bombMs<=10000&&fs!=='locked';const locked=fs==='locked'||fs==='carried';const left=Math.max(0,rider.destination-run.floor);const late=fs==='late';return <span className={`fuse ${critical?'fuse-critical':''} ${locked?'fuse-locked':late?'fuse-late':'fuse-live'}`} title={fs==='carried'?'空手的快递员拿着炸弹，他会在倒计时归零前下车并把炸弹带走':locked?'警察在旁边：倒计时暂停，不会减少':late?`倒计时 ${fuseText}，但还有 ${left} 站：到站前会爆炸，让警察站到旁边或请离`:`每层减 1；还有 ${left} 站，能按时送达`}>{fs==='carried'?<><LockKeyhole aria-hidden="true" />快递员会带走 · {fuseText}</>:locked?<><LockKeyhole aria-hidden="true" />已锁住 · {fuseText}</>:late?<><Flame aria-hidden="true" />来不及！倒计时 {fuseText}</>:<>倒计时 {fuseText}</>}</span>;})()}</span>}</span><span className="seat-metrics"><span className="seat-fare" title="按当前站位、躁动和已完成进度计算；下一站到站含本次进度，不含概率奖励" aria-label={`到站收益 ${seatBrief.expectedFare??'未知'}`}><Coins aria-hidden="true" />{seatBrief.expectedFare??'?'}</span><span className="seat-energy" title="人物耗电含红线倍率；链接固定耗电与整车节能另计" aria-label={`每站耗电 ${seatBrief.energy}`}><BatteryCharging aria-hidden="true" />{seatBrief.energy>0?`−${seatBrief.energy}`:seatBrief.energy}</span><span className="seat-agitation" title="下一站躁动" aria-label={`下一站躁动 ${agitationValue}`}><Flame aria-hidden="true" />{compactAgitationValue}</span></span></motion.span> : <><span className="slot-number">{String(index + 1).padStart(2, '0')}</span>{target && plan?.ok && activeRider && <span className="placement-ghost"><Portrait kind={activeRider.kind} large /></span>}</>}
+            if (rider.bombMs!==undefined&&fs) { const total=rider.bombMsTotal??bombSeconds(Math.max(1,rider.destination-rider.boardedAt))*1000; return <span className="bomb-seat"><BombTimer ms={rider.bombMs} total={total} running={bombAboard&&!bombPaused&&fs!=='locked'} speed={bombTick(run.stress)} state={fs as 'live'|'late'|'locked'|'carried'} /><span className={`bomb-caption bomb-caption-${fs}`}>{fs==='locked'?'警察锁住了倒计时':fs==='carried'?'快递员会带走炸弹':fs==='late'?'来不及！':`还剩 ${Math.max(0,rider.destination-run.floor)} 站`}</span></span>; }const fuseText=rider.bombMs!==undefined?`${Math.ceil(rider.bombMs/1000)}秒`:rider.fuse;const critical=rider.bombMs!==undefined&&rider.bombMs<=10000&&fs!=='locked';const locked=fs==='locked'||fs==='carried';const left=Math.max(0,rider.destination-run.floor);const late=fs==='late';return <span className={`fuse ${critical?'fuse-critical':''} ${locked?'fuse-locked':late?'fuse-late':'fuse-live'}`} title={fs==='carried'?'空手的快递员拿着炸弹，他会在倒计时归零前下车并把炸弹带走':locked?'警察在旁边：倒计时暂停，不会减少':late?`倒计时 ${fuseText}，但还有 ${left} 站：到站前会爆炸，让警察站到旁边或请离`:`每层减 1；还有 ${left} 站，能按时送达`}>{fs==='carried'?<><LockKeyhole aria-hidden="true" />快递员会带走 · {fuseText}</>:locked?<><LockKeyhole aria-hidden="true" />已锁住 · {fuseText}</>:late?<><Flame aria-hidden="true" />来不及！倒计时 {fuseText}</>:<>倒计时 {fuseText}</>}</span>;})()}</span>}</span><span className="seat-metrics"><span className="seat-fare" title="按当前站位、躁动和已完成进度计算；下一站到站含本次进度，不含概率奖励" aria-label={`到站收益 ${seatBrief.expectedFare??'未知'}`}><Coins aria-hidden="true" />{seatBrief.expectedFare??<Scramble />}</span><span className="seat-energy" title="人物耗电含红线倍率；链接固定耗电与整车节能另计" aria-label={`每站耗电 ${seatBrief.energy}`}><BatteryCharging aria-hidden="true" />{seatBrief.energy>0?`−${seatBrief.energy}`:seatBrief.energy}</span><span className="seat-agitation" title="下一站躁动" aria-label={`下一站躁动 ${agitationValue}`}><Flame aria-hidden="true" />{compactAgitationValue}</span></span></motion.span> : <><span className="slot-number">{String(index + 1).padStart(2, '0')}</span>{target && plan?.ok && activeRider && <span className="placement-ghost"><Portrait kind={activeRider.kind} large /></span>}</>}
             {reaction && <span key={reaction.id} className={`slot-reaction reaction-${reaction.tone}`} aria-hidden="true" />}
             {target && plan && <span className={`drop-caption ${plan.ok ? 'allowed' : 'blocked'}`}>{plan.ok ? `${dragged ? '松手' : '点击'} · ${synergy ? '联动' : '就位'}` : '不可放置'}</span>}
           </button>{rider && !rider.big && <button className="seat-info-button" type="button" disabled={locked} draggable={false} onDragStart={(event)=>event.preventDefault()} onClick={()=>{setEjectArmed(false);setPassengerDetails(rider);}} aria-label={`查看${PASSENGERS[rider.kind].name}详情`} title="查看人物详情"><Info aria-hidden="true" /></button>}</div>;
@@ -841,7 +880,10 @@ export default function ElevatorGame() {
             <button className="seat-info-button crate-info" type="button" disabled={locked} onClick={() => { setEjectArmed(false); setPassengerDetails(r); }} aria-label={language === 'zh' ? `查看${displayName(r, 'zh')}详情` : `View ${displayName(r, 'en')} details`}><Info aria-hidden="true" /></button>
           </div>;
         })}</div>
-        {arriving.length>0&&<div className="standing-grid arrival-grid">{arriving.map(arrival=><div key={arrival.riderId} className="standing-slot-wrap" style={{gridColumn:arrival.slot%3+1,gridRow:Math.floor(arrival.slot/3)+1}}><div className={`arrival-exit ${fastReveal?'arrival-quick':''}`} role="status" aria-label={`${PASSENGERS[arrival.kind].name} 到站 ${arrival.ability?UPGRADES[arrival.ability].name:arrival.power?`+${arrival.power} 电`:`+${arrival.coins} 金币`}`}><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{PASSENGERS[arrival.kind].name}</span><span className="arrival-payout">{arrival.ability?<><Sparkles aria-hidden="true"/><small>{UPGRADES[arrival.ability].name}</small></>:arrival.power?<><BatteryCharging aria-hidden="true"/>+{arrival.power}<small>电</small></>:<><Coins aria-hidden="true"/>+{arrival.coins}<small>金币</small></>}</span></div></div>)}</div>}
+        {linkLabels.length>0&&<div className="standing-grid link-label-layer" data-no-translate aria-hidden="true">{linkLabels}</div>}
+        {arriving.length>0&&<div className="standing-grid arrival-grid">{arriving.map(arrival=><div key={arrival.riderId} className="standing-slot-wrap" style={{gridColumn:arrival.slot%3+1,gridRow:Math.floor(arrival.slot/3)+1}}>{arrival.incident
+          ? <output className={`arrival-exit arrival-incident ${fastReveal?'arrival-quick':''}`} aria-label={zhUI?`${riderName(arrival.kind,'zh')} 受不了混乱，提前下车，未付车费`:`${riderName(arrival.kind,'en')} left early in the chaos without paying`} data-no-translate><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{riderName(arrival.kind,language)}</span><span className="arrival-payout-incident"><Flame aria-hidden="true"/>{zhUI?'提前下车':'Left early'}<small>{zhUI?'受不了混乱 · 未付车费':'Chaos · no fare'}</small></span></output>
+          : <div className={`arrival-exit ${fastReveal?'arrival-quick':''}`} role="status" aria-label={`${PASSENGERS[arrival.kind].name} 到站 ${arrival.ability?UPGRADES[arrival.ability].name:arrival.power?`+${arrival.power} 电`:`+${arrival.coins} 金币`}`}><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{PASSENGERS[arrival.kind].name}</span><span className="arrival-payout">{arrival.ability?<><Sparkles aria-hidden="true"/><small>{UPGRADES[arrival.ability].name}</small></>:arrival.power?<><BatteryCharging aria-hidden="true"/>+{arrival.power}<small>电</small></>:<><Coins aria-hidden="true"/>+{arrival.coins}<small>金币</small></>}</span></div>}</div>)}</div>}
         <div className={`cabin-message ${hoveredPlan && !hoveredPlan.ok ? 'message-error' : ''}`} aria-live="polite"><Sparkles /><span>{hoveredPlan ? hoveredPlan.ok ? hoveredPlan.next.message : hoveredPlan.label : selectedSlot !== null && run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : run.message}</span></div><div className="swap-status">{pendingOfferId ? '选择发光站位 · ESC 取消' : selectedSlot !== null ? run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : '再选一个站位完成调整 · ESC 取消' : run.swapped ? <><LockKeyhole /> 旧乘客换位已用 · 新上客仍可调整</> : '拖拽人物安排站位 · 有效组合会亮起'}</div>
       </section>
       <aside className="arrival-panel">
@@ -923,7 +965,7 @@ export default function ElevatorGame() {
 
     <Dialog open={receiptOpen} onOpenChange={setReceiptOpen}><DialogContent className="story-dialog receipt-dialog">
       <p className="dialog-kicker">DECISION RECEIPT</p><DialogHeader><DialogTitle>这次，改变了什么？</DialogTitle><DialogDescription>{metricEvent?.label}。以下是实际变化，不是下一层预测。</DialogDescription></DialogHeader>
-      <div className="receipt-sections">{Boolean(run.lastArrivals?.length)&&<section className="receipt-section"><h3>本层到站乘客</h3>{run.lastArrivals?.map(entry=><p key={entry.riderId}><span>{entry.slot+1}号位 · {PASSENGERS[entry.kind].name}</span><b>{entry.ability?`能力「${UPGRADES[entry.ability].name}」`:entry.power?`+${entry.power} 电`:`+${entry.coins} 金币`}</b></p>)}<p>个人收入含实际小费与个人升级奖励；整车奖励及扣款另计。</p></section>}{metricEvent?.changes.map((change) => <section key={change.key} className={`receipt-section pulse-${change.tone}`}>
+      <div className="receipt-sections">{Boolean(run.lastArrivals?.length)&&<section className="receipt-section"><h3>本层到站乘客</h3>{run.lastArrivals?.map(entry=><p key={entry.riderId}><span>{entry.slot+1}号位 · {PASSENGERS[entry.kind].name}</span><b>{entry.ability?`能力「${UPGRADES[entry.ability].name}」`:entry.power?`+${entry.power} 电`:`+${entry.coins} 金币`}</b></p>)}<p>个人收入含实际小费与个人升级奖励；整车奖励及扣款另计。</p></section>}{run.lastIncident&&<section className="receipt-section pulse-danger" data-no-translate><h3>{zhUI?'车厢事故':'Incident'}</h3><p><span>{zhUI?`${run.lastIncident.slot+1}号位 · ${riderName(run.lastIncident.kind,'zh')}`:`Seat ${run.lastIncident.slot+1} · ${riderName(run.lastIncident.kind,'en')}`}</span><b>{zhUI?'受不了混乱，提前下车 · 未付车费':'Left early in the chaos · no fare'}</b></p></section>}{metricEvent?.changes.map((change) => <section key={change.key} className={`receipt-section pulse-${change.tone}`}>
         <h3><span>{change.label}</span><b>{change.before} → {change.after}<em>{signedDelta(change.delta)}</em></b></h3>
         {change.sources.map((source, index) => <p key={`${index}-${source.label}`}><span>{source.label}</span><b>{signedDelta(source.amount)}</b></p>)}
         {change.capDelta !== 0 && <p><span>{change.label}上限</span><b>{signedDelta(change.capDelta)}</b></p>}
@@ -955,10 +997,15 @@ export default function ElevatorGame() {
       <div className="shop-step-head" data-no-translate><h3><i>1</i>{language==='zh'?(run.shopUpgradeBought?`加购 1 项 · ${SHOP_PRICES.extraAbility} 金币（可跳过）`:'选 1 项能力 · 免费'):(run.shopUpgradeBought?`Buy 1 more · ${SHOP_PRICES.extraAbility} coins (optional)`:'Pick 1 ability · free')}</h3><span>
         {!run.shopUpgradeBought&&availableShopCards(run).length>0&&run.rerolledFloor!==run.floor&&<button className="shop-reroll" disabled={run.coins<REROLL_PRICE} onClick={()=>{const next=rerollShop(run, rngOf('shop', run.floor));if(next!==run){reportMetrics(run,next,language==='zh'?'重抽能力':'Reroll abilities');setRun(next);playTone(sound,'select');}}}><RotateCcw aria-hidden="true" />{language==='zh'?`重抽 · ${REROLL_PRICE}币`:`Reroll · ${REROLL_PRICE}c`}</button>}
 </span></div>
-      {!availableShopCards(run).length&&<p className="shop-receipt" role="status" data-no-translate>{run.shopExtraBought?(language==='zh'?'本店已选取并加购能力，下次商店再选。':'Ability taken and extra bought; more at the next shop.'):(language==='zh'?'本店没有可选的能力。':'No abilities to choose here.')}</p>}
+      {!availableShopCards(run).length&&!shownShopKeys.length&&<p className="shop-receipt" role="status" data-no-translate>{run.shopExtraBought?(language==='zh'?'本店已选取并加购能力，下次商店再选。':'Ability taken and extra bought; more at the next shop.'):(language==='zh'?'本店没有可选的能力。':'No abilities to choose here.')}</p>}
       {availableShopCards(run).length>0&&upgradeCount>=UPGRADE_SLOTS&&<p className="shop-receipt shop-full-hint" role="status" data-no-translate>{language==='zh'?`六个安装位已满：在下方卖掉一项（退 ${SELL_REFUND} 金币）才能装新能力。`:`All six slots are full: sell one below (refund ${SELL_REFUND}) to install a new ability.`}</p>}
       {(run.keepsakes?.length??0)>0&&<p className="keepsake-row" data-no-translate>{language==='zh'?'信物：':'Keepsakes: '}{run.keepsakes!.map(k=><span key={k} className="keepsake-chip keepsake-full"><b>{keepsakeLabel(k,language)}</b>{keepsakeText(k,language)}</span>)}</p>}
-      <div className="shop-choice-row"><div className="shop-main-column"><div className="upgrade-grid">{availableShopCards(run).map((card) => { const key = card.key; const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, run); const warning = card.price > 0 ? purchaseRepairWarning(run,key,card.price) : null; const slotsFull = upgradeCount >= UPGRADE_SLOTS; return <button key={key} data-key={key} className={rescue ? 'crisis-rescue' : ''} disabled={!affordable || slotsFull} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price === 0 ? '免费选取' : `加购 ${card.price} 金币`}${!affordable ? '，金币不足' : ''}`}>
+      <div className="shop-choice-row"><div className="shop-main-column"><div className="upgrade-grid">{shownShopKeys.map((key) => { const card = availableShopCards(run).find(c => c.key === key);
+        // v9.18.3: a chosen card stays in its place (marked), so picking one never reflows the shop.
+        if (!card) { const taken = run.upgrades[key] > 0; return <button key={key} data-key={key} className={taken ? 'shop-purchased' : 'shop-soldout'} disabled aria-label={`${UPGRADES[key].name}，${taken ? '已选取' : '本店已选完'}`}>
+          <span className="shop-item-head"><span className="shop-icon" style={{backgroundImage:`url(${shopIcon(`ability-${key}`)})`}} aria-hidden="true" /><b>{UPGRADES[key].name}</b></span><p>{UPGRADES[key].description}</p><span className="shop-price" data-no-translate>{taken?<><Check aria-hidden="true" /><strong>{language==='zh'?'已装上':'Installed'}</strong></>:<><LockKeyhole aria-hidden="true" /><strong>{language==='zh'?'本店已选完':'Shop done'}</strong></>}</span>
+        </button>; }
+        const affordable = run.coins >= card.price; const rescue = rescuesCrisis(key, run); const warning = card.price > 0 ? purchaseRepairWarning(run,key,card.price) : null; const slotsFull = upgradeCount >= UPGRADE_SLOTS; return <button key={key} data-key={key} className={rescue ? 'crisis-rescue' : ''} disabled={!affordable || slotsFull} onClick={() => chooseUpgrade(key)} aria-label={`${UPGRADES[key].name}，${card.price === 0 ? '免费选取' : `加购 ${card.price} 金币`}${!affordable ? '，金币不足' : ''}`}>
         <span className="shop-item-head"><span className="shop-icon" style={{backgroundImage:`url(${shopIcon(`ability-${key}`)})`}} aria-hidden="true" /><b>{UPGRADES[key].name}</b></span><p>{UPGRADES[key].description}</p>{IMPACT_KEYS.includes(key)&&<em>{upgradeImpact(key, run)}</em>}{warning && <span className="reserve-warning">{warning === 'crisis' ? '购买后不足以修复当前失控' : '购买后无法补至参考电量；参考线不是离店要求'}</span>}<span className="shop-price" data-no-translate>{card.price===0?<><Check aria-hidden="true" /><strong>{language==='zh'?'免费选取':'Free pick'}</strong></>:<><Coins aria-hidden="true" /><strong>{card.price}</strong><span>{affordable ? (language==='zh'?'加购':'Buy extra') : (language==='zh'?`还差 ${card.price - run.coins}`:`Need ${card.price - run.coins}`)}</span></>}</span>
       </button>; })}</div>
       <section className="shop-slots" data-no-translate><div className="shop-slots-head"><b>{language==='zh'?`已装能力 ${upgradeCount}/${UPGRADE_SLOTS}`:`Installed ${upgradeCount}/${UPGRADE_SLOTS}`}</b><span>{language==='zh'?`卖出退 ${SELL_REFUND} 金币`:`Sell for ${SELL_REFUND}`}</span></div>
@@ -969,7 +1016,7 @@ export default function ElevatorGame() {
         {BOX_LINES.map((line:BoxLine)=>{const level=boxOf(run)[line];const price=boxLevelPrice(run,line);const can=canBuyBoxLevel(run,line);return <div key={line} className="box-line">
           <span className="box-line-name"><span className="shop-icon box-icon" style={{backgroundImage:`url(${shopIcon(`box-${line}`)})`}} aria-hidden="true" />{BOX_LINE_LABELS[line].name}<i className="box-pips" aria-label={`${level}/${BOX_MAX_LEVEL}`}>{Array.from({length:BOX_MAX_LEVEL},(_,i)=><b key={i} className={i<level?'on':''} />)}</i></span>
           <span className="box-line-next">{level<BOX_MAX_LEVEL?BOX_LINE_LABELS[line].levels[level]:(language==='zh'?'已满级':'Maxed')}</span>
-          <button disabled={!can} onClick={()=>{const next=buyBoxLevel(run,line);if(next!==run){setLeaveArmed(false);reportMetrics(run,next,language==='zh'?'配电箱升级':'Power box upgrade');setRun(next);playTone(sound,'upgrade');}}}>{level>=BOX_MAX_LEVEL?(language==='zh'?'满级':'Max'):price===0?(language==='zh'?'免费升级':'Free'):`${price} ${language==='zh'?'金币':'coins'}`}</button>
+          <button disabled={!can} onClick={(event)=>{const next=buyBoxLevel(run,line);if(next!==run){setLeaveArmed(false);reportMetrics(run,next,language==='zh'?'配电箱升级':'Power box upgrade');setRun(next);playTone(sound,'upgrade');playSfx(sound,'stamp');const row=event.currentTarget.closest('.box-line');flashClass(row,'is-bumped',500);burstAt(row?.querySelector('.box-icon')??null,'gold',12,55);}}}>{level>=BOX_MAX_LEVEL?(language==='zh'?'满级':'Max'):price===0?(language==='zh'?'免费升级':'Free'):`${price} ${language==='zh'?'金币':'coins'}`}</button>
         </div>;})}
       </section><section className="recharge-panel charge-slider-panel">
         <div className="shop-step-head"><h3><i>3</i>{language==='zh'?'充电至':'Charge to'} <output>{chargeTarget}/{run.energyCap}</output></h3><span>{chargeUnitPrice(boxOf(run))}{language==='zh'?' 币/电':' c/power'}</span></div>
@@ -981,7 +1028,7 @@ export default function ElevatorGame() {
         <p aria-live="polite">{language==='zh'?(chargeCost>run.coins?`还差 ${chargeCost-run.coins} 金币；拖低目标即可少充。`:`充电后剩余 ${run.coins-chargeCost} 金币。`):(chargeCost>run.coins?`Need ${chargeCost-run.coins} more coins; lower the target to buy less.`:`${run.coins-chargeCost} coins left after charging.`)}</p>
       </section>
       {(run.stress>0||run.calmCharge)&&<section className="recharge-panel calm-panel" data-no-translate><div className="shop-step-head"><h3><i>4</i>{language==='zh'?'安抚':'Calm'}</h3><span>{language==='zh'?`本段还可 ${calmAllowance(run)} 点 · ${calmPrice(run.floor)} 币/点`:`${calmAllowance(run)} left · ${calmPrice(run.floor)}c each`}</span></div>
-        <div className="calm-actions"><button disabled={calmAllowance(run)<1} onClick={()=>{const next=buyCalm(run,1);if(next!==run){reportMetrics(run,next,language==='zh'?'安抚':'Calm');setRun(next);playTone(sound,'upgrade');}}}>{language==='zh'?`安抚 −1 · ${calmPrice(run.floor)}币`:`Calm −1 · ${calmPrice(run.floor)}c`}</button>{run.calmCharge&&<button disabled={run.stress<=0} onClick={()=>{const next=applyCalmCharge(run);setRun(next);reportMetrics(run,next,'手动调节');}}>{language==='zh'?'手动调节 −3（每店补满）':'Manual relief −3 (refills at shops)'}</button>}</div>
+        <div className="calm-actions"><button disabled={calmAllowance(run)<1} onClick={()=>{const next=buyCalm(run,1);if(next!==run){reportMetrics(run,next,language==='zh'?'安抚':'Calm');setRun(next);playTone(sound,'upgrade');playSfx(sound,'calm');const panel=document.querySelector('.upgrade-dialog .shop-agitation');flashClass(panel,'is-calmed',700);popText(panel,'−1','blue');}}}>{language==='zh'?`安抚 −1 · ${calmPrice(run.floor)}币`:`Calm −1 · ${calmPrice(run.floor)}c`}</button>{run.calmCharge&&<button disabled={run.stress<=0} onClick={()=>{const next=applyCalmCharge(run);setRun(next);reportMetrics(run,next,'手动调节');}}>{language==='zh'?'手动调节 −3（每店补满）':'Manual relief −3 (refills at shops)'}</button>}</div>
       </section>}
 
       </div></div>
