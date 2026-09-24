@@ -552,6 +552,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^遇见过的乘客会录入档案；第一次把人送到站，就能读到他的故事。最高抵达 (\d+)F · 故事 (\d+)\/(\d+)。$/u, 'Riders you meet join the archive; deliver someone once to read their story. Best floor $1F · Stories $2/$3.')
     .replace(/你带着 (\d+) 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 20 电。/u, 'You left with $1 coins: when power runs short, use in-transit charging in the power panel, up to 20 per ten floors.')
     .replace(/^运转：(.+)。每十层可维修，人物耗电另计。$/u, (_m, body: string) => `Motor: ${body
+      .replace(/(\d+)层起每(\d+)层\+1电（(\d+)层(\d+)电）/gu, 'from floor $1, +1 every $2 floors (floor $3: $4)')
       .replace(/(\d+)–(\d+)层(\d+)电/gu, 'floors $1–$2: $3')
       .replace(/(\d+)层起(\d+)电封顶/gu, 'floor $1+: $2 (cap)')
       .replaceAll('，', ', ')}. Maintenance every ten floors; passenger power is additional.`)
@@ -639,6 +640,8 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/复制(.+?)的躁动\/关系/gu, 'Copies $1 agitation/links')
     // v9.17 audit: fragments that reached English players untranslated.
     .replace(/ · 另 (\d+) 项/gu, ' · $1 more')
+    .replace(/^(\d+)秒$/u, '$1s')
+    .replace(/^倒计时 (\d+) 秒 · 未到站归零失败$/u, 'Timer $1 s · zero before arrival fails')
     .replace(/^(\d+)F · 选取(.+)$/u, '$1F · Picked $2')
     .replace(/^选取(.+)$/u, 'Picked $1')
     .replace(/^加购(.+)$/u, 'Added $1')

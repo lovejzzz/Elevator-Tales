@@ -35,7 +35,7 @@ for (const count of [1, 2, 3]) for (const bonus of [1, 3]) {
 }
 
 if(!translateGameText(PASSENGERS.bomb.detail,'en').startsWith('Use the displayed base fare;'))throw Error('Bomb detail must use the card fare, including local tickets');
-for(const [ratio,fare] of [[1,14],[.5,7]]){
+for(const [ratio,fare] of [[1,PASSENGERS.bomb.fare],[.5,Math.ceil(PASSENGERS.bomb.fare*.5)]]){ // v9.18: fare 30
  const rider:Rider={kind:'bomb',id:'local-bomb',destination:5,boardedAt:1,patience:0,fareBonus:0,fuse:4,localFareRatio:ratio};
  if(passengerBrief(rider,1).coins!==fare)throw Error('Bomb card must show current normal/local fare, not historical 20');
 }

@@ -1,4 +1,4 @@
-import { netValue } from '../../lib/net-value.ts';
+import { netValue, netIncludesAgitation } from '../../lib/net-value.ts';
 import { activeConnection } from '../../lib/game-interaction.ts';
 import { ADJACENT } from '../../lib/game-data.ts';
 // v9 balance simulator. Archetype bots play the production engine (no second rule set)
@@ -11,6 +11,9 @@ import { motorCost, agitationBand, ECONOMY_RULES } from '../../lib/balance-v832.
 import { BOX_LINES, BOX_PRICES, BOX_TOTAL_CAP, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, type BoxLine } from '../../lib/power-box.ts';
 import type { Rider, RunState } from '../../lib/game-engine.ts';
 
+// v9.18: bots have no clock; they play Bomber timers in floors (the simulator's stand-in for the real-time timer).
+E.BOMB_RULES.realtime = false;
+
 // ---------- deterministic streams ----------
 export const rngFor = (seed: number) => () => { let t = (seed += 0x6d2b79f5); t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 const hash = (text: string) => { let h = 2166136261; for (const c of text) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
@@ -19,7 +22,7 @@ const stream = (seed: number, channel: string, floor: number) => rngFor(hash(`${
 const previewRng = () => { const seq = [0.5, 0.73, 0.41, 0.9, 0.62, 0.55]; let i = 0; return () => seq[i++ % seq.length]; };
 
 // ---------- archetypes ----------
-export type BotId = 'coop' | 'crime' | 'occult' | 'quiet' | 'lively' | 'investor' | 'balanced' | 'novice' | 'tempo' | 'gamble' | 'mixed' | 'casual' | 'casualnet';
+export type BotId = 'coop' | 'crime' | 'occult' | 'quiet' | 'lively' | 'investor' | 'balanced' | 'novice' | 'tempo' | 'gamble' | 'mixed' | 'casual' | 'casualnet' | 'human';
 export type Bot = {
   id: BotId; name: string; favored: PassengerKind[]; favor: number;
   band: 'low' | 'medium' | 'high' | null; abilities: UpgradeKey[]; box: BoxLine[]; boxEager: boolean; legends: LegendKind[]; fixedBox?: boolean;
@@ -43,8 +46,13 @@ export const BOTS: Record<BotId, Bot> = {
   // The casual player reading a "net" figure on each card: printed fare minus trip power at the shop price.
   casualnet: { id: 'casualnet', name: '看净值', favored: [], favor: 0, band: null, abilities: GENERIC_ABILITIES, box: ['transformer', 'storage', 'motor'], boxEager: false, legends: [] },
   novice: { id: 'novice', name: '新手', favored: [], favor: 0, band: null, abilities: [], box: [], boxEager: false, legends: [] },
+  // v9.18 calibrated to six real playtest records (scripts/balance-sim/calibrate.mts): reads card values, avoids
+  // Thieves and Drifters, keeps agitation low, spends everything on power, levels storage, never buys calming.
+  human: { id: 'human', name: '真人型', favored: [], favor: 0, band: 'low', abilities: [], box: ['storage', 'transformer', 'motor'], boxEager: false, legends: [] },
 };
 
+/** Knobs fitted so the human bot's behaviour matches the real records (occupancy, boarding, time at low agitation). */
+export const HUMAN = { fill: 6, stressMargin: 1, avoid: ['thief', 'drunk'] as PassengerKind[], minNet: -2, transitCalm: false, lookahead: false };
 export type LegendMode = 'auto' | 'board' | 'decline' | 'none';
 export type RunOptions = { bot: BotId; seed: number; horizon: number; legendMode: LegendMode; forceLegend?: LegendKind; genericShop?: boolean; forceAbility?: UpgradeKey; boxOrder?: BoxLine[];
   /** Audit hook: called with the cabin as it departs and the settled result (scripts/audit). */
@@ -149,6 +157,25 @@ function chooseBoarding(state: RunState, offers: Rider[], bot: Bot, mode: Legend
     const slot = cur.cabin.findIndex(r => !r);
     if (legend && slot >= 0) { cur = place(cur, legend, !cur.cabin[1] ? 1 : slot)!; pool = pool.filter(o => o !== legend); }
   }
+  if (bot.id === 'human') {
+    // Board the best card values first, skip Thieves and Drifters, stop at a comfortable cabin, keep well below the cap.
+    const net = (o: Rider) => cardNet(o, cur);
+    for (const o of [...pool].sort((a, b) => net(b) - net(a))) {
+      if (cur.cabin.filter(Boolean).length >= HUMAN.fill) break;
+      if (o.kind === 'parcel' || HUMAN.avoid.includes(o.kind) || (cur.cabin.some(Boolean) && net(o) < HUMAN.minNet)) continue;
+      const parcel = o.parcelId ? pool.find(p => p.id === o.parcelId) : undefined;
+      let cand: RunState | null = null;
+      if (parcel) { for (const [a, b] of ADJACENT.flatMap(([a, b]) => [[a, b], [b, a]])) { const c = place(place(cur, o, a), parcel, b); if (c && valid(c)) { cand = c; break; } } }
+      else { const slot = cur.cabin.findIndex(r => !r); cand = slot >= 0 ? place(cur, o, slot) : null; }
+      if (!cand) continue;
+      if (HUMAN.lookahead) {
+        const preview = E.resolveFloor(cand, previewRng());
+        if (cur.cabin.some(Boolean) && (preview.status === 'lost' || preview.stress > preview.stressCap - HUMAN.stressMargin)) continue;
+      } else if (cur.cabin.some(Boolean) && cur.stress >= cur.stressCap - HUMAN.stressMargin && netIncludesAgitation(o, cur)) continue; // judges by the card, not a settlement preview
+      cur = cand;
+    }
+    return cur;
+  }
   if (bot.id === 'novice' || bot.id === 'casual' || bot.id === 'casualnet') {
     // Instinct: fill seats with the highest printed fare, but heed a red "you will not survive the next floor" forecast.
     // casualnet ranks by the card's net value instead and skips riders whose net is negative once someone is aboard.
@@ -212,9 +239,20 @@ function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog): RunSta
   // 1. free ability
   const pickAbility = () => {
     const cards = E.availableShopCards(s).map(c => c.key);
-    const order = bot.id === 'novice' ? cards : [...bot.abilities, ...GENERIC_ABILITIES];
+    const order = bot.id === 'novice' || bot.id === 'human' ? cards : [...bot.abilities, ...GENERIC_ABILITIES];
     return order.find(k => cards.includes(k));
   };
+  if (bot.id === 'human') {
+    // Real records: take the first card, fill the battery, then a storage level if coins remain; no calming, no extras.
+    const first = pickAbility(); if (first) { s = E.installUpgrade(s, first); log.abilities.push(first); }
+    while ((s.freeBoxLevels ?? 0) > 0 && E.canBuyBoxLevel(s, 'storage')) { s = E.buyBoxLevel(s, 'storage'); log.box.push('storage'); }
+    const units = Math.min(s.energyCap - s.energy, E.affordableChargingPlan(s).units);
+    if (units > 0) s = E.chargeBattery(s, units);
+    const line = bot.box.find(l => E.canBuyBoxLevel(s, l));
+    if (line) { s = E.buyBoxLevel(s, line); log.box.push(line); const more = Math.min(s.energyCap - s.energy, E.affordableChargingPlan(s).units); if (more > 0) s = E.chargeBattery(s, more); }
+    log.shops.push({ ...entry, exitCoins: s.coins, exitEnergy: s.energy, target: s.energyCap, affluent: false });
+    return E.leaveShop(s);
+  }
   let key = pickAbility();
   if (bot.id !== 'novice' && key && !bot.abilities.includes(key) && bot.abilities.length && s.coins >= E.REROLL_PRICE + 40) { s = E.rerollShop(s, rng); key = pickAbility(); }
   if (key) { s = E.installUpgrade(s, key); log.abilities.push(key); }
@@ -270,7 +308,7 @@ export type RunLog = {
   bot: BotId; seed: number; floor: number; cause: 'energy' | 'agitation' | 'bomb' | 'alive';
   closeCalls: number; escapes: number; powerCalls: number; stressCalls: number; bombCalls: number;
   emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; calmUnits?: number; inspectors?: number; stamped?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
-  boxAbilities?: number; boxAbilityFinds?: number; parcel?: Record<'offered' | 'paired' | 'courierOnly' | 'parcelOnly' | 'opened' | 'adopted' | 'unpaid' | 'delivered' | 'thefts' | 'bigOffered' | 'bigBoarded' | 'childOpens' | 'parts' | 'inspected' | 'contested' | 'bombCarry' | 'mimicCopy' | 'rareBoarded' | 'rareOffered', number>; legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
+  bombDismissals?: number; boxAbilities?: number; boxAbilityFinds?: number; parcel?: Record<'offered' | 'paired' | 'courierOnly' | 'parcelOnly' | 'opened' | 'adopted' | 'unpaid' | 'delivered' | 'thefts' | 'bigOffered' | 'bigBoarded' | 'childOpens' | 'parts' | 'inspected' | 'contested' | 'bombCarry' | 'mimicCopy' | 'rareBoarded' | 'rareOffered', number>; legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
   shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
 };
 
@@ -301,7 +339,7 @@ export function runOne(opt: RunOptions): RunLog {
     // pre-departure tools
     if (state.calmCharge && state.stress >= state.stressCap - 2) state = E.applyCalmCharge(state);
     const before = new Set(state.cabin.filter(Boolean).map(r => r!.id));
-    for (const r of state.cabin) if (r?.kind === 'bomb' && (r.fuse ?? 9) <= 1 && r.destination > state.floor + 1 && !E.hasNeighbour(state.cabin, state.cabin.indexOf(r), ['cop'])) state = E.dismissRider(state, r.id);
+    for (const r of state.cabin) if (r?.kind === 'bomb' && (r.fuse ?? 9) <= E.bombTick(state.stress) && r.destination > state.floor + 1 && !E.hasNeighbour(state.cabin, state.cabin.indexOf(r), ['cop'])) { const before = state; state = E.dismissRider(state, r.id); if (state !== before) log.bombDismissals = (log.bombDismissals ?? 0) + 1; }
     for (const o of offers) log.offered[o.kind] = (log.offered[o.kind] ?? 0) + 1;
     state = chooseBoarding(state, offers, bot, mode);
     if (!state.cabin.some(Boolean)) { const slot = 0; state = place(state, offers.find(o => !isLegend(o.kind) && o.kind !== 'parcel') ?? offers[0], slot) ?? state; }
@@ -327,7 +365,7 @@ export function runOne(opt: RunOptions): RunLog {
     // emergency power only when the actual next ascent would fail
     const test = () => E.resolveFloor(state, previewRng());
     // Paid dismissal when the forecast says this cabin will not survive (two per sector, fare forfeited).
-    if (bot.id !== 'novice') {
+    if (bot.id !== 'novice' && bot.id !== 'human') {
       const doomed = (st: RunState) => { const a = E.resolveFloor(st, previewRng()); if (a.status === 'lost') return a.message.includes('躁动') || a.message.includes('炸弹'); return a.status === 'playing' && E.resolveFloor(a, previewRng()).status === 'lost' && a.stress >= a.stressCap - 1; };
       if (doomed(state)) {
         let best: { st: RunState; v: number } | null = null;
@@ -346,7 +384,7 @@ export function runOne(opt: RunOptions): RunLog {
       while (guard++ < 12 && powerDeath() && E.emergencyAllowance(state) > 0) { state = E.emergencyCharge(state, 1); log.emergencyUnits++; }
       const calmDeath = () => { const t = test(); return t.status === 'lost' && t.message.includes('躁动'); };
       guard = 0;
-      while (guard++ < 12 && calmDeath() && E.calmAllowance(state) > 0) { state = E.buyCalm(state, 1); log.calmUnits = (log.calmUnits ?? 0) + 1; }
+      while ((bot.id !== 'human' || HUMAN.transitCalm) && guard++ < 12 && calmDeath() && E.calmAllowance(state) > 0) { state = E.buyCalm(state, 1); log.calmUnits = (log.calmUnits ?? 0) + 1; }
     }
     log.stressFloors[agitationBand(state.stress)]++;
     { const aboard = state.cabin.filter(r => r && !isLegend(r.kind)); log.riderFloors = (log.riderFloors ?? 0) + aboard.length; log.links = (log.links ?? 0) + ADJACENT.filter(([a, b]) => activeConnection(state.cabin, a, b)).length; }

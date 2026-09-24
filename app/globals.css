@@ -3029,3 +3029,10 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 .box-ability-dialog .inventory-list section button { align-self:flex-start; }
 .box-ability-dialog .box-ability-hint { margin:4px 0 10px; line-height:1.55; color:#e9dcc0; }
 .box-ability-dialog .inventory-list .inventory-icon { margin-left:0; }
+
+/* v9.18 real-time Bomber timer: last ten seconds pulse; an explosion shakes the cabin. */
+.fuse.fuse-critical { animation: fuse-critical .5s steps(2, end) infinite; background:#b3261e; color:#fff; }
+@keyframes fuse-critical { 50% { transform: scale(1.08); filter: brightness(1.4); } }
+.elevator-stage.is-shaking { animation: stage-shake .7s cubic-bezier(.36,.07,.19,.97); }
+@keyframes stage-shake { 10%,90% { transform: translate(-2px,1px); } 20%,80% { transform: translate(4px,-2px); } 30%,50%,70% { transform: translate(-7px,3px); } 40%,60% { transform: translate(7px,-3px); } }
+@media (prefers-reduced-motion: reduce) { .fuse.fuse-critical, .elevator-stage.is-shaking { animation: none; } }

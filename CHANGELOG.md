@@ -1,6 +1,11 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.17.2**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.18**. Publication status is tracked separately from the source version.
+
+## v9.18 — 2026-09-23 — Real-time bomb timers, late pressure rework, calibrated simulator / 炸弹实时倒计时、后期压力、模拟器校准
+
+- Bomber: real-time timer (10 s + 10 s per stop, ×2 at high agitation, paused on hidden tab / shop / menus / ability swap, not while reading cards; ?bomb=N or ?bomb=off), fare 14 → 30, defusal bonus 1 coin per 3 s left. Night unrest cap +4 → +3; motor +1 power every 8 floors from 51F.
+- Calibration: 6 real records → "human" bot (fills 6, no preview, no transit calming, spends all on power): median 66F. Study 15 settings × 7 types × 300; acceptance 3,600: balanced 116 → 100F, deaths power/agitation/bomb 29/69/1.7%, exit coins 234 → 125, boarding rates in band. verify 33 checks. Watch: real-time seconds need playtests.
 
 ## v9.17.2 — 2026-09-23 — Hidden, random box contents; abilities in boxes / 纸箱内容保密与开出能力
 

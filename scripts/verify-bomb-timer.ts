@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { failureLesson, initialRun, resolveFloor, type Rider } from '../lib/game-engine';
+import { BOMB_RULES, failureLesson, initialRun, resolveFloor, type Rider } from '../lib/game-engine';
 import { PASSENGERS } from '../lib/game-data';
 import { translateGameText } from '../lib/i18n';
 import { PASSENGER_RULES, passengerFace } from '../lib/passenger-presentation';
 
+// Floor-timer checks; the v9.18 real-time timer is verified in verify-v9.
+BOMB_RULES.realtime = false;
 const rider = (kind: Rider['kind'], id: string, extra: Partial<Rider> = {}): Rider => ({
   kind, id, boardedAt: 1, destination: 6, patience: 6, fareBonus: 0, ...extra,
 });

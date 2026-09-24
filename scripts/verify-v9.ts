@@ -23,6 +23,8 @@ import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
 import { planPlacement } from '../lib/game-interaction';
 
+// Most checks here predate the v9.18 real-time Bomber timer and verify floor timers; the real-time block switches it on.
+E.BOMB_RULES.realtime = false;
 const seq = (...values: number[]) => { let i = 0; return () => values[i++ % values.length]; };
 const fixed = (v = 0.5) => () => v;
 let n = 0;
@@ -181,7 +183,7 @@ console.log('PASS safety margin, soundproof, insulation, stabilizer cap, dispatc
   assert.equal(riderProfile(mimic, [top, null, null, mimic, null, null], 3).fare, PASSENGERS.bomb.fare, 'mimic copies the fare above');
   assert.equal(riderProfile(mimic, [null, null, null, mimic, null, null], 3).fare, PASSENGERS.mimic.fare);
   const schedule = [1, 10, 11, 30, 31, 41, 46, 53, 88, 200].map(motorCost);
-  assert.deepEqual(schedule, [1, 1, 2, 2, 2, 2, 2, 2, 2, 2], "v9.6: motor 1 on 1–10, then a flat 2");
+  assert.deepEqual(schedule, [1, 1, 2, 2, 2, 2, 2, 3, 7, 21], "v9.18: motor 1 on 1–10, 2 to 50F, then +1 every 8 floors from 51F");
   assert.equal(E.availableKinds(1, [E.legendRider('medium', fixed())]).filter(k => k === 'ghost').length, 2, 'medium doubles ghost weight early');
   assert.equal(LEGEND_KINDS.length, 8);
 }
@@ -213,7 +215,7 @@ console.log('PASS sector power forecast equals settlement with no new boarding')
 console.log('PASS daily shift streams reproduce openings and shop draws');
 // Generated motor texts translate by pattern, whatever the numbers.
 assert.equal(translateGameText(motorAdvanceNotice(1), 'en'), 'Ahead: motor 2 from floor 11');
-assert.equal(translateGameText(motorAdvanceNotice(20), 'en'), 'Motor fixed at 2');
+assert.equal(translateGameText(motorAdvanceNotice(20), 'en'), 'Ahead: motor 3 from floor 51');
 assert.ok(!/[\u3400-\u9fff]/u.test(translateGameText(motorScheduleText(), 'en')), translateGameText(motorScheduleText(), 'en'));
 console.log('PASS generated motor notice and schedule translate');
 // v9.0.2 ascend guard: the playtest death at 14F (8 power, 9 needed, 87 coins) must be caught and rescuable.
@@ -295,7 +297,7 @@ console.log('PASS card net value');
 console.log('PASS legend shuffle bag');
 // v9.6 option A: flat motor 2 from 11F, late-night unrest from 41F, in-transit calming (8 coins, 6 per ten floors).
 {
-  assert.deepEqual([40, 41, 42, 44, 60, 61, 62, 63, 81, 100, 101, 140].map(nightUnrest), [0, 1, 0, 1, 0, 1, 0, 1, 1, 2, 3, 4]);
+  assert.deepEqual([40, 41, 42, 44, 60, 61, 62, 63, 81, 100, 101, 140].map(f => nightUnrest(f)), [0, 1, 0, 1, 0, 1, 0, 1, 1, 2, 3, 3], 'v9.18: capped at +3');
   const late = run(43, [rider('commuter', 43, 5, { boardedAt: 40 })], { stress: 2, coins: 100 });
   const after = E.resolveFloor(late, fixed());
   assert.equal(lines(after, 'lastPressure')['夜深人躁'], 1, 'floor 44 carries unrest');
@@ -560,4 +562,29 @@ console.log('PASS audit fixes: shop-floor guard, carried bomb label, box power i
   assert.deepEqual(shop.pendingSales, []);
 }
 console.log('PASS hidden box contents, ability finds and swaps');
-console.log(JSON.stringify({ version: 'v9', checks: 32, passed: true }));
+// v9.18 real-time Bomber: seconds = 10 + 10 per stop, an adjacent Officer pauses it, zero ends the run, settlement no
+// longer counts floors, and a delivery pays 1 coin per 3 seconds left.
+{
+  E.BOMB_RULES.realtime = true;
+  const rng = seq(0.2, 0.4, 0.6, 0.8, 0.1, 0.9, 0.3, 0.7);
+  let dealt = 0;
+  for (let i = 0; i < 3000 && !dealt; i++) for (const o of E.makeOffers(40 + (i % 60), E.EMPTY_UPGRADES, false, rng)) if (o.kind === 'bomb') { assert.equal(o.bombMs, E.bombSeconds(o.destination - o.boardedAt) * 1000); dealt++; }
+  assert.ok(dealt && PASSENGERS.bomb.fare === 30);
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 29, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  const armed = run(30, [R('bomb', 'b', 34, { fuse: 1, bombMs: 5000 })]);
+  assert.equal(E.tickBombs(armed, 2000).cabin[0]?.bombMs, 3000);
+  assert.equal(E.tickBombs(run(30, [R('cop', 'k', 34), R('bomb', 'b', 34, { fuse: 1, bombMs: 5000 })]), 9000).cabin[1]?.bombMs, 5000, 'an adjacent Officer pauses it');
+  const boom = E.tickBombs(armed, 6000);
+  assert.ok(boom.status === 'lost' && /炸弹倒计时归零/.test(boom.message));
+  const ascend = E.resolveFloor(armed, fixed());
+  assert.ok(ascend.status === 'playing' && ascend.cabin[0]?.fuse === 1, 'settlement no longer counts floors down');
+  const delivered = E.resolveFloor(run(30, [R('bomb', 'b', 31, { fuse: 1, bombMs: 9500 })]), fixed());
+  assert.equal(lines(delivered, 'lastEarnings')['拆弹奖金'], 3);
+  assert.equal(fuseState([R('bomb', 'b', 34, { bombMs: 8000 })], 0, 30), 'late', 'under 3 seconds a stop is too late');
+  assert.equal(fuseState([R('bomb', 'b', 34, { bombMs: 30000 })], 0, 30), 'live');
+  const inShop: RunState = { ...armed, status: 'upgrade' };
+  assert.equal(E.tickBombs(inShop, 9000), inShop, 'no ticking in the shop');
+  E.BOMB_RULES.realtime = false;
+}
+console.log('PASS real-time Bomber timer');
+console.log(JSON.stringify({ version: 'v9', checks: 33, passed: true }));

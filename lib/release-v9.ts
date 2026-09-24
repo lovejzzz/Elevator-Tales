@@ -1141,3 +1141,41 @@ export const V9172_EN: ChangelogEntry = {
   ],
   watch: ['An ability turns up about once every three runs; if playtests find that too rare, the doubled odds had no visible balance effect in simulation.'],
 };
+
+export const V918_ZH: ChangelogEntry = {
+  version: '9.18', date: '2026-09-23', title: '炸弹实时倒计时，后期压力改为躁动+电力，模拟器按真人校准',
+  summary: '炸弹客改为实时秒数倒计时，车费 30，还有拆弹奖金；夜深人躁封顶从 +4 降到 +3，51 层起电机每 8 层多耗 1 电，后期死因不再几乎全是躁动；模拟器新增按真实试玩记录校准的“真人型”玩家。',
+  changes: [
+    '炸弹客实时倒计时：上车（放进电梯）后开始按真实秒数倒数，10 秒 + 每站 10 秒；高躁动时两倍速；归零立即失败，最后 10 秒每秒响一声并闪烁，爆炸时车厢震动。切到别的页面、进商店、打开帮助/档案/更新记录/已装能力、或正在选择纸箱能力时暂停；看人物卡时不暂停。相邻警察仍然锁住倒计时，空手快递员仍能带走炸弹。可以用网址参数调秒数：?bomb=6（每站 6 秒）、?bomb=15，?bomb=off 恢复按层计数。',
+    '炸弹客奖励：车费 14 → 30；送达时每剩 3 秒多付 1 金币“拆弹奖金”。乔装的通勤者保留 30 车费。',
+    '夜深人躁：封顶从每层 +4 改为 +3（41 层起每三层 +1，56 层起每两层，71 层起每层，86 层起 +2，101 层起 +3）。',
+    '电机：51 层起每 8 层多耗 1 电（51 层 3 电、59 层 4 电……），原来 11 层以后固定 2 电；运转说明改为一句规则。',
+  ],
+  experiments: [
+    '模拟器校准：从对话记录中取出 6 份真实试玩记录（15、29、32、32、44、71 层），对比与版本无关的习惯。真人平均每层 4.8 人、63% 楼层处在低躁动、27% 高躁动、出商店只剩约 2 金币（把钱全充成电）、配电箱先升蓄电；三次躁动死亡都发生在刚出商店、电量 56–80 却没钱安抚、车厢坐满时。新增“真人型”玩家：按卡面净值挑人、不带小偷和醉汉、坐满 6 人、不做下一层预判、不在途中花钱安抚、商店先充满再升蓄电。校准后 4.5 人 / 68% 低躁动 / 15% 高躁动 / 剩 13 金币；新版规则下中位 66 层（p10 39、p90 95）。样本少且多来自早期版本，npm run balance:calibrate 可随新记录重新校准。',
+    '夜深人躁研究（两轮，共 15 组 × 7 类玩家 × 300 局）：按人数计算的夜深人躁会让熟练玩家夜里少载人而打满 150 层，只惩罚不懂的人，不采用；加入后期电机加耗最能分散死因。采用“封顶 +3 + 51 层起每 8 层 +1 电”：熟练型中位 105 → 100 层，死因 躁动/断电 从 98%/1% 变为 75%/24%，真人型不变（65 层）。',
+    '炸弹研究（按层计数，模拟器没有真实时间）：车费 30 让炸弹客上车率 60% → 72%；高躁动两倍速让请离炸弹客 0.11 → 0.48 次/局、炸弹致死 23 → 57 局（每组 2,100 局）。实时倒计时对真人的压力模拟器测不出来，需要试玩确定秒数。',
+    '验收（3,600 局）9.17.2 → 9.18：均衡型中位 116 → 100 层，死因 断电/躁动/炸弹 2.9/96.6/0.5% → 29.2/69.1/1.7%，离店金币中位 234 → 125，人物上车率全部回到 15–65% 区间；五种流派强弱比 99%。预告审计 11,103 次上行：没有一次断电是保护没提醒的。',
+    'verify 新增 1 项（共 33 项）：发牌秒数 = 10 + 10 × 站数；扣时、警察锁住、归零失败；上行结算不再按层减倒计时；剩 9.5 秒送达得 3 金币拆弹奖金；“来不及”按每站 3 秒判断；商店里不计时。浏览器实测：计时每秒减少，打开帮助时暂停，归零后显示结束画面且只有一个对话框。',
+  ],
+  watch: ['实时炸弹的秒数：先试 ?bomb=6 / 10（默认）/ 15 几种，看哪种“刺激但不冤”。', '熟练玩家仍然能打到 100 层左右；按真人型看普通玩家约 66 层，需要更多现行版本的真实记录确认。', '离店金币仍高于目标，但真人本来就会把钱全换成电，这项目标可能要按真人型重新定。'],
+};
+
+export const V918_EN: ChangelogEntry = {
+  version: '9.18', date: '2026-09-23', title: 'Real-time bomb timers, late pressure split between agitation and power, simulator calibrated to real players',
+  summary: 'Bomb Carriers now count down in real seconds, pay 30 and add a defusal bonus; late-night unrest caps at +3 instead of +4 and the motor costs 1 more power every 8 floors from 51F, so late deaths are no longer almost all agitation; the simulator gains a “human” player calibrated to real playtest records.',
+  changes: [
+    'Real-time Bomber timer: once aboard, it counts real seconds, 10 plus 10 per stop, at double speed at high agitation; zero ends the run, the last ten seconds tick and flash, and an explosion shakes the cabin. It pauses on another tab, in a shop, in the help / archive / changelog / kit dialogs and while choosing a box ability, but not while reading rider cards. An adjacent Officer still locks it and an empty-handed Courier can still carry the bomb off. Tune it with the URL: ?bomb=6 (6 seconds a stop), ?bomb=15, or ?bomb=off for floor timers.',
+    'Bomber reward: fare 14 → 30; on delivery each 3 seconds left pay 1 coin as a defusal bonus. The Disguised Commuter keeps the 30 fare.',
+    'Late-night unrest caps at +3 per floor instead of +4 (every third floor from 41F, every second from 56F, every floor from 71F, +2 from 86F, +3 from 101F).',
+    'Motor: from 51F it costs 1 more power every 8 floors (51F: 3, 59F: 4 …), instead of a flat 2 after 10F; the schedule is stated as one rule.',
+  ],
+  experiments: [
+    'Simulator calibration: six real playtest records (15, 29, 32, 32, 44, 71F) taken from our conversation, compared on version-independent habits. Players seat 4.8 riders a floor, spend 63% of floors at low and 27% at high agitation, leave shops with about 2 coins (everything into power) and level storage first; all three agitation deaths came right after a shop, with 56–80 power, no coins for calming and a full cabin. A new “human” bot reads card values, skips Thieves and Drifters, fills six seats, does not preview the next floor, never buys calming in transit, and charges to the cap before storage. Calibrated: 4.5 riders, 68% low, 15% high, 13 coins kept; median 66F under the new rules (p10 39, p90 95). The sample is small and mostly from earlier versions; npm run balance:calibrate refits with new records.',
+    'Night-unrest study (two rounds, 15 settings × 7 player types × 300 runs): unrest that follows the cabin let skilled players seat fewer riders at night and reach 150F, punishing only players who did not know, so it was dropped; late motor pressure spreads deaths best. Adopted: cap +3 plus +1 power every 8 floors from 51F. Skilled median 105 → 100F, deaths agitation / power 98% / 1% → 75% / 24%; the human bot is unchanged (65F).',
+    'Bomb study (floor timers; the simulator has no real time): fare 30 lifts Bomber boarding 60% → 72%; double speed at high agitation raises Bomber dismissals 0.11 → 0.48 a run and bomb deaths 23 → 57 (per 2,100 runs). The pressure of a real-time timer on people cannot be simulated; the seconds need playtesting.',
+    'Acceptance (3,600 runs) 9.17.2 → 9.18: balanced median 116 → 100F, deaths power / agitation / bomb 2.9 / 96.6 / 0.5% → 29.2 / 69.1 / 1.7%, median exit coins 234 → 125, every rider’s boarding rate back within 15–65%; style spread 99%. Forecast audit over 11,103 ascents: no power loss went unwarned.',
+    'verify: one new check (33 in all): dealt seconds = 10 + 10 × stops; ticking, Officer lock and zero ending the run; settlement no longer counts floors; 9.5 seconds left pay a 3-coin defusal bonus; “too late” at 3 seconds a stop; no ticking in a shop. Browser: the timer drops each second, pauses with help open, and at zero the end screen shows as the only dialog.',
+  ],
+  watch: ['Real-time bomb seconds: try ?bomb=6 / 10 (default) / 15 and report which feels thrilling but fair.', 'Skilled players still reach about 100F; the human bot puts ordinary players near 66F, to be confirmed with more records on the current version.', 'Exit coins remain above target, but real players spend everything on power, so that target may need to be set on the human bot.'],
+};

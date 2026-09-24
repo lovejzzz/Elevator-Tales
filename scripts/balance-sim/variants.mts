@@ -4,7 +4,7 @@ import { ECONOMY_RULES, AGITATION_RULES, FARE_RULES, MOTOR_RULES, NIGHT_UNREST, 
 import { BOX_PRICES, CHARGE_PRICES, EMERGENCY_PRICES } from '../../lib/power-box.ts';
 import { CALM_PURCHASE, CALM_RULES, INSULATION_RULES, RISK_RULES, SHOP_PRICES, SOUNDPROOF_RULES, START_RULES } from '../../lib/game-engine.ts';
 import { LEGEND_RULES } from '../../lib/legends.ts';
-import { PARCEL_RULES } from '../../lib/game-engine.ts';
+import { PARCEL_RULES, BOMB_RULES } from '../../lib/game-engine.ts';
 import { PASSENGERS } from '../../lib/game-data.ts';
 const scaleBoxes = (k: number) => { for (const size of ['small', 'big'] as const) for (const tier of ['common', 'rare', 'legendary'] as const) PARCEL_RULES.values[size][tier] = Math.round(PARCEL_RULES.values[size][tier] * k); };
 const parcel = (fare: number, coins: number, power: number) => () => { PASSENGERS.courier.fare = fare; PARCEL_RULES.payoutCoins = coins; PARCEL_RULES.payoutPower = power; };
@@ -25,6 +25,23 @@ export const VARIANTS: Record<string, () => void> = {
   noTiers: () => { PARCEL_RULES.rareChance = 0; PARCEL_RULES.legendaryChance = 0; },
   tiers2x: () => { PARCEL_RULES.rareChance = 0.32; PARCEL_RULES.legendaryChance = 0.08; },
   noBombCarry: () => { PARCEL_RULES.bombCarry = false; },
+  // v9.18 night-unrest study: nA = unrest follows the cabin; nB = earlier, gentler clock; ramp = motor +1 every 10 floors from N.
+  nA6: () => { NIGHT_UNREST.perRider = 6; NIGHT_UNREST.every = 20; },
+  nA5: () => { NIGHT_UNREST.perRider = 5; NIGHT_UNREST.every = 20; },
+  nA6e15: () => { NIGHT_UNREST.perRider = 6; NIGHT_UNREST.every = 15; },
+  nB: () => { NIGHT_UNREST.from = 31; NIGHT_UNREST.every = 20; NIGHT_UNREST.cap = 3; MOTOR_RULES.rampFrom = 61; MOTOR_RULES.rampEvery = 10; },
+  nA6r61: () => { VARIANTS.nA6(); MOTOR_RULES.rampFrom = 61; MOTOR_RULES.rampEvery = 10; },
+  nA6r51: () => { VARIANTS.nA6(); MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 10; },
+  nA5r61: () => { VARIANTS.nA5(); MOTOR_RULES.rampFrom = 61; MOTOR_RULES.rampEvery = 10; },
+  // Round 2: keep a floor clock but gentler, and add late motor pressure so deaths split between agitation and power.
+  c3r61: () => { NIGHT_UNREST.cap = 3; MOTOR_RULES.rampFrom = 61; MOTOR_RULES.rampEvery = 10; },
+  c3r51: () => { NIGHT_UNREST.cap = 3; MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 10; },
+  c3r51e8: () => { NIGHT_UNREST.cap = 3; MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 8; },
+  nBr51: () => { NIGHT_UNREST.from = 31; NIGHT_UNREST.every = 20; NIGHT_UNREST.cap = 3; MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 10; },
+  e20c3r51: () => { NIGHT_UNREST.every = 20; NIGHT_UNREST.cap = 3; MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 10; },
+  bHigh2: () => { BOMB_RULES.highTick = 2; },
+  bFuse25: () => { BOMB_RULES.fuseMin = 2; BOMB_RULES.fuseMax = 5; },
+  bBoth: () => { BOMB_RULES.highTick = 2; BOMB_RULES.fuseMin = 2; BOMB_RULES.fuseMax = 5; },
   noBoxAbility: () => { PARCEL_RULES.abilityChance = { common: 0, rare: 0, legendary: 0 }; PARCEL_RULES.crateAbilityBonus = 0; },
   boxAbility2x: () => { PARCEL_RULES.abilityChance = { common: 0.06, rare: 0.2, legendary: 0.5 }; PARCEL_RULES.crateAbilityBonus = 0.1; },
   noMimicCopy: () => { PARCEL_RULES.mimicCopiesBox = false; },

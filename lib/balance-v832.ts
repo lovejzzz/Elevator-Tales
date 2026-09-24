@@ -9,9 +9,12 @@ export const AGITATION_RULES = { arrivalReliefCap: 2 };
 /** v9 agitation: crowding costs calm, a lively cabin tips, and a wild cabin has incidents. */
 /** Late-night unrest from `from`: +1 agitation every third floor, then every second floor after `every` more floors,
  * then every floor, then +2 per floor (cap). A gradual clock that riders like nurses and musicians can answer. */
-export const NIGHT_UNREST = { from: 41, every: 15, cap: 4, arrivalsCalm: true };
-export const nightUnrest = (floor: number) => {
+/** perRider (v9.18 study): when set, night unrest follows the cabin — each tier of `every` floors adds 1/perRider of a
+ * point per rider (6 riders at tier 0 with perRider 6 → +1; tier 1 → +2 …), capped. 0 keeps the floor-only clock. */
+export const NIGHT_UNREST = { from: 41, every: 15, cap: 3, arrivalsCalm: true, perRider: 0 };
+export const nightUnrest = (floor: number, occupied = 5) => {
   if (!NIGHT_UNREST.from || floor < NIGHT_UNREST.from) return 0;
+  if (NIGHT_UNREST.perRider) return Math.min(NIGHT_UNREST.cap, Math.floor(occupied * (Math.floor((floor - NIGHT_UNREST.from) / NIGHT_UNREST.every) + 1) / NIGHT_UNREST.perRider));
   const d = floor - NIGHT_UNREST.from, level = Math.floor(d / NIGHT_UNREST.every);
   if (level === 0) return d % 3 === 0 ? 1 : 0;
   if (level === 1) return d % 2 === 0 ? 1 : 0;
@@ -39,7 +42,7 @@ export function musicBeatForAgitation(value: number) {
 }
 // Local playtest candidate, adopted after matched and unused-seed comparisons.
 // The old schedule remains available only as an explicit research scenario.
-export const MOTOR_RULES = { upperZone: true, midDiscount: 0, lateSteps: true, lateSlope: 7, lateCap: 12, lateStart: 46, surchargeFrom: 11, surcharge: 1, flat: 2, rampFrom: 0, rampEvery: 10 };
+export const MOTOR_RULES = { upperZone: true, midDiscount: 0, lateSteps: true, lateSlope: 7, lateCap: 12, lateStart: 46, surchargeFrom: 11, surcharge: 1, flat: 2, rampFrom: 51, rampEvery: 8 };
 export const motorCost = (destination: number) => MOTOR_RULES.flat > 0 ? (destination <= 10 ? 1 : MOTOR_RULES.flat + (MOTOR_RULES.rampFrom && destination >= MOTOR_RULES.rampFrom ? 1 + Math.floor((destination - MOTOR_RULES.rampFrom) / MOTOR_RULES.rampEvery) : 0)) : baseMotorCost(destination) + (destination >= MOTOR_RULES.surchargeFrom ? MOTOR_RULES.surcharge : 0);
 const baseMotorCost = (destination: number) => {
   if (!MOTOR_RULES.upperZone || destination < 41) return destination <= 10 ? 1 : destination <= 30 ? 2 : destination <= 60 ? 3 : 4;
@@ -58,6 +61,8 @@ export const motorAdvanceNotice=(floor:number)=>{
 };
 /** Generated from motorCost so the rules text can never drift from settlement. */
 export const motorScheduleText=()=>{
+ // v9.18: a late ramp is stated as a rule ("51层起每8层+1电") instead of listing every step.
+ if(MOTOR_RULES.flat>0&&MOTOR_RULES.rampFrom)return `运转：1–10层1电，11–${MOTOR_RULES.rampFrom-1}层${MOTOR_RULES.flat}电，${MOTOR_RULES.rampFrom}层起每${MOTOR_RULES.rampEvery}层+1电（${MOTOR_RULES.rampFrom}层${motorCost(MOTOR_RULES.rampFrom)}电）。每十层可维修，人物耗电另计。`;
  const parts:string[]=[];let start=1;
  for(let f=2;f<=400;f++){
   if(motorCost(f)!==motorCost(start)){parts.push(`${start}–${f-1}层${motorCost(start)}电`);start=f;}

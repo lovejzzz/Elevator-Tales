@@ -26,6 +26,7 @@
     "balance:accept": "tsx scripts/balance-sim/main.mts accept --runs 300 --seed 999001",
     "balance:legends": "tsx scripts/balance-sim/main.mts legends --runs 80 --bots coop,crime,occult,quiet,lively,balanced --seed 999777",
     "balance:explore": "tsx scripts/balance-sim/main.mts run --runs 300 --bots coop,crime,occult,quiet,lively,balanced,tempo,gamble,mixed --seed 424242",
+    "balance:calibrate": "tsx scripts/balance-sim/calibrate.mts scripts/balance-sim/data/real-runs.json 200",
     "balance:audit": "tsx scripts/balance-sim/forecast-audit.mts 40",
     "balance:items": "tsx scripts/balance-sim/main.mts items --runs 100 --bots balanced,coop,crime,occult,quiet,lively --seed 515151"
   },

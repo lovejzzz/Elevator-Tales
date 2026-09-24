@@ -26,7 +26,7 @@ for (const bot of ['balanced', 'crime', 'occult', 'tempo', 'lively', 'casual', '
     if (risk.fatal && alive) note('ascend guard flagged a floor that was survived', `${ctx} energy ${b.energy}→${a.energy} need ${risk.need}`);
     b.cabin.forEach((r, s) => {
       if (r?.kind !== 'bomb') return;
-      const shown = fuseState(b.cabin, s, b.floor), ghost = b.cabin.some(x => x?.kind === 'ghost');
+      const shown = fuseState(b.cabin, s, b.floor, b.stress), ghost = b.cabin.some(x => x?.kind === 'ghost');
       if (shown === 'late' && a.cabin.some(x => x?.id === r.id && x.disguised)) note('bomb shown too late but carried off', ctx);
       if (!ghost && a.status === 'lost' && a.message.includes('炸弹') && shown !== 'late') note('bomb exploded without the late warning', ctx);
     });

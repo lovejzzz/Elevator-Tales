@@ -9,7 +9,7 @@ import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_T
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
 
-export type Rider = { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
+export type Rider = { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; bombMs?: number; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
 export type ChangeLine = { label: string; amount: number };
 export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number };
 export type ShopCard = { key: UpgradeKey; price: number; purchased: boolean };
@@ -112,6 +112,29 @@ export const LOVER_CALL_CHANCE = .15;
 export const INSPECTOR_COMPLIANCE_REWARD = 1;
 export const INSPECTOR_ENERGY_LIMIT = 3;
 export const COURIER_ARRIVAL_CHARGE = 2;
+/** Bomb timers (v9.18 study): the dealt range, and how many steps an unlocked timer drops per floor at high agitation. */
+export const BOMB_RULES = { fuseMin: 3, fuseMax: 6, highTick: 2,
+  /** v9.18 real-time timer: a Bomber aboard counts down in real seconds (base + per stop of his trip) instead of floors.
+   * The UI calls tickBombs while the run is live; the simulator keeps floor timers (realtime off). */
+  realtime: true, baseSeconds: 10, secondsPerStop: 10,
+  /** Defusal bonus: coins per this many whole seconds left when the Bomber arrives (real-time only). */
+  bonusSeconds: 3 };
+/** Seconds a Bomber gets for a trip of this many stops. */
+export const bombSeconds = (stops: number) => BOMB_RULES.baseSeconds + BOMB_RULES.secondsPerStop * Math.max(1, stops);
+/** v9.18: count real time down on every Bomber aboard not locked by an adjacent Officer; one at zero ends the run. */
+export function tickBombs(state: RunState, ms: number): RunState {
+  if (!BOMB_RULES.realtime || state.status !== 'playing' || ms <= 0) return state;
+  let changed = false, exploded = false;
+  const cabin = state.cabin.map((r, slot) => {
+    if (r?.kind !== 'bomb' || r.bombMs === undefined || hasNeighbour(state.cabin, slot, ['cop'])) return r;
+    // At high agitation the timer runs at highTick× speed, the same rule as floor timers.
+    changed = true; const bombMs = Math.max(0, r.bombMs - ms * bombTick(state.stress)); if (bombMs === 0) exploded = true;
+    return { ...r, bombMs };
+  });
+  if (!changed) return state;
+  return exploded ? { ...state, cabin, status: 'lost', message: '炸弹倒计时归零：乘客未能及时到站。午夜班次戛然而止。' } : { ...state, cabin };
+}
+export const bombTick = (stress: number) => (agitationBand(stress) === 'high' ? BOMB_RULES.highTick : 1);
 /** v9.16 Courier parcels: an unclaimed parcel pays coins or power at random when it reaches its floor;
  * a Courier without his parcel beside him agitates the cabin and pays nothing. Tuned in scripts/balance-sim. */
 export const PARCEL_RULES = {
@@ -496,7 +519,8 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
       destination: floor + expressTrip(baseTrip, upgrades.express), patience: 0, traits, volatile,
       copySeed: kind === 'mimic' ? rand(0, 2147483647, rng) : undefined,
       boardedAt: floor, fareBonus: upgrades.concierge * ECONOMY_RULES.conciergeTip, stash: 0,
-      fuse: kind === 'bomb' ? rand(3, 6, rng)+Number(Boolean(upgrades.delay)) : undefined, calledByLover: called && index === 2,
+      fuse: kind === 'bomb' ? rand(BOMB_RULES.fuseMin, BOMB_RULES.fuseMax, rng)+Number(Boolean(upgrades.delay)) : undefined,
+      bombMs: kind === 'bomb' && BOMB_RULES.realtime ? bombSeconds(expressTrip(baseTrip, upgrades.express)) * 1000 : undefined, calledByLover: called && index === 2,
     };
   });
   // Variable riders bring one matching visible relation in their own packet.
@@ -543,7 +567,7 @@ export function cabinPressureLines(state: RunState): ChangeLine[] {
   const lines: ChangeLine[] = [];
   if (occupied >= crowdingThreshold(state.floor + 1)) lines.push({ label: '车厢拥挤', amount: V9_AGITATION.crowding });
   // A floor where someone is due to get off stays calm when arrivalsCalm is on (players can plan around the clock).
-  const unrest = nightUnrest(state.floor + 1), arriving = state.cabin.some(r => r && r.destination <= state.floor + 1);
+  const unrest = nightUnrest(state.floor + 1, occupied), arriving = state.cabin.some(r => r && r.destination <= state.floor + 1);
   const quiet = boxOf(state).motor >= 3 ? 1 : 0;
   const settled = unrest - quiet - (NIGHT_UNREST.arrivalsCalm && arriving ? 1 : 0);
   if (settled > 0) lines.push({ label: '夜深人躁', amount: settled });
@@ -658,7 +682,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       case 'drunk': break;
       case 'ghost': if (controlledGhost) notes.push('幽灵受控，不再延误邻座'); else if (nextFloor % 3 === 0) { const nearby = neighbours(slot).filter((i) => effectCabin[i] && effectCabin[i]!.kind !== 'parcel'); if (nearby.length) { effectCabin[nearby[rand(0, nearby.length - 1, rng)]]!.destination += 1; notes.push('幽灵令邻座延误一层'); } } break;
       case 'celebrity': if (neighbourCount(effectCabin, slot) === 1) addCoins('名人关注', ECONOMY_RULES.celebrityTravel); break;
-      case 'bomb': { const secured = hasNeighbour(effectCabin, slot, ['cop']); if (!secured) rider.fuse = (rider.fuse ?? 1) - 1; break; }
+      case 'bomb': { const secured = hasNeighbour(effectCabin, slot, ['cop']); if (!secured && !BOMB_RULES.realtime) rider.fuse = (rider.fuse ?? 1) - bombTick(state.stress); break; }
     }
   });
   let arrivals = 0;
@@ -718,8 +742,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if (disarmed.size) notes.push('快递员带走了炸弹：炸弹客乔装成通勤者');
   cabin = cabin.map((rider, slot) => {
     if (!rider) return null;
-    if (disarmed.has(slot)) return { ...rider, kind: 'commuter', disguised: true, fuse: undefined };
-    if (rider.kind === 'bomb' && (rider.fuse ?? 0) <= 0 && nextFloor < rider.destination) return rider;
+    if (disarmed.has(slot)) return { ...rider, kind: 'commuter', disguised: true, fuse: undefined, bombMs: undefined };
+    if (rider.kind === 'bomb' && !BOMB_RULES.realtime && (rider.fuse ?? 0) <= 0 && nextFloor < rider.destination) return rider;
     if (rider.kind === 'parcel') {
       // With its Courier aboard the parcel travels with him and leaves when he does; unclaimed, it opens at its floor.
       if (stolen.has(slot)) return null;
@@ -742,6 +766,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     if (!delivered) notes.push('快递员没带着纸箱到站，没有付钱');
     if (rider.kind === 'courier' && delivered) adjustEnergy('快递员电池包', COURIER_ARRIVAL_CHARGE);
     if (thiefTips.get(slot)) addCoins('小偷带走纸箱的小费', thiefTips.get(slot)!);
+    // v9.18: a Bomber delivered in real time pays a bonus for the seconds still left on his timer.
+    if (rider.kind === 'bomb' && BOMB_RULES.realtime && rider.bombMs) { const bonus = Math.floor(rider.bombMs / 1000 / BOMB_RULES.bonusSeconds); if (bonus) addCoins('拆弹奖金', bonus); }
     // A Mimic under a box carries a copy of it and opens the copy as he leaves.
     const above = slot >= 3 ? cabin[slot - 3] : null;
     if (rider.kind === 'mimic' && PARCEL_RULES.mimicCopiesBox && above?.kind === 'parcel') {
@@ -804,7 +830,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const insulatedIncome=state.upgrades.insulation?Math.min(INSULATION_RULES.cap,redLinks.length*INSULATION_RULES.coinsPerLink):0;
   if(insulatedIncome)addCoins('绝缘衬层：冲突小费',insulatedIncome);
   // Arriving on the same floor as fuse expiry is still safe.
-  const bombFailed = cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0);
+  const bombFailed = !BOMB_RULES.realtime && cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0);
   const relieved = Math.min(Math.max(0, stress), Math.min(arrivals, arrivalReliefCapFor(state)));
   if (relieved) adjustPressure('乘客到站舒缓', -relieved);
   if (checkpoint && hasKeepsake({keepsakes},'roundsLog') && stress > 0) adjustPressure('查房记录：进店舒缓', -Math.min(ROUNDS_LOG_SHOP_RELIEF, stress));

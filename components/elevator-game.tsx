@@ -17,7 +17,7 @@ import { LEGEND_KINDS, type LegendKind } from '@/lib/game-data';
 import { availableShopCards, emergencyRepairPlan, repairEmergency, dismissalsRemaining, energyBreakdown, purchaseRepairWarning } from '@/lib/game-engine';
 import { HIGH_RISK_BONUS, travelEnergyCost, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, touristCompanionCount, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, sectorForecast, stressForecast } from '@/lib/game-forecast';
-import { canReplaceWithBoxAbility, resolveBoxAbility, neighbours, parcelBeside, parcelLinks, thiefEyesParcel, unseatRider, boxIdOf, RETIRED_UPGRADES, SELL_REFUND, canSellUpgrade, sellUpgrade, calmPrice, buyCalm, calmAllowance, emergencyAllowance, emergencySectorLeft, emergencyCharge, boxOf, buyBoxLevel, canBuyBoxLevel, boxLevelPrice, rerollShop, REROLL_PRICE, SHOP_PRICES } from '@/lib/game-engine';
+import { BOMB_RULES, tickBombs, canReplaceWithBoxAbility, resolveBoxAbility, neighbours, parcelBeside, parcelLinks, thiefEyesParcel, unseatRider, boxIdOf, RETIRED_UPGRADES, SELL_REFUND, canSellUpgrade, sellUpgrade, calmPrice, buyCalm, calmAllowance, emergencyAllowance, emergencySectorLeft, emergencyCharge, boxOf, buyBoxLevel, canBuyBoxLevel, boxLevelPrice, rerollShop, REROLL_PRICE, SHOP_PRICES } from '@/lib/game-engine';
 import { emergencyUnitPrice, BOX_LINES, BOX_LINE_LABELS, BOX_MAX_LEVEL, BOX_TOTAL_CAP, boxTotal, chargeCost as boxChargeCost, chargeUnitPrice, affordableUnits, type BoxLine } from '@/lib/power-box';
 import { activeConnection, copyConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
@@ -176,7 +176,7 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
       {brief.agitation>0&&<span className="cc-agitation" aria-label={`${zh?'每层躁动':'Agitation per floor'} +${brief.agitation}`}><Flame aria-hidden="true" />+{brief.agitation}</span>}
       {net!==null&&<span className={`cc-net ${net>0?'is-pos':net<0?'is-neg':''}`} title={zh?`送到站时的净收益估算（不是上车就给钱）：到站车费，加上和已上车乘客配对、邻座的加成，减去这一路的电费${netIncludesAgitation(rider,run)||rider.kind==='nurse'?'，再算上他让车厢躁动的变化（每点每层按 3 币）':''}。按现在车厢里的人和最好的空位计算。`:`Estimated net on delivery (nothing is paid on boarding): arrival fare plus pairing / neighbour bonuses with riders aboard, minus the power for the trip${netIncludesAgitation(rider,run)||rider.kind==='nurse'?', and the change in cabin agitation (3 coins per point per floor)':''}. Based on who is aboard now and the best empty seat.`}>{(netIncludesAgitation(rider,run)||rider.kind==='nurse')&&<Flame aria-hidden="true" className="cc-net-flame" />}{zh?`送达 净${net>0?'+':net<0?'−':'±'}${Math.abs(net)}`:`On arrival ${net>0?'+':net<0?'−':'±'}${Math.abs(net)}`}</span>}{paired&&<span className={`cc-net cc-net-paired ${paired.value>0?'is-pos':paired.value<0?'is-neg':''}`} title={paired.partner==='parcel'?(zh?'带上他的纸箱、放在他旁边时，两张卡合计送达的净收益估算（已减去纸箱的电费）。':'Estimated net on delivery for the pair with his parcel beside him (the parcel’s power included).'):zh?`如果旁边坐上一位${riderName(paired.partner,'zh')}，这位乘客送达时的净收益估算；配对的加成双方都算。`:`Estimated net on delivery if a ${riderName(paired.partner,'en')} sits beside them; the pairing bonus counts for both.`}>{(()=>{const partnerName=paired.partner==='parcel'?displayName({kind:'parcel',big:rider.parcelBig?'top':undefined},locale):riderName(paired.partner,locale);return zh?`配${partnerName} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)}`:`w/ ${partnerName} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)}`;})()}</span>}
     </span>}
-    <span className="cc-line">{summary.line}{summary.progress&&<em>{summary.progress}</em>}</span>
+    <span className="cc-line">{summary.line}{(()=>{const progress=rider.kind==='bomb'&&rider.bombMs!==undefined?`⏱ ${Math.ceil(rider.bombMs/1000)}s`:summary.progress;return progress&&<em>{progress}</em>;})()}</span>
     {legend&&<span className="cc-keepsake-effect"><b>{zh?'送到 10 层得信物 · ':'Deliver to 10F for keepsake · '}{keepsakeName(rider.kind as LegendKind,locale)}{zh?'：':': '}</b>{keepsakeTitle(rider.kind as LegendKind,locale)}</span>}
     {summary.chips.length>0&&<span className="cc-chips">{summary.chips.map((chip,index)=><span key={index} className={`cc-chip chip-${chip.tone}`} title={chip.title}>{chip.tone==='green'?'+':chip.tone==='risk'?'⛓':''}<ChipIcon icon={chip.icon}/>{chip.label}</span>)}</span>}
     {action&&<span className="cc-action">{action}</span>}
@@ -284,6 +284,13 @@ const PRESSURE_RELIEF: Array<[string, string, string, string]> = [
   ['护士与音乐家', '护士让每位邻座 −1/层；音乐家把躁动拉向中档，中档时每层 +2 金币。', 'Nurse and Musician', 'A Nurse gives each neighbor −1 per floor; a Musician pulls agitation toward medium and earns 2 per floor there.'],
   ['每一档都有好处', '低：到站 +1 金币；中：到站 +1 金币；高：坏人链接多存 1 金币，醉汉车费翻倍——但有 20% 事故。', 'Every band pays', 'Low: +1 per arrival; medium: +1 per arrival; high: criminal links bank 1 more and Drifters pay double—with a 20% incident risk.'],
 ];
+
+// v9.18 real-time Bomber timer: ?bomb=N sets the seconds per stop (e.g. ?bomb=6 or ?bomb=15), ?bomb=off counts floors.
+if (typeof window !== 'undefined') {
+  const bombParam = new URLSearchParams(window.location.search).get('bomb');
+  if (bombParam === 'off') BOMB_RULES.realtime = false;
+  else if (bombParam && Number(bombParam) > 0) BOMB_RULES.secondsPerStop = Number(bombParam);
+}
 
 export default function ElevatorGame() {
   const reduceMotion = useReducedMotion() ?? false;
@@ -580,6 +587,47 @@ export default function ElevatorGame() {
   };
   const celebrateRef = useRef(celebrateFloor);
   useEffect(() => { celebrateRef.current = celebrateFloor; });
+  // Bookkeeping for a lost run (daily best, legend unlocks), shared by ascents and the real-time bomb timer.
+  const settleLossRef = useRef<(lost: RunState, delivered: Partial<Record<PassengerKind, number>>, seen: KeepsakeKey[]) => void>(() => {});
+  useEffect(() => {
+    settleLossRef.current = (lost, delivered, seen) => {
+      if (daily && lost.floor > dailyBest) { setDailyBest(lost.floor); try { localStorage.setItem(`elevator-tales-daily-best-${daily.key}`, String(lost.floor)); } catch { /* storage unavailable */ } }
+      const unlocks = nextUnlocks(unlockedLegends, { floor: lost.floor, delivered, keepsakes: lost.keepsakes ?? [] }, seen); const fresh = unlocks.filter(k => !unlockedLegends.includes(k));
+      if (fresh.length) { setUnlockedLegends(unlocks); saveList(LEGEND_UNLOCKS_KEY, unlocks); setNewLegends(fresh); }
+    };
+  });
+  // v9.18 real-time Bomber timer: counts down while the doors are open and nothing pauses play (another tab, a shop,
+  // a menu or the ability swap). Reading a rider card does not pause it.
+  const bombAboard = BOMB_RULES.realtime && run.status === 'playing' && doors === 'open' && run.cabin.some(r => r?.kind === 'bomb' && r.bombMs !== undefined);
+  const bombPaused = intro || help || pressureHelp || archive || changelogOpen || inventoryOpen || receiptOpen || Boolean(run.pendingAbility);
+  const lastBombSecond = useRef<number | null>(null);
+  useEffect(() => {
+    if (!bombAboard || bombPaused) return;
+    let last = performance.now();
+    const id = window.setInterval(() => {
+      const now = performance.now(), ms = document.hidden ? 0 : now - last; last = now;
+      setRun(current => tickBombs(current, ms));
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [bombAboard, bombPaused]);
+  // Last ten seconds tick audibly; an explosion ends the run like a failed ascent.
+  const lowestBombMs = run.cabin.reduce((min, r, i) => (r?.kind === 'bomb' && r.bombMs !== undefined && !hasNeighbour(run.cabin, i, ['cop']) ? Math.min(min, r.bombMs) : min), Infinity);
+  useEffect(() => {
+    if (!Number.isFinite(lowestBombMs) || run.status !== 'playing') { lastBombSecond.current = null; return; }
+    const second = Math.ceil(lowestBombMs / 1000);
+    if (second <= 10 && second !== lastBombSecond.current) playSfx(soundEnabled.current, 'tick', { pitch: 10 - second });
+    lastBombSecond.current = second;
+  }, [lowestBombMs, run.status]);
+  const explodedRef = useRef<RunState | null>(null);
+  useEffect(() => {
+    if (run.status !== 'lost' || explodedRef.current === run || !run.message.startsWith('炸弹倒计时归零') || busyRef.current) return;
+    explodedRef.current = run;
+    recordRef.current.push({ floor: run.floor, energy: run.energy, stress: run.stress, coins: run.coins, cabin: run.cabin.map(r => r ? [r.kind, r.destination - run.floor] : null), offers: offers.map(o => o.kind), arrivals: [], after: { energy: run.energy, stress: run.stress, coins: run.coins, status: 'lost' }, exploded: true });
+    settleLossRef.current(run, runDelivered, keepsakesSeen);
+    playTone(soundEnabled.current, 'danger'); playSfx(soundEnabled.current, 'rumble');
+    const stage = document.querySelector('.elevator-stage'); flashClass(stage, 'is-shaking', 700);
+    banner(stage, language === 'zh' ? '炸了！' : 'BOOM!', language === 'zh' ? '炸弹倒计时归零' : 'The bomb timer ran out', 'red', 1600);
+  }, [run, offers, runDelivered, keepsakesSeen, language]);
   const depart = useCallback(() => {
     if (locked || busyRef.current || run.pendingAbility) return;
     if (!run.cabin.some(Boolean)) { flash({tone:'error',label:'至少接一位乘客才能上行',slots:[]}); playTone(sound,'danger'); return; }
@@ -597,8 +645,7 @@ export default function ElevatorGame() {
         const newStories = (resolved.lastArrivals ?? []).map(a => a.kind).filter((k, i, all) => !storiesUnlocked.includes(k) && all.indexOf(k) === i);
         if (newStories.length) { const next = [...storiesUnlocked, ...newStories]; setStoriesUnlocked(next); saveList(STORIES_KEY, next); }
         const seen = [...new Set([...keepsakesSeen, ...(resolved.keepsakes ?? [])])]; if (seen.length !== keepsakesSeen.length) { setKeepsakesSeen(seen); saveList(KEEPSAKES_SEEN_KEY, seen); }
-        if (resolved.status === 'lost' && daily && resolved.floor > dailyBest) { setDailyBest(resolved.floor); try { localStorage.setItem(`elevator-tales-daily-best-${daily.key}`, String(resolved.floor)); } catch { /* storage unavailable */ } }
-        if (resolved.status === 'lost') { const unlocks = nextUnlocks(unlockedLegends, { floor: resolved.floor, delivered: deliveredNow, keepsakes: resolved.keepsakes ?? [] }, seen); const fresh = unlocks.filter(k => !unlockedLegends.includes(k)); if (fresh.length) { setUnlockedLegends(unlocks); saveList(LEGEND_UNLOCKS_KEY, unlocks); setNewLegends(fresh); } }
+        if (resolved.status === 'lost') settleLossRef.current(resolved, deliveredNow, seen);
         setRun(delivered); setArriving(resolved.lastArrivals??[]); setDoors('opening');
         journeyTimers.current.push(setTimeout(()=>{setArriving([]);setDoors('open');busyRef.current=false;if(!document.querySelector('[role="dialog"]'))scrollMobileTarget('.candidate-panel','start');},resolved.lastArrivals?.length?(reduced?800:1600):(reduced?40:260)));
         reportMetrics(run, resolved, `${resolved.floor} 层 · 到站结算`);
@@ -608,7 +655,7 @@ export default function ElevatorGame() {
       }, reduced ? 70 : 470),
 
     ];
-  }, [locked, sound, run, flash, reportMetrics, fastReveal, presentOffers, runDelivered, keepsakesSeen, unlockedLegends, storiesUnlocked, rngOf, offers, daily, dailyBest, risk.fatal, stressFatal, departArmed]);
+  }, [locked, sound, run, flash, reportMetrics, fastReveal, presentOffers, runDelivered, keepsakesSeen, storiesUnlocked, rngOf, offers, risk.fatal, stressFatal, departArmed]);
   // Arrival coins fly from each departing rider into the wallet. Purely decorative DOM, removed on finish.
   useEffect(() => {
     if (!arriving.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -726,7 +773,7 @@ export default function ElevatorGame() {
           const agitationValue=agitation.low===agitation.high?signedDelta(agitation.low):`${signedDelta(agitation.low)}～${signedDelta(agitation.high)}`;
           const compactAgitationValue=agitation.low===agitation.high?compactDelta(agitation.low):`${compactDelta(agitation.low)}～${compactDelta(agitation.high)}`;
           return <div key={index} className="standing-slot-wrap"><button disabled={locked} className={`standing-slot ${rider ? `category-${passengerCategory(rider.kind)} seat-grade-${riderCardGrade(rider)}` : ''} ${rider ? 'occupied' : ''} ${rider?.boardedAt === run.floor ? 'newly-boarded' : ''} ${synergy ? 'synergy-target' : ''} ${plan ? plan.ok ? 'drop-valid' : 'drop-blocked' : ''} ${selectedSlot === index ? 'selected' : ''} ${target ? 'drag-target' : ''}`} onClick={() => clickSlot(index)} draggable={false} onPointerDown={(event) => { if (rider && !locked && (!run.swapped || rider.boardedAt === run.floor)) pointerDrag(event, { type: 'slot', slot: index }, rider); }} onMouseEnter={() => activeRider && window.matchMedia('(min-width: 701px) and (hover: hover)').matches && setDragOverSlot(index)} onMouseLeave={() => !dragged && setDragOverSlot(null)} onDragOver={(event) => { if (!locked && dragged) { event.preventDefault(); event.dataTransfer.dropEffect = plan?.ok ? 'move' : 'none'; setDragOverSlot(index); } }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOverSlot((current) => current === index ? null : current); }} onDrop={(event) => dropOnSlot(event, index)} aria-label={rider ? `${index + 1}号位，${PASSENGERS[rider.kind].name}，到站收益${seatBrief?.expectedFare??'未知'}，每站耗电${seatBrief?.energy}，下一站躁动${agitationValue}${state ? `，${state.label}` : ''}` : `${index + 1}号空位${synergy ? '，可联动' : ''}`}>
-            {rider && seatBrief ? <motion.span className={`rider-visual ${rider.kind==='bomb'?'rider-bomb':''} ${rider.volatile?'rider-high-risk':''}`} key={rider.id} initial={reduceMotion ? false : { opacity: 0, scale: 1.04, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 520, damping: 34 }}>{(riderCardGrade(rider)==='rare'||riderCardGrade(rider)==='legendary')&&<CardShader legendary={riderCardGrade(rider)==='legendary'} />}<span className="seat-heading"><span className="rider-name" data-no-translate>{displayName(rider,language)}{riderCardGrade(rider)!=='standard'&&<span className={`card-gem gem-${riderCardGrade(rider)}`} aria-hidden="true" />}</span>{rider.volatile&&<span className="seat-risk-tag" title="急躁的乘客：车费更高，但在车上每层 +1 躁动；护士相邻可以抵消"><Flame aria-hidden="true" />急躁</span>}</span><span className="slot-destination">还剩 {Math.max(0, rider.destination - run.floor)} 站</span><span className="seat-art"><Portrait kind={rider.kind} rider={rider} large />{(Boolean(rider.stash) || (state && rider.kind !== 'bomb') || rider.fuse !== undefined) && <span className="seat-overlay">{Boolean(rider.stash)&&<span className="seat-stash">暂存 {rider.stash}</span>}{state && rider.kind !== 'bomb' && <span className={`slot-state ${state.tone}`}>{state.label}</span>}{rider.fuse !== undefined && (()=>{const fs=fuseState(run.cabin,index,run.floor);const locked=fs==='locked'||fs==='carried';const left=Math.max(0,rider.destination-run.floor);const late=fs==='late';return <span className={`fuse ${locked?'fuse-locked':late?'fuse-late':'fuse-live'}`} title={fs==='carried'?'空手的快递员拿着炸弹，他会在倒计时归零前下车并把炸弹带走':locked?'警察在旁边：倒计时暂停，不会减少':late?`倒计时 ${rider.fuse}，但还有 ${left} 站：到站前会爆炸，让警察站到旁边或请离`:`每层减 1；还有 ${left} 站，能按时送达`}>{fs==='carried'?<><LockKeyhole aria-hidden="true" />快递员会带走 · {rider.fuse}</>:locked?<><LockKeyhole aria-hidden="true" />已锁住 · {rider.fuse}</>:late?<><Flame aria-hidden="true" />来不及！倒计时 {rider.fuse}</>:<>倒计时 {rider.fuse}</>}</span>;})()}</span>}</span><span className="seat-metrics"><span className="seat-fare" title="按当前站位、躁动和已完成进度计算；下一站到站含本次进度，不含概率奖励" aria-label={`到站收益 ${seatBrief.expectedFare??'未知'}`}><Coins aria-hidden="true" />{seatBrief.expectedFare??'?'}</span><span className="seat-energy" title="人物耗电含红线倍率；链接固定耗电与整车节能另计" aria-label={`每站耗电 ${seatBrief.energy}`}><BatteryCharging aria-hidden="true" />{seatBrief.energy}</span><span className="seat-agitation" title="下一站躁动" aria-label={`下一站躁动 ${agitationValue}`}><Flame aria-hidden="true" />{compactAgitationValue}</span></span></motion.span> : <><span className="slot-number">{String(index + 1).padStart(2, '0')}</span>{target && plan?.ok && activeRider && <span className="placement-ghost"><Portrait kind={activeRider.kind} large /></span>}</>}
+            {rider && seatBrief ? <motion.span className={`rider-visual ${rider.kind==='bomb'?'rider-bomb':''} ${rider.volatile?'rider-high-risk':''}`} key={rider.id} initial={reduceMotion ? false : { opacity: 0, scale: 1.04, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 520, damping: 34 }}>{(riderCardGrade(rider)==='rare'||riderCardGrade(rider)==='legendary')&&<CardShader legendary={riderCardGrade(rider)==='legendary'} />}<span className="seat-heading"><span className="rider-name" data-no-translate>{displayName(rider,language)}{riderCardGrade(rider)!=='standard'&&<span className={`card-gem gem-${riderCardGrade(rider)}`} aria-hidden="true" />}</span>{rider.volatile&&<span className="seat-risk-tag" title="急躁的乘客：车费更高，但在车上每层 +1 躁动；护士相邻可以抵消"><Flame aria-hidden="true" />急躁</span>}</span><span className="slot-destination">还剩 {Math.max(0, rider.destination - run.floor)} 站</span><span className="seat-art"><Portrait kind={rider.kind} rider={rider} large />{(Boolean(rider.stash) || (state && rider.kind !== 'bomb') || rider.fuse !== undefined) && <span className="seat-overlay">{Boolean(rider.stash)&&<span className="seat-stash">暂存 {rider.stash}</span>}{state && rider.kind !== 'bomb' && <span className={`slot-state ${state.tone}`}>{state.label}</span>}{rider.fuse !== undefined && (()=>{const fs=fuseState(run.cabin,index,run.floor,run.stress);const fuseText=rider.bombMs!==undefined?`${Math.ceil(rider.bombMs/1000)}秒`:rider.fuse;const critical=rider.bombMs!==undefined&&rider.bombMs<=10000&&fs!=='locked';const locked=fs==='locked'||fs==='carried';const left=Math.max(0,rider.destination-run.floor);const late=fs==='late';return <span className={`fuse ${critical?'fuse-critical':''} ${locked?'fuse-locked':late?'fuse-late':'fuse-live'}`} title={fs==='carried'?'空手的快递员拿着炸弹，他会在倒计时归零前下车并把炸弹带走':locked?'警察在旁边：倒计时暂停，不会减少':late?`倒计时 ${fuseText}，但还有 ${left} 站：到站前会爆炸，让警察站到旁边或请离`:`每层减 1；还有 ${left} 站，能按时送达`}>{fs==='carried'?<><LockKeyhole aria-hidden="true" />快递员会带走 · {fuseText}</>:locked?<><LockKeyhole aria-hidden="true" />已锁住 · {fuseText}</>:late?<><Flame aria-hidden="true" />来不及！倒计时 {fuseText}</>:<>倒计时 {fuseText}</>}</span>;})()}</span>}</span><span className="seat-metrics"><span className="seat-fare" title="按当前站位、躁动和已完成进度计算；下一站到站含本次进度，不含概率奖励" aria-label={`到站收益 ${seatBrief.expectedFare??'未知'}`}><Coins aria-hidden="true" />{seatBrief.expectedFare??'?'}</span><span className="seat-energy" title="人物耗电含红线倍率；链接固定耗电与整车节能另计" aria-label={`每站耗电 ${seatBrief.energy}`}><BatteryCharging aria-hidden="true" />{seatBrief.energy}</span><span className="seat-agitation" title="下一站躁动" aria-label={`下一站躁动 ${agitationValue}`}><Flame aria-hidden="true" />{compactAgitationValue}</span></span></motion.span> : <><span className="slot-number">{String(index + 1).padStart(2, '0')}</span>{target && plan?.ok && activeRider && <span className="placement-ghost"><Portrait kind={activeRider.kind} large /></span>}</>}
             {reaction && <span key={reaction.id} className={`slot-reaction reaction-${reaction.tone}`} aria-hidden="true" />}
             {target && plan && <span className={`drop-caption ${plan.ok ? 'allowed' : 'blocked'}`}>{plan.ok ? `${dragged ? '松手' : '点击'} · ${synergy ? '联动' : '就位'}` : '不可放置'}</span>}
           </button>{rider && <button className="seat-info-button" type="button" disabled={locked} draggable={false} onDragStart={(event)=>event.preventDefault()} onClick={()=>{setEjectArmed(false);setPassengerDetails(rider);}} aria-label={`查看${PASSENGERS[rider.kind].name}详情`} title="查看人物详情"><Info aria-hidden="true" /></button>}</div>;

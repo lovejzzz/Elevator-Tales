@@ -1,6 +1,6 @@
 import { PASSENGERS, passengerCategory, type PassengerKind } from './game-data';
 import { bondLines, bondSummary, riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
-import { arrivalFare, arrivalTip, HIGH_RISK_BONUS, riderAfterWork, riderAgitation, type Rider, type RunState } from './game-engine';
+import { BOMB_RULES, arrivalFare, arrivalTip, HIGH_RISK_BONUS, riderAfterWork, riderAgitation, type Rider, type RunState } from './game-engine';
 import { CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
 import { RISK_PARTNERS, RISK_STASH_PER_ASCENT, riskPartnerships } from './shift-rules';
 import { agitationBand } from './balance-v832';
@@ -39,7 +39,7 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'coach':moneyNote='每位相邻教练：基础车费+50%；本人到站每邻座+3币';break;
   case 'cop':moneyNote='邻小偷：停止途中收入，到站+5';special='邻小偷：免偷窃躁动；邻炸弹：锁住倒计时';break;
   case 'lawyer':moneyNote='邻小偷：停止途中收入，到站+5';special='邻小偷：免偷窃躁动；不能暂停炸弹倒计时';break;
-  case 'bomb':special=`炸弹倒计时 ${rider.fuse??0} 层：每上升一层 −1；到站前归零则失败。同层到站安全；幽灵可能延误。`;break;
+  case 'bomb':special=BOMB_RULES.realtime?'炸弹实时倒计时：到站前归零则失败；相邻警察锁住，高躁动时两倍速。':`炸弹倒计时 ${rider.fuse??0} 层：每上升一层 −1；到站前归零则失败。同层到站安全；幽灵可能延误。`;break;
   case 'mystery':special='本次参数已固定；车费到站揭晓';break;
   case 'shifter':special='每站重抽三值和关系；基价16–28币';break;
   case 'mimic':special=profile.copies.length?profile.copies.map(c=>`↑ 复制${PASSENGERS[c.sourceKind].name}的${c.field==='energy'?'耗电':'基础车费'} · 同一人物对不重抽`).join('；'):'↑ 只复制正上方的耗电或基础车费；同一人物对不重抽';break;
@@ -143,7 +143,7 @@ export function passengerCardSections(
    self.push(effect('neutral',rider.complianceReady?'合规签章已保留':`连续不高躁动 ${rider.quietStreak??0}/${INSPECTION_WORK}`),effect('coins',`达标：到站 +${INSPECTION_BONUS}金币`));
    break;
   case 'bomb':
-   self.push(effect('timer',`倒计时 ${rider.fuse??0} · 未到站归零失败`),effect('neutral','同层到站安全；幽灵可能延误'));
+   self.push(BOMB_RULES.realtime&&rider.bombMs!==undefined?effect('timer',`倒计时 ${Math.ceil(rider.bombMs/1000)} 秒 · 未到站归零失败`):effect('timer',`倒计时 ${rider.fuse??0} · 未到站归零失败`),effect('neutral','同层到站安全；幽灵可能延误'));
    addGreen(['cop'],[effect('timer','倒计时锁定')]);
    break;
   case 'mystery':self.push(effect('neutral','参数与邻座关系随机 · 车费到站揭晓'));break;
