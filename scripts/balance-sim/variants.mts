@@ -25,6 +25,8 @@ export const VARIANTS: Record<string, () => void> = {
   noTiers: () => { PARCEL_RULES.rareChance = 0; PARCEL_RULES.legendaryChance = 0; },
   tiers2x: () => { PARCEL_RULES.rareChance = 0.32; PARCEL_RULES.legendaryChance = 0.08; },
   noBombCarry: () => { PARCEL_RULES.bombCarry = false; },
+  noBoxAbility: () => { PARCEL_RULES.abilityChance = { common: 0, rare: 0, legendary: 0 }; PARCEL_RULES.crateAbilityBonus = 0; },
+  boxAbility2x: () => { PARCEL_RULES.abilityChance = { common: 0.06, rare: 0.2, legendary: 0.5 }; PARCEL_RULES.crateAbilityBonus = 0.1; },
   noMimicCopy: () => { PARCEL_RULES.mimicCopiesBox = false; },
   big25: () => { PARCEL_RULES.bigChance = 0.25; },
   insp3: () => { PARCEL_RULES.inspectCoins = 3; },

@@ -1103,3 +1103,41 @@ export const V9171_EN: ChangelogEntry = {
   ],
   watch: ['Long-standing balance targets are still unmet: skilled players last too long (balanced median 115F, target 55–85), get too rich (median 226 exit coins) and nearly all die of agitation (92%). This is overall pacing, outside this fix.'],
 };
+
+export const V9172_ZH: ChangelogEntry = {
+  version: '9.17.2', date: '2026-09-23', title: '纸箱内容保密、随机，可能开出能力',
+  summary: '纸箱里是什么，到站打开前都看不到；开出的金币或电是随机数，偶尔是一项能力，箱子越稀有越可能。安装位满时可以换下一项，换下的在下次进商店自动卖掉。',
+  changes: [
+    '内容保密：纸箱卡不再显示“送达 净±N”，座位写“无人认领 · 到站开箱，内容未知”，规则里也不再列出具体数额。快递员的“配纸箱 ±N”仍然显示，因为那是他的送货费，和箱子里的东西无关。',
+    '随机内容：开箱时才决定。金币在该稀有度平均值的 0.5–1.5 倍之间随机（普通 3–9、稀有 6–18、传奇 12–36；大纸箱 8–24、15–45、30–90），一半机会换成一半数量的电。小孩拆箱、复制人的复制箱、小偷的小费（一半）也按同样方式随机。',
+    '开出能力：普通 3%、稀有 10%、传奇 25%，大纸箱再 +5%。从还没装的能力里随机一项，立刻安装（效果和商店选的一样）。',
+    '安装位已满时：弹出选择框，可以换下一项已装能力来装它，换下的能力会在下次进商店时自动卖掉（退 15 金币）；也可以放弃。安全余量在躁动接近上限时不能换下。同一层再开出能力就直接折成 15 金币。选择框出现时不能上行；这一层如果已经输了就不会弹出。',
+    '已装能力的说明改用各能力自己的规则文字（修正稳压模块旧说明写成“至少3人”的问题，实际是至少 5 人）；英文界面的已装能力列表不再中英混排。',
+  ],
+  experiments: [
+    '10 种打法 × 300 局 × 3 组（不出能力 / 当前概率 / 概率翻倍）= 9,000 局：熟练型中位楼层三组之间差 ≤ 3 层；当前概率下熟练型每局平均开出 0.36 项能力，其中 0.16 次遇到安装位已满要选择；翻倍时 0.64 项。保持当前概率，让能力是惊喜而不是常态。',
+    '验收（3,600 局）：均衡型中位 116 层（9.17.1 为 115），离店金币中位 234（226），通过/未通过的项目不变。预告审计 12,268 次上行：没有一次断电是保护没提醒的。',
+    '浏览器实测：纸箱卡没有数值标签、座位写“内容未知”；开出能力会直接安装；装满 6 项时弹出选择框，全英文，换下后提示“下次进商店卖掉”；本层失败时不弹出。',
+    'verify 新增 1 项（共 32 项）：3,000 次开箱的金币都在 3–9 之间，能力出现次数 普通 < 稀有 < 传奇 < 传奇大纸箱；装满时能力进入待选；放弃保留原能力；替换后下次进商店卖出退 15 金币。',
+  ],
+  watch: ['能力大约每三局才开出一次，如果试玩觉得太少，可以把概率提高到翻倍那一档（模拟里对平衡没有明显影响）。'],
+};
+
+export const V9172_EN: ChangelogEntry = {
+  version: '9.17.2', date: '2026-09-23', title: 'Box contents hidden, random, sometimes an ability',
+  summary: 'What a box holds stays hidden until it opens; coins or power are rolled at random, and sometimes it is an ability, likelier for rarer boxes. With every slot full you can swap one out, and the one removed is sold at the next shop.',
+  changes: [
+    'Hidden contents: box cards no longer show “On arrival ±N”, the seat reads “Unclaimed · opens on arrival, contents unknown”, and the rules no longer list amounts. The Courier’s “w/ box ±N” stays, since it is his delivery fee, not the contents.',
+    'Random contents, rolled on opening: coins between 0.5 and 1.5 times the tier’s average (common 3–9, rare 6–18, legendary 12–36; crates 8–24, 15–45, 30–90), or half as much power half the time. Child openings, the Mimic’s copy and the Thief’s tip (half) roll the same way.',
+    'Abilities in boxes: common 3%, rare 10%, legendary 25%, crates +5%. A random ability not yet installed, installed at once with the same effect as a shop pick.',
+    'With every slot full: a dialog lets you swap an installed ability out for it, the one removed being sold automatically at the next shop (15 coins back), or pass. Safety Margin cannot be removed while agitation is near the cap. A second ability found the same floor is sold at once for 15 coins. You cannot ascend while the dialog is open, and it does not appear once the run is lost.',
+    'Installed-ability summaries now use each ability’s own rule text (fixing the Stabilizer line that still said “at least 3 riders”; the rule is 5), so the English kit list no longer mixes languages.',
+  ],
+  experiments: [
+    '10 play styles × 300 runs × 3 settings (no abilities / current odds / doubled odds) = 9,000 runs: skilled median floors within 3 across settings; at current odds a skilled run finds 0.36 abilities on average, 0.16 of them with every slot full; doubled odds give 0.64. Current odds kept so an ability stays a surprise.',
+    'Acceptance (3,600 runs): balanced median 116F (115 in 9.17.1), median exit coins 234 (226); the same checks pass and fail. Forecast audit over 12,268 ascents: no power loss went unwarned.',
+    'Browser: box cards show no value tag and seats read “contents unknown”; found abilities install at once; with six installed the dialog appears in full English and a swap reports the sale at the next shop; it does not appear on a losing floor.',
+    'verify: one new check (32 in all): 3,000 common rolls all fall within 3–9; abilities appear common < rare < legendary < legendary crate; a full kit makes the ability wait; passing keeps the old kit; swapping sells the removed ability on entering the next shop for 15 coins.',
+  ],
+  watch: ['An ability turns up about once every three runs; if playtests find that too rare, the doubled odds had no visible balance effect in simulation.'],
+};

@@ -270,7 +270,7 @@ export type RunLog = {
   bot: BotId; seed: number; floor: number; cause: 'energy' | 'agitation' | 'bomb' | 'alive';
   closeCalls: number; escapes: number; powerCalls: number; stressCalls: number; bombCalls: number;
   emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; calmUnits?: number; inspectors?: number; stamped?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
-  parcel?: Record<'offered' | 'paired' | 'courierOnly' | 'parcelOnly' | 'opened' | 'adopted' | 'unpaid' | 'delivered' | 'thefts' | 'bigOffered' | 'bigBoarded' | 'childOpens' | 'parts' | 'inspected' | 'contested' | 'bombCarry' | 'mimicCopy' | 'rareBoarded' | 'rareOffered', number>; legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
+  boxAbilities?: number; boxAbilityFinds?: number; parcel?: Record<'offered' | 'paired' | 'courierOnly' | 'parcelOnly' | 'opened' | 'adopted' | 'unpaid' | 'delivered' | 'thefts' | 'bigOffered' | 'bigBoarded' | 'childOpens' | 'parts' | 'inspected' | 'contested' | 'bombCarry' | 'mimicCopy' | 'rareBoarded' | 'rareOffered', number>; legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
   shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
 };
 
@@ -353,6 +353,14 @@ export function runOne(opt: RunOptions): RunLog {
     const cabinBefore = state.cabin.filter(Boolean).map(r => r!);
     const next = E.resolveFloor(state, stream(opt.seed, 'resolve', state.floor));
     opt.onAscent?.(state, next);
+    // A box's ability with every slot full: swap out the lowest-ranked installed ability if the new one ranks higher.
+    if (next.pendingAbility) {
+      const rank = (k: UpgradeKey) => { const own = bot.abilities.indexOf(k); return own >= 0 ? own : bot.abilities.length + GENERIC_ABILITIES.indexOf(k); };
+      const worst = (Object.keys(next.upgrades) as UpgradeKey[]).filter(k => next.upgrades[k] > 0 && E.canReplaceWithBoxAbility(next, k)).sort((a, b) => rank(b) - rank(a))[0];
+      const found = next.pendingAbility;
+      Object.assign(next, E.resolveBoxAbility(next, worst && rank(found) < rank(worst) ? worst : null));
+      log.boxAbilities = (log.boxAbilities ?? 0) + 1;
+    }
     for (const r of cabinBefore) if (!next.cabin.some(n => n?.id === r.id) && next.lastArrivals?.some(a => a.riderId === r.id)) log.delivered[r.kind] = (log.delivered[r.kind] ?? 0) + 1;
     for (const a of next.lastArrivals ?? []) if (a.kind === 'parcel') log.parcel!.opened++;
     {
@@ -362,6 +370,7 @@ export function runOne(opt: RunOptions): RunLog {
       const said = (text: string) => next.message.includes(text) || next.log.some(line => line.includes(text));
       if (said('维修工拆了纸箱')) p.parts++;
       if (said('检查员验货')) p.inspected++;
+      if (said('能力「')) log.boxAbilityFinds = (log.boxAbilityFinds ?? 0) + 1;
       if (said('快递员带走了炸弹')) p.bombCarry++;
       if (next.lastEarnings.sources.some(l => l.label === '复制人的复制箱') || next.lastEnergy.sources.some(l => l.label === '复制人的复制箱')) p.mimicCopy++;
       if (next.lastPressure.sources.some(l => l.label === '快递员争纸箱')) p.contested++;

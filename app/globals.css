@@ -3021,3 +3021,11 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 @media (prefers-reduced-motion:no-preference) { .game-shell .rider-visual .fuse.fuse-late { animation:fuse-alarm 1s ease-in-out infinite; } }
 @keyframes fuse-alarm { 50% { box-shadow:0 0 14px #ff6b4f; } }
 .upgrade-dialog .calm-reserve-hint { margin:0 0 8px; font-size:12px; line-height:1.5; color:#ffb4a2; }
+
+/* v9.17.2 swap dialog for an ability found in a box: icon and name together, the action under the text. */
+.box-ability-dialog .inventory-list section>div { justify-content:flex-start; align-items:center; }
+.box-ability-dialog .inventory-list section { display:flex; flex-direction:column; gap:8px; }
+.box-ability-dialog .inventory-list section p { margin:0; flex:1; }
+.box-ability-dialog .inventory-list section button { align-self:flex-start; }
+.box-ability-dialog .box-ability-hint { margin:4px 0 10px; line-height:1.55; color:#e9dcc0; }
+.box-ability-dialog .inventory-list .inventory-icon { margin-left:0; }

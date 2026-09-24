@@ -425,8 +425,8 @@ console.log('PASS bomb timer display matches settlement');
   assert.equal(E.arrivalFare(courier(1), [courier(1), null, null, null, null, null], 0), 0);
   // Unclaimed: opens at its floor for 6 coins or 3 power, at random.
   const opened = (roll: number) => E.resolveFloor(run(30, [parcel(1)], { energy: 30 }), fixed(roll));
-  assert.equal(lines(opened(0.1), 'lastEarnings')['纸箱开箱'], 6);
-  assert.equal(lines(opened(0.9), 'lastEnergy')['纸箱开箱'], 3);
+  assert.equal(lines(opened(0.1), 'lastEarnings')['纸箱开箱'], 4, 'v9.17.2: 6 × (0.5 + 0.1)');
+  assert.equal(lines(opened(0.9), 'lastEnergy')['纸箱开箱'], 4, 'v9.17.2: half of 6 × 1.4');
   // Never anyone's neighbour: a Nurse or Coach beside it has no one to work on.
   const seats = [parcel(3), rider('coach', 30, 3), null, null, null, null];
   assert.equal(E.neighbourCount(seats, 1), 0);
@@ -474,7 +474,7 @@ console.log('PASS Courier parcel rules');
   // Legendary crate delivered: fare 8 + (60 − 6).
   const legendary = go([R('parcel', 'p', 31, { ownerId: 'c', big: 'top', boxId: 'p', tier: 'legendary' }), R('courier', 'c', 31, { parcelId: 'p', parcelBig: true, tier: 'legendary' }), null, R('parcel', 'p-b', 31, { ownerId: 'c', big: 'bottom', boxId: 'p', tier: 'legendary' })]);
   assert.equal(lines(legendary, 'lastEarnings')['快递员到站'], 62);
-  assert.equal(lines(go([R('parcel', 'q', 31, { tier: 'rare' })], 0.1), 'lastEarnings')['纸箱开箱'], 12);
+  assert.equal(lines(go([R('parcel', 'q', 31, { tier: 'rare' })], 0.1), 'lastEarnings')['纸箱开箱'], 7, 'rare average 12 × 0.6');
   // Adoption: an unclaimed box beside an empty-handed Courier counts as his.
   assert.equal(lines(go([R('courier', 'c1', 31, { parcelId: 'gone' }), R('parcel', 'q', 35)]), 'lastEarnings')['快递员到站'], 8);
   // Dispute: another empty-handed Courier touching the box: both +1, the owner still pays.
@@ -486,19 +486,22 @@ console.log('PASS Courier parcel rules');
   const eyed = [R('courier', 'c', 33, { parcelId: 'p' }), R('parcel', 'p', 33, { ownerId: 'c' }), R('thief', 't', 31)];
   assert.equal(E.riderAgitation(run(30, eyed), 2).low, 0);
   const robbed = go(eyed);
-  assert.equal(lines(robbed, 'lastEarnings')['小偷带走纸箱的小费'], 3);
+  assert.equal(lines(robbed, 'lastEarnings')['小偷带走纸箱的小费'], 2, 'half of 6 × 0.9');
   assert.ok(!robbed.cabin.some(r => r?.kind === 'parcel') && E.riderAgitation(robbed, 0).low === 1, 'the Courier has lost his box');
   assert.ok(go([R('courier', 'c', 33, { parcelId: 'p' }), R('parcel', 'p', 33, { ownerId: 'c' }), R('thief', 't', 31), null, null, R('cop', 'k', 33)]).cabin.some(r => r?.kind === 'parcel'), 'a controlled Thief takes nothing');
   // Child opens a box at the next floor; Mechanic uses an unclaimed box for parts; Inspector delays and pays.
   const opened = go([R('courier', 'c', 33, { parcelId: 'p' }), R('parcel', 'p', 33, { ownerId: 'c' }), R('child', 'k', 33)], 0.1);
-  assert.equal(lines(opened, 'lastEarnings')['小孩拆开纸箱'], 6);
+  assert.equal(lines(opened, 'lastEarnings')['小孩拆开纸箱'], 4);
   const parts = go([R('mechanic', 'm', 34), R('parcel', 'q', 34)]);
   assert.ok(parts.cabin[0]?.repairDone && !parts.cabin[1] && (parts.serviceTurns ?? 0) >= 4);
   const checked = go([R('courier', 'c', 32, { parcelId: 'p' }), R('parcel', 'p', 32, { ownerId: 'c' }), R('inspector', 'i', 34)]);
   assert.ok(checked.cabin[0]?.destination === 33 && checked.cabin[1]?.inspected);
   assert.equal(E.arrivalFare(checked.cabin[0]!, checked.cabin, 0), E.arrivalFare({ ...checked.cabin[0]! }, [checked.cabin[0], { ...checked.cabin[1]!, inspected: false }, null, null, null, null], 0) + 5);
   // Mimic under a box opens a copy of it.
-  assert.equal(lines(go([R('parcel', 'q', 36, { tier: 'legendary' }), null, null, R('mimic', 'm', 31, { copySeed: 1 })], 0.1), 'lastEarnings')['复制人的复制箱'], 24);
+  const mimicCab = [R('parcel', 'q', 36, { tier: 'legendary' }), null, null, R('mimic', 'm', 31, { copySeed: 1 })];
+  assert.equal(lines(go(mimicCab, 0.3), 'lastEarnings')['复制人的复制箱'], 19, 'legendary average 24 × 0.8');
+  const gifted = go(mimicCab, 0.1);
+  assert.equal(Object.values(gifted.upgrades).filter(Boolean).length, 1, 'a 0.1 roll is inside the legendary 25% ability chance: installed at once');
   // Bomb hand-off: the empty-handed Courier leaves first with the bomb, pays, and the Bomber is a Disguised Commuter.
   const handoff = go([R('courier', 'c', 31, { parcelId: 'gone' }), R('bomb', 'b', 34, { fuse: 1 })]);
   assert.equal(lines(handoff, 'lastEarnings')['快递员到站'], 8);
@@ -519,9 +522,9 @@ console.log('PASS v9.17 Courier boxes, crates and the characters who handle them
   assert.equal(fuseState(held, 1, 19), 'carried');
   assert.equal(fuseState([R('courier', 'c', 22, { parcelId: 'gone' }), R('bomb', 'b', 23, { fuse: 1 })], 1, 19), 'late', 'a Courier leaving too late does not save it');
   const opening = run(19, [R('parcel', 'q', 20, { tier: 'rare' }), R('commuter', 'a', 22)], { energy: 20 });
-  assert.equal(E.possibleBoxPower(opening), 6);
+  assert.equal(E.possibleBoxPower(opening), 9, 'the largest rare roll: 12 × 1.5 / 2');
   const ef = energyForecast(opening);
-  assert.ok(ef.highDelta - ef.lowDelta >= 6, `forecast range includes the box's 6 power: ${ef.lowDelta}..${ef.highDelta}`);
+  assert.ok(ef.highDelta - ef.lowDelta >= 9, `forecast range includes the box's 9 power: ${ef.lowDelta}..${ef.highDelta}`);
   const en = (t: string) => translateGameText(t, 'en');
   for (const t of ['已锁住 · ', '来不及！倒计时 ', '快递员会带走 · ', '电梯运转 −1 · 维修工耗电 −1 · 另 3 项', '2 条红线', '免费选取', '确认冒险上行', '10F · 充电 −2 金币', '选取隔音门',
     '电量不够跑完下一段的运转；途中补电每十层有上限。再点一次确认离开。', '倒计时 2，但还有 4 站：到站前会爆炸，让警察站到旁边或请离'])
@@ -529,4 +532,32 @@ console.log('PASS v9.17 Courier boxes, crates and the characters who handle them
   assert.ok(!/[a-z](Arrival|Power|Agitation)\b/.test(en('维修工到站 +6 · 快递员耗电 −1')), 'names and labels are separated');
 }
 console.log('PASS audit fixes: shop-floor guard, carried bomb label, box power in forecast, English leaks');
-console.log(JSON.stringify({ version: 'v9', checks: 31, passed: true }));
+// v9.17.2 hidden box contents: rolled on opening, sometimes an ability (likelier when rarer); with every slot full the
+// player may swap one out, and the one removed is sold on entering the next shop.
+{
+  const none = { ...E.EMPTY_UPGRADES };
+  const rng = seq(0.07, 0.91, 0.33, 0.58, 0.15, 0.76, 0.42, 0.99, 0.24, 0.67, 0.02, 0.85);
+  const tally = (r: { big?: 'top'; tier?: 'rare' | 'legendary' }) => {
+    let abilities = 0; const coins: number[] = [];
+    for (let i = 0; i < 3000; i++) { const got = E.rollBox(r, rng, none); if (got.ability) abilities++; else if (got.coins) coins.push(got.coins); }
+    return { abilities, min: Math.min(...coins), max: Math.max(...coins) };
+  };
+  const common = tally({}), rare = tally({ tier: 'rare' }), legendary = tally({ tier: 'legendary' }), crate = tally({ big: 'top', tier: 'legendary' });
+  assert.ok(common.min >= 3 && common.max <= 9 && common.max > common.min, `common rolls 3–9: ${common.min}–${common.max}`);
+  assert.ok(common.abilities < rare.abilities && rare.abilities < legendary.abilities && legendary.abilities < crate.abilities, 'rarer boxes and crates hold abilities more often');
+  // Every slot full: the found ability waits; swapping sells the old one at the next shop; passing drops it.
+  const full = { ...E.EMPTY_UPGRADES, battery: 1, reinforced: 1, concierge: 1, punchcard: 1, relay: 1, express: 1 };
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 17, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  const found = E.resolveFloor(run(18, [R('parcel', 'q', 19, { tier: 'legendary' }), R('commuter', 'a', 25)], { energy: 30, upgrades: full }), fixed(0.1));
+  assert.ok(found.pendingAbility && !full[found.pendingAbility], 'a legendary 0.1 roll is an ability; with no free slot it waits');
+  assert.equal(Object.values(found.upgrades).filter(Boolean).length, 6);
+  const passed = E.resolveBoxAbility(found, null);
+  assert.ok(!passed.pendingAbility && passed.upgrades.relay === 1);
+  const swapped = E.resolveBoxAbility(found, 'relay');
+  assert.ok(!swapped.pendingAbility && swapped.upgrades.relay === 0 && swapped.upgrades[found.pendingAbility!] === 1 && swapped.pendingSales?.includes('relay'));
+  const shop = E.resolveFloor({ ...swapped, floor: 19, cabin: [R('commuter', 'a', 25), null, null, null, null, null], energy: 30 }, fixed(0.6));
+  assert.equal(lines(shop, 'lastEarnings')['卖掉被替换的能力'], E.SELL_REFUND);
+  assert.deepEqual(shop.pendingSales, []);
+}
+console.log('PASS hidden box contents, ability finds and swaps');
+console.log(JSON.stringify({ version: 'v9', checks: 32, passed: true }));

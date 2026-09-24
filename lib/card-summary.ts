@@ -43,7 +43,7 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
       return { line: L('纸箱在旁才付钱 · 回 2 电 · 空手可接炸弹', 'Pays only with his box beside him · 2 power · empty-handed takes bombs') };
     }
     case 'parcel': {
-      return { line: rider.big ? L('占同一列上下两格 · 挨着快递员送达', 'Fills one column · delivered beside a Courier') : L('挨着快递员送达 · 无主时到站开箱', 'Delivered beside a Courier · opens on arrival if unclaimed') };
+      return { line: rider.big ? L('占同一列上下两格 · 挨着快递员送达', 'Fills one column · delivered beside a Courier') : L('挨着快递员送达 · 无主时到站开箱，内容未知', 'Delivered beside a Courier · unclaimed, opens on arrival: contents unknown') };
     }
     case 'mechanic': return rider.repairDone ? { line: L(`检修完成 · ${REPAIR_DURATION} 层省电`, `Repaired · ${REPAIR_DURATION} floors cheaper`) } : { line: L(`低躁动检修 → ${REPAIR_DURATION} 层运转 −1`, `Calm repair → motor −1 for ${REPAIR_DURATION}`), progress: `${rider.repairProgress ?? 0}/${REPAIR_WORK}` };
     case 'lover': return { line: L('恋人相邻：基价翻倍', 'Beside a Lover: fare ×2') };

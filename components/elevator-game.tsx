@@ -17,7 +17,7 @@ import { LEGEND_KINDS, type LegendKind } from '@/lib/game-data';
 import { availableShopCards, emergencyRepairPlan, repairEmergency, dismissalsRemaining, energyBreakdown, purchaseRepairWarning } from '@/lib/game-engine';
 import { HIGH_RISK_BONUS, travelEnergyCost, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, touristCompanionCount, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, sectorForecast, stressForecast } from '@/lib/game-forecast';
-import { neighbours, parcelBeside, parcelLinks, thiefEyesParcel, unseatRider, boxIdOf, boxCoins, RETIRED_UPGRADES, SELL_REFUND, canSellUpgrade, sellUpgrade, calmPrice, buyCalm, calmAllowance, emergencyAllowance, emergencySectorLeft, emergencyCharge, boxOf, buyBoxLevel, canBuyBoxLevel, boxLevelPrice, rerollShop, REROLL_PRICE, SHOP_PRICES } from '@/lib/game-engine';
+import { canReplaceWithBoxAbility, resolveBoxAbility, neighbours, parcelBeside, parcelLinks, thiefEyesParcel, unseatRider, boxIdOf, RETIRED_UPGRADES, SELL_REFUND, canSellUpgrade, sellUpgrade, calmPrice, buyCalm, calmAllowance, emergencyAllowance, emergencySectorLeft, emergencyCharge, boxOf, buyBoxLevel, canBuyBoxLevel, boxLevelPrice, rerollShop, REROLL_PRICE, SHOP_PRICES } from '@/lib/game-engine';
 import { emergencyUnitPrice, BOX_LINES, BOX_LINE_LABELS, BOX_MAX_LEVEL, BOX_TOTAL_CAP, boxTotal, chargeCost as boxChargeCost, chargeUnitPrice, affordableUnits, type BoxLine } from '@/lib/power-box';
 import { activeConnection, copyConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
@@ -161,7 +161,8 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
   const summary=cardSummary(rider,run,locale);
   const zh=locale==='zh';
   const legend=isLegend(rider.kind);
-  const board=boardNet(rider,run); const net=board?.value ?? null; const paired=pairedNet(rider,run);
+  // v9.17.2: a box's contents stay hidden until it opens, so its card shows no value estimate.
+  const board=rider.kind==='parcel'?null:boardNet(rider,run); const net=board?.value ?? null; const paired=pairedNet(rider,run);
   return <span className="unified-passenger-summary compact-card" data-no-translate>
     <span className="cc-head"><Portrait kind={rider.kind} rider={rider}/><span className="cc-title"><strong>{displayName(rider,locale)}<span className={`card-gem gem-${riderCardGrade(rider)}`} title={({standard:zh?'普通':'Common',fine:zh?'精良':'Fine',rare:zh?'稀有':'Rare',legendary:zh?'传奇':'Legendary'} as Record<string,string>)[riderCardGrade(rider)]} aria-hidden="true" /></strong><span className="cc-sub">
       <span className="cc-trip">{zh?`${brief.distance} 站`:`${brief.distance} stops`}</span>
@@ -191,12 +192,12 @@ function riderState(cabin: Array<Rider | null>, slot: number, bonus: number, agi
   if (rider.kind === 'parcel' || rider.kind === 'courier' || rider.kind === 'thief' || rider.kind === 'mimic') {
     const links = parcelLinks(cabin), near = (kinds: PassengerKind[]) => links.boxes.find(b => b.slots.includes(slot))?.touching.some(i => kinds.includes(cabin[i]?.kind as PassengerKind));
     if (rider.kind === 'parcel') {
-      const carrier = links.carrier.get(slot), boxCoinsNow = boxCoins(rider);
+      const carrier = links.carrier.get(slot);
       if (links.eyed.has(slot)) return { label: `小偷盯上了 · 他下车就带走`, tone: 'warn' };
       if (near(['child'])) return { label: '小孩下一层就拆开', tone: 'warn' };
       if (carrier !== undefined) return { label: rider.inspected ? '已验货 · 跟快递员到站' : cabin[carrier]?.id === rider.ownerId ? '跟快递员一起到站' : '已交给旁边的快递员', tone: 'neutral' };
       if (near(['mechanic'])) return { label: '维修工会拆来当零件', tone: 'neutral' };
-      return { label: `无人认领 · 到站开箱 ${boxCoinsNow} 币或 ${Math.round(boxCoinsNow / 2)} 电`, tone: 'active' };
+      return { label: '无人认领 · 到站开箱，内容未知', tone: 'active' };
     }
     if (rider.kind === 'courier' && rider.parcelId) {
       if (links.bombs.has(slot)) return { label: '拿着炸弹 · 先下车就带走', tone: 'active' };
@@ -580,7 +581,7 @@ export default function ElevatorGame() {
   const celebrateRef = useRef(celebrateFloor);
   useEffect(() => { celebrateRef.current = celebrateFloor; });
   const depart = useCallback(() => {
-    if (locked || busyRef.current) return;
+    if (locked || busyRef.current || run.pendingAbility) return;
     if (!run.cabin.some(Boolean)) { flash({tone:'error',label:'至少接一位乘客才能上行',slots:[]}); playTone(sound,'danger'); return; }
     if ((risk.fatal || stressFatal) && !departArmed) { setDepartArmedFor(run); playTone(sound,'danger'); return; }
     const reduced = fastReveal || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -795,6 +796,13 @@ export default function ElevatorGame() {
         {detailOnboard && !canDismiss && <p className="detail-footnote">本层刚上车可直接点候客卡撤回；乘坐一站后才能付费请离。</p>}
         <Button className="story-primary" onClick={() => {setPassengerDetails(null);setEjectArmed(false);}}>返回安排</Button>
       </>}
+    </DialogContent></Dialog>
+    {/* v9.17.2: an ability found in a box while every slot is full: swap one out (sold at the next shop) or pass. */}
+    <Dialog open={Boolean(run.pendingAbility)&&run.status!=='lost'} onOpenChange={()=>{}}><DialogContent className="story-dialog inventory-dialog box-ability-dialog" showCloseButton={false}>
+      {run.pendingAbility&&<><p className="dialog-kicker">FOUND IN A BOX</p><DialogHeader><DialogTitle><span data-no-translate>{language==='zh'?'纸箱里是一项能力：':'A box held an ability: '}</span>{UPGRADES[run.pendingAbility].name}</DialogTitle><DialogDescription>{UPGRADES[run.pendingAbility].description}</DialogDescription></DialogHeader>
+      <p className="box-ability-hint" data-no-translate>{language==='zh'?`安装位已满。换下一项来装它，换下的能力会在下次进商店时自动卖掉（退 ${SELL_REFUND} 金币）；或者放弃这个能力。`:`Every slot is full. Swap one out for it; the one you remove is sold automatically at the next shop (${SELL_REFUND} coins back). Or pass on this ability.`}</p>
+      <div className="inventory-list">{(Object.keys(UPGRADES) as UpgradeKey[]).filter(key=>!RETIRED_UPGRADES.includes(key)&&run.upgrades[key]>0).map(key=>{const ok=canReplaceWithBoxAbility(run,key);return <section key={key} className="installed"><div><span className="shop-icon inventory-icon" style={{backgroundImage:`url(${shopIcon(`ability-${key}`)})`}} aria-hidden="true" /><b>{UPGRADES[key].name}</b></div><p>{installedUpgradeSummary(run,key)}</p><Button variant="outline" disabled={!ok} onClick={()=>setRun(current=>resolveBoxAbility(current,key))}><span data-no-translate>{ok?(language==='zh'?'换下这一项':'Swap this out'):(language==='zh'?'躁动太高，不能换下':'Agitation too high to remove')}</span></Button></section>;})}</div>
+      <Button className="story-primary" onClick={()=>setRun(current=>resolveBoxAbility(current,null))}><span data-no-translate>{language==='zh'?'放弃这个能力':'Pass on this ability'}</span></Button></>}
     </DialogContent></Dialog>
     <Dialog open={inventoryOpen} onOpenChange={setInventoryOpen}><DialogContent className="story-dialog inventory-dialog">
       <p className="dialog-kicker">INSTALLED SYSTEMS · THIS SHIFT</p><DialogHeader><DialogTitle data-no-translate>{language==='zh'?'本班装备':'This shift’s kit'}</DialogTitle><DialogDescription data-no-translate>{upgradeCount ? (language==='zh'?`已安装 ${upgradeCount}/${UPGRADE_SLOTS} 项能力。`:`${upgradeCount}/${UPGRADE_SLOTS} abilities installed.`) : (language==='zh'?'还没有安装能力。':'No abilities installed yet.')}</DialogDescription></DialogHeader>

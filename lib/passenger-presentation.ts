@@ -24,7 +24,7 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'commuter':moneyNote=`低躁动到站 +${COMMUTER_QUIET_BONUS}金币`;break;
   case 'tourist':moneyNote=`每位邻座：到站+2币；中躁动到站 +${TOURIST_MEDIUM_BONUS}金币`;special='包括其他游客；邻座变化即重算';break;
   case 'courier':special=rider.parcelId?'纸箱在旁：到站付钱并补充2电，箱子越稀有付得越多；空手：每层+1躁动、不付钱，挨着炸弹客可接过炸弹':'到站补充2电（不超过上限）';break;
-  case 'parcel':special='无主时到站开箱：普通6、稀有12、传奇24币（大纸箱16、30、60），或一半的电';break;
+  case 'parcel':special='无主时到站开箱：内容开箱前看不到，随机金币或电，偶尔是一项能力；越稀有开得越多';break;
   case 'lover':moneyNote='每位邻座恋人：到站基价+100%';special='无恋人邻座：每站15%呼唤恋人';break;
   case 'thief':moneyNote='无警察：每位邻座每站+2；受控仅到站+5';pressure.splice(0,1,`每层 +1`,'挨警察免除');break;
   case 'drunk':moneyNote='到站前关门时高躁动：基价+100%';pressure.splice(0,1,'每层 +1','挨护士免除');break;
@@ -97,7 +97,7 @@ export function passengerCardSections(
  const addGreen=(targets:PassengerKind[]|null,effects:PassengerCardEffect[],targetLabel?:PassengerCardRelation['targetLabel'])=>green.push({targets:targets??undefined,targetLabel,effects});
  switch(rider.kind){
   case 'courier':self.push(effect('energy','到站 +2'));if(rider.parcelId)self.push(effect('neutral','纸箱须在旁'));break;
-  case 'parcel':self.push(effect('neutral','无主开箱：金币或一半的电'));break;
+  case 'parcel':self.push(effect('neutral','无主开箱：内容未知'));break;
   case 'commuter':self.push(effect('coins',`低躁动到站 +${COMMUTER_QUIET_BONUS}金币`));break;
   case 'mechanic':self.push(effect('neutral',rider.repairDone?'本次检修已完成':`低躁动检修 ${rider.repairProgress??0}/${REPAIR_WORK}`),effect('energy',`完成：后续${REPAIR_DURATION}层运转少耗1电`),effect('neutral','每人一次；中/高暂停，不清零'));break;
   case 'lover':

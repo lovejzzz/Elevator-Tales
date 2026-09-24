@@ -16,6 +16,10 @@ export type ShopCard = { key: UpgradeKey; price: number; purchased: boolean };
 export type RunState = {
   floor: number; energy: number; energyCap: number; stress: number; stressCap: number; weightCap: number; coins: number; earned: number; shop: ShopCard[];
   cabin: Array<Rider | null>; swapped: boolean; upgrades: Record<UpgradeKey, number>;
+  /** v9.17.2: an ability found in a box while every slot is full, waiting for the player to swap it in or pass. */
+  pendingAbility?: UpgradeKey;
+  /** Abilities swapped out for a box's ability; each is sold (refunded) on entering the next shop. */
+  pendingSales?: UpgradeKey[];
   restStops: number;
   oldMovesUsed?: number;
   lastArrivals?: ArrivalReceipt[];
@@ -135,6 +139,9 @@ export const PARCEL_RULES = {
   inspectCoins: 5,
   /** A Mechanic beside an unclaimed box uses it for parts: his repair completes at once, the box is used up. */
   mechanicParts: true,
+  /** v9.17.2: contents are hidden until opened and rolled then: coins or half as much power, between half and
+   * one and a half times the tier's average; sometimes an ability instead, likelier for rarer boxes and crates. */
+  abilityChance: { common: 0.03, rare: 0.1, legendary: 0.25 }, crateAbilityBonus: 0.05,
 };
 /** A box is one parcel card: a single seat, or a two-part box whose halves share a boxId. */
 export const boxIdOf = (r: Rider) => r.boxId ?? r.id;
@@ -211,6 +218,20 @@ export type BoxTier = 'common' | 'rare' | 'legendary';
 /** Coins inside a box of this size and tier; opened boxes pay this or half as much power, at random. */
 export const boxCoins = (r: { big?: unknown; tier?: BoxTier }) => PARCEL_RULES.values[r.big ? 'big' : 'small'][r.tier ?? 'common'];
 export const boxPower = (r: { big?: unknown; tier?: BoxTier }) => Math.round(boxCoins(r) / 2);
+/** The most power one box can hold (its roll tops out at 1.5× the average). */
+export const boxPowerMax = (r: { big?: unknown; tier?: BoxTier }) => Math.round(boxCoins(r) * 1.5 / 2);
+export type BoxContents = { coins: number; power: number; ability?: UpgradeKey };
+/** Rolls a box's contents when it is opened; with every slot full an ability becomes its sale value in coins. */
+export function rollBox(r: { big?: unknown; tier?: BoxTier }, rng: () => number, upgrades: Record<UpgradeKey, number>): BoxContents {
+  const chance = PARCEL_RULES.abilityChance[r.tier ?? 'common'] + (r.big ? PARCEL_RULES.crateAbilityBonus : 0);
+  if (rng() < chance) {
+    const pool = (Object.keys(UPGRADES) as UpgradeKey[]).filter(k => !RETIRED_UPGRADES.includes(k) && !upgrades[k]);
+    if (pool.length) return { coins: 0, power: 0, ability: pool[Math.floor(rng() * pool.length)] };
+    return { coins: SELL_REFUND, power: 0 };
+  }
+  const coins = Math.max(1, Math.round(boxCoins(r) * (0.5 + rng())));
+  return rng() < .5 ? { coins, power: 0 } : { coins: 0, power: Math.max(1, Math.round(coins / 2)) };
+}
 /** v9.17: the most power boxes could pay out at the next floor (each opening pays power half the time):
  * unclaimed boxes reaching their floor, boxes beside a Child, and a Mimic getting off under a box. */
 export function possibleBoxPower(state: RunState): number {
@@ -222,9 +243,9 @@ export function possibleBoxPower(state: RunState): number {
     const ownerAboard = cabin.some(r => Boolean(box.ownerId) && r?.id === box.ownerId);
     const childOpens = PARCEL_RULES.childOpens && !delivering && box.touching.some(i => cabin[i]?.kind === 'child');
     const opensUnclaimed = c === undefined && !ownerAboard && next >= top.destination;
-    if (childOpens || opensUnclaimed) power += boxPower(top);
+    if (childOpens || opensUnclaimed) power += boxPowerMax(top);
   }
-  if (PARCEL_RULES.mimicCopiesBox) cabin.forEach((r, i) => { if (r?.kind === 'mimic' && i >= 3 && next >= r.destination && cabin[i - 3]?.kind === 'parcel') power += boxPower(cabin[i - 3]!); });
+  if (PARCEL_RULES.mimicCopiesBox) cabin.forEach((r, i) => { if (r?.kind === 'mimic' && i >= 3 && next >= r.destination && cabin[i - 3]?.kind === 'parcel') power += boxPowerMax(cabin[i - 3]!); });
   return power;
 }
 /** Every Courier whose own box is aboard has it touching him (either half of a two-part box). */
@@ -650,20 +671,29 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   // a Thief leaving takes the box he eyes, then a Child opens a box beside them, then a Mechanic uses an unclaimed
   // box for parts. An Inspector checks a Courier's box once (he rides one floor longer).
   const stolen = new Set<number>(), thiefTips = new Map<number, number>();
+  // v9.17.2 hidden contents, rolled on opening. Abilities won this floor are installed after settlement.
+  const wonAbilities: UpgradeKey[] = []; let pendingAbility = state.pendingAbility;
+  const receive = (box: { big?: unknown; tier?: BoxTier }, label: string, say: string) => {
+    const installed = { ...state.upgrades }; wonAbilities.forEach(k => { installed[k] = 1; }); if (pendingAbility) installed[pendingAbility] = 1;
+    let got = rollBox(box, rng, installed);
+    // Every slot full: the first such ability waits for the player to swap it in; any other is sold at once.
+    if (got.ability && Object.values(installed).filter(Boolean).length - (pendingAbility ? 1 : 0) >= UPGRADE_SLOTS) {
+      if (!pendingAbility) { pendingAbility = got.ability; notes.push(`${say}能力「${UPGRADES[got.ability].name}」（安装位已满，可以替换一项）`); return 0; }
+      got = { coins: SELL_REFUND, power: 0 };
+    }
+    if (got.ability) { wonAbilities.push(got.ability); notes.push(`${say}能力「${UPGRADES[got.ability].name}」`); return 0; }
+    if (got.coins) { addCoins(label, got.coins); notes.push(`${say}${got.coins} 金币`); return got.coins; }
+    adjustEnergy(label, got.power); notes.push(`${say}${got.power} 电的电池`); return 0;
+  };
   {
     const before = parcelLinks(cabin);
     const delivering = (box: Box) => { const c = before.carrier.get(box.slots[0]); return c !== undefined && nextFloor >= cabin[c]!.destination; };
-    const openBox = (box: Box, by: string) => {
-      const coinsWon = rng() < .5 ? boxCoins(box) : 0;
-      if (coinsWon) addCoins(`${by}拆开纸箱`, coinsWon); else adjustEnergy(`${by}拆开纸箱`, boxPower(box));
-      notes.push(coinsWon ? `${by}拆开纸箱：${coinsWon} 金币` : `${by}拆开纸箱：${boxPower(box)} 电的电池`);
-      box.slots.forEach(p => { cabin[p] = null; });
-    };
+    const openBox = (box: Box, by: string) => { receive(box, `${by}拆开纸箱`, `${by}拆开纸箱：`); box.slots.forEach(p => { cabin[p] = null; }); };
     for (const box of before.boxes) {
       if (delivering(box)) continue;
       const thief = before.eyed.get(box.slots[0]);
       if (thief !== undefined && nextFloor >= cabin[thief]!.destination) {
-        box.slots.forEach(p => stolen.add(p)); thiefTips.set(thief, Math.floor(boxCoins(box) * PARCEL_RULES.thiefShare));
+        box.slots.forEach(p => stolen.add(p)); thiefTips.set(thief, Math.max(1, Math.floor(boxCoins(box) * (0.5 + rng()) * PARCEL_RULES.thiefShare)));
         notes.push('小偷带走了纸箱'); continue;
       }
       if (PARCEL_RULES.childOpens && box.touching.some(i => cabin[i]?.kind === 'child')) { openBox(box, '小孩'); continue; }
@@ -699,10 +729,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       if (owner) return nextFloor >= owner.destination ? null : rider;
       if (nextFloor < rider.destination) return rider;
       if (rider.big === 'bottom') return null; // the upper half opens the whole box
-      const power = boxPower(rider);
-      const coinsWon = rng() < .5 ? boxCoins(rider) : 0;
-      if (coinsWon) addCoins('纸箱开箱', coinsWon); else adjustEnergy('纸箱开箱', power);
-      notes.push(coinsWon ? `无人认领的纸箱里有 ${coinsWon} 金币` : `无人认领的纸箱里是 ${power} 电的电池`);
+      const coinsWon = receive(rider, '纸箱开箱', '无人认领的纸箱开箱：');
       lastArrivals.push({ riderId: rider.id, kind: rider.kind, slot, coins: coinsWon });
       return null;
     }
@@ -718,9 +745,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     // A Mimic under a box carries a copy of it and opens the copy as he leaves.
     const above = slot >= 3 ? cabin[slot - 3] : null;
     if (rider.kind === 'mimic' && PARCEL_RULES.mimicCopiesBox && above?.kind === 'parcel') {
-      const copyCoins = rng() < .5 ? boxCoins(above) : 0;
-      if (copyCoins) addCoins('复制人的复制箱', copyCoins); else adjustEnergy('复制人的复制箱', boxPower(above));
-      notes.push(copyCoins ? `复制人打开复制箱：${copyCoins} 金币` : `复制人打开复制箱：${boxPower(above)} 电`);
+      receive(above, '复制人的复制箱', '复制人打开复制箱：');
     }
     addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare - appetitePremium - (rider.stash ?? 0));
     if (rider.stash) addCoins('坏人暂存兑现', rider.stash);
@@ -785,6 +810,9 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if (checkpoint && hasKeepsake({keepsakes},'roundsLog') && stress > 0) adjustPressure('查房记录：进店舒缓', -Math.min(ROUNDS_LOG_SHOP_RELIEF, stress));
   const entryCharge = shopEntryCharge(boxOf(state));
   if(checkpoint&&entryCharge&&energy<state.energyCap)adjustEnergy('抵达商店补电',Math.min(entryCharge,state.energyCap-energy));
+  // v9.17.2: abilities swapped out for a box's ability are sold on entering the shop.
+  const soldOnEntry = checkpoint ? (state.pendingSales ?? []) : [];
+  if (soldOnEntry.length) addCoins('卖掉被替换的能力', soldOnEntry.length * SELL_REFUND);
   if(checkpoint&&hasKeepsake({keepsakes},'stock')){const interest=Math.min(LEGEND_RULES.stockCap,Math.floor(Math.max(0,coins)*LEGEND_RULES.stockRate));if(interest)addCoins('股票利息',interest);}
   const buffer=settleBuffer(energy,state.energyCap,state.bufferPower??0,Boolean(state.upgrades.buffer)&&!SHOP_TUNING.bufferGap&&!SHOP_TUNING.bufferFlywheel);
   if(buffer.released)adjustEnergy('缓冲槽补电',buffer.released);
@@ -806,7 +834,9 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if(SHOP_TUNING.bufferGap)state={...state,bufferGapTurns:gapCharge.progress};
   state=consumeFlywheel(state,flywheel);
   const stabilized = stabilizedEnergy(state);
-  return { ...state, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
+  const settled: RunState = { ...state, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
+  // Abilities found in boxes install like a shop pick (effects such as Safety Margin apply at once).
+  return wonAbilities.reduce((run, key) => previewUpgrade(run, key), settled);
 }
 
 export type UpgradeCrisis = 'energy' | 'stress' | 'both' | null;
@@ -883,6 +913,20 @@ export function sellUpgrade(state: RunState, key: UpgradeKey): RunState {
   const stressCap = key === 'calm' ? state.stressCap - 2 : state.stressCap;
   return { ...state, upgrades, stressCap, calmCharge: key === 'calm' ? false : state.calmCharge, coins: state.coins + SELL_REFUND,
     message: `卖出${UPGRADES[key].name}，退回 ${SELL_REFUND} 金币；空出一个安装位。`, lastEarnings: { total: SELL_REFUND, sources: [{ label: '卖出能力', amount: SELL_REFUND }] }, lastEnergy: { delta: 0, sources: [] }, lastPressure: { delta: 0, sources: [] } };
+}
+/** v9.17.2: swap an installed ability for the one found in a box (the old one is sold at the next shop), or pass. */
+export function canReplaceWithBoxAbility(state: RunState, key: UpgradeKey) {
+  return Boolean(state.pendingAbility) && state.upgrades[key] > 0 && !(key === 'calm' && state.stress >= state.stressCap - 2);
+}
+export function resolveBoxAbility(state: RunState, replace: UpgradeKey | null): RunState {
+  const found = state.pendingAbility; if (!found) return state;
+  if (!replace) return { ...state, pendingAbility: undefined, message: `放弃了纸箱里的能力「${UPGRADES[found].name}」。` };
+  if (!canReplaceWithBoxAbility(state, replace)) return state;
+  const stressCap = replace === 'calm' ? state.stressCap - 2 : state.stressCap;
+  const removed = { ...state, upgrades: { ...state.upgrades, [replace]: 0 }, stressCap, calmCharge: replace === 'calm' ? false : state.calmCharge };
+  const next = previewUpgrade(removed, found);
+  return { ...next, pendingAbility: undefined, pendingSales: [...(state.pendingSales ?? []), replace],
+    message: `装上「${UPGRADES[found].name}」，换下的「${UPGRADES[replace].name}」会在下次进商店时卖掉（退 ${SELL_REFUND} 金币）。` };
 }
 export function rerollShop(current: RunState, rng: () => number = Math.random): RunState {
   if (current.status !== 'upgrade' || current.shopUpgradeBought || current.rerolledFloor === current.floor || current.coins < REROLL_PRICE || !current.shop.length) return current;
@@ -1015,12 +1059,10 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  const count=state.upgrades[key];
  if(!count)return '未安装';
  switch(key){
-  case 'battery':return `每条协作连接的到站加成 +${cooperationBonus(state)} 金币（基础1 + 升级${count*ECONOMY_RULES.cooperationIncrement}）。`;
-  case 'capacity':return `电量上限${state.energyCap}；只扩容，不赠送电量，本局唯一。`;
-  case 'calm':return `躁动上限 ${state.stressCap}；${state.calmCharge?'手动调节可用：−3躁动':'手动调节已使用，下个商店补满'}，本局唯一`;
-  case 'concierge':return `此后新乘客到站小费 +${count*ECONOMY_RULES.conciergeTip}；不参与车费倍率`;
-  case 'reinforced':return '关门时至少3人，每站抵消1点人物耗电，不影响运转耗电；本局唯一。';
-  case 'express':return '新乘客原定路程≥5站时少坐1站；本局唯一';
+  // v9.17.2: live values only where they change; otherwise the ability's own (translated, current) description.
+  // The old Stabilizer line said "at least 3 riders" after the rule became 5.
+  case 'battery':return `每条默契到站加成 +${cooperationBonus(state)} 金币`;
+  case 'calm':return `躁动上限 ${state.stressCap} · ${state.calmCharge?'手动调节可用（−3 躁动）':'手动调节已用，下个商店补满'}`;
   default:return UPGRADES[key].description;
  }
 }

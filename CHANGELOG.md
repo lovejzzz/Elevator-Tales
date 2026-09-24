@@ -1,6 +1,11 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.17.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.17.2**. Publication status is tracked separately from the source version.
+
+## v9.17.2 — 2026-09-23 — Hidden, random box contents; abilities in boxes / 纸箱内容保密与开出能力
+
+- Contents hidden until opened (no value tag on box cards, seat reads "contents unknown"); rolled on opening: coins 0.5–1.5× tier average (common 3–9 … legendary crate 30–90) or half as much power; ability chance common 3% / rare 10% / legendary 25%, crates +5%, installed at once. Full kit: swap one out (sold at the next shop for 15) or pass; blocked ascent while choosing; hidden on a losing floor. Installed-ability summaries use the current rule texts (Stabilizer "3 riders" fixed).
+- 9,000-run odds grid (floors within 3), acceptance 3,600 runs (balanced 116F, exit coins 234), forecast audit clean. verify 32 checks.
 
 ## v9.17.1 — 2026-09-23 — Audit fixes / 审计修复
 
