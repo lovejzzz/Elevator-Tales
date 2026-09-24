@@ -1,6 +1,11 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.18.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.18.2**. Publication status is tracked separately from the source version.
+
+## v9.18.2 — 2026-09-24 — Rules you can see; held Thief calms / 规则看得见、受管小偷降躁动
+
+- Itemised arrival fare in the rider sheet (same calculation as settlement; 88,021-fare equivalence check). Boxes never link. Gold pickpocket links with the take; held Thief (Officer/Lawyer) stops stealing and gives the cabin −1 agitation per floor. Ghost forecasts its haunting and shows a violet wisp. Bomber: bomb with two-decimal readout, burning fuse, crackle, defusal chord, explosion effects; defusal bonus in the arrival figure. Receipt shows box power/ability. Centred seat names and stops.
+- Calibration data 8 real runs; verify 35 checks.
 
 ## v9.18.1 — 2026-09-23 — One-piece crates, pickpocket animation, endings / 大纸箱整卡、小偷动画、结束动画
 

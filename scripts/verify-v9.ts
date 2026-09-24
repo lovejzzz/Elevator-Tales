@@ -600,4 +600,28 @@ console.log('PASS real-time Bomber timer');
   assert.ok(ability.lastArrivals?.[0].ability, 'an ability box names the ability');
 }
 console.log('PASS pickpocketing by pocket and box receipts');
-console.log(JSON.stringify({ version: 'v9', checks: 34, passed: true }));
+// v9.18.2 visible rules: pickpocket links, boxes never link, an itemised fare that sums to the fare paid, recorded
+// haunts, a held Thief calming the cabin, and the Bomber's total seconds for the fuse.
+{
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 29, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  const cab = [R('celebrity', 'c', 34), R('thief', 't', 34), R('parcel', 'q', 34), null, R('ghost', 'g', 34), null];
+  assert.equal(E.stealLink(cab, 0, 1), 4); assert.equal(E.stealLink(cab, 1, 2), 'box'); assert.equal(E.stealLink(cab, 1, 4), 0, 'nothing to steal from a Ghost');
+  assert.equal(E.stealLink([R('thief', 't', 34), R('commuter', 'a', 34), null, R('cop', 'k', 34), null, null], 0, 1), 0, 'a held Thief steals nothing');
+  const { activeConnection } = await import('../lib/game-interaction');
+  assert.ok(!activeConnection([R('tourist', 'u', 34), R('parcel', 'q', 34), null, null, null, null], 0, 1), 'a box never links, even to a Tourist');
+  const tour = [R('lover', 'l', 34), R('tourist', 'u', 34), R('lover', 'm', 34), null, R('parcel', 'q', 34), null];
+  const lines9 = E.fareBreakdown(tour[1]!, tour, 1, 1, 0);
+  assert.equal(lines9.reduce((n, l) => n + l.amount, 0), E.arrivalFare(tour[1]!, tour, 1, 1, 0));
+  assert.deepEqual(lines9.map(l => l.label).slice(0, 2), ['基础车费', '游客：邻座 2 位 × 2'], 'the box is not a companion');
+  const haunted = E.resolveFloor(run(29, [R('ghost', 'g', 40), R('commuter', 'a', 40)]), fixed());
+  assert.deepEqual(haunted.lastHaunts, [{ ghost: 0, victim: 1 }]);
+  const held = run(30, [R('thief', 't', 34), R('commuter', 'a', 34), null, R('cop', 'k', 34), null, null]);
+  assert.equal(lines(E.resolveFloor(held, fixed()), 'lastPressure')['受管小偷帮忙维持秩序'], -1);
+  E.BOMB_RULES.realtime = true;
+  const rng = seq(0.2, 0.4, 0.6, 0.8, 0.1, 0.9, 0.3, 0.7); let bomber: Rider | undefined;
+  for (let i = 0; i < 3000 && !bomber; i++) bomber = E.makeOffers(40 + (i % 60), E.EMPTY_UPGRADES, false, rng).find(o => o.kind === 'bomb');
+  assert.ok(bomber && bomber.bombMsTotal === bomber.bombMs);
+  E.BOMB_RULES.realtime = false;
+}
+console.log('PASS visible rules: pickpocket links, fare lines, haunts, held Thief, bomb fuse length');
+console.log(JSON.stringify({ version: 'v9', checks: 35, passed: true }));

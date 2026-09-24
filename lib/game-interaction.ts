@@ -17,6 +17,8 @@ export function copyConnection(cabin: Array<Rider | null>, first: number, second
 export function activeConnection(cabin: Array<Rider | null>, first: number, second: number): boolean {
   const a = cabin[first]; const b = cabin[second];
   if (!a || !b || !ADJACENT.some(([x,y])=>(x===first&&y===second)||(y===first&&x===second))) return false;
+  // v9.18.2: a box is nobody's partner (the Tourist's companions and every bond skip it), so it never draws a link.
+  if (a.kind === 'parcel' || b.kind === 'parcel') return false;
   if(riskPartnerships(cabin).edges.some(([x,y])=>x===first&&y===second))return true;
   if(copyConnection(cabin,first,second))return true;
   // A Tourist earns companion income from every occupied neighboring position.

@@ -3,7 +3,7 @@
 
 export type Sfx =
   | 'ding' | 'doorClose' | 'doorOpen' | 'hum' | 'clink' | 'register' | 'link' | 'conflict' | 'heartbeat'
-  | 'rumble' | 'calm' | 'stamp' | 'sell' | 'record' | 'district' | 'tick' | 'board' | 'whoosh' | 'closeCall' | 'deal' | 'shimmer';
+  | 'rumble' | 'calm' | 'stamp' | 'sell' | 'record' | 'district' | 'tick' | 'board' | 'whoosh' | 'closeCall' | 'deal' | 'shimmer' | 'sizzle' | 'defuse' | 'explosion';
 
 type Bus = { ctx: AudioContext; out: GainNode; wet: GainNode };
 let bus: Bus | null = null;
@@ -127,6 +127,10 @@ export function playSfx(enabled: boolean, name: Sfx, opts: { pitch?: number; del
       case 'whoosh': noise(b, { at, dur: .35, gain: .04, freq: 600, sweepTo: 2800, q: .7 }); break;
       case 'deal': noise(b, { at, dur: .05, gain: .06, freq: 3800 * p, q: .9, filter: 'highpass' }); tone(b, 900 * p, { at, dur: .04, gain: .02, type: 'triangle', wet: false }); break;
       case 'shimmer': [0, 4, 7, 11, 14].forEach((st, i) => tone(b, 1568 * 2 ** (st / 12), { at: at + i * .045, dur: .6, gain: .022, attack: .004 })); break;
+      // v9.18.2 Bomber: a burning fuse crackles, a defusal rings out, an explosion booms.
+      case 'sizzle': noise(b, { at, dur: .28, gain: .016, freq: 5200, q: .5, filter: 'highpass' }); [0.04, .11, .19].forEach(t => noise(b, { at: at + t * p, dur: .02, gain: .03, freq: 3000, q: 2 })); break;
+      case 'defuse': noise(b, { at, dur: .12, gain: .03, freq: 2500, sweepTo: 600, q: .8 }); [0, 7, 12, 16, 19].forEach((st, i) => tone(b, 587.33 * 2 ** (st / 12), { at: at + .1 + i * .07, dur: .8, gain: .045, type: 'triangle' })); bell(b, 2349, at + .5, 1.8, .06); bell(b, 3136, at + .62, 1.6, .035); break;
+      case 'explosion': noise(b, { at, dur: 1.8, gain: .16, freq: 900, sweepTo: 60, q: .5, filter: 'lowpass' }); tone(b, 70, { at, dur: 1.4, gain: .2, type: 'sine', glideTo: 28, wet: false }); noise(b, { at: at + .05, dur: .35, gain: .08, freq: 3500, q: .6 }); [0.3, .55, .8, 1.1].forEach(t => noise(b, { at: at + t, dur: .08, gain: .04, freq: 1800, q: 1.5 })); break;
       case 'closeCall': tone(b, 220, { at, dur: 1.2, gain: .05, type: 'sawtooth', glideTo: 440, attack: .3 }); bell(b, 1318.5, at + .9, 1.4, .06); break;
     }
   } catch { /* Sound is optional and must never block play. */ }

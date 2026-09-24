@@ -1,6 +1,6 @@
 import { PASSENGERS, passengerCategory, type PassengerKind } from './game-data';
 import { bondLines, bondSummary, riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
-import { BOMB_RULES, arrivalFare, arrivalTip, HIGH_RISK_BONUS, riderAfterWork, riderAgitation, type Rider, type RunState } from './game-engine';
+import { BOMB_RULES, arrivalFare, fareBreakdown, arrivalTip, HIGH_RISK_BONUS, riderAfterWork, riderAgitation, type Rider, type RunState } from './game-engine';
 import { CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
 import { RISK_PARTNERS, RISK_STASH_PER_ASCENT, riskPartnerships } from './shift-rules';
 import { agitationBand } from './balance-v832';
@@ -108,7 +108,7 @@ export function passengerCardSections(
   case 'musician':self.push(effect('agitation','低→3 · 高→4 · 最多2点 · 中不变'),effect('neutral','整车节拍，每层一次；多位不叠加'));break;
   case 'thief':
    self.push(effect('coins','未受控：每层偷邻座 1–4 币'),effect('agitation','未受控：每上1层 +1躁动'));
-   addGreen(['cop'],[effect('coins','途中不产币'),effect('coins','到站 +5'),effect('agitation','不加躁动')]);
+   addGreen(['cop','lawyer'],[effect('coins','不再偷钱'),effect('coins','到站 +5'),effect('agitation','全车 −1/层')]);
    break;
   case 'cop':
    addGreen(['thief'],[effect('coins','小偷仅到站 +5'),effect('agitation','小偷不加躁动')]);
@@ -221,6 +221,8 @@ export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|n
   quotedRider.stash=(quotedRider.stash??0)+RISK_STASH_PER_ASCENT+Number(agitationBand(agitation)==='high');
  }
  const expectedFare=profile.hidden?null:slot<0?profile.fare+(rider.volatile?HIGH_RISK_BONUS:0)+arrivalTip(rider,agitation):arrivalFare(quotedRider,cabin,slot,bonus,agitation);
- return {coins:profile.hidden?null:profile.fare, expectedFare, seated:slot>=0, riskBonus:rider.volatile?HIGH_RISK_BONUS:0, energy:profile.energy,agitation:profile.agitation+(rider.volatile?1:0), tip:rider.fareBonus,weight:0,hidden:profile.hidden,
+ // v9.18.2: the same arithmetic, itemised for the rider sheet.
+ const fareLines=profile.hidden||slot<0?null:fareBreakdown(quotedRider,cabin,slot,bonus,agitation);
+ return {coins:profile.hidden?null:profile.fare, expectedFare, fareLines, seated:slot>=0, riskBonus:rider.volatile?HIGH_RISK_BONUS:0, energy:profile.energy,agitation:profile.agitation+(rider.volatile?1:0), tip:rider.fareBonus,weight:0,hidden:profile.hidden,
   distance:Math.max(0,rider.destination-floor),bond,cooperation,cardRules:passengerCardRules(rider,cabin,bonus,relief,multiplier),detailRules,skillRules,bondRules,rules:[...skillRules,...bondRules]};
 }

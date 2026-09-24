@@ -4,7 +4,7 @@ import { ECONOMY_RULES, AGITATION_RULES, FARE_RULES, MOTOR_RULES, NIGHT_UNREST, 
 import { BOX_PRICES, CHARGE_PRICES, EMERGENCY_PRICES } from '../../lib/power-box.ts';
 import { CALM_PURCHASE, CALM_RULES, INSULATION_RULES, RISK_RULES, SHOP_PRICES, SOUNDPROOF_RULES, START_RULES } from '../../lib/game-engine.ts';
 import { LEGEND_RULES } from '../../lib/legends.ts';
-import { PARCEL_RULES, BOMB_RULES } from '../../lib/game-engine.ts';
+import { PARCEL_RULES, BOMB_RULES, THIEF_RULES } from '../../lib/game-engine.ts';
 import { PASSENGERS } from '../../lib/game-data.ts';
 const scaleBoxes = (k: number) => { for (const size of ['small', 'big'] as const) for (const tier of ['common', 'rare', 'legendary'] as const) PARCEL_RULES.values[size][tier] = Math.round(PARCEL_RULES.values[size][tier] * k); };
 const parcel = (fare: number, coins: number, power: number) => () => { PASSENGERS.courier.fare = fare; PARCEL_RULES.payoutCoins = coins; PARCEL_RULES.payoutPower = power; };
@@ -39,6 +39,8 @@ export const VARIANTS: Record<string, () => void> = {
   c3r51e8: () => { NIGHT_UNREST.cap = 3; MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 8; },
   nBr51: () => { NIGHT_UNREST.from = 31; NIGHT_UNREST.every = 20; NIGHT_UNREST.cap = 3; MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 10; },
   e20c3r51: () => { NIGHT_UNREST.every = 20; NIGHT_UNREST.cap = 3; MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 10; },
+  reform0: () => { THIEF_RULES.controlledCalm = 0; },
+  reform2: () => { THIEF_RULES.controlledCalm = 2; },
   bHigh2: () => { BOMB_RULES.highTick = 2; },
   bFuse25: () => { BOMB_RULES.fuseMin = 2; BOMB_RULES.fuseMax = 5; },
   bBoth: () => { BOMB_RULES.highTick = 2; BOMB_RULES.fuseMin = 2; BOMB_RULES.fuseMax = 5; },

@@ -24,9 +24,9 @@ export function flyPortrait(from: Element | null, to: Element | null, src: strin
 }
 
 /** v9.18.1 pickpocket: a coin (with its amount) hops from one seat to another. */
-export function flyCoin(from: Element | null, to: Element | null, label: string, delay = 0) {
+export function flyCoin(from: Element | null, to: Element | null, label: string, delay = 0, tone: 'coin' | 'ghost' = 'coin') {
   if (!from || !to) return;
-  const a = centre(from), b = centre(to), el = layer('juice-coin'); el.textContent = label;
+  const a = centre(from), b = centre(to), el = layer(tone === 'ghost' ? 'juice-coin juice-wisp' : 'juice-coin'); el.textContent = label;
   el.style.left = `${a.x}px`; el.style.top = `${a.y}px`;
   if (reduced()) { void animate(el, { opacity: [0, 1, 0] }, { duration: .9, delay }).then(() => el.remove()); return; }
   void animate(el, { x: [0, (b.x - a.x) * .5, b.x - a.x], y: [0, (b.y - a.y) * .5 - 46, b.y - a.y], scale: [.6, 1.15, .8], opacity: [0, 1, 1] }, { duration: .62, delay, ease: [.3, .7, .3, 1] })
@@ -96,6 +96,26 @@ export function flashClass(el: Element | null, className: string, ms = 700) {
   if (!el || reduced()) return;
   el.classList.remove(className); void (el as HTMLElement).offsetWidth; el.classList.add(className);
   window.setTimeout(() => el.classList.remove(className), ms);
+}
+
+/** v9.18.2 bomb explosion: white flash, two shockwave rings, fire and gold sparks, and flying debris. */
+export function explode(anchor: Element | null) {
+  if (!anchor) return;
+  const c = centre(anchor);
+  const flash = layer('juice-explode-flash'); flash.style.left = `${c.x}px`; flash.style.top = `${c.y}px`;
+  if (reduced()) { void animate(flash, { opacity: [0, .9, 0] }, { duration: 1.2 }).then(() => flash.remove()); return; }
+  void animate(flash, { opacity: [0, 1, 0], scale: [.2, 2.4, 3] }, { duration: .9, ease: 'easeOut' }).then(() => flash.remove());
+  [0, .14].forEach(delay => {
+    const ring = layer('juice-shockwave'); ring.style.left = `${c.x}px`; ring.style.top = `${c.y}px`;
+    void animate(ring, { scale: [.1, 6], opacity: [.95, 0] }, { duration: 1, delay, ease: [.2, .8, .3, 1] }).then(() => ring.remove());
+  });
+  burst(c.x, c.y, 'red', 26, 190); burst(c.x, c.y, 'gold', 22, 150);
+  window.setTimeout(() => burst(c.x, c.y, 'red', 18, 240), 160);
+  for (let i = 0; i < 14; i++) {
+    const bit = layer('juice-debris'); bit.style.left = `${c.x}px`; bit.style.top = `${c.y}px`;
+    const angle = Math.random() * Math.PI * 2, dist = 120 + Math.random() * 220;
+    void animate(bit, { x: [0, Math.cos(angle) * dist], y: [0, Math.sin(angle) * dist + 90], rotate: [0, (Math.random() - .5) * 720], opacity: [1, 1, 0] }, { duration: 1.1 + Math.random() * .5, ease: [.2, .7, .5, 1] }).then(() => bit.remove());
+  }
 }
 
 export function clearJuice() { document.querySelectorAll('.juice').forEach(el => el.remove()); }

@@ -1223,3 +1223,45 @@ export const V9181_EN: ChangelogEntry = {
   ],
   watch: ['The crate card’s layout at every screen width, to be checked again on a large screen.'],
 };
+
+export const V9182_ZH: ChangelogEntry = {
+  version: '9.18.2', date: '2026-09-24', title: '规则看得见：车费明细、偷钱连线、幽灵作祟、炸弹引线；受管小偷帮忙降躁动',
+  summary: '人物详情列出到站收入的每一项；小偷的偷钱关系画成金色连线；幽灵作祟会预告并有动画；炸弹客头上是一颗带两位小数读秒和燃烧引线的炸弹；被警察或律师管住的小偷改为每层帮全车 −1 躁动。',
+  changes: [
+    '人物详情新增“到站收入怎么算”：基础车费、配对、邻座、倍率、小费、默契等逐项列出并合计，和结算用同一份计算。游客旁边有纸箱时写明“纸箱不算邻座”；纸箱不再和任何人连线（之前放在游客旁边会错误显示“联动已生效”）。',
+    '小偷：没被管住时，他和每位邻座之间画金色虚线，标出这层能偷多少（🪙+4），盯上的纸箱标📦。被警察或律师管住时不再偷钱，改为每层帮全车 −1 躁动（到站 +5 保留），座位上写明“被管住 · 不偷钱 · 全车 −1躁动/层”。',
+    '幽灵：没被镇压时座位写“下一层会拖延邻座 1 站”或“N 层会拖延邻座 1 站”；作祟那一层，一缕紫色幽魂带着“+1站”飞向被拖延的人，被拖延的座位闪紫光。',
+    '炸弹客：座位上是一颗炸弹，电子屏显示两位小数的秒数，燃烧的引线随剩余时间变短并有火花，燃烧时发出滋滋声；最后 10 秒变红闪烁；警察锁住时变成静止的蓝色。顺利下车时播放一段专门的上扬和弦并弹出“拆弹成功！”，到站数字包含拆弹奖金。爆炸时白光、两道冲击波、多色火花和飞散碎片。',
+    '“本次变化明细”里的到站乘客列表：纸箱开出电或能力时照实写出，不再是“+0 金币”。',
+    '座位上的名字和“还剩 N 站”都居中对齐，“还剩 N 站”加了深色底。窄屏布局也会显示炸弹。',
+  ],
+  experiments: [
+    '受管小偷降躁动（每组 7 类玩家 × 300 局）：每层 −0 / −1 / −2 时均衡型带小偷 38% / 43% / 45%，警察 22% / 23% / 24%，楼层与死因基本不变；取 −1。',
+    '车费拆成明细后，用旧算法对照随机生成的 88,021 笔车费，差异 0。',
+    '新试玩记录（v9.18，59 层躁动，全程收入 792）加入校准数据，现有 8 份；真人型模拟中位 72 层。',
+    '试玩说明：截图里第 9 层两个小偷都挨着 4 号位的警察，被管住的小偷不偷、也不拿纸箱，所以箱子没被带走；这一点现在会在座位上写明。截图里开箱显示“+0 金币”、小偷“每位邻座 +2”是 v9.18 的旧版，v9.18.1 已修改。',
+    'verify 新增 1 项（共 35 项）：偷钱连线金额（名人 4、幽灵 0、被管住不偷、纸箱📦）；纸箱不连线；明细合计等于车费且纸箱不算邻座；作祟记录；受管小偷 −1 躁动；炸弹客总秒数。浏览器实测：幽灵预告与紫色幽魂、拆弹成功动画、炸弹引线与读秒、名字与站数居中、游客明细“8 + 2×2 = 12”。',
+  ],
+  watch: ['警察+小偷降躁动是否会形成新打法；如果太弱，可以改为每层 −2（模拟里仍平衡）。'],
+};
+
+export const V9182_EN: ChangelogEntry = {
+  version: '9.18.2', date: '2026-09-24', title: 'Rules you can see: fare lines, pickpocket links, haunting, a burning fuse; a held Thief calms the cabin',
+  summary: 'The rider sheet itemises the arrival fare; the Thief’s pickpocketing is drawn as gold links; a Ghost announces and shows its haunting; the Bomber carries a bomb with a two-decimal readout and a burning fuse; a Thief held by an Officer or Lawyer now lowers the cabin’s agitation by 1 each floor.',
+  changes: [
+    'Rider sheet: “How the arrival fare adds up” lists base fare, pairing, neighbours, multipliers, tips and bonds with a total, from the same calculation settlement uses. A Tourist beside a box shows “Boxes are not neighbours”; a box no longer links to anyone (it used to show a false “link active” next to a Tourist).',
+    'Thief: unheld, a gold dashed link runs to each neighbour with this floor’s take (🪙+4), and 📦 to a box he eyes. Held by an Officer or Lawyer he stops stealing and lowers the cabin’s agitation by 1 each floor (the +5 on arrival stays), and his seat says so.',
+    'Ghost: unsubdued, its seat reads “Delays a neighbour 1 stop next floor” or “at NF”; when it strikes, a violet wisp carrying “+1 stop” drifts to the delayed rider, whose seat flashes violet.',
+    'Bomber: the seat shows a bomb with a two-decimal seconds readout and a burning fuse that shortens with the time left, sparking and crackling; the last ten seconds flash red; an Officer’s lock turns it a still blue. A safe arrival plays its own rising chord and “Defused!”, and the arrival figure includes the defusal bonus. An explosion flashes white with two shockwaves, coloured sparks and flying debris.',
+    'Decision receipt: arrivals list power or an ability for opened boxes instead of “+0 coins”.',
+    'Seat names and “N stops left” are centred, the stops tag sits on a dark pill, and the compact layout shows the bomb.',
+  ],
+  experiments: [
+    'Held-Thief calming (7 player types × 300 runs per setting): at −0 / −1 / −2 a floor the balanced bot boards Thieves 38% / 43% / 45% and Officers 22% / 23% / 24%, with floors and death causes about unchanged; −1 adopted.',
+    'The itemised fare matches the previous calculation on 88,021 random fares, 0 differences.',
+    'The new record (v9.18, 59F, agitation, 792 earned) joins the calibration data, now 8 runs; the human bot’s median is 72F.',
+    'Playtest note: on floor 9 both Thieves sat beside the Officer in seat 4, so they were held and took neither coins nor the box; seats now say so. The “+0 coins” box and “+2 per neighbour” Thief in the screenshots were v9.18 and changed in v9.18.1.',
+    'verify: one new check (35 in all): pickpocket link amounts (Celebrity 4, Ghost 0, none when held, 📦 for a box); boxes never link; fare lines sum to the fare and skip boxes; haunts recorded; held Thief −1 agitation; the Bomber’s total seconds. Browser: Ghost forecast and wisp, defusal animation, fuse and readout, centred names and stops, the Tourist’s “8 + 2×2 = 12”.',
+  ],
+  watch: ['Whether Officer + Thief calming becomes its own style; if too weak, −2 a floor also stayed balanced in simulation.'],
+};
