@@ -5,7 +5,7 @@ import {V834_EN, V834_ZH} from './release-v834';
 import {V835_EN, V835_ZH} from './release-v835';
 import {V836_EN, V836_ZH} from './release-v836';
 import {V837_EN, V837_ZH} from './release-v837';
-import {V901_EN, V901_ZH, V902_EN, V902_ZH, V903_EN, V903_ZH, V904_EN, V904_ZH, V91_EN, V91_ZH, V92_EN, V92_ZH, V921_EN, V921_ZH, V93_EN, V93_ZH, V931_EN, V931_ZH, V94_EN, V94_ZH, V95_EN, V95_ZH, V96_EN, V96_ZH, V961_EN, V961_ZH, V97_EN, V97_ZH, V98_EN, V98_ZH, V99_EN, V99_ZH, V991_EN, V991_ZH, V992_EN, V992_ZH, V910_EN, V910_ZH, V911_EN, V911_ZH, V912_EN, V912_ZH, V913_EN, V913_ZH, V914_EN, V914_ZH, V9141_EN, V9141_ZH, V9142_EN, V9142_ZH, V9143_EN, V9143_ZH, V915_EN, V915_ZH, V916_EN, V916_ZH, V9_EN, V9_ZH} from './release-v9';
+import {V901_EN, V901_ZH, V902_EN, V902_ZH, V903_EN, V903_ZH, V904_EN, V904_ZH, V91_EN, V91_ZH, V92_EN, V92_ZH, V921_EN, V921_ZH, V93_EN, V93_ZH, V931_EN, V931_ZH, V94_EN, V94_ZH, V95_EN, V95_ZH, V96_EN, V96_ZH, V961_EN, V961_ZH, V97_EN, V97_ZH, V98_EN, V98_ZH, V99_EN, V99_ZH, V991_EN, V991_ZH, V992_EN, V992_ZH, V910_EN, V910_ZH, V911_EN, V911_ZH, V912_EN, V912_ZH, V913_EN, V913_ZH, V914_EN, V914_ZH, V9141_EN, V9141_ZH, V9142_EN, V9142_ZH, V9143_EN, V9143_ZH, V915_EN, V915_ZH, V916_EN, V916_ZH, V917_EN, V917_ZH, V9_EN, V9_ZH} from './release-v9';
 
 export type ChangelogEntry = {
   version: string;
@@ -17,9 +17,10 @@ export type ChangelogEntry = {
   watch: string[];
 };
 
-export const GAME_VERSION = '9.16';
+export const GAME_VERSION = '9.17';
 
 export const CHANGELOG: ChangelogEntry[] = [
+  V917_ZH,
   V916_ZH,
   V915_ZH,
   V9143_ZH,
@@ -603,6 +604,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 export const CHANGELOG_EN: ChangelogEntry[] = [
+  V917_EN,
   V916_EN,
   V915_EN,
   V9143_EN,

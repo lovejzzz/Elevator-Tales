@@ -1,7 +1,7 @@
 import { riskPartnerships } from './shift-rules';
 import { bondStatus, riderProfile } from './rider-profile';
 import { ADJACENT, PASSENGERS, type PassengerKind } from './game-data';
-import { hasNeighbour, parcelLayoutOk, isFreeReseat, neighbourCount, oldMovesRemaining, type Rider, type RunState } from './game-engine';
+import { hasNeighbour, isBigParcel, seatRider, parcelLayoutOk, isFreeReseat, neighbourCount, oldMovesRemaining, type Rider, type RunState } from './game-engine';
 import { agitationBand } from './balance-v832';
 
 export function copyConnection(cabin: Array<Rider | null>, first: number, second: number) {
@@ -54,6 +54,14 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
   const rider = source >= 0 ? cabin[source]! : state.rebooked?.[candidate.id]!==undefined?{...candidate,destination:state.rebooked[candidate.id]}:candidate;
   let swapped = state.swapped;
   let oldMovesUsed=state.oldMovesUsed??Number(state.swapped);
+  // v9.17 two-part box: fills the upper and lower seat of a column; it cannot be moved once seated (withdraw it instead).
+  if (isBigParcel(rider) || (source >= 0 && isBigParcel(cabin[target]))) {
+    if (source >= 0) return reject('大纸箱放好后不能挪动 · 可以撤回重放');
+    const seated = seatRider(cabin, rider, target);
+    if (!seated) return reject('大纸箱需要同一列上下两个空位');
+    if (!parcelLayoutOk(seated)) return reject('纸箱必须挨着快递员（上下左右）');
+    return { ok: true, changed: true, next: { ...state, cabin: seated, message: '大纸箱已放好：占上下两格。' }, tone: 'place', label: '大纸箱已就位', slots: [target % 3, target % 3 + 3] };
+  }
   if (source >= 0) {
     const free = isFreeReseat(cabin, source, target, state.floor);
     if (!oldMovesRemaining(state) && !free) return reject('本层旧乘客换位已用');

@@ -4,7 +4,7 @@
 import { PASSENGERS, isLegend, passengerCategory, type PassengerKind } from './game-data';
 import { riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
 import { hasNeighbour, neighbourCount, type Rider, type RunState } from './game-engine';
-import { CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
+import { ECONOMY_RULES, CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
 import { RISK_PARTNERS } from './shift-rules';
 import { LEGEND_RULES } from './legends';
 import type { GameLocale } from './i18n';
@@ -20,6 +20,13 @@ const EN_NAMES: Record<PassengerKind, string> = {
   operator: 'Old Zhou', matchmaker: 'Matchmaker', don: 'The Don', matron: 'Matron', nightingale: 'Nightingale', medium: 'Medium', tycoon: 'Tycoon', stranger: 'Stranger in 13',
 };
 export const riderName = (kind: PassengerKind, locale: GameLocale) => (locale === 'zh' ? PASSENGERS[kind].name : EN_NAMES[kind]);
+/** v9.17 display name for one rider: box size, the Bomber in disguise. Rarity shows as the gem and foil, not in the name. */
+export function displayName(rider: Pick<Rider, 'kind' | 'big' | 'disguised'>, locale: GameLocale) {
+  const zh = locale === 'zh';
+  if (rider.kind === 'parcel') return zh ? (rider.big ? '大纸箱' : '纸箱') : rider.big ? 'Crate' : 'Parcel';
+  if (rider.disguised) return zh ? '乔装的通勤者' : 'Disguised Commuter';
+  return riderName(rider.kind, locale);
+}
 
 const t = (locale: GameLocale, zh: string, en: string) => (locale === 'zh' ? zh : en);
 
@@ -30,12 +37,18 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
   switch (rider.kind) {
     case 'commuter': return { line: L(`低躁动到站 +${COMMUTER_QUIET_BONUS}`, `+${COMMUTER_QUIET_BONUS} if calm on arrival`) };
     case 'tourist': return { line: L(`每位邻座 +2 · 中躁动 +${TOURIST_MEDIUM_BONUS}`, `+2 per neighbor · +${TOURIST_MEDIUM_BONUS} at medium`) };
-    case 'courier': return { line: rider.parcelId ? L('带着纸箱送达才付钱 · 回 2 电', 'Pays only with his parcel beside him · returns 2 power') : L('到站回 2 电', 'Returns 2 power on arrival') };
-    case 'parcel': return { line: L('挨着快递员 · 他没上车时到站开箱', 'Beside its Courier · opens on arrival if he never boarded') };
+    case 'courier': {
+      if (!rider.parcelId) return { line: L('到站回 2 电', 'Returns 2 power on arrival') };
+      // Amounts live in the value tags ("On arrival", "w/ box"); the line says only what he needs.
+      return { line: L('纸箱在旁才付钱 · 回 2 电 · 空手可接炸弹', 'Pays only with his box beside him · 2 power · empty-handed takes bombs') };
+    }
+    case 'parcel': {
+      return { line: rider.big ? L('占同一列上下两格 · 挨着快递员送达', 'Fills one column · delivered beside a Courier') : L('挨着快递员送达 · 无主时到站开箱', 'Delivered beside a Courier · opens on arrival if unclaimed') };
+    }
     case 'mechanic': return rider.repairDone ? { line: L(`检修完成 · ${REPAIR_DURATION} 层省电`, `Repaired · ${REPAIR_DURATION} floors cheaper`) } : { line: L(`低躁动检修 → ${REPAIR_DURATION} 层运转 −1`, `Calm repair → motor −1 for ${REPAIR_DURATION}`), progress: `${rider.repairProgress ?? 0}/${REPAIR_WORK}` };
     case 'lover': return { line: L('恋人相邻：基价翻倍', 'Beside a Lover: fare ×2') };
     case 'musician': return { line: L('躁动拉向中档 · 中档 +2/层', 'Pulls agitation to medium · +2/floor there') };
-    case 'thief': return { line: L('没人管：+3币 +1躁动/层', 'Unguarded: +3 coins +1 agitation/floor') };
+    case 'thief': return { line: L(`没人管：每位邻座 +${ECONOMY_RULES.thiefPerVictim} 币/层 · +1 躁动 · 挨纸箱就偷走`, `Unguarded: +${ECONOMY_RULES.thiefPerVictim} per neighbour/floor · +1 agitation · steals boxes`) };
     case 'cop': return { line: L('管住小偷 · 锁住炸弹', 'Controls Thieves · locks Bombs') };
     case 'lawyer': return { line: L('管住小偷 · 红线少扣 2 币', 'Controls Thieves · red links −2 coin loss') };
     case 'drunk': return { line: L('高躁动到站：基价翻倍', 'Arrives at high agitation: fare ×2') };

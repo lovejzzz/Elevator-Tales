@@ -1,4 +1,4 @@
-import { calmPrice, boxOf, calmAllowance, dismissRider, emergencyAllowance, nextShopFloor, type Rider, type RunState } from './game-engine';
+import { unseatRider, calmPrice, boxOf, calmAllowance, dismissRider, emergencyAllowance, nextShopFloor, type Rider, type RunState } from './game-engine';
 import { isLegend } from './game-data';
 import { energyForecast, sectorForecast, stressForecast } from './game-forecast';
 import { motorCost } from './balance-v832';
@@ -42,14 +42,14 @@ export type RescuePlan = { remove: Array<{ id: string; kind: Rider['kind']; paid
 export function rescuePlan(state: RunState): RescuePlan | null {
   const risk = departureRisk(state);
   if (!risk.fatal) return null;
-  const candidates = state.cabin.filter((r): r is Rider => Boolean(r) && !isLegend(r!.kind));
+  const candidates = state.cabin.filter((r): r is Rider => Boolean(r) && !isLegend(r!.kind) && r!.big !== 'bottom');
   let best: RescuePlan | null = null;
   for (let mask = 0; mask < 1 << candidates.length; mask++) {
     let s = state, paid = 0, ok = true;
     const remove: RescuePlan['remove'] = [];
     candidates.forEach((r, i) => {
       if (!ok || !(mask & (1 << i))) return;
-      if (r.boardedAt >= state.floor) { s = { ...s, cabin: s.cabin.map(x => (x?.id === r.id ? null : x)) }; remove.push({ id: r.id, kind: r.kind, paid: 0 }); return; }
+      if (r.boardedAt >= state.floor) { s = { ...s, cabin: unseatRider(s.cabin, r.id) }; remove.push({ id: r.id, kind: r.kind, paid: 0 }); return; }
       const next = dismissRider(s, r.id); if (next === s) { ok = false; return; }
       remove.push({ id: r.id, kind: r.kind, paid: s.coins - next.coins }); paid += s.coins - next.coins; s = next;
     });
@@ -69,14 +69,14 @@ export type CalmPlan = { remove: Array<{ id: string; kind: Rider['kind']; paid: 
 export function calmRescuePlan(state: RunState): CalmPlan | null {
   const worst = (s: RunState) => s.stress + stressForecast(s).highDelta;
   if (state.status !== 'playing' || worst(state) < state.stressCap) return null;
-  const candidates = state.cabin.filter((r): r is Rider => Boolean(r) && !isLegend(r!.kind));
+  const candidates = state.cabin.filter((r): r is Rider => Boolean(r) && !isLegend(r!.kind) && r!.big !== 'bottom');
   let best: CalmPlan | null = null;
   for (let mask = 0; mask < 1 << candidates.length; mask++) {
     let s = state, paid = 0, ok = true;
     const remove: CalmPlan['remove'] = [];
     candidates.forEach((r, i) => {
       if (!ok || !(mask & (1 << i))) return;
-      if (r.boardedAt >= state.floor) { s = { ...s, cabin: s.cabin.map(x => (x?.id === r.id ? null : x)) }; remove.push({ id: r.id, kind: r.kind, paid: 0 }); return; }
+      if (r.boardedAt >= state.floor) { s = { ...s, cabin: unseatRider(s.cabin, r.id) }; remove.push({ id: r.id, kind: r.kind, paid: 0 }); return; }
       const next = dismissRider(s, r.id); if (next === s) { ok = false; return; }
       remove.push({ id: r.id, kind: r.kind, paid: s.coins - next.coins }); paid += s.coins - next.coins; s = next;
     });

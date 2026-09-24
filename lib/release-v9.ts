@@ -1023,3 +1023,47 @@ export const V916_EN: ChangelogEntry = {
   ],
   watch: ['Courier boarding about 46% and parcel-alone 21%: watch whether real players take the parcel alone more often; if it becomes the default, lower the payout.', 'Novice and casual medians rose (the short paired trip is safe); watch whether the first week gets too easy.'],
 };
+
+export const V917_ZH: ChangelogEntry = {
+  version: '9.17', date: '2026-09-23', title: '快递员玩法：稀有纸箱、大纸箱、接炸弹，小偷改为偷邻座',
+  summary: '纸箱分普通、稀有、传奇，偶尔是占一整列的大纸箱；纸箱可以交给别的空手快递员；小偷、小孩、检查员、维修工、复制人都会和纸箱互动；空手快递员能接过炸弹客的炸弹。小偷改为每层偷每位邻座。',
+  changes: [
+    '纸箱稀有度：快递员有 16% 带稀有箱、4% 带传奇箱，快递员的卡和箱子同一稀有度，各有新画。箱内价值：普通 6、稀有 12、传奇 24；大纸箱 16、30、60。无主开箱随机给这么多金币或一半的电；快递员带着送达时，车费 8 再加（价值 − 6）。',
+    '大纸箱：15% 的快递员带大纸箱，占同一列上下两格（每格每层耗 1 电），上格显示箱子上半、下格显示下半；放好后不能挪，只能撤回重放；任一半挨着快递员都算送达。',
+    '别人的纸箱也算：快递员的箱子没上车时，一个无主纸箱挨着他就算他的，他照常付钱。另一位空手快递员也挨着某个快递员的箱子时，两人各 +1 躁动，箱主照常付钱；两位空手快递员挨着同一个无主箱子，谁都不算。',
+    '空手快递员接炸弹：空手快递员挨着炸弹客时算满意（不躁动）；他比炸弹客先下车，就带走炸弹、照常付钱，炸弹客变成“乔装的通勤者”（车费不变、没有倒计时，其余按通勤者）。倒计时不会因此暂停，来不及照样失败。',
+    '小偷改版：没被警察或律师管住时，每层从每位邻座身上偷 2 金币（警察、律师、教父、传奇人物和纸箱除外），取代原来固定每层 +3；挨着纸箱时不躁动，下车时带走纸箱，给一半箱内金币作小费。',
+    '其他人物和纸箱：小孩挨着纸箱时不躁动，下一层把箱子拆开（内容归你，快递员就没箱子了）；检查员验快递员的箱子一次，快递员晚一层到站、多付 5 金币；维修工把无主纸箱拆来当零件，检修立刻完成；复制人正下方挨着纸箱时，复制一个同样的箱子，下车打开。同一层的优先顺序：快递员送达 > 小偷带走 > 小孩拆开 > 维修工拆零件。',
+    '卡面去掉重复信息：金额只在“送达 净±N / 配纸箱 ±N”标签里，说明行只写条件；稀有度用宝石和闪卡表示，名字里不再写；座位名按当前语言显示，不再中英文混排。',
+  ],
+  experiments: [
+    '研究轮（上一轮讨论）：“别人的纸箱也算”单独几乎不触发（0–1%），因为快递员只坐 1–3 层；“不见纸箱不下车”能让只上快递员升到 7–10%，但不设上限时最长等 48 层、快递员相关的死亡翻倍，惩罚太重，不采用；“下一层送一个无主箱子”即使 100% 也没改变选择；“没箱子付半价”只让快递员变成便宜的凑数，不采用。',
+    '本轮：12 组规则 × 10 种打法 × 300 局 = 36,000 局（seed 424242）。熟练型中位楼层在各组之间差 ±3 层以内；小偷每位邻座偷 1、2、3 币差别不大，取 2；箱子价值 ×1.4 时只上纸箱升到 50%，保持原值（只上纸箱约 26–31%，带快递员一起约 34–46%）。',
+    '每种打法 300 局里的触发次数（熟练型）：快递员接炸弹 41–85 次，复制人复制纸箱 9–19，小孩拆箱 239–335，小偷带走纸箱 111–168，检查员验货 8–56，维修工拆零件 0–12，两个快递员争箱子 0–5；稀有/传奇箱被带上车 80–88%，大纸箱 37–55%。',
+    '验收（balance:accept，每组 3,600 局，seed 999001）9.16 → 9.17：均衡型中位 109 → 115 层，离店金币中位 190 → 226，新手 41 → 42，五种流派强弱比 95.2% → 96.1%；通过/未通过的项目与 9.16 相同。',
+    'verify 新增 1 项（共 30 项）：发牌时稀有度和大纸箱都会出现且快递员与箱子同级；大纸箱占整列、需要两个空位、不能挪、撤回和请离整箱移除；传奇大纸箱送达 8+54；稀有箱开箱 12；别人的纸箱也算；争箱子两人躁动、箱主照常付钱；小偷偷三位邻座 6 币、挨纸箱不躁动并带走得 3 币小费、被警察管住不偷；小孩拆箱；维修工拆零件立刻完成检修；检查员晚一层 +5；复制人复制传奇箱开出 24；空手快递员带走炸弹后炸弹客变乔装通勤者、车费 14，来不及仍会失败。浏览器中实测大纸箱只能放在相邻一列、两格显示上下半、传奇快递员送达显示 62，中英文界面都没有混排。',
+  ],
+  watch: ['稀有箱让熟练玩家更富、更长（均衡型 +6 层、离店金币 +36），如果试玩也觉得太宽裕，先下调稀有/传奇的价值。', '维修工拆零件和两个快递员争箱子在模拟里很少出现（模拟玩家只看两层，低估后续省电），需要实际试玩判断。', '只上快递员仍然少见，接炸弹是它主要的高风险用法，看真实玩家会不会去赌。'],
+};
+
+export const V917_EN: ChangelogEntry = {
+  version: '9.17', date: '2026-09-23', title: 'Courier play: rare boxes, crates, bomb hand-offs; the Thief picks pockets',
+  summary: 'Boxes come in common, rare and legendary, sometimes as a crate that fills a column; a box can go to another empty-handed Courier; the Thief, Child, Inspector, Mechanic and Mimic all handle boxes; an empty-handed Courier can carry off a Bomber’s bomb. The Thief now steals from every neighbour.',
+  changes: [
+    'Box rarity: 16% of Couriers bring a rare box and 4% a legendary one; the Courier’s card shares its rarity, each with new art. Contents: common 6, rare 12, legendary 24; crates 16, 30, 60. Unclaimed, a box opens for that many coins or half as much power at random; delivered, the Courier pays his fare of 8 plus (value − 6).',
+    'Crates: 15% of Couriers bring a crate that fills the upper and lower seat of one column (1 power per seat per floor); the upper seat shows its top half and the lower seat its bottom half. A seated crate cannot move, only be withdrawn and placed again; either half touching the Courier counts.',
+    'Someone else’s box counts: if a Courier’s own box never boarded, an unclaimed box touching him is his and he pays as usual. If another empty-handed Courier also touches a Courier’s box, both add +1 agitation and the owner still pays; two empty-handed Couriers touching one unclaimed box both go without.',
+    'Bomb hand-off: an empty-handed Courier beside a Bomber is content (no agitation); if he leaves first he carries the bomb off and pays as usual, and the Bomber becomes a Disguised Commuter (same fare, no timer, otherwise a Commuter). The timer keeps running, so a late hand-off still ends the run.',
+    'Thief rework: unless an Officer or Lawyer controls him, he steals 2 coins from each adjacent rider every floor (not Officers, Lawyers, the Don, legends or boxes), replacing the flat +3; beside a box he stays calm and takes it when he leaves, tipping half its coins.',
+    'Other riders and boxes: a Child beside a box stays calm and opens it at the next floor (its contents are yours and its Courier loses it); an Inspector checks a Courier’s box once, so the Courier arrives a floor later and pays 5 coins more; a Mechanic uses an unclaimed box for parts and finishes his repair at once; a Mimic right below a box copies an identical one and opens it when leaving. Same-floor priority: Courier delivers > Thief takes > Child opens > Mechanic uses parts.',
+    'Cards without repeats: amounts appear only in the “On arrival ±N / w/ box ±N” tags and the line states conditions; rarity shows as the gem and foil rather than in the name; seat names follow the chosen language, with no mixed Chinese and English.',
+  ],
+  experiments: [
+    'Research round (previous discussion): “someone else’s box counts” alone almost never triggers (0–1%) because Couriers ride only 1–3 floors; “won’t leave without a box” raises Courier-alone boarding to 7–10% but, uncapped, one waited 48 floors and Courier-related deaths doubled; too punishing, so it is not used; a stray box on the next floor changed nothing even at 100%; half fare without a box only made him cheap filler and is not used.',
+    'This round: 12 rule sets × 10 play styles × 300 runs = 36,000 runs (seed 424242). Skilled median floors stay within ±3 across sets; pickpocketing at 1, 2 or 3 coins per neighbour differs little, so 2; box values ×1.4 push box-alone to 50%, so values stay (box alone about 26–31%, with its Courier about 34–46%).',
+    'Triggers per 300 runs per skilled style: bomb hand-off 41–85, Mimic copy 9–19, Child opens 239–335, Thief takes a box 111–168, Inspector checks 8–56, Mechanic parts 0–12, two Couriers disputing 0–5; rare/legendary boxes boarded 80–88%, crates 37–55%.',
+    'Acceptance (balance:accept, 3,600 runs per group, seed 999001) 9.16 → 9.17: balanced median 109 → 115F, median exit coins 190 → 226, novice 41 → 42, style spread 95.2% → 96.1%; the same checks pass and fail as in 9.16.',
+    'verify: one new check (30 in all): tiers and crates are dealt, Courier and box share a tier; a crate fills a column, needs both seats, cannot move, and leaves whole when withdrawn or dismissed; a legendary crate delivered pays 8+54; a rare box opens for 12; someone else’s box counts; a dispute agitates both and the owner still pays; a Thief takes 6 from three neighbours, stays calm beside a box and tips 3 for it, and takes nothing when controlled; a Child opens a box; a Mechanic’s parts finish his repair; an Inspector adds a floor and +5; a Mimic’s copy of a legendary box opens for 24; a bomb hand-off turns the Bomber into a Disguised Commuter at fare 14, and a late one still fails. Browser: a crate only fits an adjacent column and shows its two halves, a legendary Courier shows 62 on delivery, and neither language mixes in the other.',
+  ],
+  watch: ['Rare boxes make skilled runs richer and longer (balanced +6 floors, +36 exit coins); if playtests also feel too comfortable, lower rare and legendary values first.', 'Mechanic parts and Courier disputes are rare in simulation (bots look two floors ahead and undervalue later savings); judge them in play.', 'Courier-alone is still uncommon; the bomb hand-off is its main high-risk use, so watch whether real players take the gamble.'],
+};

@@ -15,6 +15,12 @@ export const PASSENGER_ART = {
 export function portraitAsset(kind: PassengerKind) {
   return { src: publicAsset(`/assets/riders/${kind}.jpg`), columns: 1, rows: 1, cell: 0 };
 }
+/** v9.17: boxes by size and tier, and the Bomber in disguise, have their own art. */
+export function riderPortraitSrc(rider: { kind: PassengerKind; big?: 'top' | 'bottom'; tier?: 'rare' | 'legendary'; disguised?: boolean }) {
+  if (rider.kind === 'parcel') return publicAsset(`/assets/riders/${rider.big ? 'bigparcel' : 'parcel'}${rider.tier ? `-${rider.tier}` : ''}.jpg`);
+  if (rider.disguised) return publicAsset('/assets/riders/disguised.jpg');
+  return portraitAsset(rider.kind).src;
+}
 
 /** Object icons for shop abilities and power-box lines (one painted item each). */
 export const shopIcon = (key: string) => publicAsset(`/assets/shop/${key}.jpg`);

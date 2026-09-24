@@ -1,4 +1,4 @@
-import { boxOf, COURIER_ARRIVAL_CHARGE, PARCEL_RULES, parcelBeside, cooperationBonus, cooperationRelief, eventPressureMultiplier, riderAgitation, type Rider, type RunState } from './game-engine';
+import { boxOf, COURIER_ARRIVAL_CHARGE, PARCEL_RULES, parcelBeside, parcelLinks, boxCoins, boxPower, seatRider, unseatRider, parcelLayoutOk, isBigParcel, cooperationBonus, cooperationRelief, eventPressureMultiplier, riderAgitation, type Rider, type RunState } from './game-engine';
 import { passengerBrief } from './passenger-presentation';
 import { ADJACENT, PASSENGERS, isLegend, type PassengerKind } from './game-data';
 import { riderProfile } from './rider-profile';
@@ -23,9 +23,10 @@ export function netValue(rider: Rider, state: RunState): number | null {
   const agitation = (profile.agitation ?? 0) + (AGITATING.has(rider.kind) ? 1 : 0) + (rider.volatile ? 1 : 0);
   const refund = rider.kind === 'courier' ? COURIER_ARRIVAL_CHARGE * price : 0;
   // v9.16: a Courier with a parcel is valued as the pair (the parcel's power included); a parcel alone as unclaimed.
-  if (rider.kind === 'parcel') return Math.round((PARCEL_RULES.payoutCoins + PARCEL_RULES.payoutPower * price) / 2 - trip * profile.energy * price);
-  const parcelPower = rider.parcelId ? trip * PASSENGERS.parcel.energy * price : 0;
-  return Math.round(fare - trip * profile.energy * price - parcelPower + refund - trip * agitation * NET_AGITATION_COINS);
+  if (rider.kind === 'parcel') return Math.round(boxValue(rider, price) - trip * profile.energy * price * (rider.big ? 2 : 1));
+  const parcelPower = rider.parcelId ? trip * PASSENGERS.parcel.energy * price * (rider.parcelBig ? 2 : 1) : 0;
+  const bigFare = rider.parcelId ? boxCoins({ big: rider.parcelBig, tier: rider.tier }) - PARCEL_RULES.values.small.common : 0;
+  return Math.round(fare + bigFare - trip * profile.energy * price - parcelPower + refund - trip * agitation * NET_AGITATION_COINS);
 }
 
 /** Expected arrival fares of everyone in a cabin (hidden fares count as the Mystery's average). */
@@ -47,12 +48,15 @@ function cabinAgitation(state: RunState, cabin: Array<Rider | null>) {
 /** v9.16 Courier battery refunds (only with his parcel beside him) and the expected contents of unclaimed parcels,
  * in coins at the shop charge price. */
 function cabinExtras(state: RunState, cabin: Array<Rider | null>, price: number) {
+  const links = parcelLinks(cabin);
   return cabin.reduce((sum, r, slot) => {
-    if (r?.kind === 'courier' && parcelBeside(cabin, slot)) return sum + COURIER_ARRIVAL_CHARGE * price;
-    if (r?.kind === 'parcel' && !cabin.some(o => o?.id === r.ownerId)) return sum + (PARCEL_RULES.payoutCoins + PARCEL_RULES.payoutPower * price) / 2;
+    if (r?.kind === 'courier' && r.parcelId && parcelBeside(cabin, slot, links)) return sum + COURIER_ARRIVAL_CHARGE * price;
+    if (r?.kind === 'parcel' && r.big !== 'bottom' && !links.carrier.has(slot) && !cabin.some(o => Boolean(r.ownerId) && o?.id === r.ownerId)) return sum + boxValue(r, price);
     return sum;
   }, 0);
 }
+/** Expected contents of an unclaimed box in coins: half coins, half power at the shop price. */
+const boxValue = (r: Rider, price: number) => (boxCoins(r) + boxPower(r) * price) / 2;
 
 /** v9.14.2 cabin-aware value: what boarding this rider changes in THIS cabin, in coins — everyone's arrival fares
  * (their own plus pairing / neighbour bonuses), minus their trip power, minus the change in the cabin's agitation
@@ -61,15 +65,16 @@ function cabinExtras(state: RunState, cabin: Array<Rider | null>, price: number)
 export function boardNet(rider: Rider, state: RunState): { value: number; seated: boolean } | null {
   if (isLegend(rider.kind)) return null;
   const trip = Math.max(1, rider.destination - state.floor), price = chargeUnitPrice(boxOf(state));
-  const power = trip * riderProfile(rider, state.cabin).energy * price;
+  const power = trip * riderProfile(rider, state.cabin).energy * price * (isBigParcel(rider) ? 2 : 1);
   const value = (withRider: Array<Rider | null>, without: Array<Rider | null>) =>
     cabinFares(state, withRider) - cabinFares(state, without) + cabinExtras(state, withRider, price) - cabinExtras(state, without, price) - power - trip * (cabinAgitation(state, withRider) - cabinAgitation(state, without)) * NET_AGITATION_COINS;
   const at = state.cabin.findIndex(r => r?.id === rider.id);
-  if (at >= 0) return { value: Math.round(value(state.cabin, state.cabin.map((r, i) => (i === at ? null : r)))), seated: true };
+  if (at >= 0) return { value: Math.round(value(state.cabin, unseatRider(state.cabin, rider.id))), seated: true };
   let best: number | null = null;
   state.cabin.forEach((r, slot) => {
-    if (r) return;
-    const v = value(state.cabin.map((x, i) => (i === slot ? { ...rider, boardedAt: state.floor } : x)), state.cabin);
+    const seated = r ? null : seatRider(state.cabin, { ...rider, boardedAt: state.floor }, slot);
+    if (!seated) return;
+    const v = value(seated, state.cabin);
     if (best === null || v > best) best = v;
   });
   return best === null ? null : { value: Math.round(best), seated: false };
@@ -109,16 +114,18 @@ export function pairedNet(rider: Rider, state: RunState): { value: number; partn
  * power included) when the parcel is not aboard yet; null once it is. */
 function courierWithParcel(rider: Rider, state: RunState, now: number, at: number): { value: number; partner: PassengerKind } | null {
   if (state.cabin.some(r => r?.id === rider.parcelId)) return null;
-  const parcel: Rider = { id: rider.parcelId!, kind: 'parcel', ownerId: rider.id, destination: rider.destination, patience: 0, boardedAt: state.floor, fareBonus: 0, stash: 0, volatile: false };
+  const parcel: Rider = { id: rider.parcelId!, kind: 'parcel', ownerId: rider.id, destination: rider.destination, patience: 0, boardedAt: state.floor, fareBonus: 0, stash: 0, volatile: false, ...(rider.parcelBig ? { big: 'top' as const, boxId: rider.parcelId } : {}), ...(rider.tier ? { tier: rider.tier } : {}) };
   const price = chargeUnitPrice(boxOf(state)), trip = Math.max(1, rider.destination - state.floor);
-  const power = trip * (riderProfile(rider, state.cabin).energy + PASSENGERS.parcel.energy) * price;
+  const power = trip * (riderProfile(rider, state.cabin).energy + PASSENGERS.parcel.energy * (rider.parcelBig ? 2 : 1)) * price;
   // Both aboard versus neither aboard (not versus an unclaimed parcel), with both trips' power.
-  const without = state.cabin.map(r => (r?.id === rider.id ? null : r));
+  const without = unseatRider(state.cabin, rider.id);
   let best: number | null = null;
   for (const [a, b] of ADJACENT) for (const [mine, theirs] of [[a, b], [b, a]] as const) {
     if ((at >= 0 ? mine !== at : Boolean(state.cabin[mine])) || state.cabin[theirs]) continue;
     const seated = { ...rider, boardedAt: at >= 0 ? rider.boardedAt : state.floor };
-    const withBoth = state.cabin.map((r, i) => (i === theirs ? parcel : i === mine ? seated : r));
+    const withCourier = at >= 0 ? state.cabin : state.cabin.map((r, i) => (i === mine ? seated : r));
+    const withBoth = seatRider(withCourier, parcel, theirs);
+    if (!withBoth || !parcelLayoutOk(withBoth)) continue;
     const value = cabinFares(state, withBoth) - cabinFares(state, without) + cabinExtras(state, withBoth, price) - cabinExtras(state, without, price) - power
       - trip * (cabinAgitation(state, withBoth) - cabinAgitation(state, without)) * NET_AGITATION_COINS;
     if (best === null || value > best) best = value;

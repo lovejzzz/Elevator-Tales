@@ -23,7 +23,7 @@ export const crowdingThreshold = (floor: number) => Math.max(V9_AGITATION.crowdM
 export const MUSIC_RULES = { step: 2 };
 // Defaults unchanged after R01. Isolated Lab scenarios may override these;
 // never use player resources or floor to change their values mid-run.
-export const ECONOMY_RULES = { thiefTravel: 3, celebrityTravel: 2, conciergeTip: 1, conciergeCondition: 'any' as 'any'|'medium', tipReward: 4, cooperationIncrement: 2 };
+export const ECONOMY_RULES = { thiefTravel: 0, thiefPerVictim: 2, celebrityTravel: 2, conciergeTip: 1, conciergeCondition: 'any' as 'any'|'medium', tipReward: 4, cooperationIncrement: 2 };
 export const FARE_RULES = { baseOnlyMultipliers: true, coachNeighbour: 2 };
 export const GHOST_RULES = { oneSavingPerExorcist: true };
 export const JOURNEY_RULES = { extraFrom31: 0, extraFrom51: 0, localFrom31: true, localExtra: 0, prorateLocalFare: true };

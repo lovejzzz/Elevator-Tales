@@ -1,17 +1,35 @@
 // Process-local rule variants for side-by-side comparison. Production defaults live in lib/.
 // A shard applies exactly one variant before running; nothing here changes the shipped game.
-import { AGITATION_RULES, FARE_RULES, MOTOR_RULES, NIGHT_UNREST, V9_AGITATION } from '../../lib/balance-v832.ts';
+import { ECONOMY_RULES, AGITATION_RULES, FARE_RULES, MOTOR_RULES, NIGHT_UNREST, V9_AGITATION } from '../../lib/balance-v832.ts';
 import { BOX_PRICES, CHARGE_PRICES, EMERGENCY_PRICES } from '../../lib/power-box.ts';
 import { CALM_PURCHASE, CALM_RULES, INSULATION_RULES, RISK_RULES, SHOP_PRICES, SOUNDPROOF_RULES, START_RULES } from '../../lib/game-engine.ts';
 import { LEGEND_RULES } from '../../lib/legends.ts';
 import { PARCEL_RULES } from '../../lib/game-engine.ts';
 import { PASSENGERS } from '../../lib/game-data.ts';
+const scaleBoxes = (k: number) => { for (const size of ['small', 'big'] as const) for (const tier of ['common', 'rare', 'legendary'] as const) PARCEL_RULES.values[size][tier] = Math.round(PARCEL_RULES.values[size][tier] * k); };
 const parcel = (fare: number, coins: number, power: number) => () => { PASSENGERS.courier.fare = fare; PARCEL_RULES.payoutCoins = coins; PARCEL_RULES.payoutPower = power; };
 
 export const VARIANTS: Record<string, () => void> = {
   baseline: () => {},
   // v9.16 Courier parcel study: parcel off (pre-9.16 Courier), then Courier fare × unclaimed-parcel payout (coins / power).
   noParcel: () => { PARCEL_RULES.enabled = false; },
+  // v9.17 Courier study: two-part box odds / reward, Thief pickpocketing, Inspector coins.
+  v916: () => { VARIANTS.oldThief(); VARIANTS.noBig(); VARIANTS.noInteractions(); VARIANTS.noTiers(); VARIANTS.noBombCarry(); VARIANTS.noMimicCopy(); PARCEL_RULES.adopt = false; PARCEL_RULES.contest = false; },
+  oldThief: () => { ECONOMY_RULES.thiefTravel = 3; ECONOMY_RULES.thiefPerVictim = 0; },
+  pick1: () => { ECONOMY_RULES.thiefPerVictim = 1; },
+  pick3: () => { ECONOMY_RULES.thiefPerVictim = 3; },
+  noBig: () => { PARCEL_RULES.bigChance = 0; },
+  // Box contents scaled (all tiers and sizes), and tier odds.
+  val70: () => { scaleBoxes(0.7); },
+  val140: () => { scaleBoxes(1.4); },
+  noTiers: () => { PARCEL_RULES.rareChance = 0; PARCEL_RULES.legendaryChance = 0; },
+  tiers2x: () => { PARCEL_RULES.rareChance = 0.32; PARCEL_RULES.legendaryChance = 0.08; },
+  noBombCarry: () => { PARCEL_RULES.bombCarry = false; },
+  noMimicCopy: () => { PARCEL_RULES.mimicCopiesBox = false; },
+  big25: () => { PARCEL_RULES.bigChance = 0.25; },
+  insp3: () => { PARCEL_RULES.inspectCoins = 3; },
+  insp8: () => { PARCEL_RULES.inspectCoins = 8; },
+  noInteractions: () => { PARCEL_RULES.childOpens = false; PARCEL_RULES.mechanicParts = false; PARCEL_RULES.inspectCoins = 0; PARCEL_RULES.thiefShare = 0; },
   f3c6p3: parcel(3, 6, 3),
   f3c8p4: parcel(3, 8, 4),
   f3c10p6: parcel(3, 10, 6),

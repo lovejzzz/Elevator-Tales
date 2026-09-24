@@ -65,7 +65,7 @@ export function randomTraits(kind:'mystery'|'shifter', available:PassengerKind[]
 }
 function ownProfile(rider:Rider){
  const spec=PASSENGERS[rider.kind];
- return {weight:0,energy:rider.traits?.energy??spec.energy,agitation:rider.traits?.agitation??0,fare:rider.traits?.fare??spec.fare,bond:rider.traits?.bond??BONDS[rider.kind],conflictEffect:rider.traits?.conflictEffect,hidden:rider.kind==='mystery'};
+ return {weight:0,energy:rider.traits?.energy??spec.energy,agitation:rider.traits?.agitation??0,fare:rider.traits?.fare??(rider.disguised?PASSENGERS.bomb.fare:spec.fare),bond:rider.traits?.bond??BONDS[rider.kind],conflictEffect:rider.traits?.conflictEffect,hidden:rider.kind==='mystery'};
 }
 // A ticket adjustment applies only to the base fare, never to earned stashes,
 // tips or adjacency payouts. Express retains its full purchased benefit.

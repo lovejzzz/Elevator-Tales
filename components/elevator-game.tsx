@@ -5,8 +5,8 @@ import { ChevronsUp, ArrowUp, Layers, UserMinus, BatteryCharging, BookOpen, Chec
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, isLegend, passengerCardGrade, passengerCategory, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
-import { cardSummary, riderName, type CardChip } from '@/lib/card-summary';
+import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, isLegend, riderCardGrade, passengerCategory, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
+import { cardSummary, displayName, riderName, type CardChip } from '@/lib/card-summary';
 import { KEEPSAKES_SEEN_KEY, LEGEND_UNLOCKS_KEY, drawLegend, LEGEND_UNLOCK_HINTS, loadKeepsakesSeen, loadUnlockedLegends, nextUnlocks, saveList } from '@/lib/legend-unlocks';
 import { KEEPSAKES, type KeepsakeKey } from '@/lib/legends';
 import { districtFor } from '@/lib/districts';
@@ -17,13 +17,13 @@ import { LEGEND_KINDS, type LegendKind } from '@/lib/game-data';
 import { availableShopCards, emergencyRepairPlan, repairEmergency, dismissalsRemaining, energyBreakdown, purchaseRepairWarning } from '@/lib/game-engine';
 import { HIGH_RISK_BONUS, travelEnergyCost, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, touristCompanionCount, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, sectorForecast, stressForecast } from '@/lib/game-forecast';
-import { parcelBeside, RETIRED_UPGRADES, SELL_REFUND, canSellUpgrade, sellUpgrade, calmPrice, buyCalm, calmAllowance, emergencyAllowance, emergencySectorLeft, emergencyCharge, boxOf, buyBoxLevel, canBuyBoxLevel, boxLevelPrice, rerollShop, REROLL_PRICE, SHOP_PRICES } from '@/lib/game-engine';
+import { neighbours, parcelBeside, parcelLinks, thiefEyesParcel, unseatRider, boxIdOf, boxCoins, RETIRED_UPGRADES, SELL_REFUND, canSellUpgrade, sellUpgrade, calmPrice, buyCalm, calmAllowance, emergencyAllowance, emergencySectorLeft, emergencyCharge, boxOf, buyBoxLevel, canBuyBoxLevel, boxLevelPrice, rerollShop, REROLL_PRICE, SHOP_PRICES } from '@/lib/game-engine';
 import { emergencyUnitPrice, BOX_LINES, BOX_LINE_LABELS, BOX_MAX_LEVEL, BOX_TOTAL_CAP, boxTotal, chargeCost as boxChargeCost, chargeUnitPrice, affordableUnits, type BoxLine } from '@/lib/power-box';
 import { activeConnection, copyConnection, planPlacement, type PlacementResult } from '@/lib/game-interaction';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
 import { disposeGameMusic, musicSceneForView, setGameMusic, unlockGameMusic } from '@/lib/game-music';
 import { bondStatus, conflictLinks, type ConflictEffect } from '@/lib/rider-profile';
-import { portraitAsset, shopIcon } from '@/lib/passenger-assets';
+import { portraitAsset, riderPortraitSrc, shopIcon } from '@/lib/passenger-assets';
 import { addDiscoveredPassengers, sanitizeDiscoveredPassengers } from '@/lib/passenger-discovery';
 import { passengerBrief, SHARED_SAVING_RULE, type PassengerRuleBlock } from '@/lib/passenger-presentation';
 import { metricChanges, type MetricChange, type MetricKey } from '@/lib/metric-feedback';
@@ -45,7 +45,7 @@ import { shouldPreviewConnection } from '@/lib/connection-preview';
 import { AgitationGauge } from '@/components/agitation-gauge';
 import { PowerGauge, RegisterNumber } from '@/components/power-gauge';
 import { cooperationLabel } from '@/lib/cooperation-label';
-import { agitationBand, musicBeatForAgitation, motorAdvanceNotice, motorScheduleText, nightUnrest, nightUnrestText, REPAIR_WORK, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, RESERVE_CELL_CHARGE } from '@/lib/balance-v832';
+import { ECONOMY_RULES, agitationBand, musicBeatForAgitation, motorAdvanceNotice, motorScheduleText, nightUnrest, nightUnrestText, REPAIR_WORK, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, RESERVE_CELL_CHARGE } from '@/lib/balance-v832';
 import { consumeReserveCell, nextOfferBatch, retimeRider, oldMovesRemaining, reserveOffer, applyCalmCharge, startRun } from '@/lib/game-engine';
 
 type DragPayload = { type: 'offer'; id: string } | { type: 'slot'; slot: number };
@@ -124,9 +124,11 @@ function MetricResponse({ metric, event, locale }: { metric: MetricKey; event: M
 }
 const shiftPhase = (floor: number) => floor <= 10 ? '临时夜班' : '无尽夜班';
 
-function Portrait({ kind, large = false }: { kind: PassengerKind; large?: boolean }) {
+function Portrait({ kind, large = false, rider }: { kind: PassengerKind; large?: boolean; rider?: Rider }) {
   const asset = portraitAsset(kind); const x = asset.cell % asset.columns; const y = Math.floor(asset.cell / asset.columns);
-  return <span className={`portrait-window ${large ? 'portrait-large' : ''} ${isLegend(kind) ? 'portrait-legend-art' : ''}`} aria-hidden="true"><span className="portrait-sheet" style={{ backgroundImage: `url(${asset.src})`, backgroundSize: `${asset.columns * 100}% ${asset.rows * 100}%`, backgroundPosition: `${asset.columns > 1 ? x * 100 / (asset.columns - 1) : 50}% ${asset.rows > 1 ? y * 100 / (asset.rows - 1) : 50}%` }} /></span>;
+  // v9.17: box tiers and the disguised Bomber have their own art; a seated two-part box shows its upper or lower half.
+  const src = rider ? riderPortraitSrc(rider) : asset.src, half = rider?.kind === 'parcel' && large ? rider.big : undefined;
+  return <span className={`portrait-window ${large ? 'portrait-large' : ''} ${isLegend(kind) ? 'portrait-legend-art' : ''} ${half ? `portrait-half portrait-half-${half}` : ''}`} aria-hidden="true"><span className="portrait-sheet" style={{ backgroundImage: `url(${src})`, backgroundSize: half ? '100% 200%' : `${asset.columns * 100}% ${asset.rows * 100}%`, backgroundPosition: half ? `50% ${half === 'top' ? 0 : 100}%` : `${asset.columns > 1 ? x * 100 / (asset.columns - 1) : 50}% ${asset.rows > 1 ? y * 100 / (asset.rows - 1) : 50}%` }} /></span>;
 }
 
 const KEEPSAKE_EN: Record<KeepsakeKey, [string, string]> = {
@@ -160,7 +162,7 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
   const legend=isLegend(rider.kind);
   const board=boardNet(rider,run); const net=board?.value ?? null; const paired=pairedNet(rider,run);
   return <span className="unified-passenger-summary compact-card" data-no-translate>
-    <span className="cc-head"><Portrait kind={rider.kind}/><span className="cc-title"><strong>{riderName(rider.kind,locale)}<span className={`card-gem gem-${passengerCardGrade(rider.kind)}`} title={({standard:zh?'普通':'Common',fine:zh?'精良':'Fine',rare:zh?'稀有':'Rare',legendary:zh?'传奇':'Legendary'} as Record<string,string>)[passengerCardGrade(rider.kind)]} aria-hidden="true" /></strong><span className="cc-sub">
+    <span className="cc-head"><Portrait kind={rider.kind} rider={rider}/><span className="cc-title"><strong>{displayName(rider,locale)}<span className={`card-gem gem-${riderCardGrade(rider)}`} title={({standard:zh?'普通':'Common',fine:zh?'精良':'Fine',rare:zh?'稀有':'Rare',legendary:zh?'传奇':'Legendary'} as Record<string,string>)[riderCardGrade(rider)]} aria-hidden="true" /></strong><span className="cc-sub">
       <span className="cc-trip">{zh?`${brief.distance} 站`:`${brief.distance} stops`}</span>
       {legend&&<span className="cc-tag cc-tag-legend">{zh?'传奇':'Legend'}</span>}
       {rider.volatile&&<span className="cc-tag cc-tag-risk" title={zh?`急躁的乘客：车费多 ${HIGH_RISK_BONUS}，但在车上每层 +1 躁动；护士相邻可以抵消`:`Impatient rider: fare +${HIGH_RISK_BONUS}, but +1 agitation per floor aboard; an adjacent Nurse offsets it`}><Flame aria-hidden="true" />{zh?`急躁：车费+${HIGH_RISK_BONUS}，躁动+1/层`:`Impatient: fare +${HIGH_RISK_BONUS}, +1/floor`}</span>}
@@ -170,7 +172,7 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
       <b className="cc-fare" aria-label={brief.coins===null?(zh?'车费到站揭晓':'Fare sealed'):`${zh?'车费':'Fare'} ${brief.coins}`}><Coins aria-hidden="true" />{brief.coins===null?'?':brief.coins}{brief.tip>0&&<small>+{brief.tip}</small>}</b>
       <span className="cc-energy" aria-label={`${zh?'每层耗电':'Power per floor'} ${brief.energy}`}><BatteryCharging aria-hidden="true" />{brief.energy}</span>
       {brief.agitation>0&&<span className="cc-agitation" aria-label={`${zh?'每层躁动':'Agitation per floor'} +${brief.agitation}`}><Flame aria-hidden="true" />+{brief.agitation}</span>}
-      {net!==null&&<span className={`cc-net ${net>0?'is-pos':net<0?'is-neg':''}`} title={zh?`送到站时的净收益估算（不是上车就给钱）：到站车费，加上和已上车乘客配对、邻座的加成，减去这一路的电费${netIncludesAgitation(rider,run)||rider.kind==='nurse'?'，再算上他让车厢躁动的变化（每点每层按 3 币）':''}。按现在车厢里的人和最好的空位计算。`:`Estimated net on delivery (nothing is paid on boarding): arrival fare plus pairing / neighbour bonuses with riders aboard, minus the power for the trip${netIncludesAgitation(rider,run)||rider.kind==='nurse'?', and the change in cabin agitation (3 coins per point per floor)':''}. Based on who is aboard now and the best empty seat.`}>{(netIncludesAgitation(rider,run)||rider.kind==='nurse')&&<Flame aria-hidden="true" className="cc-net-flame" />}{zh?`送达 净${net>0?'+':net<0?'−':'±'}${Math.abs(net)}`:`On arrival ${net>0?'+':net<0?'−':'±'}${Math.abs(net)}`}</span>}{paired&&<span className={`cc-net cc-net-paired ${paired.value>0?'is-pos':paired.value<0?'is-neg':''}`} title={paired.partner==='parcel'?(zh?'带上他的纸箱、放在他旁边时，两张卡合计送达的净收益估算（已减去纸箱的电费）。':'Estimated net on delivery for the pair with his parcel beside him (the parcel’s power included).'):zh?`如果旁边坐上一位${riderName(paired.partner,'zh')}，这位乘客送达时的净收益估算；配对的加成双方都算。`:`Estimated net on delivery if a ${riderName(paired.partner,'en')} sits beside them; the pairing bonus counts for both.`}>{zh?`配${riderName(paired.partner,'zh')} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)}`:`w/ ${riderName(paired.partner,'en')} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)}`}</span>}
+      {net!==null&&<span className={`cc-net ${net>0?'is-pos':net<0?'is-neg':''}`} title={zh?`送到站时的净收益估算（不是上车就给钱）：到站车费，加上和已上车乘客配对、邻座的加成，减去这一路的电费${netIncludesAgitation(rider,run)||rider.kind==='nurse'?'，再算上他让车厢躁动的变化（每点每层按 3 币）':''}。按现在车厢里的人和最好的空位计算。`:`Estimated net on delivery (nothing is paid on boarding): arrival fare plus pairing / neighbour bonuses with riders aboard, minus the power for the trip${netIncludesAgitation(rider,run)||rider.kind==='nurse'?', and the change in cabin agitation (3 coins per point per floor)':''}. Based on who is aboard now and the best empty seat.`}>{(netIncludesAgitation(rider,run)||rider.kind==='nurse')&&<Flame aria-hidden="true" className="cc-net-flame" />}{zh?`送达 净${net>0?'+':net<0?'−':'±'}${Math.abs(net)}`:`On arrival ${net>0?'+':net<0?'−':'±'}${Math.abs(net)}`}</span>}{paired&&<span className={`cc-net cc-net-paired ${paired.value>0?'is-pos':paired.value<0?'is-neg':''}`} title={paired.partner==='parcel'?(zh?'带上他的纸箱、放在他旁边时，两张卡合计送达的净收益估算（已减去纸箱的电费）。':'Estimated net on delivery for the pair with his parcel beside him (the parcel’s power included).'):zh?`如果旁边坐上一位${riderName(paired.partner,'zh')}，这位乘客送达时的净收益估算；配对的加成双方都算。`:`Estimated net on delivery if a ${riderName(paired.partner,'en')} sits beside them; the pairing bonus counts for both.`}>{(()=>{const partnerName=paired.partner==='parcel'?displayName({kind:'parcel',big:rider.parcelBig?'top':undefined},locale):riderName(paired.partner,locale);return zh?`配${partnerName} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)}`:`w/ ${partnerName} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)}`;})()}</span>}
     </span>}
     <span className="cc-line">{summary.line}{summary.progress&&<em>{summary.progress}</em>}</span>
     {legend&&<span className="cc-keepsake-effect"><b>{zh?'送到 10 层得信物 · ':'Deliver to 10F for keepsake · '}{keepsakeName(rider.kind as LegendKind,locale)}{zh?'：':': '}</b>{keepsakeTitle(rider.kind as LegendKind,locale)}</span>}
@@ -184,6 +186,27 @@ function riderState(cabin: Array<Rider | null>, slot: number, bonus: number, agi
   if (!rider) return null;
   const bond = bondStatus(rider,cabin,slot);
   const conflicts=conflictLinks(cabin).filter(link=>link.first===slot||link.second===slot);
+  // v9.17 boxes: who holds, eyes, opens or checks each box.
+  if (rider.kind === 'parcel' || rider.kind === 'courier' || rider.kind === 'thief' || rider.kind === 'mimic') {
+    const links = parcelLinks(cabin), near = (kinds: PassengerKind[]) => links.boxes.find(b => b.slots.includes(slot))?.touching.some(i => kinds.includes(cabin[i]?.kind as PassengerKind));
+    if (rider.kind === 'parcel') {
+      const carrier = links.carrier.get(slot), boxCoinsNow = boxCoins(rider);
+      if (links.eyed.has(slot)) return { label: `小偷盯上了 · 他下车就带走`, tone: 'warn' };
+      if (near(['child'])) return { label: '小孩下一层就拆开', tone: 'warn' };
+      if (carrier !== undefined) return { label: rider.inspected ? '已验货 · 跟快递员到站' : cabin[carrier]?.id === rider.ownerId ? '跟快递员一起到站' : '已交给旁边的快递员', tone: 'neutral' };
+      if (near(['mechanic'])) return { label: '维修工会拆来当零件', tone: 'neutral' };
+      return { label: `无人认领 · 到站开箱 ${boxCoinsNow} 币或 ${Math.round(boxCoinsNow / 2)} 电`, tone: 'active' };
+    }
+    if (rider.kind === 'courier' && rider.parcelId) {
+      if (links.bombs.has(slot)) return { label: '拿着炸弹 · 先下车就带走', tone: 'active' };
+      if (links.contested.has(slot)) return { label: '争纸箱 · +1躁动', tone: 'warn' };
+      if (!parcelBeside(cabin, slot, links)) return { label: '没有纸箱 · 每层+1躁动 · 不付钱', tone: 'warn' };
+      return { label: '纸箱在旁', tone: 'active' };
+    }
+    if (rider.kind === 'thief' && thiefEyesParcel(links, slot)) return { label: '盯上纸箱 · 不躁动 · 下车带走', tone: 'active' };
+    if (rider.kind === 'mimic' && slot >= 3 && cabin[slot - 3]?.kind === 'parcel') return { label: '↑ 复制纸箱 · 下车打开', tone: 'active' };
+  }
+  if (rider.disguised) return { label: '乔装的炸弹客 · 没有倒计时', tone: 'neutral' };
   if(rider.kind==='mimic')return {label:bond.copies.length?`↑ ${PASSENGERS[bond.copies[0].sourceKind].name} · ${bond.copies[0].field==='energy'?'耗电':'车费'}`:'↑ 等待正上方',tone:'neutral'};
   if (riskPartnerships(cabin).members.includes(slot)) return {label: `暂存+${agitationBand(agitation)==='high'?3:2}/层 · 链接加躁动`, tone:'warn'};
   if (conflicts.length) return {label:conflicts.length===1?`红线 ${conflictGlyph(conflicts[0].effect)}`:`${conflicts.length} 条红线`,tone:'warn'};
@@ -192,10 +215,9 @@ function riderState(cabin: Array<Rider | null>, slot: number, bonus: number, agi
   switch (rider.kind) {
     case 'tourist': { const count=touristCompanionCount(cabin,slot)+Number(hasNeighbour(cabin,slot,['nightingale'])); return count ? { label: `${count}位邻座 · 到站+${count*2}币`, tone: 'active' } : { label: '等待邻座 · 每位到站+2币', tone: 'neutral' }; }
     case 'operator': return cabin.filter(Boolean).length >= 6 ? { label: '满员 · 不省电', tone: 'warn' } : { label: '运转 −1 电', tone: 'active' };
-    case 'courier': return parcelBeside(cabin, slot) ? { label: rider.parcelId ? '纸箱在旁 · 到站付钱+2电' : '到站补充2电', tone: 'active' } : { label: '纸箱不在 · 每层+1躁动 · 不付钱', tone: 'warn' };
-    case 'parcel': return cabin.some(r => r?.id === rider.ownerId) ? { label: '跟快递员一起到站', tone: 'neutral' } : { label: '无人认领 · 到站开箱', tone: 'active' };
+    case 'courier': return { label: '到站补充2电', tone: 'active' };
     case 'lover': return hasNeighbour(cabin, slot, ['lover']) ? { label: '已配对', tone: 'active' } : { label: '正在呼唤同伴', tone: 'neutral' };
-    case 'thief': return hasNeighbour(cabin, slot, ['cop', 'lawyer']) ? { label: '已受控制', tone: 'active' } : { label: '未受控制', tone: 'warn' };
+    case 'thief': return hasNeighbour(cabin, slot, ['cop', 'lawyer']) ? { label: '已受控制', tone: 'active' } : { label: `顺手牵羊 +${ECONOMY_RULES.thiefPerVictim * neighbours(slot).filter(i => { const v = cabin[i]; return v && v.kind !== 'parcel' && !['cop', 'lawyer', 'don'].includes(v.kind) && !isLegend(v.kind); }).length}/层`, tone: 'warn' };
     case 'cop': return hasNeighbour(cabin, slot, ['thief', 'bomb']) ? { label: '正在控制', tone: 'active' } : null;
     case 'lawyer': return { label: '红线损失抵消最多2币', tone: 'active' };
     case 'drunk': if (agitationBand(agitation)==='high') return { label: '高躁动 · 基价+100%', tone: 'active' }; return hasNeighbour(cabin, slot, ['nurse']) ? { label: '已被安抚', tone: 'active' } : { label: '未安抚 · 每层+1', tone: 'warn' };
@@ -302,7 +324,7 @@ export default function ElevatorGame() {
   const rngOf = useCallback((channel: string, floor: number) => daily ? stream(daily.seed, channel, floor) : Math.random, [daily]);
   const [metricEvent, setMetricEvent] = useState<MetricEvent | null>(null);
   // v9.9 deal sounds: one card snap per offer, a shimmer for a legendary card.
-  useEffect(() => { offers.forEach((offer, i) => { playSfx(sound, 'deal', { delay: .35 + i * .11, pitch: i * 2 }); if (passengerCardGrade(offer.kind) === 'legendary') playSfx(sound, 'shimmer', { delay: .5 + i * .11 }); }); }, [offers]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { offers.forEach((offer, i) => { playSfx(sound, 'deal', { delay: .35 + i * .11, pitch: i * 2 }); if (riderCardGrade(offer) === 'legendary') playSfx(sound, 'shimmer', { delay: .5 + i * .11 }); }); }, [offers]); // eslint-disable-line react-hooks/exhaustive-deps
   const soundEnabled = useRef(false);
   // v9.8 juice bookkeeping: where a placement flew from, the delivery streak and whether this run's record was announced.
   const placingFrom = useRef<{ el: Element | null; kind: PassengerKind } | null>(null);
@@ -468,20 +490,20 @@ export default function ElevatorGame() {
     if (result.ok) { setPendingOfferId(null); setSelectedSlot(null); setDragOverSlot(null); }
   };
   // A rider who boarded from this floor's offers can be dragged back onto the offer list to withdraw them.
-  const draggedReturnable = dragged?.type === 'slot' && Number.isInteger(dragged.slot) && Boolean(run.cabin[dragged.slot!] && offers.some(o => o.id === run.cabin[dragged.slot!]!.id));
+  const draggedReturnable = dragged?.type === 'slot' && Number.isInteger(dragged.slot) && Boolean(run.cabin[dragged.slot!] && offers.some(o => o.id === boxIdOf(run.cabin[dragged.slot!]!)));
   const dropOnOffers = (event: DragEvent) => {
     event.preventDefault();
     let payload = dragged;
     try { payload = JSON.parse(event.dataTransfer.getData('application/elevator-tales')) as DragPayload; } catch { /* state fallback */ }
     const rider = payload?.type === 'slot' && Number.isInteger(payload.slot) ? run.cabin[payload.slot!] : null;
-    const offer = rider ? offers.find(o => o.id === rider.id) : undefined;
+    const offer = rider ? offers.find(o => o.id === boxIdOf(rider)) : undefined;
     if (offer && !locked) toggleOffer(offer);
     endDrag();
   };
   const toggleOffer = (offer: Rider) => {
     if (locked) return;
     const existing = run.cabin.findIndex((rider) => rider?.id === offer.id);
-    if (existing >= 0) { const next = { ...run, cabin: run.cabin.map((rider, i) => i === existing ? null : rider), message: `${PASSENGERS[offer.kind].name}回到队伍中。` }; reportMetrics(run, next, `${PASSENGERS[offer.kind].name}下车`); setRun(next); setPendingOfferId(null); playTone(sound, 'select'); return; }
+    if (existing >= 0) { const next = { ...run, cabin: unseatRider(run.cabin, offer.id), message: `${PASSENGERS[offer.kind].name}回到队伍中。` }; reportMetrics(run, next, `${PASSENGERS[offer.kind].name}下车`); setRun(next); setPendingOfferId(null); playTone(sound, 'select'); return; }
     if (pendingOfferId === offer.id) { setPendingOfferId(null); setRun((current) => ({ ...current, message: '已取消安排。' })); return; }
     setPendingOfferId(offer.id); setSelectedSlot(null); setDragOverSlot(null); setFeedback(null);
     setRun((current) => ({ ...current, message: `已选择${PASSENGERS[offer.kind].name}，现在点一个空位。` })); playTone(sound, 'select');
@@ -506,13 +528,13 @@ export default function ElevatorGame() {
   const pointerDrag = (event: ReactPointerEvent<HTMLElement>, payload: DragPayload, rider: Rider) => {
     const source = event.currentTarget.querySelector<HTMLElement>('.portrait-window') ?? event.currentTarget;
     beginPointerDrag(event.nativeEvent, {
-      source, imageSrc: portraitAsset(rider.kind).src,
+      source, imageSrc: riderPortraitSrc(rider),
       onStart: () => { setPendingOfferId(null); setSelectedSlot(null); setFeedback(null); setDragged(payload); playTone(sound, 'select'); },
       onTarget: (target) => setDragOverSlot(target && 'slot' in target ? target.slot : null),
       onDrop: (target) => {
         if (!target) return false;
         if ('slot' in target) { placingFrom.current = null; const result = planPlacement(run, rider, target.slot); commitPlacement(result); return result.ok && result.changed; }
-        const offer = payload.type === 'slot' ? offers.find(o => o.id === rider.id) : undefined;
+        const offer = payload.type === 'slot' ? offers.find(o => o.id === boxIdOf(rider)) : undefined;
         if (offer) { toggleOffer(offer); return true; }
         return false;
       },
@@ -700,8 +722,8 @@ export default function ElevatorGame() {
           const target = dragOverSlot === index && Boolean(activeRider); const reaction = feedback?.slots.includes(index) ? feedback : null;
           const agitationValue=agitation.low===agitation.high?signedDelta(agitation.low):`${signedDelta(agitation.low)}～${signedDelta(agitation.high)}`;
           const compactAgitationValue=agitation.low===agitation.high?compactDelta(agitation.low):`${compactDelta(agitation.low)}～${compactDelta(agitation.high)}`;
-          return <div key={index} className="standing-slot-wrap"><button disabled={locked} className={`standing-slot ${rider ? `category-${passengerCategory(rider.kind)} seat-grade-${passengerCardGrade(rider.kind)}` : ''} ${rider ? 'occupied' : ''} ${rider?.boardedAt === run.floor ? 'newly-boarded' : ''} ${synergy ? 'synergy-target' : ''} ${plan ? plan.ok ? 'drop-valid' : 'drop-blocked' : ''} ${selectedSlot === index ? 'selected' : ''} ${target ? 'drag-target' : ''}`} onClick={() => clickSlot(index)} draggable={false} onPointerDown={(event) => { if (rider && !locked && (!run.swapped || rider.boardedAt === run.floor)) pointerDrag(event, { type: 'slot', slot: index }, rider); }} onMouseEnter={() => activeRider && window.matchMedia('(min-width: 701px) and (hover: hover)').matches && setDragOverSlot(index)} onMouseLeave={() => !dragged && setDragOverSlot(null)} onDragOver={(event) => { if (!locked && dragged) { event.preventDefault(); event.dataTransfer.dropEffect = plan?.ok ? 'move' : 'none'; setDragOverSlot(index); } }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOverSlot((current) => current === index ? null : current); }} onDrop={(event) => dropOnSlot(event, index)} aria-label={rider ? `${index + 1}号位，${PASSENGERS[rider.kind].name}，到站收益${seatBrief?.expectedFare??'未知'}，每站耗电${seatBrief?.energy}，下一站躁动${agitationValue}${state ? `，${state.label}` : ''}` : `${index + 1}号空位${synergy ? '，可联动' : ''}`}>
-            {rider && seatBrief ? <motion.span className={`rider-visual ${rider.kind==='bomb'?'rider-bomb':''} ${rider.volatile?'rider-high-risk':''}`} key={rider.id} initial={reduceMotion ? false : { opacity: 0, scale: 1.04, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 520, damping: 34 }}>{(passengerCardGrade(rider.kind)==='rare'||passengerCardGrade(rider.kind)==='legendary')&&<CardShader legendary={passengerCardGrade(rider.kind)==='legendary'} />}<span className="seat-heading"><span className="rider-name">{PASSENGERS[rider.kind].name}{passengerCardGrade(rider.kind)!=='standard'&&<span className={`card-gem gem-${passengerCardGrade(rider.kind)}`} aria-hidden="true" />}</span>{rider.volatile&&<span className="seat-risk-tag" title="急躁的乘客：车费更高，但在车上每层 +1 躁动；护士相邻可以抵消"><Flame aria-hidden="true" />急躁</span>}</span><span className="slot-destination">还剩 {Math.max(0, rider.destination - run.floor)} 站</span><span className="seat-art"><Portrait kind={rider.kind} large />{(Boolean(rider.stash) || (state && rider.kind !== 'bomb') || rider.fuse !== undefined) && <span className="seat-overlay">{Boolean(rider.stash)&&<span className="seat-stash">暂存 {rider.stash}</span>}{state && rider.kind !== 'bomb' && <span className={`slot-state ${state.tone}`}>{state.label}</span>}{rider.fuse !== undefined && (()=>{const fs=fuseState(run.cabin,index,run.floor);const locked=fs==='locked';const left=Math.max(0,rider.destination-run.floor);const late=fs==='late';return <span className={`fuse ${locked?'fuse-locked':late?'fuse-late':'fuse-live'}`} title={locked?'警察在旁边：倒计时暂停，不会减少':late?`倒计时 ${rider.fuse}，但还有 ${left} 站：到站前会爆炸，让警察站到旁边或请离`:`每层减 1；还有 ${left} 站，能按时送达`}>{locked?<><LockKeyhole aria-hidden="true" />已锁住 · {rider.fuse}</>:late?<><Flame aria-hidden="true" />来不及！倒计时 {rider.fuse}</>:<>倒计时 {rider.fuse}</>}</span>;})()}</span>}</span><span className="seat-metrics"><span className="seat-fare" title="按当前站位、躁动和已完成进度计算；下一站到站含本次进度，不含概率奖励" aria-label={`到站收益 ${seatBrief.expectedFare??'未知'}`}><Coins aria-hidden="true" />{seatBrief.expectedFare??'?'}</span><span className="seat-energy" title="人物耗电含红线倍率；链接固定耗电与整车节能另计" aria-label={`每站耗电 ${seatBrief.energy}`}><BatteryCharging aria-hidden="true" />{seatBrief.energy}</span><span className="seat-agitation" title="下一站躁动" aria-label={`下一站躁动 ${agitationValue}`}><Flame aria-hidden="true" />{compactAgitationValue}</span></span></motion.span> : <><span className="slot-number">{String(index + 1).padStart(2, '0')}</span>{target && plan?.ok && activeRider && <span className="placement-ghost"><Portrait kind={activeRider.kind} large /></span>}</>}
+          return <div key={index} className="standing-slot-wrap"><button disabled={locked} className={`standing-slot ${rider ? `category-${passengerCategory(rider.kind)} seat-grade-${riderCardGrade(rider)}` : ''} ${rider ? 'occupied' : ''} ${rider?.boardedAt === run.floor ? 'newly-boarded' : ''} ${synergy ? 'synergy-target' : ''} ${plan ? plan.ok ? 'drop-valid' : 'drop-blocked' : ''} ${selectedSlot === index ? 'selected' : ''} ${target ? 'drag-target' : ''}`} onClick={() => clickSlot(index)} draggable={false} onPointerDown={(event) => { if (rider && !locked && (!run.swapped || rider.boardedAt === run.floor)) pointerDrag(event, { type: 'slot', slot: index }, rider); }} onMouseEnter={() => activeRider && window.matchMedia('(min-width: 701px) and (hover: hover)').matches && setDragOverSlot(index)} onMouseLeave={() => !dragged && setDragOverSlot(null)} onDragOver={(event) => { if (!locked && dragged) { event.preventDefault(); event.dataTransfer.dropEffect = plan?.ok ? 'move' : 'none'; setDragOverSlot(index); } }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOverSlot((current) => current === index ? null : current); }} onDrop={(event) => dropOnSlot(event, index)} aria-label={rider ? `${index + 1}号位，${PASSENGERS[rider.kind].name}，到站收益${seatBrief?.expectedFare??'未知'}，每站耗电${seatBrief?.energy}，下一站躁动${agitationValue}${state ? `，${state.label}` : ''}` : `${index + 1}号空位${synergy ? '，可联动' : ''}`}>
+            {rider && seatBrief ? <motion.span className={`rider-visual ${rider.kind==='bomb'?'rider-bomb':''} ${rider.volatile?'rider-high-risk':''}`} key={rider.id} initial={reduceMotion ? false : { opacity: 0, scale: 1.04, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 520, damping: 34 }}>{(riderCardGrade(rider)==='rare'||riderCardGrade(rider)==='legendary')&&<CardShader legendary={riderCardGrade(rider)==='legendary'} />}<span className="seat-heading"><span className="rider-name" data-no-translate>{displayName(rider,language)}{riderCardGrade(rider)!=='standard'&&<span className={`card-gem gem-${riderCardGrade(rider)}`} aria-hidden="true" />}</span>{rider.volatile&&<span className="seat-risk-tag" title="急躁的乘客：车费更高，但在车上每层 +1 躁动；护士相邻可以抵消"><Flame aria-hidden="true" />急躁</span>}</span><span className="slot-destination">还剩 {Math.max(0, rider.destination - run.floor)} 站</span><span className="seat-art"><Portrait kind={rider.kind} rider={rider} large />{(Boolean(rider.stash) || (state && rider.kind !== 'bomb') || rider.fuse !== undefined) && <span className="seat-overlay">{Boolean(rider.stash)&&<span className="seat-stash">暂存 {rider.stash}</span>}{state && rider.kind !== 'bomb' && <span className={`slot-state ${state.tone}`}>{state.label}</span>}{rider.fuse !== undefined && (()=>{const fs=fuseState(run.cabin,index,run.floor);const locked=fs==='locked';const left=Math.max(0,rider.destination-run.floor);const late=fs==='late';return <span className={`fuse ${locked?'fuse-locked':late?'fuse-late':'fuse-live'}`} title={locked?'警察在旁边：倒计时暂停，不会减少':late?`倒计时 ${rider.fuse}，但还有 ${left} 站：到站前会爆炸，让警察站到旁边或请离`:`每层减 1；还有 ${left} 站，能按时送达`}>{locked?<><LockKeyhole aria-hidden="true" />已锁住 · {rider.fuse}</>:late?<><Flame aria-hidden="true" />来不及！倒计时 {rider.fuse}</>:<>倒计时 {rider.fuse}</>}</span>;})()}</span>}</span><span className="seat-metrics"><span className="seat-fare" title="按当前站位、躁动和已完成进度计算；下一站到站含本次进度，不含概率奖励" aria-label={`到站收益 ${seatBrief.expectedFare??'未知'}`}><Coins aria-hidden="true" />{seatBrief.expectedFare??'?'}</span><span className="seat-energy" title="人物耗电含红线倍率；链接固定耗电与整车节能另计" aria-label={`每站耗电 ${seatBrief.energy}`}><BatteryCharging aria-hidden="true" />{seatBrief.energy}</span><span className="seat-agitation" title="下一站躁动" aria-label={`下一站躁动 ${agitationValue}`}><Flame aria-hidden="true" />{compactAgitationValue}</span></span></motion.span> : <><span className="slot-number">{String(index + 1).padStart(2, '0')}</span>{target && plan?.ok && activeRider && <span className="placement-ghost"><Portrait kind={activeRider.kind} large /></span>}</>}
             {reaction && <span key={reaction.id} className={`slot-reaction reaction-${reaction.tone}`} aria-hidden="true" />}
             {target && plan && <span className={`drop-caption ${plan.ok ? 'allowed' : 'blocked'}`}>{plan.ok ? `${dragged ? '松手' : '点击'} · ${synergy ? '联动' : '就位'}` : '不可放置'}</span>}
           </button>{rider && <button className="seat-info-button" type="button" disabled={locked} draggable={false} onDragStart={(event)=>event.preventDefault()} onClick={()=>{setEjectArmed(false);setPassengerDetails(rider);}} aria-label={`查看${PASSENGERS[rider.kind].name}详情`} title="查看人物详情"><Info aria-hidden="true" /></button>}</div>;
@@ -723,7 +745,7 @@ export default function ElevatorGame() {
             const full = !boarded && cabinFull;
             const unavailable = full; const isDragging = dragged?.type === 'offer' && dragged.id === offer.id;
             const partner = unavailable ? null : readyPartner(offer.kind, run.cabin, offer.id, offer);
-            const grade=passengerCardGrade(offer.kind);
+            const grade=riderCardGrade(offer);
             return <motion.div className="passenger-item" role="listitem" key={offer.id} initial={reduceMotion ? false : { opacity: 0, y: 18, scale: .97 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 420, damping: 30, delay: offerIndex * .08 }} whileHover={reduceMotion || boarded || full ? undefined : { y: -3, transition: { type: 'spring', stiffness: 500, damping: 26 } }} whileTap={reduceMotion ? undefined : { scale: .985 }}><button data-offer-id={offer.id} onPointerMove={tiltCard} onPointerLeave={untiltCard} className={`passenger-card category-${passengerCategory(offer.kind)} kind-${offer.kind} grade-${grade} tone-${spec.tone} ${offer.volatile?'volatile':''} ${offer.calledByLover ? 'lover-called' : ''} ${firstPairLesson && offer.kind === 'lover' ? 'guided-lover' : ''} ${boarded ? 'boarded' : ''} ${pending ? 'pending' : ''} ${isDragging ? 'dragging' : ''}`} onClick={() => toggleOffer(offer)} aria-label={language==='zh'?`候选：${spec.name}，车费${displayedOffer.kind==='mystery'?'待揭晓':passengerBrief(displayedOffer,run.floor,run.cabin).coins}，每层耗电${passengerBrief(displayedOffer,run.floor,run.cabin).energy}，还剩${Math.max(0,displayedOffer.destination-run.floor)}站${boarded?'，已上车':''}`:`Candidate: ${riderName(offer.kind,'en')}, fare ${displayedOffer.kind==='mystery'?'sealed':passengerBrief(displayedOffer,run.floor,run.cabin).coins}, power ${passengerBrief(displayedOffer,run.floor,run.cabin).energy} per floor, ${Math.max(0,displayedOffer.destination-run.floor)} stops${boarded?', aboard':''}`} draggable={false} onPointerDown={(event) => { if (!locked && !unavailable && !boarded) pointerDrag(event, { type: 'offer', id: offer.id }, offer); }} disabled={locked || unavailable} aria-pressed={boarded || pending}>
               <span className="card-foil" aria-hidden="true" /><span className="card-glints" aria-hidden="true"><i /><i /><i /><i /></span>{(grade==='rare'||grade==='legendary')&&<CardShader legendary={grade==='legendary'} />}
               {boarded && <span className="boarded-status" aria-hidden="true"><Check />已上车</span>}

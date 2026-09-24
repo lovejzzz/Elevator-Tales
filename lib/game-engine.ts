@@ -9,7 +9,7 @@ import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_T
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
 
-export type Rider = { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
+export type Rider = { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
 export type ChangeLine = { label: string; amount: number };
 export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number };
 export type ShopCard = { key: UpgradeKey; price: number; purchased: boolean };
@@ -110,17 +110,111 @@ export const INSPECTOR_ENERGY_LIMIT = 3;
 export const COURIER_ARRIVAL_CHARGE = 2;
 /** v9.16 Courier parcels: an unclaimed parcel pays coins or power at random when it reaches its floor;
  * a Courier without his parcel beside him agitates the cabin and pays nothing. Tuned in scripts/balance-sim. */
-export const PARCEL_RULES = { payoutCoins: 6, payoutPower: 3, lostAgitation: 1, enabled: true };
-/** True unless this Courier carries a parcel and it is not in a neighbouring seat. */
-export const parcelBeside = (cabin: Array<Rider | null>, slot: number) => {
-  const c = cabin[slot]; if (!c || c.kind !== 'courier' || !c.parcelId) return true;
-  return neighbours(slot).some(i => cabin[i]?.id === c.parcelId);
+export const PARCEL_RULES = {
+  payoutCoins: 6, payoutPower: 3, lostAgitation: 1, enabled: true,
+  /** v9.17: share of Couriers who bring a two-part box (upper + lower seat of one column). */
+  bigChance: 0.15,
+  /** v9.17 box tiers: chance a Courier (and his box) is rare or legendary. */
+  rareChance: 0.16, legendaryChance: 0.04,
+  /** Contents in coins by size and tier (power is half); a Courier delivering it pays his fare + (value − 6). */
+  values: { small: { common: 6, rare: 12, legendary: 24 }, big: { common: 16, rare: 30, legendary: 60 } },
+  /** An empty-handed Courier beside a Bomber holds the bomb; leaving first, he carries it away and the Bomber
+   * becomes a disguised Commuter (same fare, no timer). */
+  bombCarry: true,
+  /** A Mimic under a box carries a copy of the same tier, opened when he gets off. */
+  mimicCopiesBox: true,
+  /** An unclaimed box beside an empty-handed Courier counts as his. */
+  adopt: true,
+  /** A second empty-handed Courier touching a box: both +1 agitation (the owner still pays); an unclaimed box then serves neither. */
+  contest: true,
+  /** An uncontrolled Thief beside a box stays calm and takes it when he leaves, tipping this share of its coin value. */
+  thiefShare: 0.5,
+  /** A Child beside a box opens it at the next floor (its contents are paid out). */
+  childOpens: true,
+  /** An Inspector beside a Courier's box checks it once: the Courier rides 1 floor longer and pays this much more. */
+  inspectCoins: 5,
+  /** A Mechanic beside an unclaimed box uses it for parts: his repair completes at once, the box is used up. */
+  mechanicParts: true,
 };
-/** Every Courier whose parcel is aboard has it in a neighbouring seat (up, down, left or right). */
-export const parcelLayoutOk = (cabin: Array<Rider | null>) => cabin.every((r, slot) => {
-  if (!r || r.kind !== 'courier' || !r.parcelId) return true;
-  const at = cabin.findIndex(x => x?.id === r.parcelId);
-  return at < 0 || neighbours(slot).includes(at);
+/** A box is one parcel card: a single seat, or a two-part box whose halves share a boxId. */
+export const boxIdOf = (r: Rider) => r.boxId ?? r.id;
+export const isBigParcel = (r: Rider | null | undefined) => r?.kind === 'parcel' && Boolean(r.big);
+/** Seats a rider, a two-part box taking the upper and lower seat of the target's column. Null if it does not fit. */
+export function seatRider(cabin: Array<Rider | null>, rider: Rider, target: number): Array<Rider | null> | null {
+  if (!isBigParcel(rider)) { if (cabin[target]) return null; return cabin.map((r, i) => (i === target ? rider : r)); }
+  const top = target % 3, bottom = top + 3, boxId = boxIdOf(rider);
+  if (cabin[top] || cabin[bottom]) return null;
+  return cabin.map((r, i) => (i === top ? { ...rider, big: 'top' as const, boxId } : i === bottom ? { ...rider, id: `${boxId}-b`, big: 'bottom' as const, boxId } : r));
+}
+/** Removes a rider; a box leaves whole. With a Courier, his own box leaves with him (used by dismissal). */
+export function unseatRider(cabin: Array<Rider | null>, id: string, withOwnBox = false): Array<Rider | null> {
+  const r = cabin.find(x => x?.id === id); if (!r) return cabin;
+  const box = r.kind === 'parcel' ? boxIdOf(r) : null;
+  return cabin.map(x => (!x ? x : x.id === id || (box && x.kind === 'parcel' && boxIdOf(x) === box) || (withOwnBox && x.kind === 'parcel' && x.ownerId === id) ? null : x));
+}
+type Box = { id: string; slots: number[]; ownerId?: string; big: boolean; tier?: BoxTier; touching: number[] };
+function boxesIn(cabin: Array<Rider | null>): Box[] {
+  const map = new Map<string, Box>();
+  cabin.forEach((r, slot) => {
+    if (r?.kind !== 'parcel') return;
+    const id = boxIdOf(r), box = map.get(id) ?? { id, slots: [], ownerId: r.ownerId, big: Boolean(r.big), tier: r.tier, touching: [] };
+    box.slots.push(slot); map.set(id, box);
+  });
+  for (const box of map.values()) box.touching = [...new Set(box.slots.flatMap(neighbours))].filter(i => !box.slots.includes(i));
+  return [...map.values()];
+}
+export type ParcelLinks = { boxes: Box[]; carrier: Map<number, number>; served: Map<number, number[]>; contested: Set<number>; eyed: Map<number, number>; bombs: Map<number, number> };
+/** Which Courier each box travels with: his own box touching him first; then an unclaimed box (its Courier not aboard)
+ * touching exactly one empty-handed Courier. A box touched by a second empty-handed Courier sets both arguing, and an
+ * unclaimed one touched by two serves neither. Also which uncontrolled Thief eyes which box. Keys are parcel seats. */
+export function parcelLinks(cabin: Array<Rider | null>): ParcelLinks {
+  const carrier = new Map<number, number>(), served = new Map<number, number[]>(), contested = new Set<number>(), eyed = new Map<number, number>();
+  const boxes = boxesIn(cabin);
+  const isCourier = (i: number) => cabin[i]?.kind === 'courier' && Boolean(cabin[i]!.parcelId);
+  const give = (box: Box, c: number) => { box.slots.forEach(p => carrier.set(p, c)); served.set(c, [...(served.get(c) ?? []), ...box.slots]); };
+  for (const box of boxes) {
+    const owner = cabin.findIndex(x => Boolean(box.ownerId) && x?.id === box.ownerId);
+    if (owner >= 0 && box.touching.includes(owner)) give(box, owner);
+  }
+  if (PARCEL_RULES.adopt) for (const box of boxes) {
+    if (carrier.has(box.slots[0]) || cabin.some(x => Boolean(box.ownerId) && x?.id === box.ownerId)) continue;
+    const takers = box.touching.filter(c => isCourier(c) && !served.has(c));
+    if (takers.length === 1 || (takers.length > 1 && !PARCEL_RULES.contest)) give(box, takers[0]);
+    else if (takers.length > 1) takers.forEach(c => contested.add(c));
+  }
+  if (PARCEL_RULES.contest) for (const box of boxes) {
+    const c = carrier.get(box.slots[0]); if (c === undefined) continue;
+    box.touching.forEach(o => { if (o !== c && isCourier(o) && !served.has(o)) { contested.add(o); contested.add(c); } });
+  }
+  if (PARCEL_RULES.thiefShare > 0) cabin.forEach((r, t) => {
+    if (r?.kind !== 'thief' || neighbours(t).some(i => ['cop', 'lawyer', 'don'].includes(cabin[i]?.kind ?? ''))) return;
+    const box = boxes.find(b => b.touching.includes(t) && !b.slots.some(p => eyed.has(p)));
+    box?.slots.forEach(p => eyed.set(p, t));
+  });
+  // An empty-handed Courier beside a Bomber holds the bomb (one Courier per bomb).
+  const bombs = new Map<number, number>();
+  if (PARCEL_RULES.bombCarry) cabin.forEach((r, c) => {
+    if (!isCourier(c) || served.has(c)) return;
+    const b = neighbours(c).find(i => cabin[i]?.kind === 'bomb' && ![...bombs.values()].includes(i));
+    if (b !== undefined) bombs.set(c, b);
+  });
+  return { boxes, carrier, served, contested, eyed, bombs };
+}
+export const thiefEyesParcel = (links: ParcelLinks, slot: number) => [...links.eyed.values()].includes(slot);
+/** True unless this Courier carries a box system and no box travels with him. */
+export const parcelBeside = (cabin: Array<Rider | null>, slot: number, links: ParcelLinks = parcelLinks(cabin)) => {
+  const c = cabin[slot]; if (!c || c.kind !== 'courier' || !c.parcelId) return true;
+  return links.served.has(slot) || links.bombs.has(slot);
+};
+/** Coin value of a box's contents when opened: small 6, two-part 16. */
+export type BoxTier = 'common' | 'rare' | 'legendary';
+/** Coins inside a box of this size and tier; opened boxes pay this or half as much power, at random. */
+export const boxCoins = (r: { big?: unknown; tier?: BoxTier }) => PARCEL_RULES.values[r.big ? 'big' : 'small'][r.tier ?? 'common'];
+export const boxPower = (r: { big?: unknown; tier?: BoxTier }) => Math.round(boxCoins(r) / 2);
+/** Every Courier whose own box is aboard has it touching him (either half of a two-part box). */
+export const parcelLayoutOk = (cabin: Array<Rider | null>) => boxesIn(cabin).every(box => {
+  const owner = cabin.findIndex(x => Boolean(box.ownerId) && x?.id === box.ownerId);
+  return owner < 0 || box.touching.includes(owner);
 });
 export const CONTROLLED_GHOST_SAVING = 1;
 export const SHOP_ENTRY_CHARGE = 5;
@@ -182,9 +276,14 @@ function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
   add(`${PASSENGERS[rider.kind].name}自身躁动`, riderProfile(rider,state.cabin,slot).agitation);
   if (rider.volatile) add(`${PASSENGERS[rider.kind].name}急躁`, 1);
   switch (rider.kind) {
-    case 'thief': if (!hasNeighbour(state.cabin, slot, ['cop', 'lawyer', 'don'])) add('小偷未受控', 1); break;
-    case 'courier': if (!parcelBeside(state.cabin, slot)) add('快递员在找纸箱', PARCEL_RULES.lostAgitation); break;
-    case 'child': if (!hasNeighbour(state.cabin, slot, [...CHILD_CARERS])) add('儿童无人照顾', 1); break;
+    case 'thief': if (!hasNeighbour(state.cabin, slot, ['cop', 'lawyer', 'don']) && !thiefEyesParcel(parcelLinks(state.cabin), slot)) add('小偷未受控', 1); break;
+    case 'courier': {
+      const links = parcelLinks(state.cabin);
+      if (!parcelBeside(state.cabin, slot, links)) add('快递员在找纸箱', PARCEL_RULES.lostAgitation);
+      if (links.contested.has(slot)) add('快递员争纸箱', 1);
+      break;
+    }
+    case 'child': if (!hasNeighbour(state.cabin, slot, [...CHILD_CARERS]) && !(PARCEL_RULES.childOpens && neighbours(slot).some(i => state.cabin[i]?.kind === 'parcel'))) add('儿童无人照顾', 1); break;
     case 'drunk': if (!hasNeighbour(state.cabin, slot, [...DRUNK_CARERS])) add('醉汉未安抚', 1); break;
     case 'celebrity': if (neighbourCount(state.cabin, slot) > 1) add('名人被围', 1); break;
     case 'tycoon': if (neighbourCount(state.cabin, slot) > 1) add('大亨嫌挤', 1); break;
@@ -370,8 +469,10 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
   const courierAt = PARCEL_RULES.enabled ? shuffled.findIndex(r => r.kind === 'courier') : -1;
   if (courierAt >= 0) {
     const courier = shuffled[courierAt], parcelId = courier.id + '-parcel';
-    shuffled[courierAt] = { ...courier, parcelId };
-    shuffled.splice(courierAt + 1, 0, { id: parcelId, kind: 'parcel', ownerId: courier.id, destination: courier.destination, patience: 0, volatile: false, boardedAt: floor, fareBonus: 0, stash: 0 });
+    const big = rng() < PARCEL_RULES.bigChance, roll = rng();
+    const tier = roll < PARCEL_RULES.legendaryChance ? 'legendary' as const : roll < PARCEL_RULES.legendaryChance + PARCEL_RULES.rareChance ? 'rare' as const : undefined;
+    shuffled[courierAt] = { ...courier, parcelId, ...(big ? { parcelBig: true } : {}), ...(tier ? { tier } : {}) };
+    shuffled.splice(courierAt + 1, 0, { id: parcelId, kind: 'parcel', ownerId: courier.id, destination: courier.destination, patience: 0, volatile: false, boardedAt: floor, fareBonus: 0, stash: 0, ...(big ? { big: 'top' as const, boxId: parcelId } : {}), ...(tier ? { tier } : {}) });
   }
   // A legend waits as a fourth card on floor 1 only; it never replaces an ordinary offer.
   const pool = floor === 1 ? (context.legendPool ?? LEGEND_POOL_DEFAULT) : [];
@@ -509,7 +610,14 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       case 'mechanic': break; // Shared savings are itemized in lastEnergy.
       case 'tourist': break; // Companion rewards are paid on delivery only.
       case 'lover': break; // Pairing increases delivery value, never idle income.
-      case 'thief': if (!controlledThief) addCoins('小偷', ECONOMY_RULES.thiefTravel); break;
+      case 'thief': {
+        // v9.17: he picks the pockets of every adjacent rider except Officers, Lawyers, the Don and legends.
+        if (controlledThief) break;
+        const victims = neighbours(slot).filter(i => { const v = effectCabin[i]; return v && v.kind !== 'parcel' && !['cop', 'lawyer', 'don'].includes(v.kind) && !isLegend(v.kind); }).length;
+        const take = ECONOMY_RULES.thiefTravel + victims * ECONOMY_RULES.thiefPerVictim;
+        if (take) addCoins(ECONOMY_RULES.thiefPerVictim ? '小偷顺手牵羊' : '小偷', take);
+        break;
+      }
       case 'drunk': break;
       case 'ghost': if (controlledGhost) notes.push('幽灵受控，不再延误邻座'); else if (nextFloor % 3 === 0) { const nearby = neighbours(slot).filter((i) => effectCabin[i] && effectCabin[i]!.kind !== 'parcel'); if (nearby.length) { effectCabin[nearby[rand(0, nearby.length - 1, rng)]]!.destination += 1; notes.push('幽灵令邻座延误一层'); } } break;
       case 'celebrity': if (neighbourCount(effectCabin, slot) === 1) addCoins('名人关注', ECONOMY_RULES.celebrityTravel); break;
@@ -522,17 +630,63 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   let stressCapBonus = 0;
   let punchCount=state.punchCount??0;
   const arrivalSlots: number[] = []; const lastArrivals:ArrivalReceipt[]=[];
+  // v9.17 box events before arrivals, in priority order: a Courier delivering this floor keeps his box; otherwise
+  // a Thief leaving takes the box he eyes, then a Child opens a box beside them, then a Mechanic uses an unclaimed
+  // box for parts. An Inspector checks a Courier's box once (he rides one floor longer).
+  const stolen = new Set<number>(), thiefTips = new Map<number, number>();
+  {
+    const before = parcelLinks(cabin);
+    const delivering = (box: Box) => { const c = before.carrier.get(box.slots[0]); return c !== undefined && nextFloor >= cabin[c]!.destination; };
+    const openBox = (box: Box, by: string) => {
+      const coinsWon = rng() < .5 ? boxCoins(box) : 0;
+      if (coinsWon) addCoins(`${by}拆开纸箱`, coinsWon); else adjustEnergy(`${by}拆开纸箱`, boxPower(box));
+      notes.push(coinsWon ? `${by}拆开纸箱：${coinsWon} 金币` : `${by}拆开纸箱：${boxPower(box)} 电的电池`);
+      box.slots.forEach(p => { cabin[p] = null; });
+    };
+    for (const box of before.boxes) {
+      if (delivering(box)) continue;
+      const thief = before.eyed.get(box.slots[0]);
+      if (thief !== undefined && nextFloor >= cabin[thief]!.destination) {
+        box.slots.forEach(p => stolen.add(p)); thiefTips.set(thief, Math.floor(boxCoins(box) * PARCEL_RULES.thiefShare));
+        notes.push('小偷带走了纸箱'); continue;
+      }
+      if (PARCEL_RULES.childOpens && box.touching.some(i => cabin[i]?.kind === 'child')) { openBox(box, '小孩'); continue; }
+      const mechanic = box.touching.find(i => cabin[i]?.kind === 'mechanic' && !cabin[i]!.repairDone);
+      if (PARCEL_RULES.mechanicParts && mechanic !== undefined && !before.carrier.has(box.slots[0]) && !cabin.some(r => Boolean(box.ownerId) && r?.id === box.ownerId)) {
+        box.slots.forEach(p => { cabin[p] = null; });
+        cabin[mechanic] = { ...cabin[mechanic]!, repairDone: true, repairProgress: REPAIR_WORK };
+        serviceTurns = Math.min(REPAIR_DURATION_CAP, serviceTurns + REPAIR_DURATION);
+        notes.push(`维修工拆了纸箱当零件：检修完成，后续${serviceTurns}层运转少耗1电`); continue;
+      }
+      const c = before.carrier.get(box.slots[0]);
+      if (PARCEL_RULES.inspectCoins && c !== undefined && !cabin[box.slots[0]]!.inspected && box.touching.some(i => cabin[i]?.kind === 'inspector')) {
+        box.slots.forEach(p => { cabin[p] = { ...cabin[p]!, inspected: true }; });
+        cabin[c] = { ...cabin[c]!, destination: cabin[c]!.destination + 1 };
+        notes.push(`检查员验货：快递员晚一层到站，签收多付 ${PARCEL_RULES.inspectCoins} 金币`);
+      }
+    }
+  }
+  const links = parcelLinks(cabin);
+  // A Courier leaving before the Bomber beside him carries the bomb away; the Bomber stays aboard in disguise.
+  const disarmed = new Set([...links.bombs].filter(([c, b]) => nextFloor >= cabin[c]!.destination && nextFloor < cabin[b]!.destination).map(([, b]) => b));
+  if (disarmed.size) notes.push('快递员带走了炸弹：炸弹客乔装成通勤者');
   cabin = cabin.map((rider, slot) => {
     if (!rider) return null;
+    if (disarmed.has(slot)) return { ...rider, kind: 'commuter', disguised: true, fuse: undefined };
     if (rider.kind === 'bomb' && (rider.fuse ?? 0) <= 0 && nextFloor < rider.destination) return rider;
     if (rider.kind === 'parcel') {
       // With its Courier aboard the parcel travels with him and leaves when he does; unclaimed, it opens at its floor.
-      const owner = cabin.find(r => r?.id === rider.ownerId);
+      if (stolen.has(slot)) return null;
+      const by = links.carrier.get(slot);
+      if (by !== undefined) return nextFloor >= cabin[by]!.destination ? null : rider;
+      const owner = cabin.find(r => Boolean(rider.ownerId) && r?.id === rider.ownerId);
       if (owner) return nextFloor >= owner.destination ? null : rider;
       if (nextFloor < rider.destination) return rider;
-      const coinsWon = rng() < .5 ? PARCEL_RULES.payoutCoins : 0;
-      if (coinsWon) addCoins('纸箱开箱', coinsWon); else adjustEnergy('纸箱开箱', PARCEL_RULES.payoutPower);
-      notes.push(coinsWon ? `无人认领的纸箱里有 ${coinsWon} 金币` : `无人认领的纸箱里是 ${PARCEL_RULES.payoutPower} 电的电池`);
+      if (rider.big === 'bottom') return null; // the upper half opens the whole box
+      const power = boxPower(rider);
+      const coinsWon = rng() < .5 ? boxCoins(rider) : 0;
+      if (coinsWon) addCoins('纸箱开箱', coinsWon); else adjustEnergy('纸箱开箱', power);
+      notes.push(coinsWon ? `无人认领的纸箱里有 ${coinsWon} 金币` : `无人认领的纸箱里是 ${power} 电的电池`);
       lastArrivals.push({ riderId: rider.id, kind: rider.kind, slot, coins: coinsWon });
       return null;
     }
@@ -541,9 +695,17 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     const fare = arrivalFare(rider, cabin, slot, cooperationBonus(state), state.stress, fareTuning, hasKeepsake(state,'bell'));
     const appetitePremium = rider.kind === 'drunk' ? fare - arrivalFare(rider, cabin, slot, cooperationBonus(state), state.stress, { ...fareTuning, appetiteBonus: 0 }, hasKeepsake(state,'bell')) : 0;
     if (profile.hidden) notes.push(`${spec.name}封存车费揭晓：${profile.fare} 金币`);
-    const delivered = parcelBeside(cabin, slot);
+    const delivered = parcelBeside(cabin, slot, links);
     if (!delivered) notes.push('快递员没带着纸箱到站，没有付钱');
     if (rider.kind === 'courier' && delivered) adjustEnergy('快递员电池包', COURIER_ARRIVAL_CHARGE);
+    if (thiefTips.get(slot)) addCoins('小偷带走纸箱的小费', thiefTips.get(slot)!);
+    // A Mimic under a box carries a copy of it and opens the copy as he leaves.
+    const above = slot >= 3 ? cabin[slot - 3] : null;
+    if (rider.kind === 'mimic' && PARCEL_RULES.mimicCopiesBox && above?.kind === 'parcel') {
+      const copyCoins = rng() < .5 ? boxCoins(above) : 0;
+      if (copyCoins) addCoins('复制人的复制箱', copyCoins); else adjustEnergy('复制人的复制箱', boxPower(above));
+      notes.push(copyCoins ? `复制人打开复制箱：${copyCoins} 金币` : `复制人打开复制箱：${boxPower(above)} 电`);
+    }
     addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare - appetitePremium - (rider.stash ?? 0));
     if (rider.stash) addCoins('坏人暂存兑现', rider.stash);
     if (appetitePremium) addCoins('醉汉躁动加价', appetitePremium);
@@ -831,7 +993,7 @@ export function dismissRider(state: RunState, id: string): RunState {
   const cost=dismissalCost(state,rider);
   if(state.coins<cost || (!isLegend(rider.kind) && dismissalsRemaining(state) <= 0))return state;
   const message=`已请离${PASSENGERS[rider.kind].name}，赔偿 ${cost} 金币；不结算到站收益。`;
-  return {...state,legendStatus:isLegend(rider.kind)?'dismissed':state.legendStatus,coins:state.coins-cost,dismissalsUsed:(state.dismissalsUsed ?? 0)+(isLegend(rider.kind)?0:1),cabin:state.cabin.map((r,i)=>i===slot||(rider.parcelId&&r?.id===rider.parcelId)?null:r),message,log:[`${state.floor}F · ${message}`,...state.log].slice(0,4),lastEarnings:{total:0,sources:[]},lastEnergy:{delta:0,sources:[]},lastPressure:{delta:0,sources:[]}};
+  return {...state,legendStatus:isLegend(rider.kind)?'dismissed':state.legendStatus,coins:state.coins-cost,dismissalsUsed:(state.dismissalsUsed ?? 0)+(isLegend(rider.kind)?0:1),cabin:unseatRider(state.cabin,rider.id,true),message,log:[`${state.floor}F · ${message}`,...state.log].slice(0,4),lastEarnings:{total:0,sources:[]},lastEnergy:{delta:0,sources:[]},lastPressure:{delta:0,sources:[]}};
 }
 export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  const count=state.upgrades[key];
@@ -850,7 +1012,13 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
 /** Exact arrival payout at this seating arrangement. UI must mask hidden fares. */
 export const arrivalTip = (rider: Rider, agitation: number) => ECONOMY_RULES.conciergeCondition === 'any' || agitationBand(agitation) === ECONOMY_RULES.conciergeCondition ? rider.fareBonus : 0;
 export function arrivalFare(rider: Rider, cabin: Array<Rider | null>, slot: number, bonus = 1, agitation = 0, tuning: FareTuning = {}, bellFare = false) {
-  if (rider.kind === 'parcel' || (rider.kind === 'courier' && !parcelBeside(cabin, slot))) return 0;
+  if (rider.kind === 'parcel') return 0;
+  let parcelBonus = 0;
+  if (rider.kind === 'courier' && rider.parcelId) {
+    const links = parcelLinks(cabin), carried = (links.served.get(slot) ?? []).map(p => cabin[p]!);
+    if (!carried.length && !links.bombs.has(slot)) return 0;
+    parcelBonus = (carried.length ? Math.max(...carried.map(boxCoins)) - PARCEL_RULES.values.small.common : 0) + (carried.some(p => p.inspected) ? PARCEL_RULES.inspectCoins : 0);
+  }
   let fare = riderProfile(rider, cabin, slot).fare;
   const baseFare = fare;
   const companions = rider.kind === 'tourist' ? (neighbourCount(cabin, slot) + Number(hasNeighbour(cabin, slot, ['nightingale']))) * 2 : 0;
@@ -866,7 +1034,7 @@ export function arrivalFare(rider: Rider, cabin: Array<Rider | null>, slot: numb
   if (rider.kind === 'coach') fare += neighbourCount(cabin, slot) * FARE_RULES.coachNeighbour;
   const preference = rider.kind === 'commuter' && agitationBand(agitation)==='low' ? COMMUTER_QUIET_BONUS : rider.kind === 'tourist' && agitationBand(agitation)==='medium' ? TOURIST_MEDIUM_BONUS : 0;
   const accomplishment = rider.kind === 'inspector' && rider.complianceReady ? INSPECTION_BONUS : rider.kind === 'child' && (rider.careProgress ?? 0)>=CHILD_CARE_WORK ? CHILD_CARE_BONUS : 0;
-  return fare + companions + matchmaker + preference + accomplishment + arrivalTip(rider,agitation) + (rider.volatile ? RISK_RULES.highRiskBonus : 0) + (rider.stash ?? 0) + bonus * bondStatus(rider, cabin, slot).supportCount;
+  return fare + parcelBonus + companions + matchmaker + preference + accomplishment + arrivalTip(rider,agitation) + (rider.volatile ? RISK_RULES.highRiskBonus : 0) + (rider.stash ?? 0) + bonus * bondStatus(rider, cabin, slot).supportCount;
 }
 
 export function agitationAppetite(rider: Rider, cabin: Array<Rider | null>, slot: number, agitation: number, tuning: FareTuning = {}) {

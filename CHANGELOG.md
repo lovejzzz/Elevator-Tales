@@ -1,6 +1,12 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.16**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.17**. Publication status is tracked separately from the source version.
+
+## v9.17 — 2026-09-23 — Courier play: rare boxes, crates, bomb hand-offs; Thief picks pockets / 快递员玩法与小偷改版
+
+- Boxes: common/rare/legendary (16%/4%, Courier shares tier, new art), values 6/12/24 and crates 16/30/60; unclaimed opens for value coins or half power; delivered pays 8 + (value − 6). Crates (15%) fill a column, cannot move. Unclaimed box beside an empty-handed Courier counts as his; a second empty-handed Courier touching a box: both +1 agitation, owner still pays.
+- Empty-handed Courier beside a Bomber holds the bomb; leaving first he carries it off and the Bomber becomes a Disguised Commuter (fare 14, no timer). Thief: 2 coins per adjacent rider per floor (replaces flat +3); beside a box he is calm and takes it on leaving for half its coins. Child opens a box next floor; Inspector delays the Courier 1 floor for +5; Mechanic uses an unclaimed box for parts; Mimic below a box opens a copy.
+- Cards: amounts only in value tags, rarity only in gem/foil, names in the chosen language. 36,000-run grid (floors ±3), acceptance 3,600 runs: balanced 109 → 115F, exit coins 190 → 226. Watch richness from rare boxes, rare Mechanic/dispute triggers.
 
 ## v9.16 — 2026-09-23 — The Courier brings a parcel / 快递员带着纸箱
 

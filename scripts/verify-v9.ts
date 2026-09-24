@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import * as E from '../lib/game-engine';
 import { LEGEND_KINDS, PASSENGERS, isLegend, type PassengerKind } from '../lib/game-data';
-import { motorCost, AGITATION_HIGH_MIN } from '../lib/balance-v832';
+import { motorCost, AGITATION_HIGH_MIN, ECONOMY_RULES } from '../lib/balance-v832';
 import { BOX_PRICES, chargeCost, storageCap } from '../lib/power-box';
 import { riderProfile } from '../lib/rider-profile';
 import type { Rider, RunState } from '../lib/game-engine';
@@ -446,4 +446,65 @@ console.log('PASS bomb timer display matches settlement');
   assert.equal(pairedNet(courier(3, { boardedAt: 30 }), run(30, []))?.partner, 'parcel');
 }
 console.log('PASS Courier parcel rules');
-console.log(JSON.stringify({ version: 'v9', checks: 29, passed: true }));
+// v9.17 Courier boxes: tiers and crates, adoption and disputes, the Thief, Child, Inspector, Mechanic, Mimic and bomb hand-off.
+{
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 29, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  const go = (seats: Array<Rider | null>, roll = 0.4) => E.resolveFloor(run(30, seats, { energy: 30 }), fixed(roll));
+  assert.deepEqual(E.PARCEL_RULES.values, { small: { common: 6, rare: 12, legendary: 24 }, big: { common: 16, rare: 30, legendary: 60 } }, 'rule texts quote these values');
+  assert.deepEqual([ECONOMY_RULES.thiefTravel, ECONOMY_RULES.thiefPerVictim], [0, 2], 'the Thief text quotes 2 per neighbour');
+  // Deals: tiers and crates appear, the Courier shares his box's tier.
+  let crates = 0, tiered = 0;
+  const rng = seq(0.11, 0.62, 0.37, 0.93, 0.48, 0.05, 0.76, 0.29, 0.14, 0.83);
+  for (let i = 0; i < 6000; i++) {
+    const offers = E.makeOffers(2 + (i % 100), E.EMPTY_UPGRADES, false, rng), box = offers.find(r => r.kind === 'parcel');
+    if (!box) continue;
+    const courier = offers.find(r => r.id === box.ownerId)!;
+    assert.equal(courier.tier, box.tier); assert.equal(Boolean(courier.parcelBig), box.big === 'top');
+    crates += Number(Boolean(box.big)); tiered += Number(Boolean(box.tier));
+  }
+  assert.ok(crates > 50 && tiered > 50, `crates ${crates}, tiered ${tiered}`);
+  // A crate fills a column and cannot be moved; withdrawing or dismissing removes both halves.
+  const crate = R('parcel', 'x', 33, { big: 'top', boxId: 'x', boardedAt: 30 });
+  const seated = E.seatRider(Array(6).fill(null), crate, 4)!;
+  assert.ok(seated[1]?.big === 'top' && seated[4]?.big === 'bottom' && seated[4]?.boxId === 'x');
+  assert.equal(E.seatRider([null, null, null, null, R('nurse', 'n', 33), null], crate, 1), null, 'needs both seats of the column');
+  assert.ok(E.unseatRider(seated, 'x').every(r => !r));
+  const withCrate = run(30, seated, { energy: 30 });
+  assert.ok(!planPlacement(withCrate, seated[1]!, 0).ok, 'a seated crate does not move');
+  // Legendary crate delivered: fare 8 + (60 − 6).
+  const legendary = go([R('parcel', 'p', 31, { ownerId: 'c', big: 'top', boxId: 'p', tier: 'legendary' }), R('courier', 'c', 31, { parcelId: 'p', parcelBig: true, tier: 'legendary' }), null, R('parcel', 'p-b', 31, { ownerId: 'c', big: 'bottom', boxId: 'p', tier: 'legendary' })]);
+  assert.equal(lines(legendary, 'lastEarnings')['快递员到站'], 62);
+  assert.equal(lines(go([R('parcel', 'q', 31, { tier: 'rare' })], 0.1), 'lastEarnings')['纸箱开箱'], 12);
+  // Adoption: an unclaimed box beside an empty-handed Courier counts as his.
+  assert.equal(lines(go([R('courier', 'c1', 31, { parcelId: 'gone' }), R('parcel', 'q', 35)]), 'lastEarnings')['快递员到站'], 8);
+  // Dispute: another empty-handed Courier touching the box: both +1, the owner still pays.
+  const dispute = run(30, [R('courier', 'c1', 34, { parcelId: 'p1' }), R('parcel', 'p1', 34, { ownerId: 'c1' }), R('courier', 'c2', 34, { parcelId: 'gone' })]);
+  assert.deepEqual([E.riderAgitation(dispute, 0).low, E.riderAgitation(dispute, 2).low], [1, 2]);
+  assert.ok(E.parcelBeside(dispute.cabin, 0));
+  // Thief: picks every adjacent pocket except Officers, Lawyers, the Don and legends; beside a box he stays calm and takes it.
+  assert.equal(lines(go([R('commuter', 'a', 34), R('thief', 't', 34), R('tourist', 'u', 34), null, R('nurse', 'n', 34)]), 'lastEarnings')['小偷顺手牵羊'], 6);
+  const eyed = [R('courier', 'c', 33, { parcelId: 'p' }), R('parcel', 'p', 33, { ownerId: 'c' }), R('thief', 't', 31)];
+  assert.equal(E.riderAgitation(run(30, eyed), 2).low, 0);
+  const robbed = go(eyed);
+  assert.equal(lines(robbed, 'lastEarnings')['小偷带走纸箱的小费'], 3);
+  assert.ok(!robbed.cabin.some(r => r?.kind === 'parcel') && E.riderAgitation(robbed, 0).low === 1, 'the Courier has lost his box');
+  assert.ok(go([R('courier', 'c', 33, { parcelId: 'p' }), R('parcel', 'p', 33, { ownerId: 'c' }), R('thief', 't', 31), null, null, R('cop', 'k', 33)]).cabin.some(r => r?.kind === 'parcel'), 'a controlled Thief takes nothing');
+  // Child opens a box at the next floor; Mechanic uses an unclaimed box for parts; Inspector delays and pays.
+  const opened = go([R('courier', 'c', 33, { parcelId: 'p' }), R('parcel', 'p', 33, { ownerId: 'c' }), R('child', 'k', 33)], 0.1);
+  assert.equal(lines(opened, 'lastEarnings')['小孩拆开纸箱'], 6);
+  const parts = go([R('mechanic', 'm', 34), R('parcel', 'q', 34)]);
+  assert.ok(parts.cabin[0]?.repairDone && !parts.cabin[1] && (parts.serviceTurns ?? 0) >= 4);
+  const checked = go([R('courier', 'c', 32, { parcelId: 'p' }), R('parcel', 'p', 32, { ownerId: 'c' }), R('inspector', 'i', 34)]);
+  assert.ok(checked.cabin[0]?.destination === 33 && checked.cabin[1]?.inspected);
+  assert.equal(E.arrivalFare(checked.cabin[0]!, checked.cabin, 0), E.arrivalFare({ ...checked.cabin[0]! }, [checked.cabin[0], { ...checked.cabin[1]!, inspected: false }, null, null, null, null], 0) + 5);
+  // Mimic under a box opens a copy of it.
+  assert.equal(lines(go([R('parcel', 'q', 36, { tier: 'legendary' }), null, null, R('mimic', 'm', 31, { copySeed: 1 })], 0.1), 'lastEarnings')['复制人的复制箱'], 24);
+  // Bomb hand-off: the empty-handed Courier leaves first with the bomb, pays, and the Bomber is a Disguised Commuter.
+  const handoff = go([R('courier', 'c', 31, { parcelId: 'gone' }), R('bomb', 'b', 34, { fuse: 1 })]);
+  assert.equal(lines(handoff, 'lastEarnings')['快递员到站'], 8);
+  assert.ok(handoff.status === 'playing' && handoff.cabin[1]?.kind === 'commuter' && handoff.cabin[1]?.disguised && handoff.cabin[1]?.fuse === undefined);
+  assert.equal(riderProfile(handoff.cabin[1]!, handoff.cabin).fare, PASSENGERS.bomb.fare, 'same fare in disguise');
+  assert.equal(go([R('courier', 'c', 33, { parcelId: 'gone' }), R('bomb', 'b', 34, { fuse: 1 })]).status, 'lost', 'the timer still runs while he holds it');
+}
+console.log('PASS v9.17 Courier boxes, crates and the characters who handle them');
+console.log(JSON.stringify({ version: 'v9', checks: 30, passed: true }));
