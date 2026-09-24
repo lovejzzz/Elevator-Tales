@@ -1,4 +1,5 @@
-import { PASSENGERS, passengerCategory, type PassengerKind } from './game-data';
+import { PASSENGERS, isDark, type PassengerKind } from './game-data';
+import { MYSTERY_RULES } from './dark-rules';
 import { bondLines, bondSummary, riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
 import { BOMB_RULES, arrivalFare, fareBreakdown, arrivalTip, HIGH_RISK_BONUS, riderAfterWork, riderAgitation, type Rider, type RunState } from './game-engine';
 import { CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
@@ -39,8 +40,9 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'coach':moneyNote='每位相邻教练：基础车费+50%；本人到站每邻座+3币';break;
   case 'cop':moneyNote='邻小偷：停止途中收入，到站+5';special='邻小偷：免偷窃躁动；邻炸弹：锁住倒计时';break;
   case 'lawyer':moneyNote='邻小偷：停止途中收入，到站+5';special='邻小偷：免偷窃躁动；不能暂停炸弹倒计时';break;
-  case 'bomb':special=BOMB_RULES.realtime?'炸弹实时倒计时：到站前归零则失败；相邻警察锁住，高躁动时两倍速。':`炸弹倒计时 ${rider.fuse??0} 层：每上升一层 −1；到站前归零则失败。同层到站安全；幽灵可能延误。`;break;
-  case 'mystery':special='本次参数已固定；车费到站揭晓';break;
+  case 'bomb':special=BOMB_RULES.realtime?'炸弹实时倒计时：到站前归零会炸飞邻座、损失金币；相邻警察锁住，高躁动时两倍速。':`炸弹倒计时 ${rider.fuse??0} 层：每上升一层 −1；到站前归零则失败。同层到站安全；幽灵可能延误。`;break;
+  case 'mystery':special=rider.revealed&&rider.identity?`${MYSTERY_RULES[rider.identity].name}：${MYSTERY_RULES[rider.identity].zh}`:'身份未知 · 上车后下一层揭晓';break;
+  default:if(isDark(rider.kind))special=PASSENGERS[rider.kind].short;
   case 'shifter':special='每站重抽三值和关系；基价16–28币';break;
   case 'mimic':special=profile.copies.length?profile.copies.map(c=>`↑ 复制${PASSENGERS[c.sourceKind].name}的${c.field==='energy'?'耗电':'基础车费'} · 同一人物对不重抽`).join('；'):'↑ 只复制正上方的耗电或基础车费；同一人物对不重抽';break;
  }
@@ -143,12 +145,13 @@ export function passengerCardSections(
    self.push(effect('neutral',rider.complianceReady?'合规签章已保留':`连续不高躁动 ${rider.quietStreak??0}/${INSPECTION_WORK}`),effect('coins',`达标：到站 +${INSPECTION_BONUS}金币`));
    break;
   case 'bomb':
-   self.push(BOMB_RULES.realtime&&rider.bombMs!==undefined?effect('timer',`倒计时 ${Math.ceil(rider.bombMs/1000)} 秒 · 未到站归零失败`):effect('timer',`倒计时 ${rider.fuse??0} · 未到站归零失败`),effect('neutral','同层到站安全；幽灵可能延误'));
+   self.push(BOMB_RULES.realtime&&rider.bombMs!==undefined?effect('timer',`倒计时 ${Math.ceil(rider.bombMs/1000)} 秒 · 未到站归零爆炸`):effect('timer',`倒计时 ${rider.fuse??0} · 未到站归零失败`),effect('neutral','同层到站安全；幽灵可能延误'));
    addGreen(['cop'],[effect('timer','倒计时锁定')]);
    break;
-  case 'mystery':self.push(effect('neutral','参数与邻座关系随机 · 车费到站揭晓'));break;
+  case 'mystery':self.push(effect('neutral',rider.revealed&&rider.identity?`${MYSTERY_RULES[rider.identity].name}：${MYSTERY_RULES[rider.identity].zh}`:'身份未知 · 上车后下一层揭晓'));break;
   case 'shifter':self.push(effect('neutral','每层重抽三值与邻座关系'));break;
   case 'mimic':self.push(effect('neutral',profile.copies.length?`↑ 复制${PASSENGERS[profile.copies[0].sourceKind].name}的${profile.copies[0].field==='energy'?'耗电':'基础车费'}`:'↑ 只复制正上方 · 耗电或基础车费'));break;
+  default:if(isDark(rider.kind))self.push(effect('neutral',PASSENGERS[rider.kind].short));
  }
 
  // Ability links do not all pay a bond bonus. Attach the bonus only to its
@@ -168,7 +171,7 @@ export function passengerCardSections(
  const redGroups=new Map<ConflictEffect,PassengerKind[]>();
  riderConflictRules(rider,state.cabin).forEach(rule=>redGroups.set(rule.effect,[...(redGroups.get(rule.effect)??[]),rule.target]));
  const red=[...redGroups.entries()].map(([kind,targets])=>({targets,effects:conflictEffects(kind)}));
- const risk: PassengerCardRelation[] = passengerCategory(rider.kind) === 'bad' ? [{ targets: RISK_PARTNERS, effects: [effect('coins','未受控相邻：每人暂存 +2金币/层；高躁动 +3'), effect('agitation','每条链接 +1躁动/层'), effect('neutral','送达兑现；请离全部放弃')] }] : [];
+ const risk: PassengerCardRelation[] = RISK_PARTNERS.includes(rider.kind) ? [{ targets: RISK_PARTNERS, effects: [effect('coins','未受控相邻：每人暂存 +2金币/层；高躁动 +3'), effect('agitation','每条链接 +1躁动/层'), effect('neutral','送达兑现；请离全部放弃')] }] : [];
  if (rider.stash) self.push(effect('coins','已暂存 ' + rider.stash + ' · 送达兑现'));
  return {self,greenBonus,green,red,risk};
 }
@@ -194,11 +197,13 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
   cooperation.note='到站时仍相邻才生效；同层送达多位协作乘客，可分别舒缓。';
  }
  const conflictLines=riderConflictRules(rider,cabin).map(rule=>`旁边有${PASSENGERS[rule.target].name}：${rule.text}。`);
- return [ability,cooperation,{
+ const conflict:PassengerRuleBlock={
   tone:'risk',heading:`冲突：旁边有${opponents}`,
   lines:conflictLines,
   note:'红线每层生效；多条逐条相加。同类倍率按基础值线性叠加。',
- }];
+ };
+ // v9.19: some dark riders have no green or no red partners; their sheets leave out the empty section.
+ return [ability,...(partners||rider.kind==='tourist'?[cooperation]:[]),...(opponents?[conflict]:[])];
 }
 
 export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|null>=[], bonus=1, relief=0, multiplier=1, agitation=0) {

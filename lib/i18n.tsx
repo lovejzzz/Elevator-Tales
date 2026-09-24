@@ -4,6 +4,7 @@ import {V832_PAIRS} from './i18n-v832';
 import {V837_PAIRS} from './i18n-v837';
 import {V835_PAIRS} from './i18n-v835';
 import {V9_PAIRS} from './i18n-v9';
+import {V919_PAIRS} from './i18n-v919';
 
 export type GameLocale = 'en' | 'zh';
 
@@ -530,8 +531,8 @@ const phrasePairs: Array<[string, string]> = [
   ['或', ' or '], ['/条', '/link'], ['/站', '/floor'], ['/ 站', '/floor'], ['金币', 'Coins'], ['耗电', 'Power'], ['躁动', 'Agitation'], ['到站', 'Arrival'], ['车费', 'fare'],
 ];
 
-const exact = new Map([...exactPairs, ...V832_PAIRS, ...V835_PAIRS, ...V837_PAIRS, ...V9_PAIRS]);
-const phrases = [...V9_PAIRS, ...V837_PAIRS, ...V835_PAIRS, ...V832_PAIRS, ...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
+const exact = new Map([...exactPairs, ...V832_PAIRS, ...V835_PAIRS, ...V837_PAIRS, ...V9_PAIRS, ...V919_PAIRS]);
+const phrases = [...V919_PAIRS, ...V9_PAIRS, ...V837_PAIRS, ...V835_PAIRS, ...V832_PAIRS, ...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
 
 export function translateGameText(value: string, locale: GameLocale): string {
   if (locale === 'zh') return value;
@@ -602,6 +603,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^(\d+)层会拖延邻座 1 站$/u, 'Delays a neighbour 1 stop at $1F')
     .replace(/赌局红线 ×(\d+)/gu, 'Gamble red link ×$1')
     .replace(/教练邻座 (\d+) 位（\+(\d+)%）/gu, 'Coach neighbours $1 (+$2%)')
+    .replace(/监工邻座 (\d+) 位（\+(\d+)%）/gu, 'Taskmaster neighbours $1 (+$2%)')
     .replace(/^教练：邻座 (\d+) 位$/u, 'Coach: $1 neighbours')
     .replace(/^游客：邻座 (\d+) 位 × 2$/u, 'Tourist: $1 neighbours × 2')
     .replace(/^默契 (\d+) 条 × (\d+)$/u, 'Bonds $1 × $2')
@@ -681,6 +683,52 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/ · 另 (\d+) 项/gu, ' · $1 more')
     .replace(/^(\d+)秒$/u, '$1s')
     .replace(/^倒计时 (\d+) 秒 · 未到站归零失败$/u, 'Timer $1 s · zero before arrival fails')
+    .replace(/^倒计时 (\d+) 秒 · 未到站归零爆炸$/u, 'Timer $1 s · blows up at zero before arrival')
+    // v9.19 midnight notes and item messages.
+    .replace(/^神秘人身份揭晓：(.+)$/u, (_m, who: string) => `The Mystery is revealed: ${translateGameText(who, 'en')}`)
+    .replace(/^(.+?)被同化成了(.+)$/u, (_m, a: string, b: string) => `The ${translateGameText(a, 'en')} was corrupted into the ${translateGameText(b, 'en')}`)
+    .replace(/^检查员没收了黑箱：举报奖励 \+(\d+) 金币$/u, 'The Inspector seized a black box: +$1 coins reward')
+    .replace(/^炸弹客的炸弹炸了：(\d+) 人被炸下车，没付车费，损失 (\d+) 金币。$/u, 'The Bomb Carrier’s bomb went off: $1 blown out without paying, −$2 coins.')
+    .replace(/^买下(.+?)，支付 (\d+) 金币。$/u, (_m, item: string, n: string) => `Bought ${translateGameText(item, 'en')} for ${n} coins.`)
+    .replace(/^(\d+)F · 买下(.+?) −(\d+) 金币$/u, (_m, f: string, item: string, n: string) => `${f}F · Bought ${translateGameText(item, 'en')} −${n} coins`)
+    .replace(/^买下(.+)$/u, (_m, item: string) => `Bought ${translateGameText(item, 'en')}`)
+    .replace(/^使用(.+)$/u, (_m, item: string) => `Used ${translateGameText(item, 'en')}`)
+    .replace(/^用了应急电池：\+(\d+) 电。$/u, 'Used a Spare Cell: +$1 power.')
+    .replace(/^用了香薰：躁动 −(\d+)。$/u, 'Used Incense: agitation −$1.')
+    .replace(/^用了请离券：(.+?)免费下车。$/u, (_m, who: string) => `Used an Exit Pass: the ${translateGameText(who, 'en')} got off for free.`)
+    .replace(/^用了延时引信：(.+?)的炸弹 \+20 秒。$/u, (_m, who: string) => `Used a Longer Fuse: the ${translateGameText(who, 'en')}’s bomb +20 seconds.`)
+    .replace(/^用了圣水：(.+?)变回了(.+?)。$/u, (_m, a: string, b: string) => `Used Holy Water: the ${translateGameText(a, 'en')} is a ${translateGameText(b, 'en')} again.`)
+    .replace(/^给(.+?)戴上手铐：整段路程被管住。$/u, (_m, who: string) => `Handcuffed the ${translateGameText(who, 'en')}: held for the whole trip.`)
+    .replace(/^给(.+?)戴上护身符：这一趟不会被同化。$/u, (_m, who: string) => `Gave the ${translateGameText(who, 'en')} an Amulet: safe from corruption this trip.`)
+    .replace(/^给(.+?)用了镇静剂：3 层内不产生躁动。$/u, (_m, who: string) => `Sedated the ${translateGameText(who, 'en')}: no agitation of their own for 3 floors.`)
+    .replace(/^给(纸箱|黑箱)贴上封条。$/u, (_m, box: string) => `Sealed the ${box === '黑箱' ? 'black box' : 'box'}.`)
+    .replace(/^用引线剪拆掉了炸弹：(.+?)下车，付了 (\d+) 金币。$/u, (_m, who: string, n: string) => `Cut the wires: the ${translateGameText(who, 'en')} got off and paid ${n} coins.`)
+    .replace(/^正在被同化 (\d+)\/(\d+)$/u, 'Being corrupted $1/$2')
+    .replace(/^镇静剂 · 还剩 (\d+) 层不躁动$/u, 'Sedated · no agitation for $1 more floors')
+    .replace(/^戒断中 · 还剩 (\d+) 层 · \+(\d+)躁动\/层$/u, 'Withdrawal · $1 floors left · +$2 agitation/floor')
+    .replace(/^加班费 \+(\d+)币\/层 · 要跟邻座一起下$/u, 'Overtime +$1 coins/floor · leaves only with a neighbor')
+    .replace(/^正在偷拍 · \+(\d+)币\/层 · \+1躁动$/u, 'Photographing · +$1 coins/floor · +1 agitation')
+    .replace(/^拆零件 \+(\d+)币\/层 · 运转\+1电$/u, 'Stripping parts · +$1 coins/floor · motor +1 power')
+    .replace(/^高躁动 · \+(\d+)币\/层$/u, 'High agitation · +$1 coins/floor')
+    .replace(/^(戴着手铐|被管住) · 到站赏金\+(\d+)币$/u, (_m, how: string, n: string) => `${how === '戴着手铐' ? 'Handcuffed' : 'Held'} · +${n} bounty on arrival`)
+    .replace(/^收保护费 (\d+)币\/层 · 全车−1躁动$/u, 'Protection $1 coins/floor · cabin −1 agitation')
+    .replace(/^打官司 \+(\d+)币\/层$/u, 'Suing · +$1 coins/floor')
+    .replace(/^发狂 \+(\d+)躁动\/层$/u, 'Raging · +$1 agitation/floor')
+    .replace(/^给 (\d+) 人下药 · 各 −(\d+)躁动\/层$/u, (_m, n: string, c: string) => `Dosing ${n} · −${c} agitation each/floor`)
+    .replace(/^吓到 (\d+) 人 · \+(\d+)躁动\/层$/u, (_m, n: string, c: string) => `Scaring ${n} · +${c} agitation/floor`)
+    .replace(/^独处 · 到站\+(\d+)币$/u, 'Alone · +$1 on arrival')
+    .replace(/^受控 · \+(\d+)币\/层$/u, 'Controlled · +$1 coins/floor')
+    .replace(/^每层拖延邻座 · 吸(\d+)电$/u, 'Delays a neighbor every floor · drains $1 power')
+    .replace(/^(\d+)层召来一只幽灵$/u, 'Summons a Ghost at $1F')
+    .replace(/^催逼 (\d+) 人 · 车费\+100% · \+(\d+)躁动\/层$/u, (_m, n: string, c: string) => `Driving ${n} · fares +100% · +${c} agitation/floor`)
+    .replace(/^催逼 (\d+) 人 · 车费\+100%$/u, 'Driving $1 · fares +100%')
+    .replace(/^热度 \+(\d+)币\/层$/u, 'Heat +$1 coins/floor')
+    .replace(/^收检查费 \+(\d+)币\/层 · 车厢\+1躁动$/u, 'Inspection fees +$1 coins/floor · cabin +1 agitation')
+    .replace(/^(便衣警察|逃犯|富商|好心人) · (.+)$/u, (_m, who: string) => ({ 便衣警察: 'Undercover Officer · holds Thieves and Robbers, locks bombs', 逃犯: 'Fugitive · +1 agitation/floor · fare 20', 富商: 'Magnate · fare 25', 好心人: 'Good Samaritan · calms each neighbor 1/floor' } as Record<string, string>)[who])
+    .replace(/^加急补电 \+(\d+)，支付 (\d+) 金币；下一包更贵。$/u, 'Overtime charging +$1 for $2 coins; the next pack costs more.')
+    .replace(/^「(.+?)」升到 2 级，支付 (\d+) 金币。$/u, (_m, a: string, n: string) => `“${translateGameText(a, 'en')}” raised to level 2 for ${n} coins.`)
+    .replace(/^(\d+)F · 「(.+?)」2级 −(\d+) 金币$/u, (_m, f: string, a: string, n: string) => `${f}F · “${translateGameText(a, 'en')}” Lv2 −${n} coins`)
+    .replace(/^下一层被同化成(.+)$/u, (_m, who: string) => `Turns into the ${translateGameText(who, 'en')} next floor`)
     .replace(/^(\d+)F · 选取(.+)$/u, '$1F · Picked $2')
     .replace(/^选取(.+)$/u, 'Picked $1')
     .replace(/^加购(.+)$/u, 'Added $1')

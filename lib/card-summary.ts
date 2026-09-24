@@ -1,12 +1,13 @@
 // Compact passenger cards: one ability line, relation chips and at most two tags.
 // Full sentences stay in the rule sheet. Text is produced per locale here rather than
 // through phrase translation, so numbers on the card can never go stale.
-import { PASSENGERS, isLegend, passengerCategory, type PassengerKind } from './game-data';
+import { PASSENGERS, type PassengerKind } from './game-data';
 import { riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
 import { hasNeighbour, neighbourCount, type Rider, type RunState } from './game-engine';
 import { CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
 import { RISK_PARTNERS } from './shift-rules';
 import { LEGEND_RULES } from './legends';
+import { DARK_RULES, MYSTERY_RULES } from './dark-rules';
 import type { GameLocale } from './i18n';
 
 export type ChipTone = 'green' | 'red' | 'risk';
@@ -17,6 +18,9 @@ const EN_NAMES: Record<PassengerKind, string> = {
   parcel: 'Parcel', commuter: 'Commuter', tourist: 'Tourist', courier: 'Courier', mechanic: 'Mechanic', lover: 'Lover', musician: 'Musician',
   thief: 'Thief', cop: 'Officer', lawyer: 'Counsel', drunk: 'Drifter', nurse: 'Nurse', child: 'Child', ghost: 'Ghost', exorcist: 'Warden',
   coach: 'Coach', celebrity: 'Celebrity', inspector: 'Inspector', bomb: 'Bomb Carrier', mystery: 'Mystery', shifter: 'Shifter', mimic: 'Mimic',
+  overtimer: 'Overtimer', voyeur: 'Voyeur', smuggler: 'Smuggler', scrapper: 'Scrapper', exlover: 'Ex', noisemaker: 'Noisemaker',
+  robber: 'Robber', crookedcop: 'Crooked Cop', shyster: 'Shyster', brawler: 'Brawler', pusher: 'Pusher', creepychild: 'Uncanny Child',
+  wraith: 'Wraith', summoner: 'Summoner', taskmaster: 'Taskmaster', scandal: 'Scandal', grafter: 'Grafter', madbomber: 'Mad Bomber',
   operator: 'Old Zhou', matchmaker: 'Matchmaker', don: 'The Don', matron: 'Matron', nightingale: 'Nightingale', medium: 'Medium', tycoon: 'Tycoon', stranger: 'Stranger in 13',
 };
 export const riderName = (kind: PassengerKind, locale: GameLocale) => (locale === 'zh' ? PASSENGERS[kind].name : EN_NAMES[kind]);
@@ -59,9 +63,9 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     case 'coach': return { line: L('邻座车费 +50%', 'Neighbors’ fare +50%') };
     case 'celebrity': return { line: L('恰好 1 位邻座 +2币/层', 'Exactly 1 neighbor: +2 coins/floor') };
     case 'inspector': return rider.complianceReady ? { line: L(`已盖章 · 到站 +${INSPECTION_BONUS}币`, `Stamped · +${INSPECTION_BONUS} coins on arrival`) } : { line: L(`连续不高躁动 → +${INSPECTION_BONUS}币`, `Stay below high → +${INSPECTION_BONUS} coins`), progress: `${rider.quietStreak ?? 0}/${INSPECTION_WORK}` };
-    case 'bomb': return { line: L('到站前归零即失败 · 警察可锁', 'Fails if it hits zero aboard · Officer locks'), progress: `⏱ ${rider.fuse ?? 0}` };
-    // v9.18.3: no range any more; the card shows a scrambling readout after “Fare” (sealed).
-    case 'mystery': return { line: L('车费', 'Fare'), sealed: true };
+    case 'bomb': return { line: L('归零会炸飞邻座 · 警察可锁', 'Blows out neighbors at zero · Officer locks'), progress: `⏱ ${rider.fuse ?? 0}` };
+    // v9.19: a hidden identity, revealed one floor after boarding (the fare stays sealed until then).
+    case 'mystery': return rider.revealed && rider.identity ? { line: L(`${MYSTERY_RULES[rider.identity].name} · ${MYSTERY_RULES[rider.identity].zh}`, `${MYSTERY_RULES[rider.identity].en} · ${MYSTERY_RULES[rider.identity].enLine}`) } : { line: L('身份未知 · 上车后下一层揭晓 · 车费', 'Identity unknown · revealed the floor after boarding · Fare'), sealed: true };
     case 'shifter': return { line: L('每层重抽属性', 'Rerolls every floor') };
     case 'mimic': { const slot = run.cabin.findIndex(r => r?.id === rider.id); const above = slot >= 3 ? run.cabin[slot - 3] : null; if (above?.kind === 'parcel') return { line: L('↑ 复制纸箱 · 下车打开', '↑ Copies the box · opens it when leaving') }; if (slot >= 0 && slot < 3) return { line: L(`上排没人可复制 · 本体车费 ${profile.fare}币`, `Top row: nothing above · own fare ${profile.fare} coins`) }; if (above && profile.hidden) return { line: L(`↑ 复制${riderName(above.kind, locale)}车费`, `↑ Copies ${riderName(above.kind, locale)}: fare`), sealed: true }; return { line: above ? L(`↑ 复制${riderName(above.kind, locale)}车费 ${profile.fare}币`, `↑ Copies ${riderName(above.kind, locale)}: fare ${profile.fare} coins`) : L('↑ 复制正上方的车费', '↑ Copies the fare above') }; }
     case 'operator': return { line: L('车内不满 6 人时运转 −1 电', 'Motor −1 unless the cabin is full') };
@@ -72,6 +76,25 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     case 'medium': return { line: L('幽灵提前出现 · 身边幽灵受控', 'Ghosts come early · controls adjacent') };
     case 'tycoon': return { line: L(`预付 ${LEGEND_RULES.tycoonPrepay}币 · 安静送达再付 ${LEGEND_RULES.tycoonBalance}币 · 邻座超过1人 +1躁动`, `Prepays ${LEGEND_RULES.tycoonPrepay} coins · ${LEGEND_RULES.tycoonBalance} more if calm · 2+ neighbors: +1 agitation`) };
     case 'stranger': return { line: L('每层随机小惊喜', 'A small surprise every floor') };
+    // v9.19 dark versions.
+    case 'overtimer': return { line: L(`加班费 +${DARK_RULES.overtimePay}币/层 · 要跟邻座一起下车`, `Overtime +${DARK_RULES.overtimePay} coins/floor · gets off only with a neighbor`), progress: rider.stash ? L(`已攒 ${rider.stash}币`, `${rider.stash} coins banked`) : undefined };
+    case 'voyeur': return { line: L(`偷拍普通邻座：+1躁动/层 · 每张 +${DARK_RULES.voyeurPhoto}币`, `Photographs normal neighbors: +1 agitation/floor · +${DARK_RULES.voyeurPhoto} coins each`), progress: rider.stash ? L(`照片 ${rider.stash}币`, `${rider.stash} coins of photos`) : undefined };
+    case 'smuggler': return { line: L(`黑箱在旁才付钱 · 箱价×${DARK_RULES.smugglerBoxMultiplier} · 普通检查员会没收`, `Pays only with his black box · box ×${DARK_RULES.smugglerBoxMultiplier} · an Inspector seizes it`) };
+    case 'scrapper': return { line: L(`每层卖零件 +${DARK_RULES.scrapperCoins}币 · 运转 +${DARK_RULES.scrapperMotor}电`, `Sells parts +${DARK_RULES.scrapperCoins} coins/floor · motor +${DARK_RULES.scrapperMotor} power`) };
+    case 'exlover': return { line: L('两位怨偶相邻就吵 · 分开坐：基价×2', 'Two Exes side by side quarrel · apart: fare ×2') };
+    case 'noisemaker': return { line: L(`躁动往上拉 +1/层 · 高躁动 +${DARK_RULES.noiseHighCoins}币/层`, `Pushes agitation up +1/floor · +${DARK_RULES.noiseHighCoins} coins/floor at high`) };
+    case 'robber': return { line: L(`没人管：每层抢你的钱包、+1躁动 · 被管住：赏金 +${DARK_RULES.robberBounty}币`, `Unguarded: robs your wallet each floor, +1 agitation · held: bounty +${DARK_RULES.robberBounty} coins`) };
+    case 'crookedcop': return { line: L(`管住身边坏人 · 全车 −1躁动/层 · 收保护费 ${DARK_RULES.crookedFee}币/层`, `Holds bad riders beside him · cabin −1 agitation/floor · takes ${DARK_RULES.crookedFee} coins/floor`) };
+    case 'shyster': return { line: L(`每条红线 +${DARK_RULES.shysterPerRed}币/层（最多${DARK_RULES.shysterCap}）· 自己 +1躁动`, `+${DARK_RULES.shysterPerRed} coins per red link/floor (max ${DARK_RULES.shysterCap}) · +1 agitation`) };
+    case 'brawler': return { line: L('+1躁动/层，每位普通邻座再 +1 · 高躁动到站基价×3', '+1 agitation/floor, +1 per normal neighbor · fare ×3 at high') };
+    case 'pusher': return { line: L(`邻座自身躁动 −${DARK_RULES.pusherCalm}/层 · 她下车后邻座戒断`, `Neighbors’ own agitation −${DARK_RULES.pusherCalm}/floor · withdrawal after she leaves`) };
+    case 'creepychild': return { line: L(`每位普通邻座 +1躁动/层 · 独自到站 +${DARK_RULES.creepyAloneBonus}币`, `+1 agitation per normal neighbor/floor · alone on arrival +${DARK_RULES.creepyAloneBonus} coins`) };
+    case 'wraith': return { line: L(`没人管：每层拖延邻座、吸 ${DARK_RULES.wraithDrain}电 · 受控 +${DARK_RULES.wraithControlledCoins}币/层`, `Uncontrolled: delays a neighbor and drains ${DARK_RULES.wraithDrain} power each floor · controlled +${DARK_RULES.wraithControlledCoins} coins/floor`) };
+    case 'summoner': return { line: L(`管住幽灵 · 每${DARK_RULES.summonEvery}层召一只幽灵 · 身边幽灵车费×2`, `Controls Ghosts · summons one every ${DARK_RULES.summonEvery} floors · Ghosts beside him ×2`) };
+    case 'taskmaster': return { line: L('邻座车费 +100% · 普通邻座各 +1躁动/层', 'Neighbors’ fare +100% · +1 agitation per normal neighbor/floor') };
+    case 'scandal': return { line: L(`每位邻座 +${DARK_RULES.scandalPerNeighbour}币/层 · 检查员或黑警在旁：曝光归零`, `+${DARK_RULES.scandalPerNeighbour} coins per neighbor/floor · beside an Inspector or Crooked Cop: exposed, fare 0`), progress: rider.stash ? L(`热度 ${rider.stash}币`, `${rider.stash} coins of buzz`) : undefined };
+    case 'grafter': return { line: L(`每位邻座收 ${DARK_RULES.grafterFee}币/层（车厢 +1躁动）· 放行黑箱`, `${DARK_RULES.grafterFee} coins per neighbor/floor (cabin +1 agitation) · lets black boxes through`) };
+    case 'madbomber': return { line: L('普通警察锁不住 · 归零即失败 · 黑警或引线剪能对付', 'Officers cannot lock it · zero ends the shift · Crooked Cop or wire cutter'), progress: `⏱ ${rider.fuse ?? 0}` };
   }
 }
 
@@ -88,6 +111,8 @@ const ICON: Record<ConflictEffect, CardChip['icon']> = { agitation: 'agitation',
 const ABILITY_PARTNERS: Partial<Record<PassengerKind, PassengerKind[]>> = {
   lover: ['lover'], thief: ['cop', 'lawyer'], cop: ['thief', 'bomb'], lawyer: ['thief'], drunk: ['nurse'], child: ['lover', 'nurse'],
   ghost: ['exorcist'], exorcist: ['ghost'], bomb: ['cop'], musician: ['tourist'], medium: ['ghost'], matchmaker: ['lover'], don: ['thief'], matron: ['child', 'drunk'],
+  robber: ['cop', 'crookedcop'], crookedcop: ['robber', 'thief', 'drunk', 'brawler', 'madbomber'], wraith: ['exorcist', 'summoner'], summoner: ['ghost', 'wraith'], madbomber: ['crookedcop'],
+  smuggler: ['grafter'], scrapper: ['grafter'], brawler: ['crookedcop'],
 };
 
 export function cardChips(rider: Rider, run: RunState, locale: GameLocale): CardChip[] {
@@ -100,7 +125,7 @@ export function cardChips(rider: Rider, run: RunState, locale: GameLocale): Card
   const groups = new Map<ConflictEffect, PassengerKind[]>();
   for (const rule of riderConflictRules(rider, run.cabin)) groups.set(rule.effect, [...(groups.get(rule.effect) ?? []), rule.target]);
   for (const [effect, kinds] of groups) chips.push({ tone: 'red', kinds, label: names(kinds), icon: ICON[effect], title: `${names(kinds)}：${t(locale, ...ICON_TITLE[effect])}` });
-  if (passengerCategory(rider.kind) === 'bad' && !isLegend(rider.kind)) chips.push({ tone: 'risk', kinds: RISK_PARTNERS, label: t(locale, '同伙', 'Crew'), title: t(locale, '与未受控的小偷/醉汉/炸弹客相邻：每人每层暂存 3 币（高躁动 4），每条链接 +1 躁动；送达才兑现', 'Beside an unguarded Thief/Drifter/Bomb: each banks 3/floor (4 at high), +1 agitation per link; paid only on delivery') });
+  if (RISK_PARTNERS.includes(rider.kind)) chips.push({ tone: 'risk', kinds: RISK_PARTNERS, label: t(locale, '同伙', 'Crew'), title: t(locale, '与未受控的小偷/醉汉/炸弹客相邻：每人每层暂存 3 币（高躁动 4），每条链接 +1 躁动；送达才兑现', 'Beside an unguarded Thief/Drifter/Bomb: each banks 3/floor (4 at high), +1 agitation per link; paid only on delivery') });
   return chips;
 }
 

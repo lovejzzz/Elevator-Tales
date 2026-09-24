@@ -5,10 +5,11 @@ import { ADJACENT } from '../../lib/game-data.ts';
 // and every run records the three design targets: many viable styles, close calls in
 // every run, and never feeling rich.
 import * as E from '../../lib/game-engine.ts';
-import { PASSENGERS, isLegend, type LegendKind, type PassengerKind, type UpgradeKey } from '../../lib/game-data.ts';
-import { riderProfile } from '../../lib/rider-profile.ts';
+import { PASSENGERS, isDark, isLegend, type LegendKind, type PassengerKind, type UpgradeKey } from '../../lib/game-data.ts';
+import { DARK_RULES, isBombKind } from '../../lib/dark-rules.ts';
+import { conflictLinks, riderProfile } from '../../lib/rider-profile.ts';
 import { motorCost, agitationBand, ECONOMY_RULES } from '../../lib/balance-v832.ts';
-import { BOX_LINES, BOX_PRICES, BOX_TOTAL_CAP, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, type BoxLine } from '../../lib/power-box.ts';
+import { BOX_LINES, BOX_PRICES, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, type BoxLine } from '../../lib/power-box.ts';
 import type { Rider, RunState } from '../../lib/game-engine.ts';
 
 // v9.18: bots have no clock; they play Bomber timers in floors (the simulator's stand-in for the real-time timer).
@@ -68,6 +69,19 @@ function transitIncome(r: Rider, cabin: Array<Rider | null>, slot: number) {
   if (r.kind === 'thief' && !E.hasNeighbour(cabin, slot, ['cop', 'lawyer'])) return ECONOMY_RULES.thiefTravel + E.neighbours(slot).reduce((n, i) => n + E.pickpocketFrom(cabin[i]), 0);
   if (r.kind === 'celebrity' && E.neighbourCount(cabin, slot) === 1) return 2;
   if (r.kind === 'don') return 3;
+  // v9.19 dark riders: the coins each one moves per floor (banked ones are paid on arrival, which a player plans for too).
+  const n = E.neighbourCount(cabin, slot), normal = E.neighbours(slot).filter(i => cabin[i] && !isDark(cabin[i]!.kind) && cabin[i]!.kind !== 'parcel').length;
+  switch (r.kind) {
+    case 'robber': return E.thiefHeld(cabin, slot) ? 0 : -(DARK_RULES.robberBase + 3);
+    case 'crookedcop': return -DARK_RULES.crookedFee;
+    case 'shyster': return Math.min(DARK_RULES.shysterCap, conflictLinks(cabin).length * DARK_RULES.shysterPerRed);
+    case 'scrapper': return DARK_RULES.scrapperCoins + (E.hasNeighbour(cabin, slot, ['grafter']) ? DARK_RULES.fenceCoins : 0) - EP;
+    case 'grafter': return n * DARK_RULES.grafterFee;
+    case 'overtimer': return DARK_RULES.overtimePay;
+    case 'voyeur': return normal ? DARK_RULES.voyeurPhoto : 0;
+    case 'scandal': return n * DARK_RULES.scandalPerNeighbour + (E.hasNeighbour(cabin, slot, ['voyeur']) ? DARK_RULES.scandalVoyeur : 0);
+    case 'wraith': return E.hasNeighbour(cabin, slot, E.GHOST_CONTROL_KINDS) ? DARK_RULES.wraithControlledCoins : -EP;
+  }
   return 0;
 }
 /** Power needed to reach the next shop with known riders and at least one rider aboard, versus what is reachable. */
@@ -118,7 +132,8 @@ function evaluate(state: RunState, bot: Bot): number {
     else if (r.kind === 'courier' && r.parcelId && E.PARCEL_RULES.adopt) v += 0.8 * PASSENGERS.courier.fare * (1 - Math.pow(0.73, Math.max(0, rem - 1)));
     // A Thief eyeing a box tips half its coins when he leaves.
     if (r.kind === 'thief' && E.thiefEyesParcel(links, slot)) v += Math.pow(0.95, rem) * E.boxCoins({}) * E.PARCEL_RULES.thiefShare;
-    if (r.kind === 'bomb' && (r.fuse ?? 9) < rem && !E.hasNeighbour(after.cabin, slot, ['cop'])) v -= 150;
+    // v9.19: an ordinary blast costs the neighbours' fares and coins; only the Mad Bomber ends the run.
+    if (isBombKind(r.kind) && (r.fuse ?? 9) < rem && !E.bombLocked(after.cabin, slot)) v -= r.kind === 'madbomber' ? 150 : 40;
     // Visible progress a player can plan around: repairs, compliance stamps, child care.
     const low = agitationBand(after.stress) === 'low';
     if (r.kind === 'mechanic' && !r.repairDone && low && rem >= 2) v += 0.6 * 3 * EP;
@@ -263,14 +278,14 @@ function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog): RunSta
   const occupancy = bot.id === 'novice' ? 6 : 3.2;
   const need = sectorNeed(s, occupancy);
   const target = Math.min(s.energyCap, Math.ceil(need + 4));
-  const chargeFor = (units: number) => chargeCost(E.boxOf(s), Math.max(0, units));
+  const chargeFor = (units: number) => chargeCost(E.boxOf(s), Math.max(0, units), s.floor);
   // 4. box investment
-  if (bot.id !== 'novice' && bot.box.length && boxTotal(E.boxOf(s)) < BOX_TOTAL_CAP) {
+  if (bot.id !== 'novice' && bot.box.length && boxTotal(E.boxOf(s)) < E.boxTotalCap(s.floor)) {
     const bottleneck: BoxLine[] = need > s.energyCap ? ['storage', 'motor', 'transformer'] : s.floor >= 30 ? ['motor', 'transformer', 'storage'] : ['transformer', 'motor', 'storage'];
     const order = bot.fixedBox ? bot.box : bot.id === 'balanced' || bot.id === 'investor' ? bottleneck : [...bot.box, ...bottleneck];
     const line = order.find(l => E.canBuyBoxLevel(s, l));
     if (line) {
-      const price = BOX_PRICES[E.boxOf(s)[line]];
+      const price = E.boxLevelPrice(s, line);
       const floorNeed = bot.boxEager ? Math.ceil(Math.min(target, need) * 0.8) : Math.ceil(Math.min(target, need) * 0.9);
       if (s.coins - price >= chargeFor(floorNeed - s.energy)) { s = E.buyBoxLevel(s, line); log.box.push(line); }
     }
@@ -285,6 +300,11 @@ function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog): RunSta
     const reserveFor = chargeFor(Math.max(0, target - s.energy));
     if (extra && s.coins - E.SHOP_PRICES.extraAbility >= reserveFor) { s = E.installUpgrade(s, extra); if (s.shopExtraBought) log.abilities.push(extra); }
   }
+  // v9.19: with every slot full, raise the first raisable ability when the coins beyond the power plan allow it.
+  if (bot.id !== 'novice') {
+    const key = (Object.keys(s.upgrades) as UpgradeKey[]).find(k => E.canRaiseAbility(s, k));
+    if (key && s.coins - E.abilityLevel2Price(s) >= chargeFor(Math.max(0, target - s.energy))) s = E.raiseAbility(s, key);
+  }
   // (The Reserve Cell left the shop in v9.0.2; bots no longer buy what players cannot.)
   // v9.7 shop calming: bring high agitation down with coins beyond the power plan.
   while (s.stress >= s.stressCap - 3 && E.calmAllowance(s) > 0 && s.coins - E.calmPrice(s.floor) >= chargeFor(Math.max(0, target - s.energy))) s = E.buyCalm(s, 1);
@@ -295,7 +315,7 @@ function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog): RunSta
   // Rich = after paying for everything the next sector really needs (shop charge to cap, the emergency power
   // beyond the cap at its higher price, one box level) there are still 20 coins spare.
   const needBeyondCap = Math.max(0, Math.ceil(need) - state.energyCap);
-  const survivalCost = chargeCost(E.boxOf(state), Math.max(0, Math.min(state.energyCap, Math.ceil(need)) - entry.energy)) + needBeyondCap * emergencyUnitPrice(E.boxOf(state));
+  const survivalCost = chargeCost(E.boxOf(state), Math.max(0, Math.min(state.energyCap, Math.ceil(need)) - entry.energy), state.floor) + needBeyondCap * emergencyUnitPrice(E.boxOf(state));
   const extraPrice = Object.values(state.upgrades).filter(Boolean).length < 5 ? E.SHOP_PRICES.extraAbility : 0;
   const affluent = entry.coins >= survivalCost + (Number.isFinite(boxPrice) ? boxPrice : 0) + extraPrice + 20;
   log.shops.push({ ...entry, exitCoins: s.coins, exitEnergy: s.energy, target, affluent });
@@ -308,7 +328,7 @@ export type RunLog = {
   bot: BotId; seed: number; floor: number; cause: 'energy' | 'agitation' | 'bomb' | 'alive';
   closeCalls: number; escapes: number; powerCalls: number; stressCalls: number; bombCalls: number;
   emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; calmUnits?: number; inspectors?: number; stamped?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
-  bombDismissals?: number; boxAbilities?: number; boxAbilityFinds?: number; parcel?: Record<'offered' | 'paired' | 'courierOnly' | 'parcelOnly' | 'opened' | 'adopted' | 'unpaid' | 'delivered' | 'thefts' | 'bigOffered' | 'bigBoarded' | 'childOpens' | 'parts' | 'inspected' | 'contested' | 'bombCarry' | 'mimicCopy' | 'rareBoarded' | 'rareOffered', number>; legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
+  bombDismissals?: number; overtimeCharge?: number; boxAbilities?: number; boxAbilityFinds?: number; parcel?: Record<'offered' | 'paired' | 'courierOnly' | 'parcelOnly' | 'opened' | 'adopted' | 'unpaid' | 'delivered' | 'thefts' | 'bigOffered' | 'bigBoarded' | 'childOpens' | 'parts' | 'inspected' | 'contested' | 'bombCarry' | 'mimicCopy' | 'rareBoarded' | 'rareOffered', number>; legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
   shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
 };
 
@@ -339,7 +359,7 @@ export function runOne(opt: RunOptions): RunLog {
     // pre-departure tools
     if (state.calmCharge && state.stress >= state.stressCap - 2) state = E.applyCalmCharge(state);
     const before = new Set(state.cabin.filter(Boolean).map(r => r!.id));
-    for (const r of state.cabin) if (r?.kind === 'bomb' && (r.fuse ?? 9) <= E.bombTick(state.stress) && r.destination > state.floor + 1 && !E.hasNeighbour(state.cabin, state.cabin.indexOf(r), ['cop'])) { const before = state; state = E.dismissRider(state, r.id); if (state !== before) log.bombDismissals = (log.bombDismissals ?? 0) + 1; }
+    for (const r of state.cabin) if (isBombKind(r?.kind) && (r!.fuse ?? 9) <= E.bombTick(state.stress) && r!.destination > state.floor + 1 && !E.bombLocked(state.cabin, state.cabin.indexOf(r))) { const before = state; state = E.dismissRider(state, r.id); if (state !== before) log.bombDismissals = (log.bombDismissals ?? 0) + 1; }
     for (const o of offers) log.offered[o.kind] = (log.offered[o.kind] ?? 0) + 1;
     state = chooseBoarding(state, offers, bot, mode);
     if (!state.cabin.some(Boolean)) { const slot = 0; state = place(state, offers.find(o => !isLegend(o.kind) && o.kind !== 'parcel') ?? offers[0], slot) ?? state; }
@@ -382,6 +402,9 @@ export function runOne(opt: RunOptions): RunLog {
     {
       let guard = 0;
       while (guard++ < 12 && powerDeath() && E.emergencyAllowance(state) > 0) { state = E.emergencyCharge(state, 1); log.emergencyUnits++; }
+      // v9.19: past the allowance, skilled bots buy overtime packs while they would otherwise run out.
+      guard = 0;
+      while (bot.id !== 'human' && bot.id !== 'novice' && guard++ < 6 && powerDeath() && E.buyOvertimeCharge(state) !== state) { state = E.buyOvertimeCharge(state); log.overtimeCharge = (log.overtimeCharge ?? 0) + 1; }
       const calmDeath = () => { const t = test(); return t.status === 'lost' && t.message.includes('躁动'); };
       guard = 0;
       while ((bot.id !== 'human' || HUMAN.transitCalm) && guard++ < 12 && calmDeath() && E.calmAllowance(state) > 0) { state = E.buyCalm(state, 1); log.calmUnits = (log.calmUnits ?? 0) + 1; }
@@ -430,7 +453,7 @@ export function runOne(opt: RunOptions): RunLog {
       const cost = E.energyBreakdown(state).total + (state.cabin.some(Boolean) ? 0 : 1);
       const power = state.energy - cost <= 2;
       const stress = state.stress >= state.stressCap - 2;
-      const bomb = state.cabin.some((r, i) => r?.kind === 'bomb' && (r.fuse ?? 9) <= 1 && r.destination > state.floor + 1 && !E.hasNeighbour(state.cabin, i, ['cop']));
+      const bomb = state.cabin.some((r, i) => isBombKind(r?.kind) && (r!.fuse ?? 9) <= 1 && r!.destination > state.floor + 1 && !E.bombLocked(state.cabin, i));
       if (power) log.powerCalls++; if (stress) log.stressCalls++; if (bomb) log.bombCalls++;
       if (power || stress || bomb) { log.closeCalls++; callFloors.push(state.floor); }
       ({ state, offers } = E.nextOfferBatch(state, stream(opt.seed, 'offers', state.floor)));

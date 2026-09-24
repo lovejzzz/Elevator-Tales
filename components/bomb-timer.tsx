@@ -4,10 +4,10 @@
 // frame and writes to the DOM directly, so the readout runs smoothly without re-rendering the game.
 import { useEffect, useRef } from 'react';
 
-type Props = { ms: number; total: number; running: boolean; speed: number; state: 'live' | 'late' | 'locked' | 'carried' };
+type Props = { ms: number; total: number; running: boolean; speed: number; state: 'live' | 'late' | 'locked' | 'carried'; /** v9.19: the Mad Bomber's Frankenstein bomb. */ frank?: string };
 const FUSE = 'M50 20 C 56 9, 66 16, 73 9 S 88 3, 95 8';
 
-export function BombTimer({ ms, total, running, speed, state }: Props) {
+export function BombTimer({ ms, total, running, speed, state, frank }: Props) {
   const digits = useRef<HTMLSpanElement>(null), fuse = useRef<SVGPathElement>(null), spark = useRef<SVGGElement>(null);
   const since = useRef(0), base = useRef(ms);
   useEffect(() => { base.current = ms; since.current = performance.now(); }, [ms]);
@@ -28,7 +28,7 @@ export function BombTimer({ ms, total, running, speed, state }: Props) {
     draw();
     return () => cancelAnimationFrame(frame);
   }, [running, speed, total, ms]);
-  return <span className={`bomb-timer bomb-${state} ${running ? 'is-running' : ''} ${ms <= 10000 && state !== 'locked' ? 'bomb-critical' : ''}`} aria-hidden="true">
+  return <span className={`bomb-timer bomb-${state} ${running ? 'is-running' : ''} ${ms <= 10000 && state !== 'locked' ? 'bomb-critical' : ''} ${frank ? 'bomb-frank' : ''}`} aria-hidden="true" style={frank ? { ['--frank-bomb' as string]: `url(${frank})` } : undefined}>
     <svg viewBox="0 0 100 72">
       <path className="bomb-fuse-spent" d={FUSE} />
       <path ref={fuse} className="bomb-fuse" d={FUSE} />

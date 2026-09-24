@@ -1,3 +1,4 @@
+import { MYSTERY_RULES } from './dark-rules';
 import { ADJACENT, PASSENGERS, PASSENGER_ORDER, type PassengerKind } from './game-data';
 import type { Rider } from './game-engine';
 
@@ -31,6 +32,13 @@ export const BONDS: Record<PassengerKind,Bond> = {
  mystery:{likes:['coach'],avoids:['inspector']},
  shifter:{likes:['nurse'],avoids:['cop']},
  mimic:{likes:['mimic'],avoids:['ghost','bomb']},
+ // v9.19 dark versions: new friends and enemies (many invert the original's).
+ overtimer:{likes:[],avoids:['noisemaker']}, voyeur:{likes:['scandal'],avoids:['crookedcop']}, smuggler:{likes:['grafter'],avoids:[]},
+ scrapper:{likes:['grafter'],avoids:[]}, exlover:{likes:[],avoids:['exlover','lover']}, noisemaker:{likes:['brawler'],avoids:['nurse']},
+ robber:{likes:['shyster'],avoids:[]}, crookedcop:{likes:['robber','thief'],avoids:['voyeur','shyster']}, shyster:{likes:['robber'],avoids:['crookedcop']},
+ brawler:{likes:['noisemaker'],avoids:[]}, pusher:{likes:['brawler'],avoids:[]}, creepychild:{likes:[],avoids:[]},
+ wraith:{likes:['exorcist','summoner'],avoids:[]}, summoner:{likes:['ghost','wraith'],avoids:[]}, taskmaster:{likes:[],avoids:[]},
+ scandal:{likes:['voyeur'],avoids:[]}, grafter:{likes:['smuggler','scrapper'],avoids:[]}, madbomber:{likes:['crookedcop'],avoids:[]},
  parcel:{likes:[],avoids:[]}, operator:{likes:[],avoids:[]}, matchmaker:{likes:[],avoids:[]}, don:{likes:[],avoids:[]}, matron:{likes:[],avoids:[]},
  nightingale:{likes:[],avoids:[]}, medium:{likes:[],avoids:[]}, tycoon:{likes:[],avoids:[]}, stranger:{likes:[],avoids:[]},
 };
@@ -41,6 +49,8 @@ export const CONFLICT_EFFECTS:Record<string,ConflictEffect>=Object.fromEntries([
   ['commuter','drunk'],['lover','ghost'],['cop','drunk'],['nurse','ghost'],['child','bomb'],['exorcist','drunk'],
   ['shifter','cop'],['musician','bomb'],['cop','celebrity'],['child','drunk'],['tourist','drunk'],
  ]),
+ ...effectPairs('agitation',[['exlover','exlover'],['exlover','lover'],['noisemaker','nurse'],['overtimer','noisemaker']]),
+ ...effectPairs('coins',[['voyeur','crookedcop'],['crookedcop','shyster']]),
  ...effectPairs('coins',[
   // v9.18.3: a Thief's neighbours are handled by pickpocketing alone (no −2 red link on top of the steal).
   ['drunk','inspector'],['celebrity','inspector'],
@@ -66,7 +76,9 @@ export function randomTraits(kind:'mystery'|'shifter', available:PassengerKind[]
 }
 function ownProfile(rider:Rider){
  const spec=PASSENGERS[rider.kind];
- return {weight:0,energy:rider.traits?.energy??spec.energy,agitation:rider.traits?.agitation??0,fare:rider.traits?.fare??(rider.disguised?PASSENGERS.bomb.fare:spec.fare),bond:rider.traits?.bond??BONDS[rider.kind],conflictEffect:rider.traits?.conflictEffect,hidden:rider.kind==='mystery'};
+ // v9.19: a Mystery's fare follows his identity and stays sealed until he is revealed (one floor after boarding).
+ const identityFare=rider.kind==='mystery'&&rider.identity?MYSTERY_RULES[rider.identity].fare:undefined;
+ return {weight:0,energy:rider.traits?.energy??spec.energy,agitation:rider.traits?.agitation??0,fare:rider.traits?.fare??identityFare??(rider.disguised?PASSENGERS.bomb.fare:spec.fare),bond:rider.traits?.bond??BONDS[rider.kind],conflictEffect:rider.traits?.conflictEffect,hidden:rider.kind==='mystery'&&!rider.revealed};
 }
 // A ticket adjustment applies only to the base fare, never to earned stashes,
 // tips or adjacency payouts. Express retains its full purchased benefit.

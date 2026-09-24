@@ -1,10 +1,11 @@
-import { BOMB_RULES, bombTick, hasNeighbour, parcelLinks, type Rider } from './game-engine';
+import { BOMB_RULES, bombLocked, bombTick, parcelLinks, type Rider } from './game-engine';
+import { isBombKind } from './dark-rules';
 
 /** Bomb timer display state, matching settlement: an adjacent Officer pauses the countdown. */
 export function fuseState(cabin: Array<Rider | null>, slot: number, floor: number, stress = 0): 'locked' | 'carried' | 'late' | 'live' | null {
   const rider = cabin[slot];
-  if (!rider || rider.kind !== 'bomb' || (rider.fuse === undefined && rider.bombMs === undefined)) return null;
-  if (hasNeighbour(cabin, slot, ['cop'])) return 'locked';
+  if (!rider || !isBombKind(rider.kind) || (rider.fuse === undefined && rider.bombMs === undefined)) return null;
+  if (bombLocked(cabin, slot)) return 'locked';
   // v9.17: an empty-handed Courier holding the bomb who gets off first, before it runs out, carries it away.
   const holder = [...parcelLinks(cabin).bombs].find(([, b]) => b === slot)?.[0];
   if (BOMB_RULES.realtime && rider.bombMs !== undefined) {

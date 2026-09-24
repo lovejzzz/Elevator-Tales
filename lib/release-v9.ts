@@ -1425,3 +1425,71 @@ export const V9185_EN: ChangelogEntry = {
   ],
   watch: ['Cautious players who only take positive estimates are still poor (runs 6 and 7: 50–60 coins at 30F).', 'The 5-level power-box cap versus power needs after 91F is still the hardest late wall.', 'Couriers remain common early, more so in a row when a Commuter is aboard.'],
 };
+
+export const V919_ZH: ChangelogEntry = {
+  version: '9.19.0', date: '2026-09-24', title: '午夜之后：18 位暗黑版人物、同化、道具、两种炸弹',
+  summary: '离开 60 层商店时午夜钟声响起，车厢变暗，之后的候客越来越多是“暗黑版”：同一批人物换了面目、属性和链接。后期的压力不再来自“夜深人躁”，而是来自这些人物自己的麻烦；钱有了去处：14 种道具、配电箱第 6 级以上、加急补电、能力 2 级。',
+  changes: [
+    '午夜钟声：离开 60 层商店时灯光熄灭、钟响三声，车厢换成暗色背景。暗黑版比例逐步上升：60–69 层上车的候客 35%，70–79 层 60%，80 层起 85%；钟声后的第一批至少有一位暗黑版。',
+    '18 位暗黑版（新肖像、新属性、新链接）：加班魂（每层加班费 +2，到站要等邻座一起下，赖着不走 +1 躁动/层，过站 3 层不付钱离开）、偷拍客（偷拍普通邻座 +1 躁动，每张照片 +3 币）、走私客（黑箱在旁付车费 + 箱价×2；检查员没收得 15 币，贪腐检查员放行再 +8）、拆机人（+3 币/层，运转 +1 电）、怨偶（相邻吵架，分开坐基价×2）、噪音乐手（+1 躁动/层，高躁动 +4 币/层）、劫匪（没人管每层抢你 2 币 + 余额 3%，最多 10；被管住到站赏金 15）、黑警（管住身边所有坏人、全车 −1 躁动/层，每层收 3 币保护费）、讼棍（每条红线 +3 币/层，最多 9；让警察管不住劫匪）、狂徒（自己 +1、每位普通邻座再 +1 躁动；高躁动基价×3）、药贩（邻座自身躁动 −2/层；她下车后邻座戒断 2 层，每层 +1）、怪童（每位普通邻座 +1 躁动；独自到站 +10 币）、怨灵（没人管每层拖延邻座 1 站并吸 1 电；受控 +4 币/层）、召魂人（管住幽灵和怨灵，每到 3 的倍数层召一只幽灵进空座，身边受控幽灵车费×2）、监工（邻座车费 +100%，普通邻座各 +1 躁动/层）、丑闻明星（每位邻座 +2 币/层，偷拍客在旁再 +5；挨着检查员或黑警到站曝光，车费归零）、贪腐检查员（每位邻座收 2 币/层，车厢 +1 躁动）、疯炸客（车费 50，弗兰肯斯坦式怪炸弹，倒计时是炸弹客的 60%，普通警察锁不住）。',
+    '同化：普通人连续 2 次出发都挨着至少 2 位暗黑版，就变成自己的暗黑版。正在同化时，暗黑邻座连出紫色虚线，座位冒出紫雾、肖像褪色，第 2 层边框跳动并写“下一层被同化成……”；变身时紫光一闪。护身符可以挡住，圣水可以净化（金光）。',
+    '幸存者：60 层后把普通人平安送到站，额外 +5 币。深渊：80 层起每 20 层，暗黑版的麻烦加重一级（劫匪多抢、狂徒更疯、怨灵多吸电等）。',
+    '去掉“夜深人躁”（后期每几层自动 +1 躁动的规则）。',
+    '炸弹客改了：普通炸弹客倒计时归零会爆炸，把他和身边的乘客（传说人物除外）炸下车，都不付车费，你损失 20 币，本班继续。只有疯炸客的怪炸弹归零才结束本班；只有黑警（或便衣警察）能锁住它，或用引线剪当场拆掉（他下车并付车费）。',
+    '神秘人改为“身份揭晓”：上车后下一层揭晓，四种身份——便衣警察（车费 8，管住小偷和劫匪、锁住炸弹）、逃犯（车费 20，+1 躁动/层）、富商（车费 25）、好心人（车费 8，每位邻座自身躁动 −1/层）。揭晓时翻牌并弹出“原来是……！”。',
+    '道具（一次性，道具栏 4 格）：商店每次上架 3 种，同一种每买一次涨 50%，60 层后每层再贵 0.5%。应急电池 20（+15 电）、换位券 10、请离券 15、糖果 12（11 层起）、香薰 25（21 层起，−2 躁动）、延时引信 18（31 层起，炸弹 +20 秒）、圣水 60、手铐 30、护身符 25、闹钟 15、镇静剂 30（3 层不躁动）、封条 20、引线剪 45（以上 60 层起）、照明弹 120（80 层起，本层暗黑版不惹麻烦）。左栏点道具使用，需要目标时可用的座位发光。',
+    '配电箱阶梯：80 层起可升第 6 级，110 层第 7 级，之后每 30 层一级；每级价格是上一级的 3 倍。',
+    '加急补电：本段途中补电用完后，还能按每包 5 电购买，每电价格依次是途中补电价的 3、5、7……倍。',
+    '能力 2 级：6 个能力位装满后，每店可把一项能力升到 2 级（效果 +50%），价格 60 起，每升一项多 30。可升的 13 项：默契契约、礼宾服务、稳压模块、小费盒、混乘票、长途计价器、绝缘衬层、单站检票器、惯性飞轮、隔音门、第五张票、调度印章、谢幕礼。',
+    '谨慎玩家：20 层前商店充电打 85 折（2 → 1.7 币/电）；车上空 3 个座位以上、候客里有只亏 1–2 币的乘客时，提示“空着的座位也在耗运转电”。',
+    '候客：51 层起通勤者和恋人的出现权重减半；车上已有快递员时，快递员的权重减半。坏人同伙的暂存逐层递增（3、4、5……）。',
+    '美术：18 张暗黑版肖像、黑箱、弗兰肯斯坦炸弹、暗色车厢、14 个道具图标（AI 生成，与原肖像同一构图风格）；新增午夜钟声音效；乘客档案收录暗黑版和他们的故事。',
+  ],
+  experiments: [
+    '模拟器验收 4,200 局（14 种机器人 × 300 局，种子 999001），与 v9.18.5 对比：均衡型中位 100 → 111 层（p10 93 → 89，p90 108 → 121）；死因 电量/躁动/炸弹 29.6/68.7/1.7% → 66.2/31.9/2.0%；离店剩余金币中位 92 → 36；新手型 34 → 49；真人型 68 → 64（p90 96 → 79）；协作型 103 → 135、安静秩序型 102 → 137（躁动墙拿掉后改由电量结束），坏人型 100 → 98，热闹型 93 → 99。',
+    '拆开看：只加暗黑版 + 去掉夜深人躁（不开配电箱阶梯）时，均衡型仍是 99 层；阶梯从 60 层、价格×2 开放会到 117–119 层，所以改为 80 层起、价格×3。20 层前充电打 75 折时新手型从 34 升到 69，改为 85 折后是 49。加急补电第一版（2 倍起）让 7–12% 的协作/安静局活过 150 层，改为 3 倍起、每包 +2 倍后降到 0.5%。',
+    '真人型 150 局专项：60 层后的躁动主要来自监工、狂徒、怪童；把监工和怪童改为只影响普通邻座、贪腐检查员改为全车 +1、戒断改为每层 +1、比例从 50/75/90% 降到 35/60/85% 后，p90 从 73 回到 81。',
+    '模拟器机器人会用加急补电、升 2 级和新配电箱阶梯，会算暗黑版每层的收支，但不买道具。',
+    'verify 40 项（新增 1 项，覆盖暗黑比例、同化与护身符、身份揭晓、幸存者奖励、劫匪/黑警/讼棍/加班魂/丑闻明星/走私客/药贩/召魂人/怨灵、照明弹、道具买用与涨价）；旧检查按新规则更新（普通炸弹爆炸不结束本班、配电箱阶梯、20 层前充电价）。浏览器实测：62 层同化紫线与变身、身份揭晓、普通炸弹爆炸（3 人下车 −20 币）、疯炸客结束本班、引线剪拆弹、召魂、药贩戒断、60 层商店道具与能力 2 级、午夜钟声与暗色车厢、英文界面无中文残留、手机 375 宽无横向滚动。',
+  ],
+  watch: [
+    '去掉夜深人躁后，稳健打法能走到 130–140 层，终点改由电量决定；要看真人是不是也会走这么远。',
+    '真人型 60 层后掉得比以前快（p90 96 → 79），午夜刚开始的几层可能对普通玩家偏难。',
+    '讼棍（9%）、劫匪（10%）、拆机人（13%）机器人很少带；炸弹客上车率 65%，正好在上限。',
+    '道具和身份揭晓还没有进模拟器；美术是 AI 生成，风格需要真人看一眼。',
+  ],
+};
+
+export const V919_EN: ChangelogEntry = {
+  version: '9.19.0', date: '2026-09-24', title: 'After midnight: 18 dark riders, corruption, items, two bombs',
+  summary: 'Leaving the 60F shop rings the midnight bell: the cabin goes dark, and more and more waiting riders arrive as their dark versions, the same characters with new faces, rules and links. Late pressure no longer comes from late-night unrest but from these riders’ own trouble, and coins have somewhere to go: 14 items, power-box levels past five, overtime charging and level-2 abilities.',
+  changes: [
+    'Midnight bell: leaving the 60F shop dims the lights, a bell tolls three times and the cabin art turns dark. The dark share rises step by step: 35% of cards boarding at 60–69F, 60% at 70–79F, 85% from 80F; the first batch after the bell always has at least one.',
+    '18 dark riders (new portraits, rules and links): Overtimer (+2 overtime per floor; at his stop he waits for a neighbor to leave, +1 agitation per extra floor, walks off unpaid 3 floors late), Voyeur (photographs normal neighbors: +1 agitation, +3 coins per photo), Smuggler (pays fare + box value ×2 with his black box beside him; an Inspector seizes it for 15, a Grafter waves it through for 8 more), Scrapper (+3 coins/floor, motor +1 power), Ex (fights beside the other Ex; seated apart, base fare ×2), Noisemaker (+1 agitation/floor; +4 coins/floor at high), Robber (unchecked, takes 2 coins + 3% of your wallet per floor, max 10; held, pays a 15 bounty), Crooked Cop (holds every bad rider beside him, cabin −1 agitation/floor, takes 3 coins protection per floor), Shyster (+3 coins per red link per floor, max 9; Officers cannot hold a Robber beside him), Brawler (+1 agitation, +1 more per normal neighbor; base fare ×3 at high), Pusher (neighbors’ own agitation −2/floor; when she leaves they go into withdrawal, +1 for 2 floors), Uncanny Child (+1 agitation per normal neighbor; +10 alone on arrival), Wraith (unchecked, delays a neighbor 1 stop and drains 1 power every floor; controlled, +4 coins/floor), Summoner (controls Ghosts and Wraiths, summons a Ghost into an empty seat every third floor, controlled Ghosts beside him pay ×2), Taskmaster (neighbors’ fares +100%, normal neighbors +1 agitation/floor each), Scandal (+2 coins per neighbor per floor, +5 more beside a Voyeur; exposed beside an Inspector or Crooked Cop, fare 0), Grafter (2 coins from each neighbor per floor, cabin +1 agitation), Mad Bomber (fare 50, a Frankenstein contraption at 60% of a Bomber’s timer that Officers cannot lock).',
+    'Corruption: a normal rider beside two or more dark riders for 2 departures in a row turns into their own dark version. While it happens, dotted violet links run from the dark neighbors, violet mist rises around the seat and the portrait drains of colour; on the second floor the frame throbs and the seat says “Turns into … next floor”; the change itself flashes violet. An Amulet prevents it; Holy Water purifies (a golden flash).',
+    'Survivors: delivering a normal rider after 60F pays +5. The abyss: from 80F and every 20 floors, dark riders’ trouble grows one step (the Robber takes more, the Brawler rages harder, the Wraith drains more …).',
+    'Late-night unrest (the automatic +1 agitation every few floors) is gone.',
+    'Bombers reworked: an ordinary Bomber reaching zero blows himself and his neighbors (legends excepted) out of the cabin without fares and costs you 20 coins; the shift goes on. Only the Mad Bomber’s contraption ends the shift; only a Crooked Cop (or an Undercover Officer) locks it, or a Wire Cutter defuses it on the spot (he gets off and pays).',
+    'The Mystery now reveals an identity one floor after boarding: Undercover Officer (fare 8; holds Thieves and Robbers, locks bombs), Fugitive (fare 20; +1 agitation/floor), Magnate (fare 25) or Good Samaritan (fare 8; −1 of each neighbor’s own agitation per floor). The reveal flips the card and pops “A …!”.',
+    'Items (single use, 4-slot bag): each shop stocks 3; each repeat purchase costs 50% more, and past 60F prices rise 0.5% per floor. Spare Cell 20 (+15 power), Swap Ticket 10, Exit Pass 15, Candy 12 (from 11F), Incense 25 (from 21F, −2 agitation), Longer Fuse 18 (from 31F, bomb +20 s), Holy Water 60, Handcuffs 30, Amulet 25, Alarm Clock 15, Sedative 30 (no own agitation for 3 floors), Seal 20, Wire Cutter 45 (all from 60F), Flare 120 (from 80F; no dark trouble this floor). Tap an item in the left rail; items that need a target light up the seats they can be used on.',
+    'Power-box ladder: a sixth level from 80F, a seventh at 110F, then one every 30 floors; each costs three times the one before.',
+    'Overtime charging: once a sector’s in-transit charging is spent, power is sold in packs of 5 at 3×, 5×, 7× … the in-transit price.',
+    'Level-2 abilities: with all six slots full, each shop can raise one ability to level 2 (+50%), from 60 coins, +30 for each one raised. Raisable: Cooperation, Concierge, Stabilizer, Tip Jar, Mixed Ticket, Long-Ride Meter, Insulation, Single Arrival, Inertia Flywheel, Soundproof Door, Fifth Rider Bonus, Dispatch Stamp, Curtain Call.',
+    'Cautious players: shop power is 15% cheaper up to 20F (2 → 1.7 coins); with three or more empty seats and a card that loses only a coin or two, the hint says empty seats still cost motor power.',
+    'Waiting cards: from 51F Commuters and Lovers appear half as often; with a Courier aboard, Couriers appear half as often. A bad-rider crew banks more each floor it stays together (3, 4, 5 …).',
+    'Art: 18 dark portraits, the black box, the Frankenstein bomb, the dark cabin and 14 item icons (AI-generated in the portraits’ composition and style); a midnight bell sound; the archive lists the dark riders and their stories.',
+  ],
+  experiments: [
+    'Simulator acceptance, 4,200 runs (14 bots × 300, seed 999001), against v9.18.5: balanced median 100 → 111F (p10 93 → 89, p90 108 → 121); deaths power/agitation/bomb 29.6/68.7/1.7% → 66.2/31.9/2.0%; median coins leaving a shop 92 → 36; novice 34 → 49; human-like 68 → 64 (p90 96 → 79); Cooperation 103 → 135 and Quiet Order 102 → 137 (with the agitation wall gone, power ends them), Crime 100 → 98, Lively 93 → 99.',
+    'Separating the effects: dark riders plus removing late-night unrest, without the box ladder, keep the balanced bot at 99F; a ladder from 60F at double price took it to 117–119F, so it now opens at 80F at triple price. A 25% early charging discount lifted the novice bot from 34 to 69F; at 15% it is 49F. The first overtime charging (from 2×) let 7–12% of Cooperation / Quiet runs pass 150F; from 3×, +2× per pack, it is 0.5%.',
+    'Human-like bot study, 150 runs: after 60F agitation came mostly from the Taskmaster, Brawler and Uncanny Child; making the Taskmaster and Uncanny Child affect only normal neighbors, the Grafter a flat +1, withdrawal +1 a floor, and the dark share 35/60/85% instead of 50/75/90%, brought its p90 from 73 back to 81.',
+    'The simulator bots use overtime charging, level 2 and the new box ladder and count dark riders’ per-floor money, but do not buy items.',
+    'verify: 40 checks (1 new, covering the dark share, corruption and the Amulet, the Mystery reveal, the survivor bonus, the Robber / Crooked Cop / Shyster / Overtimer / Scandal / Smuggler / Pusher / Summoner / Wraith, the Flare, and buying, using and pricing items); older checks updated to the new rules (an ordinary blast does not end the shift, the box ladder, early charging). Browser: violet corruption links and the change at 62F, the Mystery reveal, an ordinary blast (3 blown out, −20 coins), the Mad Bomber ending a shift, the Wire Cutter, a summoned Ghost, withdrawal after the Pusher, items and level 2 in the 60F shop, the midnight bell and dark cabin, no Chinese left in the English UI, no sideways scroll on a 375-wide phone.',
+  ],
+  watch: [
+    'Without late-night unrest steady play reaches 130–140F and power decides the end; do real players go that far too?',
+    'The human-like bot falls faster after 60F (p90 96 → 79): the first floors after midnight may be too harsh for ordinary players.',
+    'Bots rarely board the Shyster (9%), Robber (10%) or Scrapper (13%); the Bomber boards 65%, right at the limit.',
+    'Items and Mystery identities are not in the simulator yet; the art is AI-generated and needs a human look.',
+  ],
+};

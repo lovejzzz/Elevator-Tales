@@ -26,11 +26,13 @@ export const boxTotal = (box: PowerBox) => box.storage + box.transformer + box.m
 export const storageCap = (box: PowerBox) => STORAGE_CAPS[box.storage];
 export const shopEntryCharge = (box: PowerBox) => BASE_SHOP_ENTRY_CHARGE + 5 * box.storage;
 export const emergencySectorCap = (box: PowerBox) => (box.storage >= BOX_MAX_LEVEL ? 10 : EMERGENCY_SECTOR_CAP);
-export const chargeUnitPrice = (box: PowerBox) => CHARGE_PRICES[box.transformer];
+/** v9.19: shops up to 30F sell power at a discount, so a careful early run is not starved (cautious-player aid). */
+export const EARLY_CHARGE = { until: 20, factor: 0.85 };
+export const chargeUnitPrice = (box: PowerBox, floor = Infinity) => CHARGE_PRICES[box.transformer] * (floor <= EARLY_CHARGE.until ? EARLY_CHARGE.factor : 1);
 /** Whole coins, rounded up, for a batch of shop charge. */
-export const chargeCost = (box: PowerBox, units: number) => Math.ceil(units * chargeUnitPrice(box) - 1e-9);
+export const chargeCost = (box: PowerBox, units: number, floor = Infinity) => Math.ceil(units * chargeUnitPrice(box, floor) - 1e-9);
 /** Most units a wallet can buy at the box's shop price. */
-export const affordableUnits = (box: PowerBox, coins: number) => Math.floor((coins + 1e-9) / chargeUnitPrice(box));
+export const affordableUnits = (box: PowerBox, coins: number, floor = Infinity) => Math.floor((coins + 1e-9) / chargeUnitPrice(box, floor));
 export const emergencyUnitPrice = (box: PowerBox) => (box.transformer >= BOX_MAX_LEVEL ? EMERGENCY_PRICES.topTransformer : EMERGENCY_PRICES.base);
 /** v9.7 motor for the flat motor schedule: level 1 saves 1 on even floors, level 2+ on every floor (never below 1).
  * Level 3 adds a quiet motor that cancels 1 late-night unrest (see cabinPressureLines). */

@@ -1,0 +1,85 @@
+import { DARK_OF, isDark, isLegend, type PassengerKind } from './game-data';
+
+/** v9.19 “After midnight”: tuning for the dark versions, corruption and the late sectors (scripts/balance-sim). */
+export const DARK_RULES = {
+  /** Share of new cards that arrive as their dark version, from each boarding floor on (cards drawn on leaving the
+   * 60F shop ride to 61F and up, so the first dark cards appear right after the midnight bell). */
+  share: [[60, 0.35], [70, 0.6], [80, 0.85]] as Array<[number, number]>,
+  /** Leaving the shop on this floor rings the midnight bell. */
+  midnightFloor: 60,
+  overtimePay: 2, overstayAgitation: 1, overstayMax: 3,
+  voyeurAgitation: 1, voyeurPhoto: 3,
+  smugglerBoxMultiplier: 2, seizeReward: 15, bribe: 8,
+  scrapperCoins: 3, scrapperMotor: 1, fenceCoins: 2,
+  exFareBonus: 1,
+  noiseAgitation: 1, noiseHighCoins: 4,
+  robberBase: 2, robberRate: 0.03, robberCap: 10, robberAgitation: 1, robberBounty: 15,
+  crookedFee: 3, crookedCalm: 1,
+  shysterPerRed: 3, shysterCap: 9, shysterAgitation: 1,
+  brawlerSelf: 1, brawlerPerNormal: 1, brawlerHighBonus: 2,
+  pusherCalm: 2, withdrawal: 1, withdrawalFloors: 2,
+  creepyPerNeighbour: 1, creepyAloneBonus: 10,
+  wraithDrain: 1, wraithControlledCoins: 4,
+  summonEvery: 3, summonTrip: 4, summonFareBonus: 1,
+  taskmasterFareBonus: 1, taskmasterAgitation: 1,
+  scandalPerNeighbour: 2, scandalVoyeur: 5,
+  grafterFee: 2, grafterAgitation: 1,
+  /** The Mad Bomber's real-time timer is this share of an ordinary Bomber's. */
+  madbomberSeconds: 0.6,
+  /** A normal rider beside at least this many dark riders for this many departures in a row turns dark. */
+  corruptionNeighbours: 2, corruptionFloors: 2,
+  survivorBonus: 5,
+  /** From this floor, every `abyssEvery` floors the dark riders' troubles grow one step. */
+  abyssFrom: 80, abyssEvery: 20,
+  /** An ordinary Bomber reaching zero blows his neighbours out of the cabin and costs this many coins. */
+  blastCoins: 20,
+};
+
+/** Share of new cards turning dark on this floor (0 before midnight). */
+export function darkShare(floor: number) {
+  let share = 0;
+  for (const [from, value] of DARK_RULES.share) if (floor >= from) share = value;
+  return share;
+}
+/** 0 before the abyss; 1, 2 … every `abyssEvery` floors from `abyssFrom`. */
+export const abyssTier = (floor: number) => floor >= DARK_RULES.abyssFrom ? 1 + Math.floor((floor - DARK_RULES.abyssFrom) / DARK_RULES.abyssEvery) : 0;
+/** A normal rider who can still turn dark (has a dark version, not a legend or a box). */
+export const corruptible = (kind: PassengerKind) => Boolean(DARK_OF[kind]) && !isLegend(kind);
+/** Riders the midnight rules call “normal” (survivors): people who are neither dark, legends nor boxes. */
+export const isSurvivor = (kind: PassengerKind) => kind !== 'parcel' && !isLegend(kind) && !isDark(kind);
+export const isBombKind = (kind: PassengerKind | undefined) => kind === 'bomb' || kind === 'madbomber';
+export const isCarrierKind = (kind: PassengerKind | undefined) => kind === 'courier' || kind === 'smuggler';
+
+/** v9.19 Mystery rider: an identity drawn when he appears, revealed one floor after boarding. */
+export type MysteryIdentity = 'undercover' | 'fugitive' | 'magnate' | 'saint';
+export const MYSTERY_IDENTITIES: MysteryIdentity[] = ['undercover', 'fugitive', 'magnate', 'saint'];
+export const MYSTERY_RULES: Record<MysteryIdentity, { fare: number; name: string; en: string; zh: string; enLine: string }> = {
+  undercover: { fare: 8, name: '便衣警察', en: 'Undercover Officer', zh: '管住身边的小偷、劫匪，锁住炸弹', enLine: 'Controls adjacent Thieves and Robbers; locks Bombs' },
+  fugitive: { fare: 20, name: '逃犯', en: 'Fugitive', zh: '每层 +1 躁动 · 车费 20', enLine: '+1 agitation/floor · fare 20' },
+  magnate: { fare: 25, name: '富商', en: 'Magnate', zh: '车费 25', enLine: 'Fare 25' },
+  saint: { fare: 8, name: '好心人', en: 'Good Samaritan', zh: '抵消每位邻座自身躁动 1/层', enLine: 'Cancels 1 of each neighbor’s own agitation/floor' },
+};
+
+/** v9.19 items: one-use tools kept in a four-slot bag, bought in shops at rising prices. */
+export type ItemKey = 'cell' | 'swap' | 'dismiss' | 'candy' | 'fuse' | 'aroma' | 'holywater' | 'cuffs' | 'amulet' | 'alarm' | 'sedative' | 'seal' | 'cutter' | 'flare';
+export type ItemTarget = 'none' | 'rider' | 'dark' | 'normal' | 'thief' | 'overtimer' | 'child' | 'bomb' | 'parcel';
+export const ITEM_SLOTS = 4;
+export const ITEMS: Record<ItemKey, { name: string; en: string; zh: string; enText: string; from: number; price: number; target: ItemTarget }> = {
+  cell: { name: '应急电池', en: 'Spare Cell', zh: '立即 +15 电（不超过上限）', enText: '+15 power now (up to the cap)', from: 1, price: 20, target: 'none' },
+  swap: { name: '换位券', en: 'Swap Ticket', zh: '本层多一次老乘客换位', enText: 'One more old-rider move this floor', from: 1, price: 10, target: 'none' },
+  dismiss: { name: '请离券', en: 'Exit Pass', zh: '免费请离一位乘客（不占请离次数）', enText: 'Dismiss one rider for free (no dismissal used)', from: 1, price: 15, target: 'rider' },
+  candy: { name: '糖果', en: 'Candy', zh: '一位儿童直接算照顾满', enText: 'A Child counts as fully cared for', from: 11, price: 12, target: 'child' },
+  fuse: { name: '延时引信', en: 'Longer Fuse', zh: '一颗炸弹 +20 秒', enText: 'One bomb +20 seconds', from: 31, price: 18, target: 'bomb' },
+  aroma: { name: '香薰', en: 'Incense', zh: '立即 −2 躁动', enText: '−2 agitation now', from: 21, price: 25, target: 'none' },
+  holywater: { name: '圣水', en: 'Holy Water', zh: '把一位暗黑版净化回原版（本次路程）', enText: 'Purify one dark rider back to the original (this trip)', from: 60, price: 60, target: 'dark' },
+  cuffs: { name: '手铐', en: 'Handcuffs', zh: '一位小偷或劫匪整段路程被管住', enText: 'A Thief or Robber is controlled for the whole trip', from: 60, price: 30, target: 'thief' },
+  amulet: { name: '护身符', en: 'Amulet', zh: '一位普通人本次路程不会被同化', enText: 'A normal rider cannot be corrupted this trip', from: 60, price: 25, target: 'normal' },
+  alarm: { name: '闹钟', en: 'Alarm Clock', zh: '加班魂到站就下车', enText: 'An Overtimer gets off at his floor', from: 60, price: 15, target: 'overtimer' },
+  sedative: { name: '镇静剂', en: 'Sedative', zh: '一位乘客 3 层内自身不产生躁动，也不会戒断', enText: 'A rider adds no agitation of their own for 3 floors, and no withdrawal', from: 60, price: 30, target: 'rider' },
+  seal: { name: '封条', en: 'Seal', zh: '一个纸箱或黑箱不会被没收、偷走或拆开', enText: 'A box cannot be seized, stolen or opened', from: 60, price: 20, target: 'parcel' },
+  cutter: { name: '引线剪', en: 'Wire Cutter', zh: '当场拆掉一颗炸弹：炸弹客下车并付车费', enText: 'Defuse one bomb now: the bomber gets off and pays', from: 60, price: 45, target: 'bomb' },
+  flare: { name: '照明弹', en: 'Flare', zh: '本层所有暗黑版的麻烦都不发生', enText: 'No dark rider causes trouble this floor', from: 80, price: 120, target: 'none' },
+};
+export const ITEM_KEYS = Object.keys(ITEMS) as ItemKey[];
+/** Price rises half the base each time the same item is bought, and a little with depth. */
+export const itemPrice = (key: ItemKey, floor: number, bought = 0) => Math.round(ITEMS[key].price * (1 + 0.5 * bought) * (1 + Math.max(0, floor - 60) / 200));

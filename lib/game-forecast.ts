@@ -1,4 +1,4 @@
-import { COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
+import { GHOST_CONTROL_KINDS, overtimerLingers, troubleFree, COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
 import { riderProfile } from './rider-profile';
 import { motorCost } from './balance-v832';
 import { boxedMotorCost, shopEntryCharge } from './power-box';
@@ -29,9 +29,10 @@ const signedDelta = (value: number) => value > 0 ? `+${value}` : value < 0 ? `âˆ
 function projectedDestinationVariants(state: RunState): Array<Array<number | null>> {
   const nextFloor = state.floor + 1;
   let variants: Array<Array<number | null>> = [state.cabin.map((rider) => rider?.destination ?? null)];
-  if (nextFloor % 3 !== 0) return variants;
+  // Ghosts delay a neighbour on floors divisible by 3; v9.19 uncontrolled Wraiths every floor (not under a flare).
   state.cabin.forEach((rider, slot) => {
-    if (rider?.kind !== 'ghost' || hasNeighbour(state.cabin, slot, ['exorcist', 'medium']) || hasKeepsake(state, 'bell')) return;
+    const haunts = rider?.kind === 'ghost' ? nextFloor % 3 === 0 : rider?.kind === 'wraith' ? !troubleFree(state) : false;
+    if (!haunts || hasNeighbour(state.cabin, slot, GHOST_CONTROL_KINDS) || hasKeepsake(state, 'bell')) return;
     const targets = neighbours(slot).filter((index) => state.cabin[index]);
     if (targets.length) variants = variants.flatMap((variant) => targets.map((target) => variant.map((destination, index) => index === target && destination !== null ? destination + 1 : destination)));
   });
@@ -51,7 +52,7 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
   const crimeLinks = partnershipAgitation(state);
   const redRise = redOnly + crimeLinks + cabinRise;
   const variants = projectedDestinationVariants(state).map((destinations) => {
-    const arriving = state.cabin.flatMap((rider, slot) => rider && rider.kind !== 'parcel' && destinations[slot] !== null && nextFloor >= destinations[slot]! ? [slot] : []);
+    const arriving = state.cabin.flatMap((rider, slot) => rider && rider.kind !== 'parcel' && destinations[slot] !== null && nextFloor >= destinations[slot]! && !overtimerLingers(state, slot, destinations) ? [slot] : []);
     return { arrivals: arriving.length };
   });
   const cap = arrivalReliefCapFor(state);
@@ -104,7 +105,7 @@ export function energyForecast(state: RunState, _legacyWeight?: number, _riskTun
  const shopCharge=nextFloor%10===0?shopEntryCharge(boxOf(state)):0;
  let relayPossible=false;
  const charges=projectedDestinationVariants(state).flatMap(destinations=>{
-  const slots=state.cabin.flatMap((rider,slot)=>rider&&rider.kind!=='parcel'&&destinations[slot]!==null&&destinations[slot]!<=nextFloor?[slot]:[]);
+  const slots=state.cabin.flatMap((rider,slot)=>rider&&rider.kind!=='parcel'&&destinations[slot]!==null&&destinations[slot]!<=nextFloor&&!overtimerLingers(state,slot,destinations)?[slot]:[]);
   const natural=slots.filter(slot=>state.cabin[slot]!.kind==='courier'&&parcelBeside(state.cabin,slot)).length*COURIER_ARRIVAL_CHARGE;
   const gap=deliveryGapCharge(state,slots.length).energy+flywheelSaving(state,slots.length,motor-service);
   const charge=shopCharge+natural+naturalChargeBoost(state,natural)+gap;

@@ -4,6 +4,7 @@
 // v9.10: fly-ins, pop numbers and banners move on Motion springs.
 import { animate } from 'motion';
 
+export type Tone = 'gold' | 'green' | 'blue' | 'red' | 'violet';
 const reduced = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const centre = (el: Element) => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height }; };
 function layer(className: string) {
@@ -38,7 +39,7 @@ function flyCoinNow(from: Element, to: Element, label: string, tone: 'coin' | 'g
 }
 
 /** A burst of particles at a point (gold for money, green for links, blue for calm, red for trouble). */
-export function burst(x: number, y: number, tone: 'gold' | 'green' | 'blue' | 'red' = 'gold', count = 14, spread = 70) {
+export function burst(x: number, y: number, tone: Tone = 'gold', count = 14, spread = 70) {
   if (reduced()) return;
   for (let i = 0; i < count; i++) {
     const p = layer(`juice-spark juice-${tone}`); p.style.left = `${x}px`; p.style.top = `${y}px`;
@@ -49,12 +50,12 @@ export function burst(x: number, y: number, tone: 'gold' | 'green' | 'blue' | 'r
     ], { duration: 520 + Math.random() * 260, easing: 'cubic-bezier(.2,.8,.3,1)' }).onfinish = () => p.remove();
   }
 }
-export function burstAt(el: Element | null, tone: 'gold' | 'green' | 'blue' | 'red' = 'gold', count = 14, spread = 70) {
+export function burstAt(el: Element | null, tone: Tone = 'gold', count = 14, spread = 70) {
   if (!el) return; const c = centre(el); burst(c.x, c.y, tone, count, spread);
 }
 
 /** A number or word that pops up and floats away (big payouts, "+1 calm"). */
-export function popText(el: Element | null, text: string, tone: 'gold' | 'green' | 'blue' | 'red' = 'gold', big = false) {
+export function popText(el: Element | null, text: string, tone: Tone = 'gold', big = false) {
   if (!el) return;
   const c = centre(el), t = layer(`juice-pop juice-${tone} ${big ? 'is-big' : ''}`); t.textContent = text; t.style.left = `${c.x}px`; t.style.top = `${c.y}px`;
   t.style.transform = 'translate(-50%,-50%)';
@@ -65,7 +66,7 @@ export function popText(el: Element | null, text: string, tone: 'gold' | 'green'
 }
 
 /** A full-width banner across the cabin: close calls, new records, district title cards. */
-export function banner(anchor: Element | null, title: string, sub: string, tone: 'gold' | 'red' | 'district' = 'gold', ms = 1900) {
+export function banner(anchor: Element | null, title: string, sub: string, tone: 'gold' | 'red' | 'district' | 'midnight' = 'gold', ms = 1900) {
   if (!anchor) return;
   const c = centre(anchor), el = layer(`juice-banner juice-banner-${tone}`);
   el.innerHTML = '';
@@ -124,12 +125,12 @@ export function explode(anchor: Element | null) {
 
 /** v9.18.3 box opening, played where the box sat: the box pops up and shakes, its lid flies off, sparks burst and
  * what was inside rises out of it. `label` is the contents ("+12 金币", "+4 电", an ability, "零件"). */
-export function openBoxFx(anchor: Element | null, src: string, label: string, tone: 'gold' | 'green' | 'blue' | 'red' = 'gold', delay = 0) {
+export function openBoxFx(anchor: Element | null, src: string, label: string, tone: Tone = 'gold', delay = 0) {
   if (!anchor) return;
   // Measured when it starts: at settlement the cabin is still finishing its travel animation.
   window.setTimeout(() => openBoxNow(anchor, src, label, tone), delay * 1000);
 }
-function openBoxNow(anchor: Element, src: string, label: string, tone: 'gold' | 'green' | 'blue' | 'red') {
+function openBoxNow(anchor: Element, src: string, label: string, tone: Tone) {
   const delay = 0, c = centre(anchor), size = Math.round(Math.max(56, Math.min(120, Math.min(c.w, c.h) * .62)));
   const box = layer('juice-box'); box.style.left = `${c.x - size / 2}px`; box.style.top = `${c.y - size / 2}px`; box.style.width = box.style.height = `${size}px`;
   const body = document.createElement('span'), lid = document.createElement('span');

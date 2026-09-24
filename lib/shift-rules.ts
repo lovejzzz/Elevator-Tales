@@ -11,7 +11,7 @@ export const RISK_PARTNERS: PassengerKind[] = ['thief', 'drunk', 'bomb'];
 export function riskPartnerships(cabin: Array<Rider | null>) {
   const contained = (slot: number) => {
     const kind = cabin[slot]?.kind;
-    const controls = kind === 'drunk' ? ['nurse'] : kind === 'thief' ? ['cop', 'lawyer'] : ['cop'];
+    const controls = kind === 'drunk' ? ['nurse', 'crookedcop'] : kind === 'thief' ? ['cop', 'lawyer', 'crookedcop'] : ['cop', 'crookedcop'];
     return ADJACENT.some(([a, b]) => {
       const other = a === slot ? b : b === slot ? a : -1;
       return other >= 0 && controls.includes(cabin[other]?.kind ?? '');
@@ -40,5 +40,8 @@ export const OFFER_PARTNERS: Record<PassengerKind, PassengerKind[]> = {
   nurse: ['drunk', 'child'], child: ['nurse', 'lover'], ghost: ['exorcist'], exorcist: ['ghost'],
   coach: ['commuter', 'courier', 'mystery'], celebrity: ['tourist', 'coach'], inspector: ['mechanic'],
   bomb: ['cop', 'thief', 'drunk'], mystery: ['coach'], shifter: ['nurse'], mimic: ['tourist'],
+  // Dark cards are never drawn as anchors: an ordinary draw turns dark after the packet is built.
+  overtimer: [], voyeur: [], smuggler: [], scrapper: [], exlover: [], noisemaker: [], robber: [], crookedcop: [], shyster: [],
+  brawler: [], pusher: [], creepychild: [], wraith: [], summoner: [], taskmaster: [], scandal: [], grafter: [], madbomber: [],
   parcel: [], operator: ['mechanic'], matchmaker: ['lover'], don: ['thief'], matron: ['child'], nightingale: ['tourist'], medium: ['ghost'], tycoon: ['commuter'], stranger: ['tourist'],
 };

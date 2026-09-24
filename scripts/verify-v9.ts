@@ -2,7 +2,7 @@
 // abilities, agitation bands, crowding and incidents, reworked abilities and roles.
 import assert from 'node:assert/strict';
 import * as E from '../lib/game-engine';
-import { LEGEND_KINDS, PASSENGERS, isLegend, type PassengerKind } from '../lib/game-data';
+import { LEGEND_KINDS, PASSENGERS, isDark, isLegend, type PassengerKind } from '../lib/game-data';
 import { motorCost, AGITATION_HIGH_MIN, ECONOMY_RULES } from '../lib/balance-v832';
 import { BOX_PRICES, chargeCost, storageCap } from '../lib/power-box';
 import { riderProfile } from '../lib/rider-profile';
@@ -22,6 +22,7 @@ import { readFileSync } from 'node:fs';
 import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
 import { planPlacement } from '../lib/game-interaction';
+import { DARK_RULES as DARK, itemPrice } from '../lib/dark-rules';
 
 // Most checks here predate the v9.18 real-time Bomber timer and verify floor timers; the real-time block switches it on.
 E.BOMB_RULES.realtime = false;
@@ -96,8 +97,13 @@ console.log('PASS keepsakes on delivery: wrench (free level, then −5), rounds 
   assert.equal(a.energyCap, 75);
   assert.equal(E.buyBoxLevel(a, 'motor'), a, 'one level per shop');
   let s = a; let floor = 10;
-  for (const line of ['storage', 'storage', 'transformer', 'transformer', 'motor'] as const) { floor += 10; s = E.buyBoxLevel({ ...s, floor, status: 'upgrade' }, line); }
-  assert.equal(Object.values(s.box!).reduce((x, y) => x + y, 0), 5, 'five levels per run');
+  for (const line of ['storage', 'storage', 'transformer', 'transformer', 'motor'] as const) { floor += floor === 50 ? 30 : 10; s = E.buyBoxLevel({ ...s, floor, status: 'upgrade' }, line); }
+  // v9.19 ladder: five levels until 80F, then one more every 30 floors, each at three times the price of the last.
+  assert.equal(Object.values(s.box!).reduce((x, y) => x + y, 0), 6, 'five levels before 80F, a sixth at 80F');
+  assert.equal(E.boxTotalCap(79), 5); assert.equal(E.boxTotalCap(80), 6); assert.equal(E.boxTotalCap(110), 7);
+  const five = { ...shop, floor: 70, box: { storage: 2, transformer: 2, motor: 1 } };
+  assert.equal(E.buyBoxLevel(five, 'motor'), five, 'no sixth level before 80F');
+  assert.equal(E.boxLevelPrice({ ...five, floor: 80 }, 'motor'), BOX_PRICES[1] * E.BOX_LADDER.priceStep, 'the sixth level costs three times as much');
   assert.equal(chargeCost({ storage: 0, transformer: 2, motor: 0 }, 10), 15);
   // v9.7 motor: level 1 saves 1 every third floor, level 2 on even floors, never below 1; level 3 quiets unrest.
   assert.equal(E.effectiveMotor({ floor: 23, box: { storage: 0, transformer: 0, motor: 1 } }), motorCost(24) - 1);
@@ -274,14 +280,16 @@ console.log('PASS intro opens only after storage is read');
 console.log('PASS rescue plans are real or the floor is declared lost');
 // v9.4 card net value: fare − trip power × charge price (+ courier refund) − trip agitation × 3; legends show none.
 {
-  const s = run(15, []);
-  assert.equal(netValue(rider('commuter', 15, 3, { boardedAt: 15 }), s), 0);
-  assert.equal(netValue(rider('courier', 15, 1, { boardedAt: 15 }), s), 10);
+  const s = run(25, []); // past the v9.19 early charge discount
+  assert.equal(netValue(rider('commuter', 25, 3, { boardedAt: 25 }), s), 0);
+  assert.equal(netValue(rider('courier', 25, 1, { boardedAt: 25 }), s), 10);
   // v9.16: a Courier carrying a parcel is valued as the pair; a parcel alone as its unclaimed contents.
-  assert.equal(netValue(rider('courier', 15, 1, { boardedAt: 15, parcelId: 'p' }), s), 8 - 2 - 2 + 4);
-  assert.equal(netValue(rider('parcel', 15, 1, { boardedAt: 15, ownerId: 'c' }), s), (6 + 3 * 2) / 2 - 2);
-  assert.equal(netValue(rider('thief', 15, 2, { boardedAt: 15 }), s), 5 - 4 - 6);
-  assert.equal(netValue(rider('operator', 15, 9, { boardedAt: 15 }), s), null);
+  assert.equal(netValue(rider('courier', 25, 1, { boardedAt: 25, parcelId: 'p' }), s), 8 - 2 - 2 + 4);
+  assert.equal(netValue(rider('parcel', 25, 1, { boardedAt: 25, ownerId: 'c' }), s), (6 + 3 * 2) / 2 - 2);
+  assert.equal(netValue(rider('thief', 25, 2, { boardedAt: 25 }), s), 5 - 4 - 6);
+  assert.equal(netValue(rider('operator', 25, 9, { boardedAt: 25 }), s), null);
+  // v9.19: until 20F power is 15% cheaper, so the same Commuter nets a little more.
+  assert.ok(netValue(rider('commuter', 15, 3, { boardedAt: 15 }), run(15, []))! > netValue(rider('commuter', 25, 3, { boardedAt: 25 }), s)!);
 }
 console.log('PASS card net value');
 // v9.5 legend shuffle bag: each unlocked legend once per cycle, never the same twice in a row.
@@ -297,15 +305,16 @@ console.log('PASS card net value');
 console.log('PASS legend shuffle bag');
 // v9.6 option A: flat motor 2 from 11F, late-night unrest from 41F, in-transit calming (8 coins, 6 per ten floors).
 {
-  assert.deepEqual([40, 41, 42, 44, 60, 61, 62, 63, 81, 100, 101, 140].map(f => nightUnrest(f)), [0, 1, 0, 1, 0, 1, 0, 1, 1, 2, 3, 3], 'v9.18: capped at +3');
+  // v9.19: late-night unrest is retired; late pressure comes from the dark riders themselves.
+  assert.deepEqual([40, 41, 44, 61, 81, 101, 140].map(f => nightUnrest(f)), [0, 0, 0, 0, 0, 0, 0], 'v9.19: no late-night unrest');
   const late = run(43, [rider('commuter', 43, 5, { boardedAt: 40 })], { stress: 2, coins: 100 });
   const after = E.resolveFloor(late, fixed());
-  assert.equal(lines(after, 'lastPressure')['夜深人躁'], 1, 'floor 44 carries unrest');
+  assert.equal(lines(after, 'lastPressure')['夜深人躁'], undefined, 'no unrest line');
   const calmed = E.buyCalm(late, 2);
   assert.equal(E.calmPrice(43), 14, 'v9.7: 6 + 2 per ten floors');
   assert.deepEqual([calmed.stress, calmed.coins], [0, 72]);
   const arriving = E.resolveFloor(run(43, [rider('commuter', 43, 1, { boardedAt: 40 })], { stress: 2 }), fixed());
-  assert.equal(lines(arriving, 'lastPressure')['夜深人躁'], undefined, 'a floor where someone gets off loses 1 unrest');
+  assert.equal(lines(arriving, 'lastPressure')['夜深人躁'], undefined);
   let s = { ...late, stress: 8, stressCap: 10, coins: 200 };
   for (let i = 0; i < 6; i++) s = E.buyCalm(s, 1);
   assert.equal(s.stress, 2); assert.equal(E.calmAllowance(s), 0, 'six per ten floors');
@@ -509,7 +518,9 @@ console.log('PASS Courier parcel rules');
   assert.equal(lines(handoff, 'lastEarnings')['快递员到站'], 8);
   assert.ok(handoff.status === 'playing' && handoff.cabin[1]?.kind === 'commuter' && handoff.cabin[1]?.disguised && handoff.cabin[1]?.fuse === undefined);
   assert.equal(riderProfile(handoff.cabin[1]!, handoff.cabin).fare, PASSENGERS.bomb.fare, 'same fare in disguise');
-  assert.equal(go([R('courier', 'c', 33, { parcelId: 'gone' }), R('bomb', 'b', 34, { fuse: 1 })]).status, 'lost', 'the timer still runs while he holds it');
+  // v9.19: the timer still runs while he holds it; an ordinary bomb now blows the Bomber and his neighbours out instead of ending the shift.
+  const blown = go([R('courier', 'c', 33, { parcelId: 'gone' }), R('bomb', 'b', 34, { fuse: 1 })]);
+  assert.ok(blown.status === 'playing' && blown.lastBlast && blown.cabin.every(r => !r), 'the timer still runs while he holds it: both are blown out');
 }
 console.log('PASS v9.17 Courier boxes, crates and the characters who handle them');
 // v9.17.1 audit fixes: the ascend guard matches settlement at shop floors, the bomb label knows about a Courier
@@ -574,8 +585,13 @@ console.log('PASS hidden box contents, ability finds and swaps');
   const armed = run(30, [R('bomb', 'b', 34, { fuse: 1, bombMs: 5000 })]);
   assert.equal(E.tickBombs(armed, 2000).cabin[0]?.bombMs, 3000);
   assert.equal(E.tickBombs(run(30, [R('cop', 'k', 34), R('bomb', 'b', 34, { fuse: 1, bombMs: 5000 })]), 9000).cabin[1]?.bombMs, 5000, 'an adjacent Officer pauses it');
-  const boom = E.tickBombs(armed, 6000);
-  assert.ok(boom.status === 'lost' && /炸弹倒计时归零/.test(boom.message));
+  // v9.19: an ordinary Bomber's bomb blows him and his neighbours out (the shift goes on); the Mad Bomber's ends it.
+  const boom = E.tickBombs({ ...armed, coins: 30, cabin: [R('bomb', 'b', 34, { fuse: 1, bombMs: 5000 }), R('tourist', 't', 34), null, R('commuter', 'c', 34), null, R('nurse', 'n', 34)] }, 6000);
+  assert.ok(boom.status === 'playing' && boom.coins === 30 - DARK.blastCoins && boom.cabin.filter(Boolean).length === 1 && boom.cabin[5]?.kind === 'nurse' && boom.lastBlast?.slots.length === 3, JSON.stringify(boom.lastBlast));
+  const mad = E.tickBombs(run(30, [R('madbomber', 'm', 34, { fuse: 1, bombMs: 5000 })]), 6000);
+  assert.ok(mad.status === 'lost' && /炸弹倒计时归零/.test(mad.message));
+  assert.equal(E.tickBombs(run(30, [R('cop', 'k', 34), R('madbomber', 'm', 34, { fuse: 1, bombMs: 5000 })]), 9000).status, 'lost', 'an ordinary Officer cannot lock the Mad Bomber');
+  assert.equal(E.tickBombs(run(30, [R('crookedcop', 'k', 34), R('madbomber', 'm', 34, { fuse: 1, bombMs: 5000 })]), 9000).cabin[1]?.bombMs, 5000, 'a Crooked Cop locks it');
   const ascend = E.resolveFloor(armed, fixed());
   assert.ok(ascend.status === 'playing' && ascend.cabin[0]?.fuse === 1, 'settlement no longer counts floors down');
   const delivered = E.resolveFloor(run(30, [R('bomb', 'b', 31, { fuse: 1, bombMs: 9500 })]), fixed());
@@ -694,4 +710,95 @@ console.log('PASS overtime calming price ladder, placement warnings, Dispatch us
   assert.ok(!/Drunk|Lawyer|Exorcist|neighbour/.test(translateGameText('醉汉安抚 · 律师 · 驱魔师 · 教练邻座 2 位（+100%）', 'en')), 'English uses the card names and US spelling');
 }
 console.log('PASS crowding warning, merged notes, English coverage of engine messages');
-console.log(JSON.stringify({ version: 'v9', checks: 39, passed: true }));
+// v9.19 after midnight: dark riders, corruption, the Mystery's identity, survivors, items.
+{
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 60, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  const up = E.initialRun().upgrades;
+  const darkCount = (floor: number) => Array.from({ length: 200 }, (_, i) => E.makeOffers(floor, up, false, seq(((i * 37) % 97) / 97, ((i * 53) % 89) / 89, ((i * 71) % 83) / 83, ((i * 13) % 79) / 79))).flat().filter(r => isDark(r.kind)).length;
+  assert.equal(darkCount(59), 0, 'no dark card before midnight');
+  const at60 = darkCount(60), at80 = darkCount(80);
+  assert.ok(at60 > 0 && at80 > at60, `dark share rises with depth (${at60} → ${at80})`);
+  const commuters = (floor: number) => Array.from({ length: 400 }, (_, i) => E.makeOffers(floor, up, false, seq(((i * 37) % 97) / 97, ((i * 53) % 89) / 89, ((i * 71) % 83) / 83))).flat().filter(r => r.kind === 'commuter' || r.kind === 'lover').length;
+  assert.ok(commuters(52) < commuters(49), 'Commuters and Lovers thin out after 50F');
+
+  // Corruption: a Commuter flanked by two dark riders turns after two departures; an Amulet keeps him.
+  const flanked = run(62, [R('robber', 'x', 70), R('commuter', 'c', 70), R('brawler', 'y', 70)], { coins: 0, stressCap: 99 });
+  const once = E.resolveFloor(flanked, fixed(.9));
+  assert.equal(once.cabin[1]?.kind, 'commuter'); assert.equal(once.cabin[1]?.corruption, 1);
+  const twice = E.resolveFloor({ ...once, status: 'playing' }, fixed(.9));
+  assert.equal(twice.cabin[1]?.kind, 'overtimer', 'two floors between dark riders turn a Commuter into an Overtimer');
+  assert.deepEqual(twice.lastCorruption, [{ slot: 1, from: 'commuter', to: 'overtimer' }]);
+  const warded = E.resolveFloor({ ...once, status: 'playing', cabin: once.cabin.map(r => r?.id === 'c' ? { ...r, warded: true } : r) }, fixed(.9));
+  assert.equal(warded.cabin[1]?.kind, 'commuter', 'an Amulet stops corruption');
+
+  // The Mystery is revealed one floor after boarding and pays his identity's fare.
+  const mystery = E.resolveFloor(run(40, [R('mystery', 'm', 45, { identity: 'magnate' })]), fixed(.9));
+  assert.ok(mystery.cabin[0]?.revealed && mystery.log[0].includes('富商'));
+  assert.equal(E.arrivalFare(mystery.cabin[0]!, mystery.cabin, 0, 0), 25);
+
+  // Survivors: a normal rider delivered after midnight earns the survivor bonus; before midnight he does not.
+  assert.equal(lines(E.resolveFloor(run(62, [R('commuter', 'a', 63)]), fixed(.9)), 'lastEarnings')['幸存者平安送达'], DARK.survivorBonus);
+  assert.equal(lines(E.resolveFloor(run(40, [R('commuter', 'a', 41)]), fixed(.9)), 'lastEarnings')['幸存者平安送达'], undefined);
+
+  // Robber robs the wallet unless held; held he pays a bounty. The Crooked Cop takes protection money and calms the cabin.
+  const robbed = lines(E.resolveFloor(run(62, [R('robber', 'r', 70)], { coins: 200 }), fixed(.9)), 'lastEarnings');
+  assert.equal(robbed['劫匪抢走'], -(DARK.robberBase + Math.floor(200 * DARK.robberRate)));
+  const held = E.resolveFloor(run(62, [R('robber', 'r', 63), R('cop', 'p', 70)], { coins: 200 }), fixed(.9));
+  assert.equal(lines(held, 'lastEarnings')['劫匪抢走'], undefined);
+  assert.ok(E.fareBreakdown(R('robber', 'r', 63), [R('robber', 'r', 63), R('cop', 'p', 70), null, null, null, null], 0, 0).some(l => l.label === '劫匪赏金' && l.amount === DARK.robberBounty));
+  const crooked = E.resolveFloor(run(62, [R('crookedcop', 'k', 70), R('drunk', 'd', 70)], { coins: 50, stress: 3 }), fixed(.9));
+  assert.equal(lines(crooked, 'lastEarnings')['黑警保护费'], -DARK.crookedFee);
+  assert.equal(lines(crooked, 'lastPressure')['黑警镇场'], -DARK.crookedCalm);
+  assert.ok(E.thiefHeld([R('crookedcop', 'k', 70), R('thief', 't', 70), null, null, null, null], 1), 'a Crooked Cop holds a Thief');
+  assert.ok(!E.thiefHeld([R('cop', 'k', 70), R('robber', 't', 70), R('shyster', 's', 70), null, null, null], 1), 'a Shyster frees the Robber from an Officer');
+
+  // Overtimer: stays past his stop unless a neighbour gets off with him or his alarm rings; overtime banks each floor.
+  const alone = E.resolveFloor(run(62, [R('overtimer', 'o', 63), null, null, R('tourist', 't', 70)]), fixed(.9));
+  assert.equal(alone.cabin[0]?.kind, 'overtimer', 'an Overtimer with nobody leaving stays aboard');
+  assert.equal(alone.cabin[0]?.stash, DARK.overtimePay);
+  const together = E.resolveFloor(run(62, [R('overtimer', 'o', 63), R('commuter', 'c', 63)]), fixed(.9));
+  assert.ok(!together.cabin.some(r => r?.id === 'o'), 'he leaves with a neighbour who gets off');
+  const alarmed = E.resolveFloor(run(62, [R('overtimer', 'o', 63, { alarm: true })]), fixed(.9));
+  assert.ok(!alarmed.cabin.some(r => r?.id === 'o'), 'the Alarm Clock gets him off on time');
+  const lingering = run(65, [R('overtimer', 'o', 63, { stash: 6 })]);
+  const walked = E.resolveFloor(lingering, fixed(.9));
+  assert.ok(!walked.cabin.some(Boolean) && !walked.lastArrivals?.length && walked.lastEarnings.total <= 0, 'three floors past his stop he walks off unpaid');
+
+  // Scandal: exposed beside an Inspector; Smuggler: an Inspector seizes the black box for a reward.
+  assert.deepEqual(E.fareBreakdown(R('scandal', 's', 63), [R('scandal', 's', 63), R('inspector', 'i', 70), null, null, null, null], 0, 0), [{ label: '丑闻曝光：车费归零', amount: 0 }]);
+  const box: Rider = { ...R('parcel', 'b', 66), ownerId: 'sm', contraband: true };
+  const seized = E.resolveFloor(run(62, [R('smuggler', 'sm', 66, { parcelId: 'b' }), box, R('inspector', 'i', 70)]), fixed(.9));
+  assert.ok(!seized.cabin.some(r => r?.id === 'b') && lines(seized, 'lastEarnings')['检查员没收黑箱'] === DARK.seizeReward, 'an Inspector seizes a black box');
+
+  // Pusher: calms 2 per neighbour; when she leaves, her neighbours go into withdrawal.
+  const pushed = E.resolveFloor(run(62, [R('pusher', 'p', 63), R('drunk', 'd', 70)], { stressCap: 99 }), fixed(.9));
+  assert.equal(pushed.cabin[1]?.withdrawal, DARK.withdrawalFloors);
+  assert.equal(E.riderAgitation(pushed, 1).fixed.find(l => l.label === '药贩走后的戒断')?.amount, DARK.withdrawal);
+
+  // Summoner: on floors divisible by 3 he calls a Ghost into an empty seat beside him; Wraiths drain power unchecked.
+  const summoned = E.resolveFloor(run(62, [R('summoner', 's', 70)]), fixed(.9));
+  assert.equal(summoned.lastSummons?.length, 1); assert.equal(summoned.cabin[summoned.lastSummons![0]]?.kind, 'ghost');
+  assert.ok(E.energyBreakdown(run(62, [R('wraith', 'w', 70)])).dark > 0, 'an unchecked Wraith drains power');
+  assert.equal(E.energyBreakdown(run(62, [R('wraith', 'w', 70), R('summoner', 's', 70)])).dark, 0, 'a Summoner controls the Wraith');
+
+  // A Flare stops dark trouble for the floor.
+  assert.equal(lines(E.resolveFloor(run(62, [R('robber', 'r', 70)], { coins: 200, flareFloor: 62 }), fixed(.9)), 'lastEarnings')['劫匪抢走'], undefined);
+
+  // Items: stock by depth, rising prices, a four-slot bag and their effects.
+  const stock = E.drawItemStock(62, fixed(.3));
+  assert.equal(stock.length, 3); assert.ok(E.drawItemStock(5, fixed(.99)).every(c => ['cell', 'swap', 'dismiss'].includes(c.key)), 'only basic items early');
+  const shop: RunState = { ...run(60, []), status: 'upgrade', coins: 500, itemStock: [{ key: 'holywater', price: 60, sold: false }, { key: 'cutter', price: 45, sold: false }, { key: 'cell', price: 20, sold: false }] };
+  let bag = E.buyItem(E.buyItem(E.buyItem(shop, 0), 1), 2);
+  assert.deepEqual(bag.items, ['holywater', 'cutter', 'cell']); assert.equal(bag.coins, 500 - 125);
+  assert.equal(E.buyItem(bag, 0), bag, 'a sold item cannot be bought twice');
+  bag = { ...bag, status: 'playing', floor: 62, energy: 10, cabin: [R('robber', 'r', 70), R('bomb', 'b', 66, { bombMs: 20000 }), null, null, null, null] };
+  assert.equal(E.applyItem(bag, 'cell').energy, 25);
+  const purified = E.applyItem(bag, 'holywater', 'r');
+  assert.equal(purified.cabin[0]?.kind, 'thief'); assert.deepEqual(purified.lastCorruption, [{ slot: 0, from: 'robber', to: 'thief' }]);
+  assert.ok(!E.itemUsable(bag, 'holywater', bag.cabin[1]), 'Holy Water needs a dark rider');
+  const cut = E.applyItem(bag, 'cutter', 'b');
+  assert.ok(!cut.cabin.some(r => r?.id === 'b') && cut.coins > bag.coins && !cut.items!.includes('cutter'), 'the Wire Cutter removes the Bomber, who pays');
+  assert.ok(Math.abs(itemPrice('holywater', 60, 1) - 90) < 1 && itemPrice('holywater', 100) > 60, 'repeat and depth raise item prices');
+}
+console.log('PASS v9.19 dark share, corruption, Mystery identity, survivors, dark riders, flare, items');
+console.log(JSON.stringify({ version: 'v9', checks: 40, passed: true }));

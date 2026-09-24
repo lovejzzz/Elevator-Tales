@@ -1,6 +1,19 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.18.5**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.19.0**. Publication status is tracked separately from the source version.
+
+## v9.19.0 — 2026-09-24 — After midnight: 18 dark riders, corruption, items, two bombs / 午夜之后：18 位暗黑版人物、同化、道具、两种炸弹
+
+- Midnight bell on leaving the 60F shop; dark cabin; dark share 35% (60–69F), 60% (70–79F), 85% (80F+), at least one in the first batch after the bell.
+- 18 dark riders with new portraits, rules and links (Overtimer, Voyeur, Smuggler, Scrapper, Ex, Noisemaker, Robber, Crooked Cop, Shyster, Brawler, Pusher, Uncanny Child, Wraith, Summoner, Taskmaster, Scandal, Grafter, Mad Bomber); values in `lib/dark-rules.ts` and `lib/game-data.ts`; design notes in `docs/design/dark-shift.md`.
+- Corruption: 2 departures beside ≥2 dark riders turns a normal rider dark; violet dotted links, mist, faded portrait, throbbing frame on the last floor, violet flash (Holy Water: golden). Survivors +5 after 60F; abyss steps at 80F and every 20 floors.
+- Late-night unrest removed. Ordinary Bomber at zero: blows himself and neighbors out (no fares), −20 coins, shift continues. Mad Bomber (fare 50, 60% timer) ends the shift; locked only by a Crooked Cop / Undercover Officer; Wire Cutter defuses.
+- Mystery reveals an identity one floor after boarding: Undercover Officer 8, Fugitive 20 (+1 agitation), Magnate 25, Good Samaritan 8 (calms 1).
+- Items: 14 single-use items, 4-slot bag, 3 per shop, +50% per repeat, +0.5%/floor past 60F; midnight items from 60F, Flare from 80F.
+- Money sinks: power-box level 6 at 80F, 7 at 110F, +1 per 30 floors, ×3 price each; overtime charging packs of 5 at 3×/5×/7× the in-transit price; level-2 abilities (+50%, 60 +30 each, one per shop, 13 abilities).
+- Cautious play: shop power 15% cheaper up to 20F; empty-seat hint. Commuter/Lover weight ×0.5 from 51F; Courier ×0.5 while one is aboard; crew bank 3, 4, 5 … per floor.
+- Acceptance 4,200 runs vs 9.18.5: balanced 100 → 111F (p10 89, p90 121); deaths 66.2/31.9/2.0%; shop exit coins 92 → 36; novice 34 → 49; human-like 68 → 64 (p90 96 → 79); Cooperation 135, Quiet 137. Without the box ladder balanced stays 99. verify 40 checks; browser checks at 60–66F in Chinese, English and 375-wide.
+- Watch: steady play now reaches 130–140F; human-like tail shorter after midnight; Shyster/Robber/Scrapper rarely boarded by bots; items not simulated; AI art needs a human look.
 
 ## v9.18.5 — 2026-09-24 — Finishing ten playtests: English, phone layout, power first, more warnings / 十局试玩收尾：英文界面、手机布局、充电优先、更多放人提示
 

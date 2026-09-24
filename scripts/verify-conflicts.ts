@@ -11,13 +11,13 @@ const amount=(lines:Array<{label:string;amount:number}>,label:string)=>lines.fin
 const allDefinedKinds=Object.keys(BONDS) as PassengerKind[]; // includes archived definitions
 const greenPairs=new Set(allDefinedKinds.flatMap(kind=>BONDS[kind].likes.map(target=>pairKey(kind,target))));
 const redPairs=new Set(allDefinedKinds.flatMap(kind=>BONDS[kind].avoids.map(target=>pairKey(kind,target))));
-assert.equal(greenPairs.size,18);
-assert.equal(redPairs.size,29); // v9.18.3: Thief/Tourist and Thief/Inspector removed, Tourist/Drifter added
+assert.equal(greenPairs.size,30); // v9.19: 12 green pairs among the dark riders
+assert.equal(redPairs.size,35); // v9.18.3: Thief/Tourist and Thief/Inspector removed, Tourist/Drifter added; v9.19: 6 dark red pairs
 assert.deepEqual([...greenPairs].filter(pair=>redPairs.has(pair)),[],'one pair must never be both a static green and red relationship');
 assert.deepEqual(new Set(Object.keys(CONFLICT_EFFECTS)),redPairs,'every static red pair needs an explicit effect');
 
 const effectCounts=Object.values(CONFLICT_EFFECTS).reduce<Record<ConflictEffect,number>>((counts,effect)=>({...counts,[effect]:counts[effect]+1}),{agitation:0,energy:0,coins:0,overload:0,gamble:0});
-assert.deepEqual(effectCounts,{agitation:11,energy:8,coins:7,overload:2,gamble:1});
+assert.deepEqual(effectCounts,{agitation:15,energy:8,coins:9,overload:2,gamble:1});
 
 for(const kind of ['tourist','lover','musician','nurse','thief'] as const){
  const cabin=[rider('inspector','inspector'),rider(kind,kind),null,null,null,null];

@@ -11,7 +11,8 @@ export const AGITATION_RULES = { arrivalReliefCap: 2 };
  * then every floor, then +2 per floor (cap). A gradual clock that riders like nurses and musicians can answer. */
 /** perRider (v9.18 study): when set, night unrest follows the cabin — each tier of `every` floors adds 1/perRider of a
  * point per rider (6 riders at tier 0 with perRider 6 → +1; tier 1 → +2 …), capped. 0 keeps the floor-only clock. */
-export const NIGHT_UNREST = { from: 41, every: 15, cap: 3, arrivalsCalm: true, perRider: 0 };
+/** v9.19: late-night unrest is gone (from 0 = off); late pressure now comes from the dark riders themselves. */
+export const NIGHT_UNREST = { from: 0, every: 15, cap: 3, arrivalsCalm: true, perRider: 0 };
 export const nightUnrest = (floor: number, occupied = 5) => {
   if (!NIGHT_UNREST.from || floor < NIGHT_UNREST.from) return 0;
   if (NIGHT_UNREST.perRider) return Math.min(NIGHT_UNREST.cap, Math.floor(occupied * (Math.floor((floor - NIGHT_UNREST.from) / NIGHT_UNREST.every) + 1) / NIGHT_UNREST.perRider));

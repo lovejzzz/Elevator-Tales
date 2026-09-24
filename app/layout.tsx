@@ -26,6 +26,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const imageStyle = {
     '--elevator-cabin-image': `url("${elevatorImage}")`,
+    '--elevator-cabin-image-dark': `url("${publicBasePath}/assets/elevator-cabin-deco-dark.jpg")`,
   } as CSSProperties;
 
   return <html lang="en" className="dark" style={imageStyle}><body className={`${sans.variable} ${mono.variable} ${display.variable}`}>{children}</body></html>;

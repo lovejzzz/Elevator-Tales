@@ -18,7 +18,7 @@ export function netValue(rider: Rider, state: RunState): number | null {
   if (isLegend(rider.kind)) return null;
   const trip = Math.max(1, rider.destination - state.floor);
   const profile = riderProfile(rider, state.cabin);
-  const price = chargeUnitPrice(boxOf(state));
+  const price = chargeUnitPrice(boxOf(state), state.floor);
   const fare = rider.kind === 'mystery' ? 16 : PASSENGERS[rider.kind].fare;
   const agitation = (profile.agitation ?? 0) + (AGITATING.has(rider.kind) ? 1 : 0) + (rider.volatile ? 1 : 0);
   const refund = rider.kind === 'courier' ? COURIER_ARRIVAL_CHARGE * price : 0;
@@ -64,7 +64,7 @@ const boxValue = (r: Rider, price: number) => (boxCoins(r) + boxPower(r) * price
  * for a rider not yet aboard; their current seat once aboard. Null for legends or a full cabin. */
 export function boardNet(rider: Rider, state: RunState): { value: number; seated: boolean } | null {
   if (isLegend(rider.kind)) return null;
-  const trip = Math.max(1, rider.destination - state.floor), price = chargeUnitPrice(boxOf(state));
+  const trip = Math.max(1, rider.destination - state.floor), price = chargeUnitPrice(boxOf(state), state.floor);
   const power = trip * riderProfile(rider, state.cabin).energy * price * (isBigParcel(rider) ? 2 : 1);
   const value = (withRider: Array<Rider | null>, without: Array<Rider | null>) =>
     cabinFares(state, withRider) - cabinFares(state, without) + cabinExtras(state, withRider, price) - cabinExtras(state, without, price) - power - trip * (cabinAgitation(state, withRider) - cabinAgitation(state, without)) * NET_AGITATION_COINS;
@@ -115,7 +115,7 @@ export function pairedNet(rider: Rider, state: RunState): { value: number; partn
 function courierWithParcel(rider: Rider, state: RunState, now: number, at: number): { value: number; partner: PassengerKind } | null {
   if (state.cabin.some(r => r?.id === rider.parcelId)) return null;
   const parcel: Rider = { id: rider.parcelId!, kind: 'parcel', ownerId: rider.id, destination: rider.destination, patience: 0, boardedAt: state.floor, fareBonus: 0, stash: 0, volatile: false, ...(rider.parcelBig ? { big: 'top' as const, boxId: rider.parcelId } : {}), ...(rider.tier ? { tier: rider.tier } : {}) };
-  const price = chargeUnitPrice(boxOf(state)), trip = Math.max(1, rider.destination - state.floor);
+  const price = chargeUnitPrice(boxOf(state), state.floor), trip = Math.max(1, rider.destination - state.floor);
   const power = trip * (riderProfile(rider, state.cabin).energy + PASSENGERS.parcel.energy * (rider.parcelBig ? 2 : 1)) * price;
   // Both aboard versus neither aboard (not versus an unclaimed parcel), with both trips' power.
   const without = unseatRider(state.cabin, rider.id);

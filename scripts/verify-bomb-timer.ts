@@ -26,10 +26,16 @@ assert.ok(exposed.every((line) => !/[\u3400-\u9fff]/u.test(translateGameText(lin
 assert.ok(exposed.every((line) => !/\bfuse\b/iu.test(translateGameText(line, 'en'))), 'English copy must use Bomb timer instead of fuse');
 
 const unprotected = { ...initialRun(), floor: 1, cabin: [rider('bomb', 'unsafe', { fuse: 1, destination: 4 }), null, null, null, null, null] };
-const failed = resolveFloor(unprotected, () => .9);
+// v9.19: an ordinary Bomber at zero blows himself and his neighbours out and costs coins; the shift goes on.
+const blasted = resolveFloor({ ...unprotected, coins: 30, cabin: [rider('bomb', 'unsafe', { fuse: 1, destination: 4 }), rider('commuter', 'near'), null, null, null, rider('tourist', 'far')] }, () => .9);
+assert.equal(blasted.status, 'playing');
+assert.deepEqual(blasted.lastBlast?.slots, [0, 1]);
+assert.equal(blasted.cabin[5]?.id, 'far', 'riders not beside the bomb stay aboard');
+// Only the Mad Bomber's contraption ends the shift, and the lesson names the Crooked Cop.
+const failed = resolveFloor({ ...unprotected, cabin: [rider('madbomber', 'mad', { fuse: 1, destination: 4 }), null, null, null, null, null] }, () => .9);
 assert.equal(failed.status, 'lost');
 assert.match(failed.message, /炸弹倒计时归零/u);
-assert.match(failureLesson(failed), /相邻期间锁住倒计时/u);
+assert.match(failureLesson(failed), /黑警/u);
 
 const protectedRun = { ...initialRun(), floor: 1, cabin: [rider('cop', 'officer'), rider('bomb', 'protected', { fuse: 2 }), null, null, null, null] };
 assert.equal(resolveFloor(protectedRun, () => .9).cabin[1]?.fuse, 2, 'Officer must lock the timer while adjacent');

@@ -1,15 +1,18 @@
 import { BONDS, bondStatus, conflictLinks, profileWeight, randomTraits, riderProfile, type VariableTraits } from './rider-profile';
 import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
-import { ADJACENT, PASSENGERS, UNLOCK_TIERS, UPGRADES, isLegend, passengerCategory, type LegendKind, type PassengerKind, type UpgradeKey } from './game-data';
+import { ADJACENT, BASE_OF, DARK_OF, PASSENGERS, UNLOCK_TIERS, UPGRADES, isDark, isLegend, passengerCategory, type LegendKind, type PassengerKind, type UpgradeKey } from './game-data';
+import { DARK_RULES, ITEMS, ITEM_KEYS, ITEM_SLOTS, MYSTERY_IDENTITIES, MYSTERY_RULES, abyssTier, corruptible, darkShare, isBombKind, isCarrierKind, isSurvivor, itemPrice, type ItemKey, type MysteryIdentity } from './dark-rules';
 import { BOX_MAX_LEVEL, BOX_PRICES, BOX_TOTAL_CAP, emergencySectorCap, EMPTY_BOX, affordableUnits, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, motorNoise, shopEntryCharge, storageCap, type BoxLine, type PowerBox } from './power-box';
 import { districtWeight } from './districts';
 import { CHILD_CARERS, DRUNK_CARERS, GHOST_CONTROLLERS, KEEPSAKE_KEYS, LEGEND_DECLINE_COINS, LEGEND_DESTINATION, LEGEND_KEEPSAKE, LEGEND_POOL_DEFAULT, LEGEND_RULES, type KeepsakeKey } from './legends';
 import { V9_AGITATION, NIGHT_UNREST, nightUnrest, crowdingThreshold, agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
-import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome, flywheelSaving, consumeFlywheel } from './shop-effects';
+import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome, flywheelSaving, consumeFlywheel, boosted, ABILITY_LEVEL2, LEVEL2_TEXT } from './shop-effects';
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
 
-export type Rider = { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; routeStops?: number; bombMs?: number; bombMsTotal?: number; /** v9.18.4: seconds that still count for the defusal bonus; they drain even while an Officer locks the timer. */ bonusMs?: number; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
+/** v9.19 midnight fields: corruption progress, item effects, withdrawal, the Mystery's identity, contraband boxes. */
+export type MidnightRiderFields = { corruption?: number; warded?: boolean; cuffed?: boolean; alarm?: boolean; sedated?: number; sealed?: boolean; withdrawal?: number; identity?: MysteryIdentity; revealed?: boolean; contraband?: boolean; summoned?: boolean; crewFloors?: number };
+export type Rider = MidnightRiderFields & { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; routeStops?: number; bombMs?: number; bombMsTotal?: number; /** v9.18.4: seconds that still count for the defusal bonus; they drain even while an Officer locks the timer. */ bonusMs?: number; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
 export type ChangeLine = { label: string; amount: number };
 export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number; power?:number; ability?:UpgradeKey; /** v9.18.4: the keepsake a delivered legend left behind. */ keepsake?:KeepsakeKey; /** UI only: an incident exit card (never set by the engine). */ incident?:boolean };
 /** v9.18.1: who the Thief robbed on the last floor, for the pickpocket animation. */
@@ -68,6 +71,19 @@ export type RunState = {
   rerolledFloor?: number;
   shopUpgradeBought: boolean;
   shopExtraBought?: boolean;
+  /** v9.19 items: the bag, this shop's stock and how many of each were bought (prices rise). */
+  items?: ItemKey[];
+  itemStock?: Array<{ key: ItemKey; price: number; sold: boolean }>;
+  itemBought?: Partial<Record<ItemKey, number>>;
+  /** A flare lit on this floor: no dark rider causes trouble on the ascent from it. */
+  flareFloor?: number;
+  /** v9.19: the shop floor where an ability was last raised to level 2 (one per shop). */
+  abilityRaisedFloor?: number;
+  /** v9.19: an ordinary Bomber blew up (neighbours thrown out unpaid), for the explosion effect. */
+  lastBlast?: { bomber: number; slots: number[]; coins: number };
+  /** v9.19: riders who turned dark (or were purified) on the last floor, and riders summoned in. */
+  lastCorruption?: Array<{ slot: number; from: PassengerKind; to: PassengerKind }>;
+  lastSummons?: number[];
   status: 'playing' | 'upgrade' | 'lost'; message: string; log: string[];
   lastEarnings: { total: number; sources: ChangeLine[] }; lastPressure: { delta: number; sources: ChangeLine[] }; lastEnergy: { delta: number; sources: ChangeLine[] };
 };
@@ -79,9 +95,9 @@ export const legendInCabin = (cabin: Array<Rider|null>, kind: LegendKind) => cab
 const sectorOf = (floor: number) => Math.floor(floor / 10);
 // Dispatch merges Reservation and Rebooking: one use per sector, either way.
 export const DISPATCH_USES_PER_SECTOR = 2;
-const dispatchUsed = (state: RunState, sector: number) => (state.dispatchSector === sector ? state.dispatchCount ?? 0 : 0) >= DISPATCH_USES_PER_SECTOR;
+const dispatchUsed = (state: RunState, sector: number) => (state.dispatchSector === sector ? state.dispatchCount ?? 0 : 0) >= boosted(state, 'dispatch', DISPATCH_USES_PER_SECTOR);
 /** v9.18.4: Dispatch uses left in this ten-floor sector (the UI never offered Dispatch before; only the retired abilities had buttons). */
-export const dispatchRemaining = (state: RunState) => Math.max(0, DISPATCH_USES_PER_SECTOR - (state.dispatchSector === Math.floor(state.floor / 10) ? state.dispatchCount ?? 0 : 0));
+export const dispatchRemaining = (state: RunState) => Math.max(0, boosted(state, 'dispatch', DISPATCH_USES_PER_SECTOR) - (state.dispatchSector === Math.floor(state.floor / 10) ? state.dispatchCount ?? 0 : 0));
 const dispatchTick = (state: RunState, sector: number) => state.upgrades.dispatch ? { dispatchSector: sector, dispatchCount: (state.dispatchSector === sector ? state.dispatchCount ?? 0 : 0) + 1 } : {};
 export function retimeRider(state:RunState,id:string,delta:number):RunState {
   const r=state.cabin.find(r=>r?.id===id),sector=Math.floor(state.floor/10);
@@ -95,7 +111,7 @@ export function settleBuffer(raw:number,cap:number,stored:number,enabled:boolean
 }
 export const SOUNDPROOF_RULES = { riskCap: Infinity };
 export const redAgitationProtection=(state:RunState)=>state.upgrades.soundproof
- ? Math.min(1,conflictLinks(state.cabin).filter(l=>l.effect==='agitation').length)
+ ? Math.min(boosted(state,'soundproof',1),conflictLinks(state.cabin).filter(l=>l.effect==='agitation').length)
    +(SHOP_TUNING.soundproofRisk?Math.min(SOUNDPROOF_RULES.riskCap,riskPartnerships(state.cabin).agitation):0)
  :0;
 export const oldMovesRemaining = (state:RunState) => Math.max(0,2-(state.oldMovesUsed ?? Number(state.swapped)));
@@ -140,7 +156,7 @@ export const PICKPOCKET: Partial<Record<PassengerKind, number>> = {
 export function stealLink(cabin: Array<Rider | null>, first: number, second: number): number | 'box' {
   for (const [t, v] of [[first, second], [second, first]]) {
     const thief = cabin[t];
-    if (thief?.kind !== 'thief' || neighbours(t).some(i => ['cop', 'lawyer'].includes(cabin[i]?.kind ?? ''))) continue;
+    if (thief?.kind !== 'thief' || thiefHeld(cabin, t)) continue;
     if (!neighbours(t).includes(v)) continue;
     if (cabin[v]?.kind === 'parcel') { const links = parcelLinks(cabin); if (links.eyed.get(v) === t) return 'box'; continue; }
     const coins = ECONOMY_RULES.thiefPerVictim ? pickpocketFrom(cabin[v]) : 0;
@@ -148,7 +164,7 @@ export function stealLink(cabin: Array<Rider | null>, first: number, second: num
   }
   return 0;
 }
-export const pickpocketFrom = (v: Rider | null | undefined) => (!v || v.kind === 'parcel' || ['cop', 'lawyer', 'don'].includes(v.kind) || isLegend(v.kind) ? 0 : PICKPOCKET[v.kind] ?? ECONOMY_RULES.thiefPerVictim);
+export const pickpocketFrom = (v: Rider | null | undefined) => (!v || v.kind === 'parcel' || ['cop', 'lawyer', 'don', 'crookedcop'].includes(v.kind) || isLegend(v.kind) ? 0 : PICKPOCKET[v.kind] ?? ECONOMY_RULES.thiefPerVictim);
 /** Bomb timers (v9.18 study): the dealt range, and how many steps an unlocked timer drops per floor at high agitation. */
 export const BOMB_RULES = { fuseMin: 3, fuseMax: 6, highTick: 2,
   /** v9.18 real-time timer: a Bomber aboard counts down in real seconds (base + per stop of his trip) instead of floors.
@@ -161,19 +177,27 @@ export const bombSeconds = (stops: number) => BOMB_RULES.baseSeconds + BOMB_RULE
 /** v9.18: count real time down on every Bomber aboard not locked by an adjacent Officer; one at zero ends the run. */
 export function tickBombs(state: RunState, ms: number): RunState {
   if (!BOMB_RULES.realtime || state.status !== 'playing' || ms <= 0) return state;
-  let changed = false, exploded = false;
+  let changed = false, madExploded = false, blownAt = -1;
   const cabin = state.cabin.map((r, slot) => {
-    if (r?.kind !== 'bomb' || r.bombMs === undefined) return r;
+    if (!isBombKind(r?.kind) || r!.bombMs === undefined) return r;
     changed = true;
     // An Officer's lock stops the timer, not the clock: the defusal bonus keeps draining in real time.
-    const bonusMs = Math.max(0, Math.min(r.bonusMs ?? r.bombMs, r.bombMs) - ms);
-    if (hasNeighbour(state.cabin, slot, ['cop'])) return { ...r, bonusMs };
+    const bonusMs = Math.max(0, Math.min(r!.bonusMs ?? r!.bombMs!, r!.bombMs!) - ms);
+    if (bombLocked(state.cabin, slot)) return { ...r!, bonusMs };
     // At high agitation the timer runs at highTick× speed, the same rule as floor timers.
-    const bombMs = Math.max(0, r.bombMs - ms * bombTick(state.stress)); if (bombMs === 0) exploded = true;
-    return { ...r, bombMs, bonusMs: Math.min(bonusMs, bombMs) };
+    const bombMs = Math.max(0, r!.bombMs! - ms * bombTick(state.stress));
+    if (bombMs === 0) { if (r!.kind === 'madbomber') madExploded = true; else if (blownAt < 0) blownAt = slot; }
+    return { ...r!, bombMs, bonusMs: Math.min(bonusMs, bombMs) };
   });
   if (!changed) return state;
-  return exploded ? { ...state, cabin, status: 'lost', message: '炸弹倒计时归零：乘客未能及时到站。午夜班次戛然而止。' } : { ...state, cabin };
+  if (madExploded) return { ...state, cabin, status: 'lost', message: '炸弹倒计时归零：疯炸客的怪炸弹炸了。午夜班次戛然而止。' };
+  if (blownAt >= 0) {
+    // v9.19: an ordinary Bomber no longer ends the shift; his bomb throws him and his neighbours out and costs coins.
+    const blast = blastAt(cabin, blownAt, state.coins);
+    const message = `炸弹客的炸弹炸了：${blast.slots.length} 人被炸下车，没付车费，损失 ${blast.coins} 金币。`;
+    return { ...state, cabin: blast.cabin, coins: state.coins - blast.coins, lastBlast: { bomber: blownAt, slots: blast.slots, coins: blast.coins }, message, log: [`${state.floor}F · ${message}`, ...state.log].slice(0, 4) };
+  }
+  return { ...state, cabin };
 }
 export const bombTick = (stress: number) => (agitationBand(stress) === 'high' ? BOMB_RULES.highTick : 1);
 /** v9.16 Courier parcels: an unclaimed parcel pays coins or power at random when it reaches its floor;
@@ -247,7 +271,7 @@ export type ParcelLinks = { boxes: Box[]; carrier: Map<number, number>; served: 
 export function parcelLinks(cabin: Array<Rider | null>): ParcelLinks {
   const carrier = new Map<number, number>(), served = new Map<number, number[]>(), contested = new Set<number>(), eyed = new Map<number, number>();
   const boxes = boxesIn(cabin);
-  const isCourier = (i: number) => cabin[i]?.kind === 'courier' && Boolean(cabin[i]!.parcelId);
+  const isCourier = (i: number) => isCarrierKind(cabin[i]?.kind) && Boolean(cabin[i]!.parcelId);
   const give = (box: Box, c: number) => { box.slots.forEach(p => carrier.set(p, c)); served.set(c, [...(served.get(c) ?? []), ...box.slots]); };
   for (const box of boxes) {
     const owner = cabin.findIndex(x => Boolean(box.ownerId) && x?.id === box.ownerId);
@@ -264,7 +288,7 @@ export function parcelLinks(cabin: Array<Rider | null>): ParcelLinks {
     box.touching.forEach(o => { if (o !== c && isCourier(o) && !served.has(o)) { contested.add(o); contested.add(c); } });
   }
   if (PARCEL_RULES.thiefShare > 0) cabin.forEach((r, t) => {
-    if (r?.kind !== 'thief' || neighbours(t).some(i => ['cop', 'lawyer', 'don'].includes(cabin[i]?.kind ?? ''))) return;
+    if (r?.kind !== 'thief' || thiefHeld(cabin, t) || hasNeighbour(cabin, t, ['don'])) return;
     const box = boxes.find(b => b.touching.includes(t) && !b.slots.some(p => eyed.has(p)));
     box?.slots.forEach(p => eyed.set(p, t));
   });
@@ -280,7 +304,7 @@ export function parcelLinks(cabin: Array<Rider | null>): ParcelLinks {
 export const thiefEyesParcel = (links: ParcelLinks, slot: number) => [...links.eyed.values()].includes(slot);
 /** True unless this Courier carries a box system and no box travels with him. */
 export const parcelBeside = (cabin: Array<Rider | null>, slot: number, links: ParcelLinks = parcelLinks(cabin)) => {
-  const c = cabin[slot]; if (!c || c.kind !== 'courier' || !c.parcelId) return true;
+  const c = cabin[slot]; if (!c || !isCarrierKind(c.kind) || !c.parcelId) return true;
   return links.served.has(slot) || links.bombs.has(slot);
 };
 /** Coin value of a box's contents when opened: small 6, two-part 16. */
@@ -360,7 +384,7 @@ export const eventPressureMultiplier = (_state: Pick<RunState, 'stress' | 'stres
 export const passengerEnergy = (state: RunState) => state.cabin.reduce((sum,rider,slot)=>sum+(rider?riderProfile(rider,state.cabin,slot).energy:0),0);
 export const STABILIZER_SECTOR_CAP = 5;
 const stabilizerUsed = (state: RunState) => state.stabilizerSector === Math.floor(state.floor / 10) ? state.stabilizerUsed ?? 0 : 0;
-export const stabilizedEnergy = (state: RunState) => state.upgrades.reinforced > 0 && state.cabin.filter(Boolean).length >= 5 && stabilizerUsed(state) < STABILIZER_SECTOR_CAP ? Math.min(1,passengerEnergy(state)) : 0;
+export const stabilizedEnergy = (state: RunState) => state.upgrades.reinforced > 0 && state.cabin.filter(Boolean).length >= 5 && stabilizerUsed(state) < boosted(state, 'reinforced', STABILIZER_SECTOR_CAP) ? Math.min(1,passengerEnergy(state)) : 0;
 export const crowdAgitation = (_occupied: number) => 0;
 export const REST_STOP_CAP = 0;
 export const shiftAgitation = (_floor: number, _occupied: number, _restStops = 0) => 0;
@@ -372,6 +396,53 @@ export function shiftOutlook(floor: number, _occupied = 1, _restStops = 0) {
 
 export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);
 export const hasNeighbour = (cabin: Array<Rider | null>, slot: number, kinds: PassengerKind[]) => neighbours(slot).some((i) => cabin[i] && kinds.includes(cabin[i]!.kind));
+/** v9.19 control rules shared by settlement, forecasts and the UI. */
+export const isUndercover = (r: Rider | null | undefined) => Boolean(r?.kind === 'mystery' && r.revealed && r.identity === 'undercover');
+/** A Thief or Robber is held by an adjacent Officer, Crooked Cop or revealed Undercover Officer (a Lawyer holds Thieves
+ * only), or by handcuffs; a Shyster beside a Robber gets him off. */
+export function thiefHeld(cabin: Array<Rider | null>, slot: number): boolean {
+  const r = cabin[slot]; if (!r) return false;
+  if (r.cuffed) return true;
+  const near = neighbours(slot).map(i => cabin[i]);
+  if (r.kind === 'robber' && near.some(n => n?.kind === 'shyster')) return false;
+  const holders: PassengerKind[] = r.kind === 'thief' ? ['cop', 'lawyer', 'crookedcop'] : ['cop', 'crookedcop'];
+  return near.some(n => Boolean(n && holders.includes(n.kind)) || isUndercover(n));
+}
+/** A Bomber's timer is locked by an adjacent Officer, Crooked Cop or Undercover Officer; the Mad Bomber's only by a Crooked Cop. */
+export function bombLocked(cabin: Array<Rider | null>, slot: number): boolean {
+  const r = cabin[slot], near = neighbours(slot).map(i => cabin[i]);
+  if (r?.kind === 'madbomber') return near.some(n => n?.kind === 'crookedcop');
+  return near.some(n => n?.kind === 'cop' || n?.kind === 'crookedcop' || isUndercover(n));
+}
+export const GHOST_CONTROL_KINDS: PassengerKind[] = [...GHOST_CONTROLLERS, 'summoner'];
+/** A flare lit on this floor: no dark rider causes trouble on the coming ascent. */
+export const troubleFree = (state: Pick<RunState, 'flareFloor' | 'floor'>) => state.flareFloor === state.floor;
+export const MYSTERY_NAMES = Object.fromEntries(MYSTERY_IDENTITIES.map(k => [k, MYSTERY_RULES[k].name])) as Record<MysteryIdentity, string>;
+/** What a rider's banked coins are called when paid out. */
+/** v9.19: an Overtimer at (or past) his stop stays aboard unless a neighbour is getting off on the same floor, his
+ * alarm rings or a flare burns; past `overstayMax` he walks off unpaid. Either way he does not arrive as a paying rider.
+ * `destinations` lets the forecast test delayed destinations. */
+export function overtimerLingers(state: Pick<RunState, 'cabin' | 'floor' | 'flareFloor'>, slot: number, destinations?: Array<number | null>): boolean {
+  const rider = state.cabin[slot], nextFloor = state.floor + 1;
+  if (rider?.kind !== 'overtimer' || rider.alarm || troubleFree(state)) return false;
+  return !neighbours(slot).some(i => { const n = state.cabin[i]; return Boolean(n && n.kind !== 'parcel' && n.kind !== 'overtimer' && nextFloor >= (destinations?.[i] ?? n.destination)); });
+}
+export const stashLabel = (kind: PassengerKind) => kind === 'overtimer' ? '加班费' : kind === 'voyeur' ? '偷拍照片' : kind === 'scandal' ? '丑闻热度' : '坏人暂存';
+/** The same person as another version (corruption turns dark, holy water turns back). Timers and boxes follow. */
+export function turnRider(r: Rider, to: PassengerKind): Rider {
+  const next: Rider = { ...r, kind: to, corruption: 0 };
+  if (to === 'madbomber' && r.bombMs !== undefined) { next.bombMs = Math.ceil(r.bombMs * DARK_RULES.madbomberSeconds); next.bombMsTotal = Math.ceil((r.bombMsTotal ?? r.bombMs) * DARK_RULES.madbomberSeconds); next.bonusMs = next.bombMs; }
+  if (to === 'madbomber' && r.fuse !== undefined) next.fuse = Math.max(1, Math.ceil(r.fuse * DARK_RULES.madbomberSeconds));
+  return next;
+}
+/** v9.19: an ordinary Bomber's bomb blows him and every adjacent rider out of the cabin (no fares) and costs coins. */
+export function blastAt(cabin: Array<Rider | null>, bomber: number, coins: number): { cabin: Array<Rider | null>; slots: number[]; coins: number } {
+  const hit = [bomber, ...neighbours(bomber).filter(i => cabin[i] && !isLegend(cabin[i]!.kind))];
+  const ids = new Set(hit.map(i => cabin[i]?.id).filter(Boolean));
+  const boxes = new Set(hit.map(i => cabin[i]).filter(r => r?.kind === 'parcel').map(r => boxIdOf(r!)));
+  const next = cabin.map(r => r && (ids.has(r.id) || (r.kind === 'parcel' && boxes.has(boxIdOf(r)))) ? null : r);
+  return { cabin: next, slots: hit.filter(i => cabin[i]), coins: Math.min(Math.max(0, coins), DARK_RULES.blastCoins) };
+}
 export const neighbourCount = (cabin: Array<Rider | null>, slot: number) => neighbours(slot).filter((i) => cabin[i] && cabin[i]!.kind !== 'parcel').length;
 /** Every occupied neighboring position is one companion, including another Tourist. */
 export const touristCompanionCount = (cabin: Array<Rider | null>, slot: number) => neighbourCount(cabin, slot);
@@ -380,10 +451,26 @@ function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
   const rider = state.cabin[slot], fixed: ChangeLine[] = [];
   if (!rider) return fixed;
   const add = (label: string, amount: number) => { if (amount > 0) fixed.push({ label, amount }); };
+  // v9.19: a sedated rider adds no agitation of their own (and skips withdrawal).
+  if ((rider.sedated ?? 0) > 0) return fixed;
   add(`${PASSENGERS[rider.kind].name}自身躁动`, riderProfile(rider,state.cabin,slot).agitation);
   if (rider.volatile) add(`${PASSENGERS[rider.kind].name}急躁`, 1);
+  if ((rider.withdrawal ?? 0) > 0) add('药贩走后的戒断', DARK_RULES.withdrawal);
+  const cabin = state.cabin, dark = !troubleFree(state), abyss = abyssTier(state.floor + 1);
+  const survivorsBeside = () => neighbours(slot).filter(i => cabin[i] && isSurvivor(cabin[i]!.kind)).length;
   switch (rider.kind) {
-    case 'thief': if (!hasNeighbour(state.cabin, slot, ['cop', 'lawyer', 'don']) && !thiefEyesParcel(parcelLinks(state.cabin), slot)) add('小偷未受控', 1); break;
+    case 'thief': if (!thiefHeld(cabin, slot) && !hasNeighbour(cabin, slot, ['don']) && !thiefEyesParcel(parcelLinks(cabin), slot)) add('小偷未受控', 1); break;
+    case 'robber': if (dark && !thiefHeld(cabin, slot)) add('劫匪行凶', DARK_RULES.robberAgitation); break;
+    case 'overtimer': if (dark && state.floor >= rider.destination && !rider.alarm) add('加班魂赖着不走', DARK_RULES.overstayAgitation); break;
+    case 'voyeur': if (dark && survivorsBeside()) add('偷拍惊扰', DARK_RULES.voyeurAgitation); break;
+    case 'noisemaker': if (dark && agitationBand(state.stress) !== 'high') add('噪音乐手起哄', DARK_RULES.noiseAgitation); break;
+    case 'shyster': if (dark) add('讼棍挑事', DARK_RULES.shysterAgitation); break;
+    case 'brawler': if (dark && !hasNeighbour(cabin, slot, ['crookedcop'])) { add('狂徒发狂', DARK_RULES.brawlerSelf + abyss); add('狂徒挑衅普通人', DARK_RULES.brawlerPerNormal * survivorsBeside()); } break;
+    case 'creepychild': if (dark) add('怪童吓人', DARK_RULES.creepyPerNeighbour * survivorsBeside()); break;
+    case 'taskmaster': if (dark) add('监工催逼', DARK_RULES.taskmasterAgitation * survivorsBeside()); break;
+    case 'grafter': if (dark) add('贪腐检查员敲诈', neighbourCount(cabin, slot) ? DARK_RULES.grafterAgitation : 0); break;
+    case 'mystery': if (rider.revealed && rider.identity === 'fugitive') add('逃犯心虚', 1); break;
+    case 'smuggler':
     case 'courier': {
       const links = parcelLinks(state.cabin);
       if (!parcelBeside(state.cabin, slot, links)) add('快递员在找纸箱', PARCEL_RULES.lostAgitation);
@@ -391,7 +478,7 @@ function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
       break;
     }
     case 'child': if (!hasNeighbour(state.cabin, slot, [...CHILD_CARERS]) && !(PARCEL_RULES.childOpens && neighbours(slot).some(i => state.cabin[i]?.kind === 'parcel'))) add('儿童无人照顾', 1); break;
-    case 'drunk': if (!hasNeighbour(state.cabin, slot, [...DRUNK_CARERS])) add('醉汉未安抚', 1); break;
+    case 'drunk': if (!hasNeighbour(state.cabin, slot, [...DRUNK_CARERS, 'crookedcop'])) add('醉汉未安抚', 1); break;
     case 'celebrity': if (neighbourCount(state.cabin, slot) > 1) add('名人被围', 1); break;
     case 'tycoon': if (neighbourCount(state.cabin, slot) > 1) add('大亨嫌挤', 1); break;
     case 'matron': add('坏人惊扰护士长', LEGEND_RULES.matronBadNeighbourAgitation * neighbours(slot).filter(i => state.cabin[i] && passengerCategory(state.cabin[i]!.kind) === 'bad').length); break;
@@ -402,13 +489,15 @@ function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
 function agitationBySlot(state: RunState) {
   const lines = state.cabin.map((_, slot) => rawRiderAgitation(state, slot).map(line => ({...line})));
   state.cabin.forEach((rider, calmerSlot) => {
-    if (!rider || rider.kind !== 'nurse') return;
+    // v9.19: the Pusher cancels 2 per neighbour, a revealed Good Samaritan 1, like the Nurse.
+    const calm = rider?.kind === 'nurse' ? 1 : rider?.kind === 'pusher' ? DARK_RULES.pusherCalm : rider?.kind === 'mystery' && rider.revealed && rider.identity === 'saint' ? 1 : 0;
+    if (!rider || !calm) return;
     const targets = neighbours(calmerSlot)
       .filter(slot => lines[slot].some(line => line.amount > 0))
       .sort((a,b) => lines[b].reduce((sum,line)=>sum+line.amount,0)-lines[a].reduce((sum,line)=>sum+line.amount,0) || a-b);
     const treated = targets;
     treated.forEach(target => {
-      let remaining = 1;
+      let remaining = calm;
       lines[target].forEach(source => {
         const reduction = Math.min(remaining, source.amount);
         source.amount -= reduction;
@@ -436,7 +525,7 @@ export function musicAgitation(state: RunState) {
 export const effectiveMotor = (state: Pick<RunState,'floor'|'box'>) => boxedMotorCost(motorCost(state.floor+1), boxOf(state), state.floor+1);
 export const operatorSaving = (state: RunState) => legendInCabin(state.cabin,'operator') && state.cabin.filter(Boolean).length < 6 ? Math.min(LEGEND_RULES.operatorMotorSaving, effectiveMotor(state)) : 0;
 export const serviceSaving = (state: RunState) => (state.serviceTurns ?? 0) > 0 ? Math.min(REPAIR_MOTOR_SAVING, effectiveMotor(state) - operatorSaving(state)) : 0;
-export const cooperationBonus = (state: RunState) => 1 + state.upgrades.battery * ECONOMY_RULES.cooperationIncrement + (hasKeepsake(state,'redString') ? LEGEND_RULES.redStringBond : 0);
+export const cooperationBonus = (state: RunState) => 1 + (state.upgrades.battery ? boosted(state, 'battery', ECONOMY_RULES.cooperationIncrement) : 0) + (hasKeepsake(state,'redString') ? LEGEND_RULES.redStringBond : 0);
 // One cabin-wide reward per travelled floor. Further contract levels improve
 // coins, not soothing; boarding, reseating and dismissing cannot trigger it.
 export const COOPERATION_RELIEF = 0;
@@ -478,8 +567,19 @@ export const energySavings = (state: RunState) => {
 };
 // Compatibility export for archived callers: the remaining passenger cost.
 export const inspectionExtraEnergy = (state: RunState) => Math.max(0, passengerEnergy(state) - stabilizedEnergy(state) - energySavings(state));
+/** v9.19: power the dark riders cost on the coming ascent (Scrappers strip parts, uncontrolled Wraiths drain). */
+export function darkEnergyLines(state: RunState): ChangeLine[] {
+  if (troubleFree(state)) return [];
+  const lines: ChangeLine[] = [];
+  const scrappers = state.cabin.filter(r => r?.kind === 'scrapper').length;
+  if (scrappers) lines.push({ label: '拆机人拆零件', amount: scrappers * DARK_RULES.scrapperMotor });
+  const wraiths = state.cabin.filter((r, i) => r?.kind === 'wraith' && !hasNeighbour(state.cabin, i, GHOST_CONTROL_KINDS) && !hasKeepsake(state, 'bell')).length;
+  if (wraiths) lines.push({ label: '怨灵吸电', amount: wraiths * (DARK_RULES.wraithDrain + abyssTier(state.floor + 1)) });
+  return lines;
+}
 export function energyBreakdown(state: RunState) {
   const motor=effectiveMotor(state),people=passengerEnergy(state),stabilizer=stabilizedEnergy(state),shared=energySavings(state);
+  const dark=darkEnergyLines(state).reduce((n,l)=>n+l.amount,0);
   const service=serviceSaving(state)+operatorSaving(state);
   const links=conflictLinks(state.cabin);
   const flat=links.filter(link=>link.effect==='energy').length;
@@ -493,7 +593,7 @@ export function energyBreakdown(state: RunState) {
   const multiplied=riderCosts.reduce((sum,rider)=>sum+rider.extra,0);
   const conflict=flat+multiplied;
   const conflictProtection=state.upgrades.insulation ? conflict : 0;
-  return {motor,people,stabilizer,shared,service,conflict,conflictProtection,riderCosts,saved:stabilizer+shared+service+conflictProtection,total:motor+people+conflict-stabilizer-shared-service-conflictProtection};
+  return {motor,people,stabilizer,shared,service,conflict,conflictProtection,riderCosts,dark,saved:stabilizer+shared+service+conflictProtection,total:motor+people+conflict+dark-stabilizer-shared-service-conflictProtection};
 }
 export const totalEnergyCost = (state: RunState) => energyBreakdown(state).total;
 // Inspector judges the controllable load, not the route's unavoidable motor.
@@ -509,10 +609,15 @@ export function shuffle<T>(items: T[], rng: () => number = Math.random): T[] {
 /** Support riders never roll the agitated (high-risk) variant: an agitated Nurse or Inspector contradicts the role. */
 const CALM_NATURED: PassengerKind[] = ['nurse', 'inspector', 'cop', 'lawyer', 'mechanic', 'courier', 'exorcist'];
 const INTRINSIC_RISK: PassengerKind[] = ['thief','drunk','child','celebrity','inspector','mystery','shifter'];
-function weightedKind(floor: number, rng: () => number, forcedRisk = false, excludeLover = false, unlocked: PassengerKind[] = unlockedAt(floor)): PassengerKind {
+/** v9.19 draw weights: Commuters and Lovers thin out from 51F; a Courier is half as likely while one rides. */
+export const OFFER_WEIGHTS = { lateFrom: 51, lateCommuter: 0.5, lateLover: 0.5, courierAboard: 0.5 };
+function weightedKind(floor: number, rng: () => number, forcedRisk = false, excludeLover = false, unlocked: PassengerKind[] = unlockedAt(floor), courierAboard = false): PassengerKind {
   const pool = unlocked.filter(kind => (!forcedRisk || INTRINSIC_RISK.includes(kind)) && (!excludeLover || kind !== 'lover'));
   // District themes draw their riders at 1.5×; duplicates in the pool (Medium's ghosts) stack.
-  const weight = (kind: PassengerKind) => PASSENGERS[kind].rarity * districtWeight(floor, kind);
+  const late = floor >= OFFER_WEIGHTS.lateFrom;
+  const weight = (kind: PassengerKind) => PASSENGERS[kind].rarity * districtWeight(floor, kind)
+    * (late && kind === 'commuter' ? OFFER_WEIGHTS.lateCommuter : late && kind === 'lover' ? OFFER_WEIGHTS.lateLover : 1)
+    * (courierAboard && kind === 'courier' ? OFFER_WEIGHTS.courierAboard : 1);
   const total = pool.reduce((sum, kind) => sum + weight(kind), 0);
   let roll = rng() * total;
   for (const kind of pool) { roll -= weight(kind); if (roll <= 0) return kind; }
@@ -539,12 +644,13 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
   const called = !tutorial && waiting && rng() < loverCallChance;
   // A call fills one slot, not the anchor's whole encounter packet. The other
   // two slots still introduce an interacting pair, without another Lover.
-  const anchor = weightedKind(floor, rng, false, called, available);
+  const courierAboard = cabin.some(r => isCarrierKind(r?.kind));
+  const anchor = weightedKind(floor, rng, false, called, available, courierAboard);
   const eligible = (kind: PassengerKind) => available.includes(kind) && (!called || kind !== 'lover');
   const tension = floor >= 21 && rng() < .3 ? BONDS[anchor].avoids.filter(eligible) : [];
   const partners = tension.length ? tension : OFFER_PARTNERS[anchor].filter(eligible);
   const partner = partners[rand(0, partners.length - 1, rng)] ?? 'tourist';
-  const kinds: PassengerKind[] = guided ? ['lover', 'lover', 'courier'] : [anchor, partner, called ? 'lover' : weightedKind(floor, rng, false, false, available)];
+  const kinds: PassengerKind[] = guided ? ['lover', 'lover', 'courier'] : [anchor, partner, called ? 'lover' : weightedKind(floor, rng, false, false, available, courierAboard)];
   // v9.16: a Courier brings his parcel as an extra card, so one Courier per floor keeps the row at five cards or fewer.
   if (!guided && PARCEL_RULES.enabled) kinds.forEach((kind, i) => { if (kind === 'courier' && kinds.indexOf('courier') !== i) kinds[i] = 'commuter'; });
   // At least one non-high-risk card survives every packet, even after 60F.
@@ -559,13 +665,15 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
     const rolledTrip = guided ? [5, 5, 2][index] : rand(spec.trip[0], spec.trip[1], rng) + journeyExtension(floor);
     const baseTrip = JOURNEY_RULES.localFrom31 && floor>=31 && index===floor%3
       ? Math.min(rolledTrip,spec.trip[0]+JOURNEY_RULES.localExtra) : rolledTrip;
-    const traits = kind === 'mystery' || kind === 'shifter' ? randomTraits(kind, available, rng) : undefined;
+    // v9.19: the Mystery no longer rolls random traits; he carries a hidden identity, revealed one floor after boarding.
+    const traits = kind === 'shifter' ? randomTraits(kind, available, rng) : undefined;
+    const identity = kind === 'mystery' ? MYSTERY_IDENTITIES[rand(0, MYSTERY_IDENTITIES.length - 1, rng)] : undefined;
     const volatile = !guided && index !== calmIndex && !CALM_NATURED.includes(kind) && (index === rushIndex || rng() < chance);
     return { id: 'f' + floor + '-' + index + '-' + rng().toString(36).slice(2, 7), kind,
       ...(JOURNEY_RULES.prorateLocalFare && baseTrip<rolledTrip ? {localFareRatio:baseTrip/rolledTrip} : {}),
-      destination: floor + expressTrip(baseTrip, upgrades.express), patience: 0, traits, volatile,
+      destination: floor + expressTrip(baseTrip, upgrades.express), patience: 0, traits, volatile, ...(identity ? { identity } : {}),
       copySeed: kind === 'mimic' ? rand(0, 2147483647, rng) : undefined,
-      boardedAt: floor, fareBonus: upgrades.concierge * ECONOMY_RULES.conciergeTip, stash: 0,
+      boardedAt: floor, fareBonus: upgrades.concierge ? boosted({ upgrades }, 'concierge', ECONOMY_RULES.conciergeTip) : 0, stash: 0,
       fuse: kind === 'bomb' ? rand(BOMB_RULES.fuseMin, BOMB_RULES.fuseMax, rng)+Number(Boolean(upgrades.delay)) : undefined,
       bombMs: kind === 'bomb' && BOMB_RULES.realtime ? bombSeconds(expressTrip(baseTrip, upgrades.express)) * 1000 : undefined,
       bombMsTotal: kind === 'bomb' && BOMB_RULES.realtime ? bombSeconds(expressTrip(baseTrip, upgrades.express)) * 1000 : undefined, calledByLover: called && index === 2,
@@ -586,6 +694,16 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
     shuffled[courierAt] = { ...courier, destination, routeStops: destination - floor, localFareRatio: undefined, parcelId, ...(big ? { parcelBig: true } : {}), ...(tier ? { tier } : {}) };
     shuffled.splice(courierAt + 1, 0, { id: parcelId, kind: 'parcel', ownerId: courier.id, destination, patience: 0, volatile: false, boardedAt: floor, fareBonus: 0, stash: 0, ...(big ? { big: 'top' as const, boxId: parcelId } : {}), ...(tier ? { tier } : {}) });
   }
+  // v9.19 after midnight: each ordinary card may arrive as its dark version (a Courier's box turns into a black box).
+  const share = darkShare(floor);
+  const darken = (i: number) => {
+    const r = shuffled[i], to = DARK_OF[r.kind]!;
+    shuffled[i] = turnRider(r, to);
+    if (to === 'smuggler') shuffled.forEach((b, j) => { if (b.kind === 'parcel' && b.ownerId === r.id) shuffled[j] = { ...b, contraband: true }; });
+  };
+  if (share > 0) shuffled.forEach((r, i) => { if (DARK_OF[r.kind] && rng() < share) darken(i); });
+  // The first batch after the midnight bell always shows at least one changed face.
+  if (floor === DARK_RULES.midnightFloor && share > 0 && !shuffled.some(r => isDark(r.kind))) { const i = shuffled.findIndex(r => DARK_OF[r.kind]); if (i >= 0) darken(i); }
   // A legend waits as a fourth card on floor 1 only; it never replaces an ordinary offer.
   const pool = floor === 1 ? (context.legendPool ?? LEGEND_POOL_DEFAULT) : [];
   if (pool.length) shuffled.push(legendRider(pool[rand(0, pool.length - 1, rng)], rng));
@@ -624,8 +742,10 @@ export function cabinPressureLines(state: RunState): ChangeLine[] {
   if (settled > 0) lines.push({ label: '夜深人躁', amount: settled });
   const noise = motorNoise(boxOf(state), occupied); if (noise) lines.push({ label: '电机噪音', amount: noise });
   // v9.18.2: a Thief held by an adjacent Officer or Lawyer stops stealing and helps keep order instead.
-  const reformed = state.cabin.filter((r, i) => r?.kind === 'thief' && hasNeighbour(state.cabin, i, ['cop', 'lawyer'])).length;
+  const reformed = state.cabin.filter((r, i) => r?.kind === 'thief' && thiefHeld(state.cabin, i)).length;
   if (reformed && THIEF_RULES.controlledCalm) lines.push({ label: '受管小偷帮忙维持秩序', amount: -reformed * THIEF_RULES.controlledCalm });
+  const crooked = state.cabin.filter(r => r?.kind === 'crookedcop').length;
+  if (crooked) lines.push({ label: '黑警镇场', amount: -crooked * DARK_RULES.crookedCalm });
   if (legendInCabin(state.cabin, 'don')) lines.push({ label: '教父的威压', amount: LEGEND_RULES.donAgitation });
   if (legendInCabin(state.cabin, 'matchmaker') && red) lines.push({ label: '月老见不得争吵', amount: red });
   if (legendInCabin(state.cabin, 'nightingale') && band === 'low') lines.push({ label: '夜莺要气氛', amount: 1 });
@@ -658,6 +778,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const redLinks=conflictLinks(state.cabin);
   const {conflict:redEnergy,conflictProtection}=energyBreakdown(state);
   if(redEnergy)adjustEnergy('红线额外耗电',-redEnergy);
+  for (const line of darkEnergyLines(state)) adjustEnergy(line.label, -line.amount);
   if(conflictProtection)adjustEnergy('绝缘衬层抵消',conflictProtection);
   const inspectionWork = hasKeepsake(state,'roundsLog') ? 1 : INSPECTION_RULE.work;
   let cabin = state.cabin.map((rider,slot) => rider ? riderAfterWork(rider,state.cabin,slot,state.stress,inspectionWork) : null);
@@ -690,7 +811,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const watch = hasKeepsake(state,'pocketWatch');
   if (partnershipAgitation(state)) adjustPressure('坏人链接躁动', partnershipAgitation(state));
   const stashPerStep = RISK_STASH_PER_ASCENT + Number(agitationBand(state.stress) === 'high') + Number(watch);
-  for (const slot of partnership.members) cabin[slot]!.stash = (cabin[slot]!.stash ?? 0) + stashPerStep;
+  // v9.19: the longer a crew holds together, the more each member banks (3, 4, 5 … per floor); leaving the crew resets it.
+  cabin.forEach((r, slot) => { if (!r) return; if (partnership.members.includes(slot)) { r.stash = (r.stash ?? 0) + stashPerStep + (r.crewFloors ?? 0); r.crewFloors = (r.crewFloors ?? 0) + 1; } else if (r.crewFloors) r.crewFloors = 0; });
   cabin.forEach(rider => { if (rider?.kind === 'don') rider.stash = (rider.stash ?? 0) + LEGEND_RULES.donStashPerFloor; });
   if (departBand === 'medium') {
     const musicians = state.cabin.filter(r => r?.kind === 'musician').length;
@@ -717,10 +839,12 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if (shopIncome.crowd) addCoins('共乘票', shopIncome.crowd);
   if (shopIncome.meter) addCoins('长途计价器', shopIncome.meter);
   const effectCabin = [...cabin]; const lastThefts: TheftReceipt[] = []; const lastHaunts: Array<{ ghost: number; victim: number }> = [];
+  const dark = !troubleFree(state), abyss = abyssTier(nextFloor), summoners: number[] = [];
+  const haunt = (slot: number) => { const nearby = neighbours(slot).filter((i) => effectCabin[i] && effectCabin[i]!.kind !== 'parcel'); if (!nearby.length) return; const victim = nearby[rand(0, nearby.length - 1, rng)]; effectCabin[victim]!.destination += 1; lastHaunts.push({ ghost: slot, victim }); notes.push(effectCabin[slot]!.kind === 'wraith' ? '怨灵令邻座延误一层' : '幽灵令邻座延误一层'); };
   effectCabin.forEach((rider, slot) => {
     if (!rider) return;
-    const controlledThief = hasNeighbour(effectCabin, slot, ['cop', 'lawyer']);
-    const controlledGhost = hasNeighbour(effectCabin, slot, [...GHOST_CONTROLLERS]) || hasKeepsake(state,'bell');
+    const controlledThief = thiefHeld(effectCabin, slot);
+    const controlledGhost = hasNeighbour(effectCabin, slot, GHOST_CONTROL_KINDS) || hasKeepsake(state,'bell');
     switch (rider.kind) {
       case 'mechanic': break; // Shared savings are itemized in lastEnergy.
       case 'tourist': break; // Companion rewards are paid on delivery only.
@@ -735,9 +859,22 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
         break;
       }
       case 'drunk': break;
-      case 'ghost': if (controlledGhost) notes.push('幽灵受控，不再延误邻座'); else if (nextFloor % 3 === 0) { const nearby = neighbours(slot).filter((i) => effectCabin[i] && effectCabin[i]!.kind !== 'parcel'); if (nearby.length) { const victim = nearby[rand(0, nearby.length - 1, rng)]; effectCabin[victim]!.destination += 1; lastHaunts.push({ ghost: slot, victim }); notes.push('幽灵令邻座延误一层'); } } break;
+      case 'ghost': if (controlledGhost) notes.push('幽灵受控，不再延误邻座'); else if (nextFloor % 3 === 0) haunt(slot); break;
       case 'celebrity': if (neighbourCount(effectCabin, slot) === 1) addCoins('名人关注', ECONOMY_RULES.celebrityTravel); break;
-      case 'bomb': { const secured = hasNeighbour(effectCabin, slot, ['cop']); if (!secured && !BOMB_RULES.realtime) rider.fuse = (rider.fuse ?? 1) - bombTick(state.stress); break; }
+      case 'madbomber':
+      case 'bomb': { if (!bombLocked(effectCabin, slot) && !BOMB_RULES.realtime) rider.fuse = (rider.fuse ?? 1) - bombTick(state.stress); break; }
+      // v9.19 dark riders on the move. A flare (troubleFree) stops their trouble, not their income.
+      case 'robber': if (dark && !controlledThief) { const take = Math.min(Math.max(0, coins), DARK_RULES.robberCap + 3 * abyss, DARK_RULES.robberBase + 2 * abyss + Math.floor(Math.max(0, coins) * DARK_RULES.robberRate)); if (take > 0) addCoins('劫匪抢走', -take); } break;
+      case 'crookedcop': if (dark) { const fee = Math.min(Math.max(0, coins), DARK_RULES.crookedFee + 2 * abyss); if (fee > 0) addCoins('黑警保护费', -fee); } break;
+      case 'shyster': { const fee = Math.min(DARK_RULES.shysterCap, conflictLinks(effectCabin).length * DARK_RULES.shysterPerRed); if (fee) addCoins('讼棍打官司', fee); break; }
+      case 'scrapper': addCoins('拆机人卖零件', DARK_RULES.scrapperCoins + (hasNeighbour(effectCabin, slot, ['grafter']) ? DARK_RULES.fenceCoins : 0)); break;
+      case 'grafter': { const n = neighbourCount(effectCabin, slot); if (n) addCoins('贪腐检查员收检查费', n * DARK_RULES.grafterFee); break; }
+      case 'noisemaker': if (departBand === 'high') addCoins('噪音乐手演出', DARK_RULES.noiseHighCoins); break;
+      case 'overtimer': rider.stash = (rider.stash ?? 0) + DARK_RULES.overtimePay; break;
+      case 'voyeur': if (dark && neighbours(slot).some(i => effectCabin[i] && isSurvivor(effectCabin[i]!.kind))) rider.stash = (rider.stash ?? 0) + DARK_RULES.voyeurPhoto; break;
+      case 'scandal': rider.stash = (rider.stash ?? 0) + neighbourCount(effectCabin, slot) * DARK_RULES.scandalPerNeighbour + (hasNeighbour(effectCabin, slot, ['voyeur']) ? DARK_RULES.scandalVoyeur : 0); break;
+      case 'wraith': if (controlledGhost) addCoins('怨灵受控：供奉', DARK_RULES.wraithControlledCoins); else if (dark) haunt(slot); break;
+      case 'summoner': if (nextFloor % DARK_RULES.summonEvery === 0) summoners.push(slot); break;
     }
   });
   let arrivals = 0;
@@ -773,6 +910,15 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     const openBox = (box: Box, by: string) => { const got = receive(box, `${by}拆开纸箱`, `${by}拆开纸箱：`); boxEvent(Math.min(...box.slots), 'child', box, got); box.slots.forEach(p => { cabin[p] = null; }); };
     for (const box of before.boxes) {
       if (delivering(box)) continue;
+      // v9.19: a sealed box cannot be seized, stolen or opened on the way.
+      if (cabin[box.slots[0]]?.sealed) continue;
+      // v9.19: an ordinary Inspector beside a Smuggler's black box seizes it (a reward for you; the Smuggler is left empty-handed).
+      if (cabin[box.slots[0]]?.contraband && box.touching.some(i => cabin[i]?.kind === 'inspector')) {
+        box.slots.forEach(p => { cabin[p] = null; });
+        addCoins('检查员没收黑箱', DARK_RULES.seizeReward);
+        lastBoxEvents.push({ slot: Math.min(...box.slots), by: 'inspect', coins: DARK_RULES.seizeReward });
+        notes.push(`检查员没收了黑箱：举报奖励 +${DARK_RULES.seizeReward} 金币`); continue;
+      }
       const thief = before.eyed.get(box.slots[0]);
       if (thief !== undefined && nextFloor >= cabin[thief]!.destination) {
         box.slots.forEach(p => stolen.add(p)); thiefTips.set(thief, Math.max(1, Math.floor(boxCoins(box) * (0.5 + rng()) * PARCEL_RULES.thiefShare)));
@@ -801,10 +947,11 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   // A Courier leaving before the Bomber beside him carries the bomb away; the Bomber stays aboard in disguise.
   const disarmed = new Set([...links.bombs].filter(([c, b]) => nextFloor >= cabin[c]!.destination && nextFloor < cabin[b]!.destination).map(([, b]) => b));
   if (disarmed.size) notes.push('快递员带走了炸弹：炸弹客乔装成通勤者');
+  const withdrawalIds = new Set<string>();
   cabin = cabin.map((rider, slot) => {
     if (!rider) return null;
     if (disarmed.has(slot)) return { ...rider, kind: 'commuter', disguised: true, fuse: undefined, bombMs: undefined, bombMsTotal: undefined };
-    if (rider.kind === 'bomb' && !BOMB_RULES.realtime && (rider.fuse ?? 0) <= 0 && nextFloor < rider.destination) return rider;
+    if (isBombKind(rider.kind) && !BOMB_RULES.realtime && (rider.fuse ?? 0) <= 0 && nextFloor < rider.destination) return rider;
     if (rider.kind === 'parcel') {
       // With its Courier aboard the parcel travels with him and leaves when he does; unclaimed, it opens at its floor.
       if (stolen.has(slot)) return null;
@@ -820,6 +967,13 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       return null;
     }
     if (nextFloor < rider.destination) return rider;
+    // v9.19: the Overtimer only gets off with a neighbour who is getting off too (or his alarm rings, or a flare);
+    // three floors past his stop he walks off without paying.
+    if (overtimerLingers({ ...state, cabin }, slot)) {
+      if (nextFloor - rider.destination < DARK_RULES.overstayMax) return rider;
+      notes.push('加班魂过站太久，没付钱就走了'); return null;
+    }
+    if (rider.kind === 'pusher') neighbours(slot).forEach(i => { const n = cabin[i]; if (n && n.kind !== 'parcel' && nextFloor < n.destination && !(n.sedated ?? 0)) withdrawalIds.add(n.id); });
     const spec = PASSENGERS[rider.kind]; const profile = riderProfile(rider, cabin, slot);
     const fare = arrivalFare(rider, cabin, slot, cooperationBonus(state), state.stress, fareTuning, hasKeepsake(state,'bell'));
     const appetitePremium = rider.kind === 'drunk' ? fare - arrivalFare(rider, cabin, slot, cooperationBonus(state), state.stress, { ...fareTuning, appetiteBonus: 0 }, hasKeepsake(state,'bell')) : 0;
@@ -836,11 +990,15 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     if (rider.kind === 'mimic' && PARCEL_RULES.mimicCopiesBox && above?.kind === 'parcel') {
       boxEvent(slot, 'mimic', above, receive(above, '复制人的复制箱', '复制人打开复制箱：'));
     }
-    addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare - appetitePremium - (rider.stash ?? 0));
-    if (rider.stash) addCoins('坏人暂存兑现', rider.stash);
+    const exposed = rider.kind === 'scandal' && hasNeighbour(cabin, slot, ['inspector', 'crookedcop']);
+    const stash = exposed ? 0 : (rider.stash ?? 0);
+    if (exposed) notes.push('丑闻曝光：丑闻明星这一趟车费归零');
+    addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare - appetitePremium - stash);
+    if (stash) addCoins(stashLabel(rider.kind) + '兑现', stash);
+    if (delivered && nextFloor > DARK_RULES.midnightFloor && isSurvivor(rider.kind)) addCoins('幸存者平安送达', DARK_RULES.survivorBonus);
     if (appetitePremium) addCoins('醉汉躁动加价', appetitePremium);
     let punchBonus=0;
-    if(delivered&&state.upgrades.punchcard){punchCount=(punchCount+1)%5;if(punchCount===0){punchBonus=profile.fare;addCoins('第五位基价奖励',profile.fare);}}
+    if(delivered&&state.upgrades.punchcard){punchCount=(punchCount+1)%5;if(punchCount===0){punchBonus=boosted(state,'punchcard',profile.fare);addCoins('第五位基价奖励',punchBonus);}}
     let extra = 0; let keepsakeLeft: KeepsakeKey | undefined;
     if (!isLegend(rider.kind)) {
       if (delivered && departBand === 'medium') { const tip = V9_AGITATION.mediumTip + (hasKeepsake(state,'vinyl') ? 2 : 0); extra += tip; addCoins('热闹小费', tip); }
@@ -855,13 +1013,45 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       if (key && !owned.has(key)) { keepsakeLeft = key; keepsakes = [...keepsakes, key]; notes.push(`${spec.name}留下信物`); if (key === 'wrench') freeBoxLevels += 1; if (key === 'roundsLog') stressCapBonus += 2; }
       if (gift === 'random') { const bonus = rand(0, LEGEND_RULES.strangerKeepsakeCoins, rng); if (bonus) { extra += bonus; addCoins('13号房客的馈赠', bonus); } }
     }
-    lastArrivals.push({riderId:rider.id,kind:rider.kind,slot,coins:fare+punchBonus+extra+defusal,...(keepsakeLeft?{keepsake:keepsakeLeft}:{})});
+    const survivor = delivered && nextFloor > DARK_RULES.midnightFloor && isSurvivor(rider.kind) ? DARK_RULES.survivorBonus : 0;
+    lastArrivals.push({riderId:rider.id,kind:rider.kind,slot,coins:fare-(rider.stash??0)+stash+punchBonus+extra+defusal+survivor,...(keepsakeLeft?{keepsake:keepsakeLeft}:{})});
     arrivals += 1; arrivalSlots.push(slot); return null;
   });
+  // v9.19 midnight bookkeeping on the riders still aboard.
+  cabin = cabin.map(r => {
+    if (!r) return r;
+    let next = r;
+    if ((r.sedated ?? 0) > 0 || (r.withdrawal ?? 0) > 0) next = { ...next, sedated: Math.max(0, (r.sedated ?? 0) - 1), withdrawal: Math.max(0, (r.withdrawal ?? 0) - 1) };
+    if (withdrawalIds.has(r.id)) next = { ...next, withdrawal: DARK_RULES.withdrawalFloors };
+    if (r.kind === 'mystery' && !r.revealed) { next = { ...next, revealed: true }; if (r.identity) notes.push(`神秘人身份揭晓：${MYSTERY_NAMES[r.identity]}`); }
+    return next;
+  });
+  if (withdrawalIds.size) notes.push('药贩下车了：身边的人开始戒断');
+  const lastCorruption: NonNullable<RunState['lastCorruption']> = [];
+  if (dark) cabin = cabin.map((r, slot) => {
+    if (!r) return r;
+    if (!corruptible(r.kind) || r.warded) return r.corruption ? { ...r, corruption: 0 } : r;
+    const darkBeside = neighbours(slot).filter(i => state.cabin[i] && isDark(state.cabin[i]!.kind) && cabin[i]).length;
+    if (darkBeside < DARK_RULES.corruptionNeighbours) return r.corruption ? { ...r, corruption: 0 } : r;
+    const progress = (r.corruption ?? 0) + 1;
+    if (progress < DARK_RULES.corruptionFloors) return { ...r, corruption: progress };
+    const to = DARK_OF[r.kind]!; lastCorruption.push({ slot, from: r.kind, to });
+    notes.unshift(`${PASSENGERS[r.kind].name}被同化成了${PASSENGERS[to].name}`);
+    return turnRider(r, to);
+  });
+  if (lastCorruption.some(e => e.to === 'smuggler')) cabin = cabin.map(r => r?.kind === 'parcel' && cabin.some(c => c?.kind === 'smuggler' && c.id === r.ownerId) ? { ...r, contraband: true } : r);
+  const lastSummons: number[] = [];
+  for (const s of summoners) {
+    if (!cabin[s]) continue;
+    const seat = cabin.findIndex((r, i) => !r && neighbours(s).includes(i)) >= 0 ? cabin.findIndex((r, i) => !r && neighbours(s).includes(i)) : cabin.findIndex(r => !r);
+    if (seat < 0) continue;
+    cabin = cabin.map((r, i) => i === seat ? { id: `summon-${nextFloor}-${seat}`, kind: 'ghost', destination: nextFloor + DARK_RULES.summonTrip, patience: 0, boardedAt: nextFloor, fareBonus: 0, stash: 0, volatile: false, summoned: true } : r);
+    lastSummons.push(seat); notes.push('召魂人召来了一只幽灵');
+  }
   const shopRewards = rollShopRewards(shopOpportunities(state, effectCabin, arrivalSlots), rng);
   if (shopRewards.tips) addCoins('小费盒额外小费', shopRewards.tips);
   const tipSlots=arrivalSlots.filter(slot=>neighbourCount(effectCabin,slot)>=2);
-  for(const index of shopRewards.winningTipIndices){const receipt=lastArrivals.find(r=>r.slot===tipSlots[index]);if(receipt)receipt.coins+=ECONOMY_RULES.tipReward;}
+  for(const index of shopRewards.winningTipIndices){const receipt=lastArrivals.find(r=>r.slot===tipSlots[index]);if(receipt)receipt.coins+=boosted(state,'tipjar',ECONOMY_RULES.tipReward);}
   if(state.upgrades.meter)for(const receipt of lastArrivals)receipt.coins+=deliveryUpgradeIncome(state,effectCabin,[receipt.slot]).meter;
   if (shopRewards.energy) adjustEnergy('并联回充', shopRewards.energy);
   const chargeBoost=naturalChargeBoost(state,arrivalSlots.filter(i=>effectCabin[i]?.kind==='courier'&&parcelBeside(effectCabin,i)).length*COURIER_ARRIVAL_CHARGE+shopRewards.energy);
@@ -891,10 +1081,12 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const redCoinDemand=Math.max(0, redLinks.filter(link=>link.effect==='coins').length*2 - (state.cabin.some(r=>r?.kind==='lawyer') ? 2 : 0) - (state.upgrades.insulation ? Infinity : 0));
   const redCoinLoss=Math.min(coins,redCoinDemand);
   if(redCoinLoss)addCoins('红线金币损失',-redCoinLoss);
-  const insulatedIncome=state.upgrades.insulation?Math.min(INSULATION_RULES.cap,redLinks.length*INSULATION_RULES.coinsPerLink):0;
+  const insulatedIncome=state.upgrades.insulation?Math.min(boosted(state,'insulation',INSULATION_RULES.cap),redLinks.length*INSULATION_RULES.coinsPerLink):0;
   if(insulatedIncome)addCoins('绝缘衬层：冲突小费',insulatedIncome);
   // Arriving on the same floor as fuse expiry is still safe.
-  const bombFailed = !BOMB_RULES.realtime && cabin.some((rider) => rider?.kind === 'bomb' && (rider.fuse ?? 0) <= 0);
+  const bombFailed = !BOMB_RULES.realtime && cabin.some((rider) => rider?.kind === 'madbomber' && (rider.fuse ?? 0) <= 0);
+  let lastBlast: RunState['lastBlast'];
+  if (!BOMB_RULES.realtime) { const b = cabin.findIndex(r => r?.kind === 'bomb' && (r.fuse ?? 0) <= 0); if (b >= 0) { const blast = blastAt(cabin, b, coins); cabin = blast.cabin; if (blast.coins) addCoins('炸弹客的炸弹炸了', -blast.coins); lastBlast = { bomber: b, slots: blast.slots, coins: blast.coins }; notes.unshift('炸弹客的炸弹炸了：邻座被炸下车，没付车费'); } }
   const relieved = Math.min(Math.max(0, stress), Math.min(arrivals, arrivalReliefCapFor(state)));
   if (relieved) adjustPressure('乘客到站舒缓', -relieved);
   if (checkpoint && hasKeepsake({keepsakes},'roundsLog') && stress > 0) adjustPressure('查房记录：进店舒缓', -Math.min(ROUNDS_LOG_SHOP_RELIEF, stress));
@@ -911,7 +1103,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   energy = Math.min(state.energyCap, energy); stress = Math.max(0, stress);
   let status: RunState['status'] = checkpoint ? 'upgrade' : 'playing';
   let message = arrivals ? `${arrivals} 位乘客抵达。门再次开启。` : '电梯继续向上，新的面孔正在等候。';
-  if (bombFailed) { status = 'lost'; message = '炸弹倒计时归零：乘客未能及时到站。午夜班次戛然而止。'; }
+  if (bombFailed) { status = 'lost'; message = '炸弹倒计时归零：疯炸客的怪炸弹炸了。午夜班次戛然而止。'; }
   else if (energy < 0 || (!checkpoint && energy === 0)) { status = 'lost'; message = '电量耗尽，轿厢停在了楼层之间。'; }
   else if (!checkpoint && stress >= state.stressCap) { status = 'lost'; message = '躁动达到上限，午夜班次失控。'; }
   if (stressReasons.length && status === 'playing') message = stressReasons.slice(0, 2).join(' · ');
@@ -925,7 +1117,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if(SHOP_TUNING.bufferGap)state={...state,bufferGapTurns:gapCharge.progress};
   state=consumeFlywheel(state,flywheel);
   const stabilized = stabilizedEnergy(state);
-  const settled: RunState = { ...state, lastThefts, lastHaunts, lastBoxEvents, lastIncident, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
+  const itemStock = status === 'upgrade' ? drawItemStock(nextFloor, shopRng, state.itemBought) : state.itemStock;
+  const settled: RunState = { ...state, lastThefts, lastHaunts, lastBoxEvents, lastIncident, lastBlast, lastCorruption, lastSummons, itemStock, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
   // Abilities found in boxes install like a shop pick (effects such as Safety Margin apply at once).
   return wonAbilities.reduce((run, key) => previewUpgrade(run, key), settled);
 }
@@ -960,7 +1153,7 @@ export const availableShopCards = (state: RunState) => state.shopExtraBought ? [
 
 export function failureLesson(state: RunState): string {
   if (state.status !== 'lost') return '';
-  if (state.message.includes('炸弹倒计时')) return '炸弹倒计时归零 · 下一班让炸弹客与警察相邻，警察会在相邻期间锁住倒计时；来不及送达就拒载。';
+  if (state.message.includes('炸弹倒计时')) return '疯炸客的怪炸弹归零 · 普通警察锁不住它：让黑警挨着他，或带一把引线剪；来不及送达就拒载。';
   if (state.energy <= 0 && state.stress >= state.stressCap) return '双重失控 · 下一班提前留好维修预算，关门前先处理更接近上限的一项。';
   if (state.message.includes('电量')) {
     const motor = Math.abs(state.lastEnergy.sources.find(s=>s.label==='电梯运转')?.amount ?? 0);
@@ -1034,10 +1227,16 @@ export function rerollShop(current: RunState, rng: () => number = Math.random): 
   const drawn = drawUpgradeOffer(current.upgrades, current.shopSeen ?? [], rng, current.floor);
   return { ...current, coins: current.coins - REROLL_PRICE, rerolledFloor: current.floor, shopSeen: drawn.seen, shop: drawn.keys.map(key => ({ key, price: 0, purchased: false })), message: `重抽能力，支付 ${REROLL_PRICE} 金币。` };
 }
-export const boxLevelPrice = (state: RunState, line: BoxLine) => (state.freeBoxLevels ?? 0) > 0 ? 0 : (BOX_PRICES[boxOf(state)[line]] ?? Infinity) - (hasKeepsake(state,'wrench') ? LEGEND_RULES.wrenchDiscount : 0);
+/** v9.19 box ladder: from 60F the power box takes one more level every 20 floors (up to every line maxed);
+ * each level past the fifth costs twice the one before. */
+/** v9.19 box ladder past the five-level cap: one more level from 60F and every `every` floors after, each costing
+ * `priceStep` times the one before (a late-game coin sink, tuned in scripts/balance-sim). */
+export const BOX_LADDER = { from: 80, every: 30, priceStep: 3 };
+export const boxTotalCap = (floor: number) => Math.min(BOX_MAX_LEVEL * 3, BOX_TOTAL_CAP + (floor >= BOX_LADDER.from ? 1 + Math.floor((floor - BOX_LADDER.from) / BOX_LADDER.every) : 0));
+export const boxLevelPrice = (state: RunState, line: BoxLine) => (state.freeBoxLevels ?? 0) > 0 ? 0 : ((BOX_PRICES[boxOf(state)[line]] ?? Infinity) - (hasKeepsake(state,'wrench') ? LEGEND_RULES.wrenchDiscount : 0)) * BOX_LADDER.priceStep ** Math.max(0, boxTotal(boxOf(state)) - BOX_TOTAL_CAP + 1);
 export function canBuyBoxLevel(state: RunState, line: BoxLine) {
   const box = boxOf(state), free = (state.freeBoxLevels ?? 0) > 0;
-  return state.status === 'upgrade' && box[line] < BOX_MAX_LEVEL && boxTotal(box) < BOX_TOTAL_CAP && (free || state.boxBoughtFloor !== state.floor) && state.coins >= boxLevelPrice(state, line);
+  return state.status === 'upgrade' && box[line] < BOX_MAX_LEVEL && boxTotal(box) < boxTotalCap(state.floor) && (free || state.boxBoughtFloor !== state.floor) && state.coins >= boxLevelPrice(state, line);
 }
 export function buyBoxLevel(current: RunState, line: BoxLine): RunState {
   if (!canBuyBoxLevel(current, line)) return current;
@@ -1097,6 +1296,36 @@ export function emergencyCharge(state: RunState, units: number): RunState {
   return { ...state, energy: state.energy + units, coins: state.coins - cost, emergencySector: sector, emergencyUsed: used + units, message: `途中补电 +${units}，支付 ${cost} 金币。`,
     lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: units, sources: [{ label: '途中补电', amount: units }] } };
 }
+/** v9.19 overtime charging: once a sector's in-transit allowance is spent, power is still for sale in packs, each pack's
+ * unit price `firstMultiplier`, then +`step` … times the in-transit price (the same rising sink as overtime calming). */
+export const OVERTIME_CHARGE = { pack: 5, firstMultiplier: 3, step: 2 };
+export function overtimeChargeOffer(state: RunState): { units: number; price: number } | null {
+  if (state.status !== 'playing' || state.energy >= state.energyCap) return null;
+  const cap = emergencySectorCap(boxOf(state)), used = state.emergencySector === sectorOf(state.floor) ? state.emergencyUsed ?? 0 : 0;
+  if (used < cap) return null;
+  const packs = Math.floor((used - cap) / OVERTIME_CHARGE.pack), units = Math.min(OVERTIME_CHARGE.pack, state.energyCap - state.energy);
+  return { units, price: units * emergencyUnitPrice(boxOf(state)) * (OVERTIME_CHARGE.firstMultiplier + OVERTIME_CHARGE.step * packs) };
+}
+export function buyOvertimeCharge(state: RunState): RunState {
+  const offer = overtimeChargeOffer(state);
+  if (!offer || state.coins < offer.price) return state;
+  const used = state.emergencySector === sectorOf(state.floor) ? state.emergencyUsed ?? 0 : 0;
+  return { ...state, energy: state.energy + offer.units, coins: state.coins - offer.price, emergencySector: sectorOf(state.floor), emergencyUsed: used + OVERTIME_CHARGE.pack,
+    message: `加急补电 +${offer.units}，支付 ${offer.price} 金币；下一包更贵。`,
+    lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: offer.units, sources: [{ label: '加急补电', amount: offer.units }] } };
+}
+/** v9.19 ability level 2 (see ABILITY_LEVEL2): with every slot full, one installed ability per shop can be raised. */
+export const abilityLevel2Price = (state: RunState) => ABILITY_LEVEL2.price + ABILITY_LEVEL2.step * Object.values(state.upgrades).filter(v => v >= 2).length;
+export function canRaiseAbility(state: RunState, key: UpgradeKey): boolean {
+  return state.status === 'upgrade' && state.upgrades[key] === 1 && ABILITY_LEVEL2.keys.includes(key) && Object.values(state.upgrades).filter(Boolean).length >= UPGRADE_SLOTS
+    && state.abilityRaisedFloor !== state.floor && state.coins >= abilityLevel2Price(state);
+}
+export function raiseAbility(state: RunState, key: UpgradeKey): RunState {
+  if (!canRaiseAbility(state, key)) return state;
+  const price = abilityLevel2Price(state);
+  return { ...state, upgrades: { ...state.upgrades, [key]: 2 }, coins: state.coins - price, abilityRaisedFloor: state.floor,
+    message: `「${UPGRADES[key].name}」升到 2 级，支付 ${price} 金币。`, log: [`${state.floor}F · 「${UPGRADES[key].name}」2级 −${price} 金币`, ...state.log].slice(0, 4) };
+}
 export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
   const card = current.shop.find((item) => item.key === key);
   const price = current.shopUpgradeBought ? SHOP_PRICES.extraAbility : 0;
@@ -1131,11 +1360,11 @@ export function sootheAgitation(state: RunState, units: number): RunState {
 export function chargingPlan(state: RunState) {
   const target = Math.min(state.energyCap, 50);
   const units = Math.max(0, target - state.energy);
-  return {target,units,cost:chargeCost(boxOf(state),units),baseline:(nextShopFloor(state.floor)-state.floor)*travelEnergyCost(state.floor+1)};
+  return {target,units,cost:chargeCost(boxOf(state),units,state.floor),baseline:(nextShopFloor(state.floor)-state.floor)*travelEnergyCost(state.floor+1)};
 }
 export function affordableChargingPlan(state: RunState) {
-  const units=Math.max(0,Math.min(state.energyCap-state.energy,affordableUnits(boxOf(state),state.coins)));
-  return {units,cost:chargeCost(boxOf(state),units),target:state.energy+units};
+  const units=Math.max(0,Math.min(state.energyCap-state.energy,affordableUnits(boxOf(state),state.coins,state.floor)));
+  return {units,cost:chargeCost(boxOf(state),units,state.floor),target:state.energy+units};
 }
 export function purchaseRepairWarning(state: RunState, key: UpgradeKey, price: number) {
   if (state.coins < price) return null;
@@ -1145,7 +1374,7 @@ export function purchaseRepairWarning(state: RunState, key: UpgradeKey, price: n
   return null;
 }
 export function chargeBattery(state: RunState, units: number): RunState {
-  const cost=chargeCost(boxOf(state),units);
+  const cost=chargeCost(boxOf(state),units,state.floor);
   if(state.status!=='upgrade'||!Number.isSafeInteger(units)||units<=0||state.energy+units>state.energyCap||state.coins<cost)return state;
   return {...state,energy:state.energy+units,coins:state.coins-cost,message:`充电 +${units}，支付 ${cost} 金币。`,lastEarnings:{total:0,sources:[]},lastEnergy:{delta:units,sources:[{label:'商店充电',amount:units}]},log:[`${state.floor}F · 充电 −${cost} 金币`,...state.log].slice(0,4)};
 }
@@ -1180,7 +1409,7 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
   // The old Stabilizer line said "at least 3 riders" after the rule became 5.
   case 'battery':return `每条默契到站加成 +${cooperationBonus(state)} 金币`;
   case 'calm':return `躁动上限 ${state.stressCap} · ${state.calmCharge?'手动调节可用（−3 躁动）':'手动调节已用，下个商店补满'}`;
-  default:return UPGRADES[key].description;
+  default:return count>=2&&LEVEL2_TEXT[key]?`2级：${LEVEL2_TEXT[key]![0]}`:UPGRADES[key].description;
  }
 }
 
@@ -1191,10 +1420,14 @@ export type FareLine = { label: string; amount: number };
 export function fareBreakdown(rider: Rider, cabin: Array<Rider | null>, slot: number, bonus = 1, agitation = 0, tuning: FareTuning = {}, bellFare = false): FareLine[] {
   if (rider.kind === 'parcel') return [{ label: '纸箱本身不付钱', amount: 0 }];
   const lines: FareLine[] = [], add = (label: string, amount: number) => { if (amount) lines.push({ label, amount }); };
-  if (rider.kind === 'courier' && rider.parcelId) {
+  // v9.19: a Scandal next to an Inspector or a Crooked Cop is exposed on arrival: nothing is paid.
+  if (rider.kind === 'scandal' && hasNeighbour(cabin, slot, ['inspector', 'crookedcop'])) return [{ label: '丑闻曝光：车费归零', amount: 0 }];
+  if (isCarrierKind(rider.kind) && rider.parcelId) {
     const links = parcelLinks(cabin), carried = (links.served.get(slot) ?? []).map(p => cabin[p]!);
-    if (!carried.length && !links.bombs.has(slot)) return [{ label: '身边没有纸箱：不付钱', amount: 0 }];
-    if (carried.length) add('纸箱送货费', Math.max(...carried.map(boxCoins)) - PARCEL_RULES.values.small.common);
+    if (!carried.length && !links.bombs.has(slot)) return [{ label: rider.kind === 'smuggler' ? '身边没有黑箱：不付钱' : '身边没有纸箱：不付钱', amount: 0 }];
+    if (carried.length && rider.kind === 'smuggler') add('黑箱送货费（箱价×2）', DARK_RULES.smugglerBoxMultiplier * Math.max(...carried.map(boxCoins)));
+    if (carried.length && rider.kind === 'smuggler' && carried.some(p => neighbours(cabin.indexOf(p)).some(i => cabin[i]?.kind === 'grafter'))) add('贪腐检查员放行', DARK_RULES.bribe);
+    if (carried.length && rider.kind === 'courier') add('纸箱送货费', Math.max(...carried.map(boxCoins)) - PARCEL_RULES.values.small.common);
     if (carried.length && rider.routeStops) add(`长途送货 ${rider.routeStops} 站`, PARCEL_RULES.stopFee * Math.max(0, rider.routeStops - PARCEL_RULES.freeStops));
     if (carried.some(p => p.inspected)) add('检查员验货', PARCEL_RULES.inspectCoins);
   }
@@ -1202,15 +1435,21 @@ export function fareBreakdown(rider: Rider, cabin: Array<Rider | null>, slot: nu
   lines.unshift({ label: '基础车费', amount: baseFare });
   let fare = baseFare;
   if (rider.kind === 'lover') { const pairs = neighbours(slot).filter(i => cabin[i]?.kind === 'lover').length; add(`恋人配对 ×${1 + pairs}`, fare * pairs); fare *= 1 + pairs; }
-  if (rider.kind === 'thief' && hasNeighbour(cabin, slot, ['cop', 'lawyer'])) { add('受控到站奖励', 5); fare += 5; }
-  if (rider.kind === 'ghost' && (bellFare || hasNeighbour(cabin, slot, [...GHOST_CONTROLLERS]))) { add('受控幽灵', 2); fare += 2; }
+  if (rider.kind === 'thief' && thiefHeld(cabin, slot)) { add('受控到站奖励', 5); fare += 5; }
+  if (rider.kind === 'robber' && thiefHeld(cabin, slot)) { add('劫匪赏金', DARK_RULES.robberBounty); fare += DARK_RULES.robberBounty; }
+  if (rider.kind === 'ghost' && (bellFare || hasNeighbour(cabin, slot, GHOST_CONTROL_KINDS))) { add('受控幽灵', 2); fare += 2; }
+  if ((rider.kind === 'ghost' || rider.kind === 'wraith') && hasNeighbour(cabin, slot, ['summoner'])) { add('召魂人加持', baseFare * DARK_RULES.summonFareBonus); fare += baseFare * DARK_RULES.summonFareBonus; }
+  if (rider.kind === 'exlover' && cabin.some((r, i) => r?.kind === 'exlover' && i !== slot && !neighbours(slot).includes(i))) { add('怨偶分开坐', baseFare * DARK_RULES.exFareBonus); fare += baseFare * DARK_RULES.exFareBonus; }
+  if (rider.kind === 'brawler' && agitationBand(agitation) === 'high') { add('狂徒高躁动加价', baseFare * DARK_RULES.brawlerHighBonus); fare += baseFare * DARK_RULES.brawlerHighBonus; }
+  if (rider.kind === 'creepychild' && neighbourCount(cabin, slot) === 0) { add('怪童独处', DARK_RULES.creepyAloneBonus); fare += DARK_RULES.creepyAloneBonus; }
   if (rider.kind === 'ghost' && bellFare) { add('招魂铃', 3); fare += 3; }
   const gamble = conflictLinks(cabin).filter(link => link.effect === 'gamble' && (link.first === slot || link.second === slot)).length;
   const coaches = neighbours(slot).filter(i => cabin[i]?.kind === 'coach').length;
+  const taskmasters = rider.kind === 'taskmaster' ? 0 : neighbours(slot).filter(i => cabin[i]?.kind === 'taskmaster').length;
   const appetite = agitationAppetite(rider, cabin, slot, agitation, tuning);
-  const multiplier = gamble + (rider.kind === 'coach' ? 0 : .5 * coaches + appetite);
+  const multiplier = gamble + (rider.kind === 'coach' ? 0 : .5 * coaches + appetite) + DARK_RULES.taskmasterFareBonus * taskmasters;
   const multiplied = FARE_RULES.baseOnlyMultipliers ? fare + Math.ceil(baseFare * multiplier) : Math.ceil(fare * (1 + multiplier));
-  if (multiplied !== fare) add([gamble ? `赌局红线 ×${gamble}` : '', rider.kind !== 'coach' && coaches ? `教练邻座 ${coaches} 位（+${coaches * 50}%）` : '', rider.kind !== 'coach' && appetite ? '高躁动加价' : ''].filter(Boolean).join(' · '), multiplied - fare);
+  if (multiplied !== fare) add([gamble ? `赌局红线 ×${gamble}` : '', rider.kind !== 'coach' && coaches ? `教练邻座 ${coaches} 位（+${coaches * 50}%）` : '', taskmasters ? `监工邻座 ${taskmasters} 位（+${taskmasters * 100}%）` : '', rider.kind !== 'coach' && appetite ? '高躁动加价' : ''].filter(Boolean).join(' · '), multiplied - fare);
   if (rider.kind === 'coach') add(`教练：邻座 ${neighbourCount(cabin, slot)} 位`, neighbourCount(cabin, slot) * FARE_RULES.coachNeighbour);
   if (rider.kind === 'tourist') { const n = neighbourCount(cabin, slot); add(`游客：邻座 ${n} 位 × 2`, n * 2); add('夜莺相邻', Number(hasNeighbour(cabin, slot, ['nightingale'])) * 2); if (neighbours(slot).some(i => cabin[i]?.kind === 'parcel')) lines.push({ label: '纸箱不算邻座', amount: 0 }); }
   if (!isLegend(rider.kind) && hasNeighbour(cabin, slot, ['matchmaker'])) add('月老相邻', LEGEND_RULES.matchmakerNeighbourCoins);
@@ -1220,7 +1459,7 @@ export function fareBreakdown(rider: Rider, cabin: Array<Rider | null>, slot: nu
   if (rider.kind === 'child' && (rider.careProgress ?? 0) >= CHILD_CARE_WORK) add('照顾完成', CHILD_CARE_BONUS);
   add('礼宾小费', arrivalTip(rider, agitation));
   add('急躁加价', rider.volatile ? RISK_RULES.highRiskBonus : 0);
-  add('坏人暂存', rider.stash ?? 0);
+  add(stashLabel(rider.kind), rider.stash ?? 0);
   const bonds = bondStatus(rider, cabin, slot).supportCount;
   add(`默契 ${bonds} 条 × ${bonus}`, bonus * bonds);
   return lines;
@@ -1239,7 +1478,7 @@ export function agitationAppetite(rider: Rider, cabin: Array<Rider | null>, slot
 export function emergencyRepairPlan(state: RunState) {
   const energy = Math.max(0, 1 - state.energy);
   const stress = Math.max(0, state.stress - state.stressCap + 1);
-  const cost = chargeCost(boxOf(state), energy) + stress * SOOTHE_PRICE;
+  const cost = chargeCost(boxOf(state), energy, state.floor) + stress * SOOTHE_PRICE;
   return { energy, stress, cost, affordable: state.coins >= cost };
 }
 export function repairEmergency(state: RunState): RunState {
@@ -1248,4 +1487,72 @@ export function repairEmergency(state: RunState): RunState {
   let next = plan.energy ? chargeBattery(state, plan.energy) : state;
   if (plan.stress) next = sootheAgitation(next, plan.stress);
   return next;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// v9.19 items: a four-slot bag of one-use tools. Shops stock three at a time; each purchase of the same item costs more.
+/** Three different items available from this floor, drawn on the shop's stream. */
+export function drawItemStock(floor: number, rng: () => number, bought: RunState['itemBought'] = {}): NonNullable<RunState['itemStock']> {
+  const pool = ITEM_KEYS.filter(k => ITEMS[k].from <= floor);
+  const picked: ItemKey[] = [];
+  while (picked.length < 3 && picked.length < pool.length) { const rest = pool.filter(k => !picked.includes(k)); picked.push(rest[Math.min(rest.length - 1, Math.floor(rng() * rest.length))]); }
+  return picked.map(key => ({ key, price: itemPrice(key, floor, bought?.[key] ?? 0), sold: false }));
+}
+export function buyItem(state: RunState, index: number): RunState {
+  const card = state.itemStock?.[index];
+  if (state.status !== 'upgrade' || !card || card.sold || state.coins < card.price || (state.items?.length ?? 0) >= ITEM_SLOTS) return state;
+  const bought = { ...state.itemBought, [card.key]: (state.itemBought?.[card.key] ?? 0) + 1 };
+  return { ...state, coins: state.coins - card.price, items: [...(state.items ?? []), card.key], itemBought: bought,
+    itemStock: state.itemStock!.map((c, i) => i === index ? { ...c, sold: true } : c),
+    message: `买下${ITEMS[card.key].name}，支付 ${card.price} 金币。`, log: [`${state.floor}F · 买下${ITEMS[card.key].name} −${card.price} 金币`, ...state.log].slice(0, 4) };
+}
+/** Whether an item can be used now, optionally on this rider. */
+export function itemUsable(state: RunState, key: ItemKey, target?: Rider | null): boolean {
+  if (state.status !== 'playing' || !state.items?.includes(key)) return false;
+  const need = ITEMS[key].target;
+  if (need === 'none') return key !== 'flare' || state.flareFloor !== state.floor;
+  if (!target || !state.cabin.some(r => r?.id === target.id)) return false;
+  switch (need) {
+    case 'rider': return target.kind !== 'parcel' && (key !== 'dismiss' || !isLegend(target.kind));
+    case 'dark': return isDark(target.kind);
+    case 'normal': return corruptible(target.kind) && !target.warded;
+    case 'thief': return (target.kind === 'thief' || target.kind === 'robber') && !target.cuffed;
+    case 'overtimer': return target.kind === 'overtimer' && !target.alarm;
+    case 'child': return target.kind === 'child' && (target.careProgress ?? 0) < CHILD_CARE_WORK;
+    case 'bomb': return isBombKind(target.kind) && target.bombMs !== undefined;
+    case 'parcel': return target.kind === 'parcel' && !target.sealed;
+  }
+  return false;
+}
+export function applyItem(state: RunState, key: ItemKey, targetId?: string): RunState {
+  const target = targetId ? state.cabin.find(r => r?.id === targetId) ?? null : null;
+  if (!itemUsable(state, key, target)) return state;
+  const items = [...state.items!]; items.splice(items.indexOf(key), 1);
+  const spec = ITEMS[key], done = (next: Partial<RunState>, message: string): RunState => ({ ...state, ...next, items, message, log: [`${state.floor}F · ${message}`, ...state.log].slice(0, 4) });
+  const patch = (fn: (r: Rider) => Rider) => state.cabin.map(r => r && r.id === target!.id ? fn(r) : r);
+  const name = target ? PASSENGERS[target.kind].name : '';
+  switch (key) {
+    case 'cell': return done({ energy: Math.min(state.energyCap, state.energy + 15) }, `用了${spec.name}：+${Math.min(15, state.energyCap - state.energy)} 电。`);
+    case 'swap': return done({ oldMovesUsed: Math.max(0, (state.oldMovesUsed ?? Number(state.swapped)) - 1), swapped: false }, `用了${spec.name}：本层多一次老乘客换位。`);
+    case 'aroma': return done({ stress: Math.max(0, state.stress - 2) }, `用了${spec.name}：躁动 −${Math.min(2, state.stress)}。`);
+    case 'flare': return done({ flareFloor: state.floor }, `点燃${spec.name}：这一层所有暗黑版都不会惹麻烦。`);
+    case 'dismiss': return done({ cabin: unseatRider(state.cabin, target!.id, true), legendStatus: isLegend(target!.kind) ? 'dismissed' : state.legendStatus }, `用了${spec.name}：${name}免费下车。`);
+    case 'candy': return done({ cabin: patch(r => ({ ...r, careProgress: CHILD_CARE_WORK })) }, `给了儿童${spec.name}：算作照顾满。`);
+    case 'fuse': return done({ cabin: patch(r => ({ ...r, bombMs: (r.bombMs ?? 0) + 20000, bombMsTotal: (r.bombMsTotal ?? r.bombMs ?? 0) + 20000, bonusMs: (r.bonusMs ?? r.bombMs ?? 0) + 20000, fuse: (r.fuse ?? 0) + 2 })) }, `用了${spec.name}：${name}的炸弹 +20 秒。`);
+    case 'holywater': {
+      const to = BASE_OF[target!.kind as keyof typeof BASE_OF];
+      const cabin = patch(r => ({ ...turnRider(r, to), bombMs: r.kind === 'madbomber' && r.bombMs !== undefined ? Math.ceil(r.bombMs / DARK_RULES.madbomberSeconds) : r.bombMs }));
+      return done({ cabin: cabin.map(r => r?.kind === 'parcel' && r.ownerId === target!.id ? { ...r, contraband: false } : r), lastCorruption: [{ slot: state.cabin.findIndex(r => r?.id === target!.id), from: target!.kind, to }] }, `用了${spec.name}：${name}变回了${PASSENGERS[to].name}。`);
+    }
+    case 'cuffs': return done({ cabin: patch(r => ({ ...r, cuffed: true })) }, `给${name}戴上${spec.name}：整段路程被管住。`);
+    case 'amulet': return done({ cabin: patch(r => ({ ...r, warded: true, corruption: 0 })) }, `给${name}戴上${spec.name}：这一趟不会被同化。`);
+    case 'alarm': return done({ cabin: patch(r => ({ ...r, alarm: true })) }, `给加班魂上了${spec.name}：到站就下车。`);
+    case 'sedative': return done({ cabin: patch(r => ({ ...r, sedated: 3, withdrawal: 0 })) }, `给${name}用了${spec.name}：3 层内不产生躁动。`);
+    case 'seal': { const box = boxIdOf(target!); return done({ cabin: state.cabin.map(r => r?.kind === 'parcel' && boxIdOf(r) === box ? { ...r, sealed: true } : r) }, `给${target!.contraband ? '黑箱' : '纸箱'}贴上${spec.name}。`); }
+    case 'cutter': {
+      const slot = state.cabin.findIndex(r => r?.id === target!.id);
+      const fare = arrivalFare(target!, state.cabin, slot, cooperationBonus(state), state.stress, {}, hasKeepsake(state, 'bell'));
+      return done({ cabin: unseatRider(state.cabin, target!.id), coins: state.coins + fare, earned: state.earned + fare }, `用${spec.name}拆掉了炸弹：${name}下车，付了 ${fare} 金币。`);
+    }
+  }
 }

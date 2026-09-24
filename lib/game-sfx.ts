@@ -3,7 +3,7 @@
 
 export type Sfx =
   | 'ding' | 'doorClose' | 'doorOpen' | 'hum' | 'clink' | 'register' | 'link' | 'conflict' | 'heartbeat'
-  | 'rumble' | 'calm' | 'stamp' | 'sell' | 'record' | 'district' | 'tick' | 'board' | 'whoosh' | 'closeCall' | 'deal' | 'shimmer' | 'sizzle' | 'defuse' | 'explosion' | 'boxOpen';
+  | 'rumble' | 'calm' | 'stamp' | 'sell' | 'record' | 'district' | 'tick' | 'board' | 'whoosh' | 'closeCall' | 'deal' | 'shimmer' | 'sizzle' | 'defuse' | 'explosion' | 'boxOpen' | 'bell';
 
 type Bus = { ctx: BaseAudioContext; out: GainNode; wet: GainNode };
 let bus: (Bus & { ctx: AudioContext }) | null = null;
@@ -155,6 +155,8 @@ function schedule(b: Bus, name: Sfx, at: number, pitch: number) {
     case 'sizzle': noise(b, { at, dur: .26, gain: .016, freq: 3400, q: .8 }); [0.05, .13].forEach(t => noise(b, { at: at + t * p, dur: .025, gain: .026, freq: 2400, q: 3 })); break;
     case 'defuse': [0, 7, 12, 16, 19].forEach((st, i) => tone(b, 587.33 * 2 ** (st / 12), { at: at + i * .075, dur: .9, gain: .05, type: 'triangle', attack: .02 })); bell(b, 1174.66, at + .45, 1.8, .07); bell(b, 1567.98, at + .58, 1.6, .045); break;
     case 'explosion': noise(b, { at, dur: 1.8, gain: .12, freq: 700, sweepTo: 60, q: .6, filter: 'lowpass' }); tone(b, 70, { at, dur: 1.4, gain: .16, type: 'sine', glideTo: 28, attack: .01, wet: false }); noise(b, { at: at + .05, dur: .35, gain: .05, freq: 2600, q: .8 }); [0.3, .55, .8, 1.1].forEach(t => noise(b, { at: at + t, dur: .08, gain: .025, freq: 1600, q: 1.5 })); break;
+    // v9.19 midnight bell: three low tolls with a slightly detuned partial, like a distant clock tower.
+    case 'bell': [0, 1.1, 2.2].forEach(t => { bell(b, 196, at + t, 2.6, .09); bell(b, 392.8, at + t + .01, 1.8, .04); tone(b, 98, { at: at + t, dur: 1.6, gain: .06, type: 'sine', attack: .01, wet: false }); }); break;
     case 'closeCall': tone(b, 220, { at, dur: 1.2, gain: .04, type: 'triangle', glideTo: 440, attack: .3 }); bell(b, 1318.5, at + .9, 1.4, .05); break;
     case 'boxOpen': noise(b, { at, dur: .12, gain: .07, freq: 1400, sweepTo: 3200, q: 1 }); tone(b, 392 * p, { at: at + .06, dur: .18, gain: .09, type: 'triangle', glideTo: 523.25 * p }); [0, 4, 7].forEach((st, i) => tone(b, 1046.5 * p * 2 ** (st / 12), { at: at + .16 + i * .05, dur: .5, gain: .045, attack: .005 })); break;
   }

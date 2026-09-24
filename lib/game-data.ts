@@ -4,7 +4,21 @@ export type PassengerKind =
   | 'ghost' | 'exorcist' | 'coach' | 'celebrity' | 'inspector' | 'bomb'
   | 'mystery' | 'shifter' | 'mimic'
   | 'parcel'
-  | LegendKind;
+  | LegendKind
+  | DarkKind;
+
+/** v9.19 “After midnight”: from 61F most riders arrive as their dark version — the same person, a new face, new rules
+ * and new links. Each dark kind maps back to its original (used for corruption, purification and the archive). */
+export type DarkKind = 'overtimer' | 'voyeur' | 'smuggler' | 'scrapper' | 'exlover' | 'noisemaker' | 'robber' | 'crookedcop' | 'shyster'
+  | 'brawler' | 'pusher' | 'creepychild' | 'wraith' | 'summoner' | 'taskmaster' | 'scandal' | 'grafter' | 'madbomber';
+export const DARK_OF: Partial<Record<PassengerKind, DarkKind>> = {
+  commuter: 'overtimer', tourist: 'voyeur', courier: 'smuggler', mechanic: 'scrapper', lover: 'exlover', musician: 'noisemaker',
+  thief: 'robber', cop: 'crookedcop', lawyer: 'shyster', drunk: 'brawler', nurse: 'pusher', child: 'creepychild',
+  ghost: 'wraith', exorcist: 'summoner', coach: 'taskmaster', celebrity: 'scandal', inspector: 'grafter', bomb: 'madbomber',
+};
+export const DARK_KINDS = Object.values(DARK_OF) as DarkKind[];
+export const BASE_OF = Object.fromEntries(Object.entries(DARK_OF).map(([base, dark]) => [dark, base])) as Record<DarkKind, PassengerKind>;
+export const isDark = (kind: string): kind is DarkKind => (DARK_KINDS as string[]).includes(kind);
 
 /** v9 legendary riders: one may wait on floor 1 as a fourth card. They ride 1→10,
  * pay no ordinary fare and leave a keepsake when delivered to the first shop. */
@@ -52,9 +66,28 @@ export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   coach: { kind: 'coach', name: '教练', title: 'The Coach', weight: 3, fare: 8, energy: 1, trip: [3, 6], patience: 3, rarity: 6, sheet: '03', cell: 2, tone: 'social', short: '每位邻座教练使车费+50%', detail: '非教练乘客抵达时，每位相邻教练增加其本体基价的50%；与恋人配对、醉汉加价等倍率相加，不再放大受控奖励、小费或状态奖励。教练自己抵达时，每位仍在身旁的邻座额外支付2金币。' },
   celebrity: { kind: 'celebrity', name: '名人', title: 'The Celebrity', weight: 1, fare: 12, energy: 1, trip: [4, 8], patience: 2, rarity: 5, sheet: '03', cell: 3, tone: 'risk', short: "恰好1邻座每层+2币；2+邻座+1躁动", detail: "恰好一位邻座时每层赚2金币；至少两位邻座时每层+1躁动。无人相邻无效果。", risk: { label: '条件风险', guide: '保持恰好 1 名邻座' } },
   inspector: { kind: 'inspector', name: '检查员', title: 'The Inspector', weight: 2, fare: 8, energy: 1, trip: [4, 7], patience: 4, rarity: 5, sheet: '03', cell: 4, tone: 'support', short: '连续3层不在高躁动：到站额外+12币', detail: '连续3次关门时不在高躁动（低或中躁动都算），获得合规印章，到站额外+12金币，不参与倍率。完成前遇到高躁动会重新计数；完成后印章保留，每位检查员只奖励一次。检查员本人不会带躁动。挨着快递员的纸箱时会验货一次：快递员晚一层到站，送达多付5金币。' },
-  bomb: { kind: 'bomb', name: '炸弹客', title: 'Bomb Timer', weight: 1, fare: 30, energy: 1, trip: [2, 6], patience: 1, rarity: 4, sheet: '03', cell: 5, tone: 'risk', short: "实时倒计时：归零前送达，车费高、有拆弹奖金", detail: "基价以卡面为准，车费很高。上车后开始实时倒计时：10秒加每站10秒，高躁动时两倍速；到站前归零立即失败。切到别的页面、进商店或打开菜单时暂停，看人物卡时不暂停。相邻警察锁住倒计时，也停止坏人链接。送达时每剩3秒多付1金币拆弹奖金；警察锁住时倒计时停住，但拆弹奖金照样随时间减少。未受控时可与小偷、醉汉或炸弹客链接暂存收益。空手的快递员挨着时会接过炸弹：快递员先下车就带走炸弹，炸弹客变成乔装的通勤者（车费不变，没有倒计时）。", risk: { label: '致命风险', guide: '与警察相邻：锁住倒计时' } },
-  mystery: { kind:'mystery', name:'神秘人', title:'The Mystery', weight:2, fare:0, energy: 1, trip:[2,7], patience:4, rarity:6, sheet:'04', cell:0, tone:'occult', short: "参数与关系随机；8–24金币到站揭晓", detail: "出现时随机耗电、自身躁动、路程与关系；车费均匀抽取8–24金币，封存至到站，请离报价不透露答案。", risk:{label:'风险交易',guide:'查看这一次的协作与冲突对象'} },
+  bomb: { kind: 'bomb', name: '炸弹客', title: 'Bomb Timer', weight: 1, fare: 30, energy: 1, trip: [2, 6], patience: 1, rarity: 4, sheet: '03', cell: 5, tone: 'risk', short: "实时倒计时：归零前送达；归零会炸飞邻座、损失金币", detail: "基价以卡面为准，车费很高。上车后开始实时倒计时：10秒加每站10秒，高躁动时两倍速；到站前归零会爆炸：他和身边的乘客（传说人物除外）被炸下车，都不付车费，你损失 20 金币；本班继续。切到别的页面、进商店或打开菜单时暂停，看人物卡时不暂停。相邻警察锁住倒计时，也停止坏人链接。送达时每剩3秒多付1金币拆弹奖金；警察锁住时倒计时停住，但拆弹奖金照样随时间减少。未受控时可与小偷、醉汉或炸弹客链接暂存收益。空手的快递员挨着时会接过炸弹：快递员先下车就带走炸弹，炸弹客变成乔装的通勤者（车费不变，没有倒计时）。", risk: { label: '条件风险', guide: '与警察相邻：锁住倒计时' } },
+  mystery: { kind:'mystery', name:'神秘人', title:'The Mystery', weight:2, fare:0, energy: 1, trip:[2,7], patience:4, rarity:6, sheet:'04', cell:0, tone:'occult', short: "身份未知；上车后下一层揭晓", detail: "上车后的下一层揭晓身份：便衣警察（车费 8，管住身边的小偷和劫匪，锁住炸弹）、逃犯（车费 20，每层 +1 躁动）、富商（车费 25）或好心人（车费 8，像护士一样每层为每位邻座抵消 1 躁动）。揭晓前卡上看不到车费。", risk:{label:'风险交易',guide:'揭晓后再决定座位'} },
   shifter: { kind:'shifter', name:'百变人', title:'The Shifter', weight:2, fare: 22, energy: 1, trip:[4,7], patience:5, rarity:5, sheet:'04', cell:1, tone:'risk', short: "每层换属性；基价看卡面", detail: "每到一层重新抽取自身躁动0–1、原始车费16–28与协作/冲突对象；耗电固定为1。短途再按固定比例折算基价。目的地不延长，关门前查看新状态。", risk:{label:'条件风险',guide:'每层查看新状态，留好请离赔偿'} },
+  // v9.19 dark versions (after 60F). rarity 0: they are never drawn directly; an ordinary draw turns dark instead.
+  overtimer: { kind:'overtimer', name:'加班魂', title:'The Overtimer', weight:1, fare:6, energy:1, trip:[2,5], patience:3, rarity:0, sheet:'01', cell:0, tone:'steady', short:'每坐一层加班费+2币；到站要等邻座一起下，赖着不走每层+1躁动', detail:'暗黑版通勤者。每乘坐一层，加班费 +2 金币，到站一起结算。到了目的地不会自己下车：要等同一层有邻座下车时才跟着下；赖着不走的每一层 +1 躁动；过站 3 层后不付钱自己离开。闹钟可以让他准时下车。' },
+  voyeur: { kind:'voyeur', name:'偷拍客', title:'The Voyeur', weight:1, fare:8, energy:1, trip:[3,6], patience:3, rarity:0, sheet:'01', cell:0, tone:'risk', short:'每层偷拍普通邻座：+1躁动；到站每张照片+3币', detail:'暗黑版游客。只要身边有普通乘客（不是暗黑版），每层偷拍一张：车厢 +1 躁动，照片到站时每张 +3 金币。身边只有暗黑版或空位时安静。和丑闻明星是绿线。' },
+  smuggler: { kind:'smuggler', name:'走私客', title:'The Smuggler', weight:1, fare:8, energy:1, trip:[1,4], patience:2, rarity:0, sheet:'01', cell:0, tone:'risk', short:'带黑箱：黑箱在旁才付钱，箱价×2；普通检查员会没收，贪腐检查员放行', detail:'暗黑版快递员，带着一个黑箱。黑箱挨着他送达时，他付车费加两倍箱价；没带黑箱不付钱。普通检查员挨着黑箱会没收它（你得 15 金币举报奖励，走私客从此没箱子）；贪腐检查员挨着黑箱则放行，送达时再 +8 金币。' },
+  scrapper: { kind:'scrapper', name:'拆机人', title:'The Scrapper', weight:1, fare:6, energy:1, trip:[3,6], patience:3, rarity:0, sheet:'01', cell:0, tone:'support', short:'每层拆零件卖+3币，电梯运转多耗1电', detail:'暗黑版维修工。每层从电梯上拆零件卖钱：+3 金币，但电梯运转多耗 1 电。挨着贪腐检查员时销赃每层再 +2。电量宽裕时用电换钱。' },
+  exlover: { kind:'exlover', name:'怨偶', title:'The Ex', weight:1, fare:9, energy:1, trip:[3,7], patience:4, rarity:0, sheet:'01', cell:0, tone:'social', short:'两位怨偶相邻就吵（红线）；分开坐：基价×2', detail:'暗黑版恋人。两位怨偶相邻是红线（吵架，+1 躁动）。另一位怨偶也在车上但不相邻时，到站基价 ×2。单独一人时会把前任叫来。挨着普通恋人会搅局（红线）。' },
+  noisemaker: { kind:'noisemaker', name:'噪音乐手', title:'The Noisemaker', weight:2, fare:6, energy:1, trip:[2,5], patience:3, rarity:0, sheet:'01', cell:0, tone:'social', short:'每层躁动+1（已高躁动时不加）；高躁动时每层+4币', detail:'暗黑版音乐家。把躁动往高处拉：不在高躁动时每层 +1 躁动；关门时处于高躁动，每层 +4 金币。和狂徒是绿线。' },
+  robber: { kind:'robber', name:'劫匪', title:'The Robber', weight:1, fare:12, energy:1, trip:[2,5], patience:2, rarity:0, sheet:'02', cell:0, tone:'risk', short:'没人管：每层抢你2币+3%（最多10）、+1躁动；被管住：到站赏金+15', detail:'暗黑版小偷。不偷乘客，直接抢你的钱包：没人管时每层拿走 2 金币加你余额的 3%（最多 10），并 +1 躁动。警察、黑警或便衣警察挨着他就管住了，到站时再付 15 金币赏金。讼棍挨着他时，警察管不住他。手铐也能管住他。' },
+  crookedcop: { kind:'crookedcop', name:'黑警', title:'The Crooked Cop', weight:2, fare:8, energy:1, trip:[3,6], patience:4, rarity:0, sheet:'02', cell:0, tone:'support', short:'管住身边所有坏人，全车每层−1躁动；每层收你3币保护费', detail:'暗黑版警察。身边的小偷、劫匪、醉汉、狂徒都被管住，炸弹客和疯炸客的倒计时也被锁住；在车上时全车每层 −1 躁动。代价是每层从你钱包收 3 金币保护费。和偷拍客、讼棍是红线。' },
+  shyster: { kind:'shyster', name:'讼棍', title:'The Shyster', weight:1, fare:10, energy:1, trip:[3,6], patience:4, rarity:0, sheet:'02', cell:0, tone:'support', short:'车上每条红线每层+3币（最多9）；自己+1躁动', detail:'暗黑版律师。车上每有一条红线，他就每层帮你打官司赚 3 金币（最多 9）；他自己每层 +1 躁动。挨着劫匪时，警察管不住那个劫匪。' },
+  brawler: { kind:'brawler', name:'狂徒', title:'The Brawler', weight:2, fare:12, energy:1, trip:[2,5], patience:1, rarity:0, sheet:'02', cell:0, tone:'risk', short:'自己+1躁动，每位普通邻座再+1；高躁动到站车费×3', detail:'暗黑版醉汉。每层自己 +1 躁动，每位普通邻座（不是暗黑版）再 +1。关门时处于高躁动，到站基价 ×3。护士或药贩挨着能压住一部分；黑警能管住他。和噪音乐手是绿线。' },
+  pusher: { kind:'pusher', name:'药贩', title:'The Pusher', weight:1, fare:7, energy:1, trip:[3,6], patience:4, rarity:0, sheet:'02', cell:0, tone:'support', short:'每位邻座自身躁动每层−2；她下车后，身边的人戒断2层（每层+1）', detail:'暗黑版护士。每位邻座自身带来的躁动每层抵消 2 点。她下车时，当时挨着她的人开始戒断：接下来 2 层每人每层 +1 躁动。让她和吃药的人同站下车，就没有戒断。' },
+  creepychild: { kind:'creepychild', name:'怪童', title:'The Uncanny Child', weight:1, fare:8, energy:1, trip:[2,5], patience:1, rarity:0, sheet:'02', cell:0, tone:'social', short:'每位普通邻座+1躁动；到站时一个邻座都没有+10币', detail:'暗黑版儿童。不要人照顾：身边每有一位普通乘客（不是暗黑版），每层 +1 躁动。到站时身边一个人都没有，额外 +10 金币。' },
+  wraith: { kind:'wraith', name:'怨灵', title:'The Wraith', weight:0, fare:5, energy:0, trip:[4,8], patience:5, rarity:0, sheet:'03', cell:0, tone:'occult', short:'没人管：每层拖延一位邻座1站并吸1电；受控：每层+4币', detail:'暗黑版幽灵。没人管时，每层都随机拖延一位邻座 1 站，并吸走 1 电。驱魔师、召魂人或灵媒挨着它时受控：每层反而 +4 金币。' },
+  summoner: { kind:'summoner', name:'召魂人', title:'The Summoner', weight:1, fare:7, energy:1, trip:[3,6], patience:3, rarity:0, sheet:'03', cell:0, tone:'occult', short:'管住幽灵与怨灵；每3层召一只幽灵进空座；身边受控幽灵车费×2', detail:'暗黑版驱魔师。管住身边的幽灵和怨灵。每到 3 的倍数层，把一只幽灵召进一个空座（幽灵自带车费，路程 4 站）。挨着他的受控幽灵到站车费 ×2。' },
+  taskmaster: { kind:'taskmaster', name:'监工', title:'The Taskmaster', weight:3, fare:8, energy:1, trip:[3,6], patience:3, rarity:0, sheet:'03', cell:0, tone:'social', short:'邻座车费+100%，普通邻座每层各+1躁动', detail:'暗黑版教练。每位邻座到站基价 +100%（教练是 +50%），但每位普通邻座（不是暗黑版）每层 +1 躁动。' },
+  scandal: { kind:'scandal', name:'丑闻明星', title:'The Scandal', weight:1, fare:14, energy:1, trip:[4,7], patience:2, rarity:0, sheet:'03', cell:0, tone:'risk', short:'每位邻座每层+2币；偷拍客在旁再+5；检查员或黑警在旁：到站曝光，车费归零', detail:'暗黑版名人。邻座越多越好：每位邻座每层 +2 金币；挨着偷拍客每层再 +5。到站时如果挨着检查员或黑警，丑闻曝光：这一趟的车费和暂存全部归零。' },
+  grafter: { kind:'grafter', name:'贪腐检查员', title:'The Grafter', weight:2, fare:8, energy:1, trip:[3,6], patience:4, rarity:0, sheet:'03', cell:0, tone:'support', short:'每层向每位邻座收2币检查费（车厢+1躁动）；放行黑箱、帮拆机人销赃', detail:'暗黑版检查员。每层向每位邻座收 2 金币检查费给你，敲诈让车厢每层 +1 躁动。挨着黑箱时放行（走私客送达再 +8）；挨着拆机人时销赃每层 +2。' },
+  madbomber: { kind:'madbomber', name:'疯炸客', title:'The Mad Bomber', weight:1, fare:50, energy:1, trip:[2,4], patience:1, rarity:0, sheet:'03', cell:0, tone:'risk', short:'弗兰肯斯坦炸弹：倒计时更短，普通警察锁不住；归零时本班结束', detail:'暗黑版炸弹客，抱着一颗弗兰肯斯坦式的怪炸弹。实时倒计时比炸弹客短，普通警察锁不住，只有黑警挨着才能锁住，或用引线剪当场拆掉。归零时本班结束。车费 50。', risk: { label: '致命风险', guide: '与黑警相邻：锁住倒计时' } },
   // v9.16: a Courier's parcel. Not a person: it takes a seat and power, never counts as a neighbour.
   parcel: { kind:'parcel', name:'纸箱', title:'The Parcel', weight:0, fare:0, energy:1, trip:[1,1], patience:9, rarity:0, sheet:'04', cell:0, tone:'support', short:'占座耗电；挨着快递员送达，无主时到站开箱', detail:'快递员的包裹，分普通、稀有、传奇；大纸箱占同一列上下两格。每格每层耗1电，不算任何人的邻座，本身不付钱。和它的快递员一起上车时必须挨着他；它的快递员没上车时，挨着另一位空手快递员也算他的。无主纸箱到站开箱，内容开箱前看不到：随机的金币或电，偶尔是一项能力，箱子越稀有开得越多、出能力的机会越大。小偷挨着会在下车时带走它，给一半金币作小费；小孩挨着会在下一层拆开；维修工会拆无主纸箱当零件，立刻完成检修；检查员验快递员的箱子，快递员晚一层到站、多付5金币；复制人在它正下方会复制一个同样的箱子。' },
   mimic: { kind:'mimic', name:'复制人', title:'The Mimic', weight:1, fare:10, energy: 1, trip:[3,6], patience:4, rarity:6, sheet:'04', cell:2, tone:'occult', short:'↑ 复制正上方乘客的车费', detail:'固定复制正上方紧邻乘客的基础车费，按那位乘客实际的票价，不再打自己的短途折扣；上方空缺时恢复本体车费。隐藏车费仍隐藏。不复制技能、耗电、倒计时、路程或已叠加奖励。正上方是纸箱时，复制一个同样的箱子，下车时打开。'} ,
@@ -72,6 +105,9 @@ export const PASSENGER_ORDER: PassengerKind[] = [
   'commuter', 'tourist', 'courier', 'mechanic', 'lover', 'musician',
   'thief', 'cop', 'drunk', 'nurse', 'child',
   'lawyer', 'ghost', 'exorcist', 'coach', 'celebrity', 'inspector', 'bomb', 'mystery', 'mimic', 'shifter',
+  // v9.19: the midnight pages of the archive.
+  'overtimer', 'voyeur', 'smuggler', 'scrapper', 'exlover', 'noisemaker', 'robber', 'crookedcop', 'shyster',
+  'brawler', 'pusher', 'creepychild', 'wraith', 'summoner', 'taskmaster', 'scandal', 'grafter', 'madbomber',
 ];
 
 // Lower rarity values mean a lower appearance weight. The material grade also
@@ -132,7 +168,7 @@ export const ADJACENT: [number, number][] = [[0,1],[1,2],[3,4],[4,5],[0,3],[1,4]
 export type PassengerCategory = 'good' | 'bad' | 'special';
 export const PASSENGER_CATEGORY_LABELS: Record<PassengerCategory, string> = { good: '好人', bad: '坏人', special: '特殊' };
 export function passengerCategory(kind: PassengerKind): PassengerCategory {
-  if (['thief', 'drunk', 'bomb', 'don'].includes(kind)) return 'bad';
-  if (['ghost', 'mystery', 'shifter', 'mimic', 'celebrity', 'inspector', 'medium', 'stranger'].includes(kind)) return 'special';
+  if (['thief', 'drunk', 'bomb', 'don', 'robber', 'brawler', 'madbomber', 'smuggler', 'voyeur', 'crookedcop', 'grafter', 'shyster'].includes(kind)) return 'bad';
+  if (['ghost', 'mystery', 'shifter', 'mimic', 'celebrity', 'inspector', 'medium', 'stranger', 'wraith', 'summoner', 'scandal', 'creepychild'].includes(kind)) return 'special';
   return 'good';
 }

@@ -10,6 +10,12 @@ let directedLinkChecks=0;
 for(const kind of PASSENGER_ORDER){
   // Mimics copy values, never bonds; their own directed bonds remain testable.
   const liked=BONDS[kind].likes[0],avoided=BONDS[kind].avoids[0];
+  // v9.19: some dark riders have no green (Overtimer, Ex, Uncanny Child, Taskmaster) or no red partner at all.
+  if(!liked||!avoided){
+    if(liked)assert.equal(bondStatus(rider(kind,'s'),[rider(liked,'a'),rider(kind,'s'),rider(liked,'b'),null,null,null],1).supportCount,2,`${kind}: every green neighbor must count`);
+    if(avoided)assert.equal(conflictLinks([rider(avoided,'a'),rider(kind,'s'),rider(avoided,'b'),null,null,null]).length,2,`${kind}: every red edge is counted once`);
+    continue;
+  }
   const twoGreen=[rider(liked,`${kind}-good-a`),rider(kind,`${kind}-self`),rider(liked,`${kind}-good-b`),null,null,null];
   const twoRed=[rider(avoided,`${kind}-bad-a`),rider(kind,`${kind}-self`),rider(avoided,`${kind}-bad-b`),null,null,null];
   const protectedCabin=[rider(liked,`${kind}-good`),rider(kind,`${kind}-self`),rider(avoided,`${kind}-bad`),null,null,null];
