@@ -20,10 +20,13 @@ export type DepartureRisk = {
 };
 
 /** Pure check behind the ascend guard: a floor that can end the run needs a second press. */
+/** Power the cabin must still have after the next ascent: arriving at a shop floor (10F, 20F, …) with 0 is safe,
+ * matching settlement; anywhere else it must stay above 0. */
+export const minimumAfterAscent = (state: RunState) => ((state.floor + 1) % 10 === 0 ? 0 : 1);
 export function departureRisk(state: RunState): DepartureRisk {
   const worst = state.energy + energyForecast(state).lowDelta;
-  const need = Math.max(0, 1 - worst);
-  return { fatal: state.status === 'playing' && worst <= 0, need, affordable: emergencyAllowance(state), unitPrice: emergencyUnitPrice(boxOf(state)), failFloor: sectorForecast(state).failFloor };
+  const need = Math.max(0, minimumAfterAscent(state) - worst);
+  return { fatal: state.status === 'playing' && need > 0, need, affordable: emergencyAllowance(state), unitPrice: emergencyUnitPrice(boxOf(state)), failFloor: sectorForecast(state).failFloor };
 }
 
 /** Shop estimate for the coming sector: motor power plus a typical cabin. Riders who return power are not counted. */
@@ -54,7 +57,7 @@ export function rescuePlan(state: RunState): RescuePlan | null {
       remove.push({ id: r.id, kind: r.kind, paid: s.coins - next.coins }); paid += s.coins - next.coins; s = next;
     });
     if (!ok || !s.cabin.some(Boolean)) continue;
-    const need = Math.max(0, 1 - (s.energy + energyForecast(s).lowDelta));
+    const need = Math.max(0, minimumAfterAscent(s) - (s.energy + energyForecast(s).lowDelta));
     if (need > emergencyAllowance(s)) continue;
     const plan = { remove, charge: need, cost: paid + need * risk.unitPrice };
     if (!best || plan.remove.length < best.remove.length || (plan.remove.length === best.remove.length && plan.cost < best.cost)) best = plan;

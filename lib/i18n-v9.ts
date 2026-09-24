@@ -2,7 +2,11 @@
 // whose numbers changed in v9 is listed here in full.
 export const V9_PAIRS: Array<[string, string]> = [
   // v9.17 Courier boxes: rider texts that the generated v8.32 table would otherwise shadow.
-  ['纸箱在旁', 'Box beside him'], ['纸箱在旁才付钱 · 回 2 电 · 空手可接炸弹', 'Pays only with his box beside him · 2 power · empty-handed takes bombs'], ['占同一列上下两格 · 挨着快递员送达', 'Fills one column · delivered beside a Courier'], ['挨着快递员送达 · 无主时到站开箱', 'Delivered beside a Courier · opens on arrival if unclaimed'],
+  ['空手的快递员拿着炸弹，他会在倒计时归零前下车并把炸弹带走', 'An empty-handed Courier holds the bomb and gets off before the timer runs out, taking it with him'],
+  ['纸箱在旁', 'Box beside him'],
+  ['已锁住 · ', 'Locked · '], ['来不及！倒计时 ', 'Too late! Timer '], ['倒计时 ', 'Timer '], ['快递员会带走 · ', 'Courier takes it · '],
+  ['警察在旁边：倒计时暂停，不会减少', 'Officer beside them: the timer is paused'],
+  ['免费选取', 'Free pick'], ['不变', 'no change'], ['确认冒险上行', 'Ascend anyway'], ['电量不够跑完下一段的运转；途中补电每十层有上限。再点一次确认离开。', 'Not enough power for the next sector’s motor; in-transit charging is capped every ten floors. Press again to leave anyway.'], ['纸箱在旁才付钱 · 回 2 电 · 空手可接炸弹', 'Pays only with his box beside him · 2 power · empty-handed takes bombs'], ['占同一列上下两格 · 挨着快递员送达', 'Fills one column · delivered beside a Courier'], ['挨着快递员送达 · 无主时到站开箱', 'Delivered beside a Courier · opens on arrival if unclaimed'],
   ['大纸箱已放好：占上下两格。', 'Crate placed: it fills the upper and lower seat.'], ['大纸箱已就位', 'Crate placed'],
   ['大纸箱需要同一列上下两个空位', 'A crate needs both empty seats of one column'], ['大纸箱放好后不能挪动 · 可以撤回重放', 'A seated crate cannot move · withdraw it and place again'],
   ['乔装的通勤者', 'Disguised Commuter'], ['传奇大纸箱', 'Legendary Crate'], ['稀有大纸箱', 'Rare Crate'], ['大纸箱', 'Crate'], ['传奇纸箱', 'Legendary Parcel'], ['稀有纸箱', 'Rare Parcel'], ['传奇快递员', 'Legendary Courier'], ['稀有快递员', 'Rare Courier'],

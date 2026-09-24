@@ -1,6 +1,11 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.17**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.17.1**. Publication status is tracked separately from the source version.
+
+## v9.17.1 — 2026-09-23 — Audit fixes / 审计修复
+
+- Ascend guard no longer flags 0 power on arriving at a shop floor (matches settlement; 304 false alarms in the audit). Bomb tag shows "Courier takes it" when an empty-handed Courier will carry it off. Power forecast includes box payouts (604 misses before). English leaks fixed (bomb tags, shop records and warning, "N more", "N red links", run-together labels); zero changes read "±0". Mimic card under a box fixed.
+- New `npm run balance:audit` (forecast vs settlement over real ascents): agitation 0 misses; after fixes only 24 coin-flip survivals out of 23,913 ascents. verify 31 checks. Rules and values unchanged. Watch: skilled runs still too long/rich, agitation-dominated deaths.
 
 ## v9.17 — 2026-09-23 — Courier play: rare boxes, crates, bomb hand-offs; Thief picks pockets / 快递员玩法与小偷改版
 

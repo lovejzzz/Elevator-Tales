@@ -1067,3 +1067,39 @@ export const V917_EN: ChangelogEntry = {
   ],
   watch: ['Rare boxes make skilled runs richer and longer (balanced +6 floors, +36 exit coins); if playtests also feel too comfortable, lower rare and legendary values first.', 'Mechanic parts and Courier disputes are rare in simulation (bots look two floors ahead and undervalue later savings); judge them in play.', 'Courier-alone is still uncommon; the bomb hand-off is its main high-risk use, so watch whether real players take the gamble.'],
 };
+
+export const V9171_ZH: ChangelogEntry = {
+  version: '9.17.1', date: '2026-09-23', title: '审计修复：商店前一层误报断电、炸弹标签、电量预告、英文界面漏翻',
+  summary: '一次全面审计：上行保护在 9、19、29…层会把“到商店时电量为 0”误报成断电；炸弹标签不知道快递员会带走炸弹；电量预告漏算纸箱开出来的电；英文界面还有十几处中文。全部修复，规则和数值不变。',
+  changes: [
+    '上行保护：到达商店楼层（10、20、30…层）时电量正好为 0 本来就不算失败，但保护会报“这一层可能断电”并建议付费补电。现在和结算一致，只在真正会断电时提醒。',
+    '炸弹标签：空手快递员拿着炸弹、会在倒计时归零前下车时，标签显示“快递员会带走 · N”，不再显示“来不及！”。',
+    '电量预告：下一层可能开箱（无主纸箱到站、小孩拆箱、复制人下车）时，预告上限算上可能开出的电；最坏情况不变。',
+    '英文界面漏翻：炸弹倒计时标签和说明、商店的选取/加购/充电记录、商店离开警告、“另 N 项”、“N 条红线”、“确认冒险上行”、“免费选取”、电量说明里的“运转固定 N 电”，以及“名字+到站”连成一个词（MechanicArrival）的问题。数值为 0 的变化统一显示“±0”，不再出现单独的“不变”。',
+    '复制人卡：正上方是纸箱时写“↑ 复制纸箱 · 下车打开”，不再误写成“复制纸箱车费 10”。',
+  ],
+  experiments: [
+    '预告与结算对照审计（新增 npm run balance:audit）：7 种打法各 50 局、30,205 次真实上行，逐层比较玩家看到的躁动预告、电量预告、上行保护、炸弹标签和实际结算。躁动预告 0 次偏差；修复前电量预告 604 次偏差（全部是纸箱开出的电）、上行保护在商店前一层误报 304 次、炸弹标签 3 次错误；修复后 23,913 次上行只剩 24 次“保护提醒了但活了下来”，全部是靠纸箱 50% 开出电才活下来，提醒是对的。',
+    '英文界面实测：按英文逐层游玩到商店和结束画面，扫描所有文字和提示，发现并修复上述漏翻；中文界面只剩刻意保留的英文装饰标题。',
+    'verify 新增 1 项（共 31 项）：商店楼层 0 电不算失败且保护不误报、其他楼层仍会报；炸弹“快递员会带走”状态和来不及的情况；电量预告包含纸箱开出的电；漏翻文案逐条检查。',
+  ],
+  watch: ['平衡目标仍有长期未达标的项：熟练玩家打得太久（均衡型中位 115 层，目标 55–85）、太富（离店金币中位 226）、几乎都死于躁动（92%）。这是整体节奏问题，不是这次修复的范围。'],
+};
+
+export const V9171_EN: ChangelogEntry = {
+  version: '9.17.1', date: '2026-09-23', title: 'Audit fixes: false power alarm before shops, bomb label, power forecast, English leaks',
+  summary: 'A full audit: on 9F, 19F, 29F… the ascend guard called arriving at a shop with 0 power a failure; the bomb label ignored a Courier carrying the bomb off; the power forecast left out power from opened boxes; and a dozen Chinese strings still reached the English interface. All fixed; rules and values unchanged.',
+  changes: [
+    'Ascend guard: arriving at a shop floor (10F, 20F, 30F…) with exactly 0 power has never been a loss, yet the guard warned “this floor may run out of power” and suggested paid charging. It now matches settlement and only warns when power really runs out.',
+    'Bomb label: when an empty-handed Courier holds the bomb and gets off before the timer runs out, the tag reads “Courier takes it · N” instead of “Too late!”.',
+    'Power forecast: when a box may open next floor (an unclaimed box arriving, a Child opening one, a Mimic getting off), the forecast’s upper bound includes the power it may pay; the worst case is unchanged.',
+    'English leaks: bomb timer tags and tooltips, shop pick / add-on / charge records, the shop leave warning, “N more”, “N red links”, “Ascend anyway”, “Free pick”, “motor fixed at N” in the power tooltip, and names running into labels (“MechanicArrival”). A zero change now reads “±0” everywhere instead of a bare Chinese “no change”.',
+    'Mimic card: under a box it reads “↑ Copies the box · opens it when leaving” instead of a misleading “copies Parcel fare 10”.',
+  ],
+  experiments: [
+    'Forecast-versus-settlement audit (new npm run balance:audit): 7 play styles × 50 runs, 30,205 real ascents, comparing the agitation forecast, power forecast, ascend guard and bomb tag with what settlement did. Agitation forecast: 0 misses. Before the fix: 604 power forecast misses (all box power), 304 false guard alarms on the floor before a shop, 3 wrong bomb tags. After: across 23,913 ascents only 24 “guard warned but the run survived”, each saved by a box paying power on a 50% roll, where the warning is right.',
+    'English interface played floor by floor through a shop and the end screen, scanning every text and tooltip; the leaks above were found and fixed. The Chinese interface only keeps its deliberate English decorative headings.',
+    'verify: one new check (31 in all): a shop floor with 0 power is not a loss and not flagged, other floors still are; the bomb “Courier takes it” state and the too-late case; box power in the power forecast; each leaked string now translates.',
+  ],
+  watch: ['Long-standing balance targets are still unmet: skilled players last too long (balanced median 115F, target 55–85), get too rich (median 226 exit coins) and nearly all die of agitation (92%). This is overall pacing, outside this fix.'],
+};

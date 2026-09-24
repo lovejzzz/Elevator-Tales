@@ -46,7 +46,9 @@ export const BOTS: Record<BotId, Bot> = {
 };
 
 export type LegendMode = 'auto' | 'board' | 'decline' | 'none';
-export type RunOptions = { bot: BotId; seed: number; horizon: number; legendMode: LegendMode; forceLegend?: LegendKind; genericShop?: boolean; forceAbility?: UpgradeKey; boxOrder?: BoxLine[] };
+export type RunOptions = { bot: BotId; seed: number; horizon: number; legendMode: LegendMode; forceLegend?: LegendKind; genericShop?: boolean; forceAbility?: UpgradeKey; boxOrder?: BoxLine[];
+  /** Audit hook: called with the cabin as it departs and the settled result (scripts/audit). */
+  onAscent?: (before: RunState, after: RunState) => void };
 
 // ---------- valuation ----------
 const EP = 2.5; // coins per power at decision time; power is the scarce resource
@@ -350,6 +352,7 @@ export function runOne(opt: RunOptions): RunLog {
     { const aboard = state.cabin.filter(r => r && !isLegend(r.kind)); log.riderFloors = (log.riderFloors ?? 0) + aboard.length; log.links = (log.links ?? 0) + ADJACENT.filter(([a, b]) => activeConnection(state.cabin, a, b)).length; }
     const cabinBefore = state.cabin.filter(Boolean).map(r => r!);
     const next = E.resolveFloor(state, stream(opt.seed, 'resolve', state.floor));
+    opt.onAscent?.(state, next);
     for (const r of cabinBefore) if (!next.cabin.some(n => n?.id === r.id) && next.lastArrivals?.some(a => a.riderId === r.id)) log.delivered[r.kind] = (log.delivered[r.kind] ?? 0) + 1;
     for (const a of next.lastArrivals ?? []) if (a.kind === 'parcel') log.parcel!.opened++;
     {

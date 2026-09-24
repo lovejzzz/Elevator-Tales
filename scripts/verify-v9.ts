@@ -11,7 +11,7 @@ import { translateGameText } from '../lib/i18n';
 import { sectorForecast } from '../lib/game-forecast';
 import { motorAdvanceNotice, motorScheduleText, nightUnrest } from '../lib/balance-v832';
 import { calmRescuePlan, departureRisk, rescuePlan, sectorNeed } from '../lib/departure-guard';
-import { stressForecast } from '../lib/game-forecast';
+import { stressForecast, energyForecast } from '../lib/game-forecast';
 import { boardNet, netValue, pairedNet } from '../lib/net-value';
 import { fuseState } from '../lib/bomb-state';
 import { drawLegend } from '../lib/legend-unlocks';
@@ -507,4 +507,26 @@ console.log('PASS Courier parcel rules');
   assert.equal(go([R('courier', 'c', 33, { parcelId: 'gone' }), R('bomb', 'b', 34, { fuse: 1 })]).status, 'lost', 'the timer still runs while he holds it');
 }
 console.log('PASS v9.17 Courier boxes, crates and the characters who handle them');
-console.log(JSON.stringify({ version: 'v9', checks: 30, passed: true }));
+// v9.17.1 audit fixes: the ascend guard matches settlement at shop floors, the bomb label knows about a Courier
+// carrying it off, the power forecast includes box payouts, and no Chinese reaches the English interface.
+{
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 18, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  const shopEve = run(19, [R('commuter', 'a', 22)], { energy: 1 });
+  assert.notEqual(E.resolveFloor(shopEve, fixed()).status, 'lost', 'arriving at a shop floor with 0 power is safe (the shop opens)');
+  assert.ok(E.energyBreakdown(shopEve).total >= 1 && !departureRisk(shopEve).fatal, 'so the guard does not call it fatal');
+  assert.ok(departureRisk(run(18, [R('commuter', 'a', 22)], { energy: 1 })).fatal, 'elsewhere 0 power is still fatal');
+  const held = [R('courier', 'c', 20, { parcelId: 'gone' }), R('bomb', 'b', 23, { fuse: 1 })];
+  assert.equal(fuseState(held, 1, 19), 'carried');
+  assert.equal(fuseState([R('courier', 'c', 22, { parcelId: 'gone' }), R('bomb', 'b', 23, { fuse: 1 })], 1, 19), 'late', 'a Courier leaving too late does not save it');
+  const opening = run(19, [R('parcel', 'q', 20, { tier: 'rare' }), R('commuter', 'a', 22)], { energy: 20 });
+  assert.equal(E.possibleBoxPower(opening), 6);
+  const ef = energyForecast(opening);
+  assert.ok(ef.highDelta - ef.lowDelta >= 6, `forecast range includes the box's 6 power: ${ef.lowDelta}..${ef.highDelta}`);
+  const en = (t: string) => translateGameText(t, 'en');
+  for (const t of ['已锁住 · ', '来不及！倒计时 ', '快递员会带走 · ', '电梯运转 −1 · 维修工耗电 −1 · 另 3 项', '2 条红线', '免费选取', '确认冒险上行', '10F · 充电 −2 金币', '选取隔音门',
+    '电量不够跑完下一段的运转；途中补电每十层有上限。再点一次确认离开。', '倒计时 2，但还有 4 站：到站前会爆炸，让警察站到旁边或请离'])
+    assert.ok(!/[㐀-鿿]/u.test(en(t)), `untranslated: ${t} → ${en(t)}`);
+  assert.ok(!/[a-z](Arrival|Power|Agitation)\b/.test(en('维修工到站 +6 · 快递员耗电 −1')), 'names and labels are separated');
+}
+console.log('PASS audit fixes: shop-floor guard, carried bomb label, box power in forecast, English leaks');
+console.log(JSON.stringify({ version: 'v9', checks: 31, passed: true }));

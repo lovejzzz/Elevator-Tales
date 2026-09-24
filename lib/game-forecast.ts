@@ -1,4 +1,4 @@
-import { COURIER_ARRIVAL_CHARGE, parcelBeside, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
+import { COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
 import { riderProfile } from './rider-profile';
 import { motorCost } from './balance-v832';
 import { boxedMotorCost, shopEntryCharge } from './power-box';
@@ -114,8 +114,10 @@ export function energyForecast(state: RunState, _legacyWeight?: number, _riskTun
  });
  const deltas=charges.map(charge=>settleBuffer(state.energy-total+charge,state.energyCap,state.bufferPower??0,Boolean(state.upgrades.buffer)&&!SHOP_TUNING.bufferGap&&!SHOP_TUNING.bufferFlywheel).energy-state.energy);
  const strangerPower=legendInCabin(state.cabin,'stranger')?1:0;
- const lowDelta=Math.min(...deltas),highDelta=Math.max(...deltas)+strangerPower;
- const minCharge=Math.min(...charges),maxCharge=Math.max(...charges);
+ // Boxes opening next floor pay power half the time: an upside only, so the safe (low) bound is unchanged.
+ const boxPower=possibleBoxPower(state);
+ const lowDelta=Math.min(...deltas),highDelta=Math.max(...deltas)+strangerPower+boxPower;
+ const minCharge=Math.min(...charges),maxCharge=Math.max(...charges)+boxPower;
  const chargeNote=maxCharge?minCharge===maxCharge?`＋补电 ${maxCharge}`:`＋可能补电 ${minCharge}–${maxCharge}`:'';
  const range=lowDelta===highDelta?signedDelta(lowDelta):`${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
  return {range,summary:`下一站耗 ${total} 电＝运转 ${motor}＋人物 ${people}${conflict?`＋红线 ${conflict}`:''}−节能 ${saved}${chargeNote}${relayPossible ? SHOP_TUNING.relayReliable?'；满足同站条件保底回1电，50%额外回2电':'；并联回充50%，不保证续航' : ''}`,danger:state.energy+lowDelta<=0,lowDelta,highDelta};

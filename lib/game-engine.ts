@@ -211,6 +211,22 @@ export type BoxTier = 'common' | 'rare' | 'legendary';
 /** Coins inside a box of this size and tier; opened boxes pay this or half as much power, at random. */
 export const boxCoins = (r: { big?: unknown; tier?: BoxTier }) => PARCEL_RULES.values[r.big ? 'big' : 'small'][r.tier ?? 'common'];
 export const boxPower = (r: { big?: unknown; tier?: BoxTier }) => Math.round(boxCoins(r) / 2);
+/** v9.17: the most power boxes could pay out at the next floor (each opening pays power half the time):
+ * unclaimed boxes reaching their floor, boxes beside a Child, and a Mimic getting off under a box. */
+export function possibleBoxPower(state: RunState): number {
+  const next = state.floor + 1, cabin = state.cabin, links = parcelLinks(cabin);
+  let power = 0;
+  for (const box of links.boxes) {
+    const top = cabin[box.slots[0]]!, c = links.carrier.get(box.slots[0]);
+    const delivering = c !== undefined && next >= cabin[c]!.destination;
+    const ownerAboard = cabin.some(r => Boolean(box.ownerId) && r?.id === box.ownerId);
+    const childOpens = PARCEL_RULES.childOpens && !delivering && box.touching.some(i => cabin[i]?.kind === 'child');
+    const opensUnclaimed = c === undefined && !ownerAboard && next >= top.destination;
+    if (childOpens || opensUnclaimed) power += boxPower(top);
+  }
+  if (PARCEL_RULES.mimicCopiesBox) cabin.forEach((r, i) => { if (r?.kind === 'mimic' && i >= 3 && next >= r.destination && cabin[i - 3]?.kind === 'parcel') power += boxPower(cabin[i - 3]!); });
+  return power;
+}
 /** Every Courier whose own box is aboard has it touching him (either half of a two-part box). */
 export const parcelLayoutOk = (cabin: Array<Rider | null>) => boxesIn(cabin).every(box => {
   const owner = cabin.findIndex(x => Boolean(box.ownerId) && x?.id === box.ownerId);

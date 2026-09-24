@@ -629,8 +629,26 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/炸弹倒计时 (\d+) 层：每上升一层 −1；到站前归零则失败/gu, 'Bomb timer $1 floors: −1 each floor; reaching zero before arrival ends the run')
     .replace(/复制(.+?)的耗电/gu, 'Copies $1 power')
     .replace(/复制(.+?)的金钱/gu, 'Copies $1 fare')
-    .replace(/复制(.+?)的躁动\/关系/gu, 'Copies $1 agitation/links');
+    .replace(/复制(.+?)的躁动\/关系/gu, 'Copies $1 agitation/links')
+    // v9.17 audit: fragments that reached English players untranslated.
+    .replace(/ · 另 (\d+) 项/gu, ' · $1 more')
+    .replace(/^(\d+)F · 选取(.+)$/u, '$1F · Picked $2')
+    .replace(/^选取(.+)$/u, 'Picked $1')
+    .replace(/^加购(.+)$/u, 'Added $1')
+    .replace(/^(\d+)F · 加购(.+?) −(\d+) 金币$/u, '$1F · Added $2 −$3 coins')
+    .replace(/^(\d+)F · 充电 −(\d+) 金币$/u, '$1F · Charged −$2 coins')
+    .replace(/^充电 \+(\d+)，支付 (\d+) 金币。$/u, 'Charged +$1 for $2 coins.')
+    .replace(/^(.+?)已选取（本店免费一项）。$/u, '$1 picked (this shop’s free choice).')
+    .replace(/^(.+?) · 已选取$/u, '$1 · picked')
+    .replace(/加购 (\d+) 金币/gu, 'add-on $1 coins')
+    .replace(/(\d+) 条红线/gu, '$1 red links')
+    .replace(/运转固定(\d+)电/gu, 'motor fixed at $1')
+    .replace(/(\d+)位邻座 · 到站\+(\d+)币/gu, (_m, n: string, c: string) => `${n} ${n === '1' ? 'neighbor' : 'neighbors'} · +${c} on arrival`)
+    .replace(/倒计时 (\d+)，但还有 (\d+) 站：到站前会爆炸，让警察站到旁边或请离/gu, 'Timer $1 but $2 stops left: it goes off before arrival, so put an Officer beside them or dismiss')
+    .replace(/每层减 1；还有 (\d+) 站，能按时送达/gu, 'Counts down 1 per floor; $1 stops left, arrives in time');
   for (const [source, target] of phrases) translated = translated.replaceAll(source, target);
+  // Labels built as name + 到站/耗电 translate to run-together words ("MechanicArrival"); separate them.
+  translated = translated.replace(/([a-z])(Arrival|Power|Agitation)\b/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`);
   return normalizePunctuation(translated);
 }
 
