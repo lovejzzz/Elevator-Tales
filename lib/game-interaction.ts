@@ -1,8 +1,10 @@
 import { riskPartnerships } from './shift-rules';
-import { bondStatus, riderProfile } from './rider-profile';
+import { bondStatus, conflictLinks, riderProfile, type ConflictEffect } from './rider-profile';
 import { ADJACENT, PASSENGERS, type PassengerKind } from './game-data';
-import { hasNeighbour, isBigParcel, seatRider, parcelLayoutOk, isFreeReseat, neighbourCount, oldMovesRemaining, type Rider, type RunState } from './game-engine';
+import { hasNeighbour, isBigParcel, seatRider, parcelLayoutOk, parcelLinks, isFreeReseat, neighbourCount, oldMovesRemaining, riderAgitation, type Rider, type RunState } from './game-engine';
 import { agitationBand } from './balance-v832';
+
+const RED_SHORT: Record<ConflictEffect,string> = { agitation:'+1躁动/层', energy:'+1耗电/层', coins:'−2金币/层', overload:'两人耗电×2', gamble:'两人耗电×2' };
 
 export function copyConnection(cabin: Array<Rider | null>, first: number, second: number) {
   for (const [copySlot,sourceSlot] of [[first,second],[second,first]]) {
@@ -45,6 +47,23 @@ export function activeConnection(cabin: Array<Rider | null>, first: number, seco
 
 export type PlacementResult = { ok: boolean; changed: boolean; next: RunState; tone: 'place' | 'combo' | 'error'; label: string; slots: number[] };
 
+/** v9.18.4: a box that has just come into an unguarded Thief's reach (he takes it when he leaves). */
+function newlyEyedMessage(before: Array<Rider | null>, after: Array<Rider | null>, floor: number): string | null {
+  const eyedBefore = parcelLinks(before).eyed;
+  const hit = [...parcelLinks(after).eyed].find(([p, t]) => eyedBefore.get(p) !== t);
+  if (!hit) return null;
+  const stops = Math.max(1, after[hit[1]]!.destination - floor);
+  return `小偷盯上了这个纸箱：他${stops === 1 ? '下一层' : `${stops} 层后`}下车时会带走它，给一半金币作小费；它的快递员就拿不到了。`;
+}
+/** Situational agitation (not a rider's own or impatience), keyed per rider so a placement can report only what it newly caused. */
+function situationalAgitation(state: RunState, cabin: Array<Rider | null>) {
+  const next = { ...state, cabin };
+  return cabin.flatMap((r, i) => r ? riderAgitation(next, i).fixed.filter(line => !/自身躁动$|急躁$/.test(line.label))
+    // A Courier whose box is still waiting in the queue is announced by the departure alert instead.
+    .filter(line => !(line.label === '快递员在找纸箱' && !cabin.some(p => p?.ownerId === r.id)))
+    .map(line => ({ key: `${r.id}|${line.label}`, text: `${line.label} +${line.amount}躁动/层` })) : []);
+}
+
 /** One rule path for drag, tap and destination previews; previewing never mutates a run. */
 export function planPlacement(state: RunState, candidate: Rider, target: number): PlacementResult {
   const reject = (label: string): PlacementResult => ({ ok: false, changed: false, next: { ...state, message: label }, tone: 'error', label, slots: [target] });
@@ -62,7 +81,8 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
     const seated = seatRider(cabin, rider, target);
     if (!seated) return reject('大纸箱需要同一列上下两个空位');
     if (!parcelLayoutOk(seated)) return reject('纸箱必须挨着快递员（上下左右）');
-    return { ok: true, changed: true, next: { ...state, cabin: seated, message: '大纸箱已放好：占上下两格。' }, tone: 'place', label: '大纸箱已就位', slots: [target % 3, target % 3 + 3] };
+    const eyed = newlyEyedMessage(state.cabin, seated, state.floor);
+    return { ok: true, changed: true, next: { ...state, cabin: seated, message: eyed ?? '大纸箱已放好：占上下两格。' }, tone: 'place', label: eyed ? '小偷盯上纸箱' : '大纸箱已就位', slots: [target % 3, target % 3 + 3] };
   }
   if (source >= 0) {
     const free = isFreeReseat(cabin, source, target, state.floor);
@@ -98,9 +118,21 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
   if(changedCopy){
     const {profile}=changedCopy,trait=profile.copies[0];
     label=trait?'复制已生效':'复制已中断';
-    message=trait?`复制人 ↑ ${PASSENGERS[trait.sourceKind].name}：${trait.field==='energy'?`耗电 ${profile.energy}`:`基础车费 ${profile.hidden?'封存':profile.fare}`}。同一人物对固定，移动不重抽。`:'当前位置没有正上方来源，恢复复制人本体数值。';
+    message=trait?`复制人 ↑ ${PASSENGERS[trait.sourceKind].name}：${trait.field==='energy'?`耗电 ${profile.energy}`:`基础车费 ${profile.hidden?'封存':profile.fare}`}。`:'当前位置没有正上方来源，恢复复制人本体数值。';
     celebrate=false;
   }
+  // v9.18.4: a box that has just come into an unguarded Thief's reach is announced at once (he takes it when he leaves).
+  const newlyEyed=newlyEyedMessage(state.cabin,cabin,state.floor);
+  if(newlyEyed){ label='小偷盯上纸箱'; message=newlyEyed; celebrate=false; }
+  // v9.18.4: the same placement can also draw a red link or leave the rider unattended; say so next to the good news.
+  const seatOf=cabin.findIndex(r=>r?.id===rider.id);
+  const redBefore=new Set(conflictLinks(state.cabin).map(l=>[state.cabin[l.first]!.id,state.cabin[l.second]!.id].sort().join(':')));
+  const newRed=conflictLinks(cabin).filter(l=>(l.first===seatOf||l.second===seatOf)&&!redBefore.has([cabin[l.first]!.id,cabin[l.second]!.id].sort().join(':')));
+  const warnings=newRed.map(l=>`与${PASSENGERS[cabin[l.first===seatOf?l.second:l.first]!.kind].name}红线 ${RED_SHORT[l.effect]}`);
+  // Includes neighbours this placement newly upsets (e.g. a Celebrity now crowded).
+  const sitBefore=new Set(situationalAgitation(state,state.cabin).map(x=>x.key));
+  situationalAgitation(state,cabin).filter(x=>!sitBefore.has(x.key)).forEach(x=>warnings.push(x.text));
+  if(warnings.length&&!newlyEyed){message+=` 注意：${warnings.join('；')}。`;celebrate=false;}
   const slots = new Set(source >= 0 ? [source, target] : [target]);
   // Only the moved rider reacts; a new link announces itself by drawing in, so seated partners do not flash.
   if(source>=0&&oldMovesUsed>(state.oldMovesUsed??Number(state.swapped)))message+=` 旧乘客换位剩余${Math.max(0,1+Number(Boolean(state.upgrades.rails))-oldMovesUsed)}次。`;

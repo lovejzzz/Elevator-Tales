@@ -228,7 +228,7 @@ console.log('PASS generated motor notice and schedule translate');
   assert.equal(departureRisk(E.emergencyCharge(s, risk.need)).fatal, false, 'charging the offered amount clears the guard');
   assert.equal(departureRisk({ ...s, energy: 40 }).fatal, false, 'a safe floor never asks twice');
   const ui = readFileSync(new URL('../components/elevator-game.tsx', import.meta.url), 'utf8');
-  assert.ok(/if \(\(risk\.fatal \|\| stressFatal\) && !departArmed\)/.test(ui), 'the ascend handler must stop a fatal floor until confirmed');
+  assert.ok(/if \(\(risk\.fatal \|\| stressFatal( \|\| strandedCourier)?\) && !departArmed\)/.test(ui), 'the ascend handler must stop a fatal floor until confirmed');
   const need = sectorNeed({ ...s, floor: 10, status: 'upgrade' });
   assert.deepEqual([need.from, need.to, need.riders], [11, 20, 40]);
   assert.equal(need.motor, Array.from({ length: 10 }, (_, i) => motorCost(11 + i)).reduce((a, b) => a + b, 0));
@@ -642,4 +642,43 @@ console.log('PASS visible rules: pickpocket links, fare lines, haunts, held Thie
   assert.ok(inc.lastIncident && inc.cabin.every(r => r?.id !== inc.lastIncident!.riderId), 'the incident rider is named and gone');
 }
 console.log('PASS Mimic copies exactly, box trips by tier, box events, incident receipt');
-console.log(JSON.stringify({ version: 'v9', checks: 36, passed: true }));
+// v9.18.4: an Officer's lock stops a Bomber's timer but not the defusal bonus clock.
+{
+  E.BOMB_RULES.realtime = true;
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 40, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  const locked = run(40, [R('bomb', 'b', 42, { bombMs: 30000, bombMsTotal: 30000 }), R('cop', 'k', 45)]);
+  const after = E.tickBombs(locked, 12000);
+  assert.equal(after.cabin[0]!.bombMs, 30000, 'the lock stops the timer');
+  assert.equal(after.cabin[0]!.bonusMs, 18000, 'the defusal bonus keeps draining');
+  const paid = E.resolveFloor({ ...after, floor: 41 }, fixed());
+  assert.equal(lines(paid, 'lastEarnings')['拆弹奖金'], 6, '18 s left for the bonus pays 6, not 10');
+  E.BOMB_RULES.realtime = false;
+}
+console.log('PASS locked Bomber: timer stops, defusal bonus drains');
+// v9.18.4: overtime calming past the allowance (2×, 3×, …); placement warnings for red links and unattended riders.
+{
+  const base = { ...run(95, [null, null, null, null, null, null], { stress: 8, stressCap: 10 }), coins: 1000, calmSector: Math.floor(95 / 10), calmUsed: E.CALM_PURCHASE.perSector };
+  assert.equal(E.calmAllowance(base), 0, 'allowance spent');
+  const p1 = E.overtimeCalmPrice(base)!, one = E.buyOvertimeCalm(base), p2 = E.overtimeCalmPrice(one)!;
+  assert.equal(p1, E.calmPrice(95) * 2, 'the first overtime point costs 2×');
+  assert.equal(p2, E.calmPrice(95) * 3, 'the next costs 3×');
+  assert.equal(one.stress, 7); assert.equal(one.coins, 1000 - p1);
+  assert.equal(E.overtimeCalmPrice({ ...base, calmUsed: 2 }), null, 'no overtime while the allowance lasts');
+  { const poor = { ...base, coins: p1 - 1 }; assert.equal(E.buyOvertimeCalm(poor), poor, 'cannot buy without the coins'); }
+  const R = (kind: PassengerKind, id: string, dest: number): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 30, fareBonus: 0, stash: 0, volatile: false });
+  const st = run(30, [R('drunk', 'd', 34), null, null, R('courier', 'c', 35), null, null]);
+  const placed = planPlacement(st, R('commuter', 'n', 33), 1);
+  assert.ok(placed.ok && /注意：与醉汉红线/.test(placed.next.message), 'a new red link is announced beside the green one');
+  const kid = planPlacement(run(30, [null, R('coach', 'k', 34), null, null, null, null]), R('child', 'x', 33), 2);
+  assert.ok(kid.ok && /儿童无人照顾 \+1躁动\/层/.test(kid.next.message), 'an unattended Child is announced');
+  const star = planPlacement(run(30, [R('celebrity', 's', 34), R('tourist', 't', 34), null, null, null, null]), R('commuter', 'm', 33), 3);
+  assert.ok(star.ok && /名人被围/.test(star.next.message), 'a neighbour the placement newly crowds is announced');
+  const courierFirst = planPlacement(run(30, [null, null, null, null, null, null]), R('courier', 'c2', 33), 0);
+  assert.ok(courierFirst.ok && !/在找纸箱/.test(courierFirst.next.message), 'a Courier placed before his box is not nagged');
+  const crate: Rider = { ...R('parcel', 'box', 34), ownerId: 'cc', big: 'top' };
+  const eyed = planPlacement(run(30, [null, R('courier', 'cc', 34), null, null, R('thief', 'th', 33), null]), crate, 0);
+  assert.ok(eyed.ok && eyed.slots.length === 2 && /小偷盯上了这个纸箱/.test(eyed.next.message), 'a big crate beside an unguarded Thief is announced');
+  assert.ok(E.dispatchRemaining({ ...run(30, []), dispatchSector: 3, dispatchCount: 1 }) === 1 && E.dispatchRemaining(run(30, [])) === 2, 'Dispatch uses left per sector');
+}
+console.log('PASS overtime calming price ladder, placement warnings, Dispatch uses');
+console.log(JSON.stringify({ version: 'v9', checks: 38, passed: true }));

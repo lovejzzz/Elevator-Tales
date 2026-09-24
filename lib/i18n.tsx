@@ -544,6 +544,15 @@ export function translateGameText(value: string, locale: GameLocale): string {
   const direct = exact.get(core);
   if (direct) return `${leading}${direct}${trailing}`;
   let translated = value
+    // v9.18.4 placement warnings appended after the main message.
+    .replace(/^(.+?) 注意：(.+)。$/u, (_m, head: string, body: string) => `${translateGameText(head, 'en')} Heads-up: ${body.split('；').map(part => part
+      .replace(/^与(.+?)红线 (.+)$/u, (_p, who: string, effect: string) => `red link with the ${translateGameText(who, 'en')} (${({ '+1躁动/层': '+1 agitation/floor', '+1耗电/层': '+1 power/floor', '−2金币/层': '−2 coins/floor', '两人耗电×2': 'both use ×2 power' } as Record<string, string>)[effect] ?? effect})`)
+      .replace(/^(.+?) \+(\d+)躁动\/层$/u, (_p, why: string, n: string) => `${translateGameText(why, 'en')} +${n} agitation/floor`)).join('; ')}.`)
+    .replace(/^(.+?)已站到 (\d+) 号位。$/u, (_m, who: string, n: string) => `${translateGameText(who, 'en')} takes seat ${n}.`)
+    .replace(/^安抚 (\d+) 人 · 各 −1躁动\/层$/u, (_m, n: string) => `Soothing ${n} · −1 agitation each/floor`)
+    .replace(/^加急安抚 −1 躁动，支付 (\d+) 金币；下一点更贵。$/u, 'Overtime calming −1 agitation for $1 coins; the next point costs more.')
+    .replace(/^调度印章 · 本段还剩 (\d+) 次 · 选中本层新上车的人改路程$/u, 'Dispatch stamp · $1 left this sector · select a rider who boarded this floor to change their trip')
+    .replace(/^留到下一批 · 调度剩 (\d+) 次$/u, 'Hold for the next batch · $1 dispatch left')
     // v9.18.3 seat labels with coin units, and the incident note.
     .replace(/^红线 −2金币$/u, 'Red link −2 coins')
     .replace(/^长途送货 (\d+) 站$/u, 'Long route: $1 stops')
@@ -551,6 +560,10 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^顺手牵羊 \+(\d+)金币\/层$/u, 'Picking pockets +$1 coins/floor')
     .replace(/^暂存\+(\d+)币\/层 · 链接加躁动$/u, 'Bank +$1 coins/floor · links add agitation')
     .replace(/^暂存 (\d+) 币$/u, 'Banked $1 coins')
+    .replace(/^小偷盯上了这个纸箱：他(下一层|(\d+) 层后)下车时会带走它，给一半金币作小费；它的快递员就拿不到了。$/u, (_m, when: string, n?: string) => `A Thief has his eye on this box: he takes it when he gets off ${n ? `in ${n} floors` : 'next floor'}, tipping half its coins, and its Courier loses it.`)
+    .replace(/^上排没人可复制 · 本体车费 (\d+)币$/u, 'Nothing above in the top row · own fare $1')
+    .replace(/^教父罩着 · 不躁动 · \+(\d+)金币\/层$/u, 'Under the Don · calm · +$1 coins/floor')
+    .replace(/^教父罩着 · 不躁动$/u, 'Under the Don · calm')
     .replace(/车厢事故：(.+?)受不了混乱，提前下车，未付车费/gu, (_m, name: string) => `Incident: the ${translateGameText(name, 'en')} could not stand the chaos and left without paying`)
     .replace(/车厢事故：(.+?)提前下车/gu, (_m, name: string) => `Incident: the ${translateGameText(name, 'en')} left early`)
     // v9: motor notices and the schedule are generated from motorCost, so translate by pattern.
@@ -677,7 +690,8 @@ export function translateGameText(value: string, locale: GameLocale): string {
   for (const [source, target] of phrases) translated = translated.replaceAll(source, target);
   // Labels built as name + 到站/耗电 translate to run-together words ("MechanicArrival"); separate them.
   translated = translated.replace(/([a-z])(Arrival|Power|Agitation)\b/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`);
-  return normalizePunctuation(translated);
+  // A Chinese full stop has no following space; after translation, sentences would run together ("+2.Late").
+  return normalizePunctuation(translated).replace(/([0-9a-z)])\.(?=[A-Z])/g, '$1. ');
 }
 
 const translatedProps = ['aria-label', 'title', 'placeholder'] as const;

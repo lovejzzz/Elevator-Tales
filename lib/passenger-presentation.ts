@@ -148,7 +148,7 @@ export function passengerCardSections(
    break;
   case 'mystery':self.push(effect('neutral','参数与邻座关系随机 · 车费到站揭晓'));break;
   case 'shifter':self.push(effect('neutral','每层重抽三值与邻座关系'));break;
-  case 'mimic':self.push(effect('neutral',profile.copies.length?`↑ 复制${PASSENGERS[profile.copies[0].sourceKind].name}的${profile.copies[0].field==='energy'?'耗电':'基础车费'}`:'↑ 只复制正上方 · 耗电或基础车费'),effect('neutral','同一人物对固定；移动不重抽'));break;
+  case 'mimic':self.push(effect('neutral',profile.copies.length?`↑ 复制${PASSENGERS[profile.copies[0].sourceKind].name}的${profile.copies[0].field==='energy'?'耗电':'基础车费'}`:'↑ 只复制正上方 · 耗电或基础车费'));break;
  }
 
  // Ability links do not all pay a bond bonus. Attach the bonus only to its

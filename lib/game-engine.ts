@@ -9,14 +9,14 @@ import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_T
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
 
-export type Rider = { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; routeStops?: number; bombMs?: number; bombMsTotal?: number; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
+export type Rider = { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; routeStops?: number; bombMs?: number; bombMsTotal?: number; /** v9.18.4: seconds that still count for the defusal bonus; they drain even while an Officer locks the timer. */ bonusMs?: number; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
 export type ChangeLine = { label: string; amount: number };
-export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number; power?:number; ability?:UpgradeKey; /** UI only: an incident exit card (never set by the engine). */ incident?:boolean };
+export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number; power?:number; ability?:UpgradeKey; /** v9.18.4: the keepsake a delivered legend left behind. */ keepsake?:KeepsakeKey; /** UI only: an incident exit card (never set by the engine). */ incident?:boolean };
 /** v9.18.1: who the Thief robbed on the last floor, for the pickpocket animation. */
 export type TheftReceipt = { thief: number; victims: Array<{ slot: number; coins: number }> };
 /** v9.18.3: every box opened, used or taken on the last floor, for the in-place box animation. `slot` is where the box
  * (or, for a Mimic's copy, the Mimic) sat; `thief` is where the Thief who took it sat. */
-export type BoxEvent = { slot: number; by: 'arrival' | 'child' | 'mimic' | 'mechanic' | 'thief'; coins?: number; power?: number; ability?: UpgradeKey; thief?: number; big?: boolean; tier?: BoxTier };
+export type BoxEvent = { slot: number; by: 'arrival' | 'child' | 'mimic' | 'mechanic' | 'thief' | 'inspect'; coins?: number; power?: number; ability?: UpgradeKey; thief?: number; big?: boolean; tier?: BoxTier };
 /** v9.18.3: a rider who left early in a high-agitation incident (no fare), for the exit card. */
 export type IncidentReceipt = { riderId: string; kind: PassengerKind; slot: number };
 export type ShopCard = { key: UpgradeKey; price: number; purchased: boolean };
@@ -80,6 +80,8 @@ const sectorOf = (floor: number) => Math.floor(floor / 10);
 // Dispatch merges Reservation and Rebooking: one use per sector, either way.
 export const DISPATCH_USES_PER_SECTOR = 2;
 const dispatchUsed = (state: RunState, sector: number) => (state.dispatchSector === sector ? state.dispatchCount ?? 0 : 0) >= DISPATCH_USES_PER_SECTOR;
+/** v9.18.4: Dispatch uses left in this ten-floor sector (the UI never offered Dispatch before; only the retired abilities had buttons). */
+export const dispatchRemaining = (state: RunState) => Math.max(0, DISPATCH_USES_PER_SECTOR - (state.dispatchSector === Math.floor(state.floor / 10) ? state.dispatchCount ?? 0 : 0));
 const dispatchTick = (state: RunState, sector: number) => state.upgrades.dispatch ? { dispatchSector: sector, dispatchCount: (state.dispatchSector === sector ? state.dispatchCount ?? 0 : 0) + 1 } : {};
 export function retimeRider(state:RunState,id:string,delta:number):RunState {
   const r=state.cabin.find(r=>r?.id===id),sector=Math.floor(state.floor/10);
@@ -161,10 +163,14 @@ export function tickBombs(state: RunState, ms: number): RunState {
   if (!BOMB_RULES.realtime || state.status !== 'playing' || ms <= 0) return state;
   let changed = false, exploded = false;
   const cabin = state.cabin.map((r, slot) => {
-    if (r?.kind !== 'bomb' || r.bombMs === undefined || hasNeighbour(state.cabin, slot, ['cop'])) return r;
+    if (r?.kind !== 'bomb' || r.bombMs === undefined) return r;
+    changed = true;
+    // An Officer's lock stops the timer, not the clock: the defusal bonus keeps draining in real time.
+    const bonusMs = Math.max(0, Math.min(r.bonusMs ?? r.bombMs, r.bombMs) - ms);
+    if (hasNeighbour(state.cabin, slot, ['cop'])) return { ...r, bonusMs };
     // At high agitation the timer runs at highTick× speed, the same rule as floor timers.
-    changed = true; const bombMs = Math.max(0, r.bombMs - ms * bombTick(state.stress)); if (bombMs === 0) exploded = true;
-    return { ...r, bombMs };
+    const bombMs = Math.max(0, r.bombMs - ms * bombTick(state.stress)); if (bombMs === 0) exploded = true;
+    return { ...r, bombMs, bonusMs: Math.min(bonusMs, bombMs) };
   });
   if (!changed) return state;
   return exploded ? { ...state, cabin, status: 'lost', message: '炸弹倒计时归零：乘客未能及时到站。午夜班次戛然而止。' } : { ...state, cabin };
@@ -361,7 +367,7 @@ export const shiftAgitation = (_floor: number, _occupied: number, _restStops = 0
 export function shiftOutlook(floor: number, _occupied = 1, _restStops = 0) {
   const next = floor + 1;
   if (next % 10 === 0) return '下一站：商店';
-  return isRushFloor(floor) ? '临近维修层 · 急客时段' : '';
+  return isRushFloor(floor) ? '临近商店 · 急客时段' : '';
 }
 
 export const neighbours = (slot: number) => ADJACENT.flatMap(([a, b]) => a === slot ? [b] : b === slot ? [a] : []);
@@ -785,6 +791,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       const c = before.carrier.get(box.slots[0]);
       if (PARCEL_RULES.inspectCoins && c !== undefined && !cabin[box.slots[0]]!.inspected && box.touching.some(i => cabin[i]?.kind === 'inspector')) {
         box.slots.forEach(p => { cabin[p] = { ...cabin[p]!, inspected: true }; });
+        lastBoxEvents.push({ slot: Math.min(...box.slots), by: 'inspect', coins: PARCEL_RULES.inspectCoins });
         cabin[c] = { ...cabin[c]!, destination: cabin[c]!.destination + 1 };
         notes.push(`检查员验货：快递员晚一层到站，签收多付 ${PARCEL_RULES.inspectCoins} 金币`);
       }
@@ -822,7 +829,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     if (rider.kind === 'courier' && delivered) adjustEnergy('快递员电池包', COURIER_ARRIVAL_CHARGE);
     if (thiefTips.get(slot)) addCoins('小偷带走纸箱的小费', thiefTips.get(slot)!);
     // v9.18: a Bomber delivered in real time pays a bonus for the seconds still left on his timer.
-    const defusal = rider.kind === 'bomb' && BOMB_RULES.realtime && rider.bombMs ? Math.floor(rider.bombMs / 1000 / BOMB_RULES.bonusSeconds) : 0;
+    const defusal = rider.kind === 'bomb' && BOMB_RULES.realtime && rider.bombMs ? Math.floor(Math.min(rider.bonusMs ?? rider.bombMs, rider.bombMs) / 1000 / BOMB_RULES.bonusSeconds) : 0;
     if (defusal) addCoins('拆弹奖金', defusal);
     // A Mimic under a box carries a copy of it and opens the copy as he leaves.
     const above = slot >= 3 ? cabin[slot - 3] : null;
@@ -834,7 +841,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     if (appetitePremium) addCoins('醉汉躁动加价', appetitePremium);
     let punchBonus=0;
     if(delivered&&state.upgrades.punchcard){punchCount=(punchCount+1)%5;if(punchCount===0){punchBonus=profile.fare;addCoins('第五位基价奖励',profile.fare);}}
-    let extra = 0;
+    let extra = 0; let keepsakeLeft: KeepsakeKey | undefined;
     if (!isLegend(rider.kind)) {
       if (delivered && departBand === 'medium') { const tip = V9_AGITATION.mediumTip + (hasKeepsake(state,'vinyl') ? 2 : 0); extra += tip; addCoins('热闹小费', tip); }
       if (delivered && departBand === 'low') { const tip = V9_AGITATION.lowTip + (legendInCabin(state.cabin,'matron') ? LEGEND_RULES.matronQuietCoins : 0); extra += tip; addCoins('安静好评', tip); }
@@ -845,10 +852,10 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       const gift = LEGEND_KEEPSAKE[rider.kind];
       const owned = new Set(keepsakes);
       const key = gift === 'random' ? KEEPSAKE_KEYS.filter(k => !owned.has(k))[rand(0, Math.max(0, KEEPSAKE_KEYS.filter(k => !owned.has(k)).length - 1), rng)] : gift;
-      if (key && !owned.has(key)) { keepsakes = [...keepsakes, key]; notes.push(`${spec.name}留下信物`); if (key === 'wrench') freeBoxLevels += 1; if (key === 'roundsLog') stressCapBonus += 2; }
+      if (key && !owned.has(key)) { keepsakeLeft = key; keepsakes = [...keepsakes, key]; notes.push(`${spec.name}留下信物`); if (key === 'wrench') freeBoxLevels += 1; if (key === 'roundsLog') stressCapBonus += 2; }
       if (gift === 'random') { const bonus = rand(0, LEGEND_RULES.strangerKeepsakeCoins, rng); if (bonus) { extra += bonus; addCoins('13号房客的馈赠', bonus); } }
     }
-    lastArrivals.push({riderId:rider.id,kind:rider.kind,slot,coins:fare+punchBonus+extra+defusal});
+    lastArrivals.push({riderId:rider.id,kind:rider.kind,slot,coins:fare+punchBonus+extra+defusal,...(keepsakeLeft?{keepsake:keepsakeLeft}:{})});
     arrivals += 1; arrivalSlots.push(slot); return null;
   });
   const shopRewards = rollShopRewards(shopOpportunities(state, effectCabin, arrivalSlots), rng);
@@ -966,8 +973,15 @@ export function failureLesson(state: RunState): string {
   }
   if (state.message.includes('躁动')) {
     const source = state.lastPressure.sources.filter((line) => line.amount > 0).sort((a, b) => b.amount - a.amount)[0];
-    const advice = source?.label.includes('被围')
-      ? '名人只留1位邻座，可避免围观新增躁动。'
+    // v9.18.4: advice that matches the source, instead of one generic Nurse tip.
+    const label = source?.label ?? '';
+    const advice = label.includes('被围') ? '名人只留1位邻座，可避免围观新增躁动。'
+      : label.includes('夜深人躁') ? '夜深人躁是整车压力，护士挡不住：多带短途乘客靠到站舒缓（每位 −1，每层最多 −2），商店里用满安抚额度，手动调节留到最紧的一层。'
+      : label.includes('无人照顾') ? '儿童要挨着护士或恋人。'
+      : label.includes('未安抚') ? '醉汉要挨着护士。'
+      : label.includes('未受控') ? '让警察或律师挨着小偷，被管住的小偷反而每层帮全车 −1。'
+      : label.includes('红线') ? '把红线两端的人分开，或请离其中一位。'
+      : label.includes('急躁') ? '急躁乘客每层 +1，路程越长越亏；后期优先带短途的。'
       : '护士需贴邻抵消新增躁动；音乐家影响整车，高档最多减2，并不保证安全。';
     return source ? `躁动失控 · 最后一层主要来源：${source.label} +${source.amount}。${advice}` : '躁动失控 · 下一班优先处理急躁乘客与红色冲突。';
   }
@@ -1055,6 +1069,22 @@ export function buyCalm(state: RunState, units: number): RunState {
   return { ...state, stress: state.stress - units, coins: state.coins - cost, calmSector: sector, calmUsed: used + units, message: `途中安抚 −${units} 躁动，支付 ${cost} 金币。`,
     lastEarnings: { total: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] }, lastPressure: { delta: -units, sources: [{ label: '途中安抚', amount: -units }] } };
 }
+/** v9.18.4 coin sink: once a sector's calming allowance is spent, each extra point costs 2×, 3×, 4× … the calming price.
+ * Late runs piled up hundreds of unusable coins while late-night unrest outran the allowance; this spends them at a rising rate. */
+export const OVERTIME_CALM = { firstMultiplier: 2, step: 1 };
+export function overtimeCalmPrice(state: RunState): number | null {
+  if ((state.status !== 'playing' && state.status !== 'upgrade') || !CALM_PURCHASE.perSector || state.stress <= 0) return null;
+  const used = state.calmSector === sectorOf(state.floor) ? state.calmUsed ?? 0 : 0;
+  if (used < CALM_PURCHASE.perSector) return null;
+  return calmPrice(state.floor) * (OVERTIME_CALM.firstMultiplier + OVERTIME_CALM.step * (used - CALM_PURCHASE.perSector));
+}
+export function buyOvertimeCalm(state: RunState): RunState {
+  const price = overtimeCalmPrice(state);
+  if (price === null || state.coins < price) return state;
+  const used = state.calmSector === sectorOf(state.floor) ? state.calmUsed ?? 0 : 0;
+  return { ...state, stress: state.stress - 1, coins: state.coins - price, calmSector: sectorOf(state.floor), calmUsed: used + 1, message: `加急安抚 −1 躁动，支付 ${price} 金币；下一点更贵。`,
+    lastEarnings: { total: 0, sources: [] }, lastEnergy: { delta: 0, sources: [] }, lastPressure: { delta: -1, sources: [{ label: '加急安抚', amount: -1 }] } };
+}
 /** Paid mid-sector charging before departure: double the shop price, capped per sector. */
 export function emergencyCharge(state: RunState, units: number): RunState {
   if (state.status !== 'playing' || !Number.isSafeInteger(units) || units <= 0 || units > emergencyAllowance(state)) return state;
@@ -1079,7 +1109,7 @@ export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
 export function leaveShop(current: RunState): RunState {
   if (current.status !== 'upgrade') return current;
   const failed = current.energy <= 0 || current.stress >= current.stressCap;
-  return { ...current, shop: [], status: failed ? 'lost' : 'playing', message: current.energy <= 0 ? '金币或维修不足，电量未能恢复。' : current.stress >= current.stressCap ? '维修后躁动仍然失控，班次结束。' : '维修层已离开，继续挑战更高楼层。' };
+  return { ...current, shop: [], status: failed ? 'lost' : 'playing', message: current.energy <= 0 ? '金币或维修不足，电量未能恢复。' : current.stress >= current.stressCap ? '维修后躁动仍然失控，班次结束。' : '商店已关门，继续上行。' };
 }
 
 export const CHARGE_PRICE = 2;

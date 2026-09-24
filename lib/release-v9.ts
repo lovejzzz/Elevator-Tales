@@ -1319,3 +1319,61 @@ export const V9183_EN: ChangelogEntry = {
   ],
   watch: ['Courier boarding is 37% with longer routes (42% before); watch whether playtesters skip Couriers.', 'Whether a box animation and an exit card together feel crowded.', 'On narrow phones a horizontal link label overlaps the top edge of the lower row’s number bar.'],
 };
+
+export const V9184_ZH: ChangelogEntry = {
+  version: '9.18.4', date: '2026-09-24', title: '五局试玩打磨：调度印章能用了、放人提示、加急安抚',
+  summary: '这一版来自五局完整的浏览器试玩：每局记下真实感受，改完再玩下一局。最大的修复是调度印章：从 v9.0 起它装上后没有任何按钮，现在可以留人和改路程。放人时，除了绿线，也会提醒同时产生的红线、没人照顾和被挤到的邻座。后期堆积的金币可以用来“加急安抚”，价格越买越贵。',
+  changes: [
+    '调度印章：候客卡下方有“留到下一批 · 调度剩 N 次”；左栏有“调度印章 · 本段还剩 N 次”和“提前1站 / 延后1站”（选中本层新上车的人）。每十层 2 次，与卡片说明一致；传奇不能保留。之前界面只给已经退役的“改签”“留座”显示按钮，调度印章装了等于没装。',
+    '加急安抚：本段安抚额度（6 点）用完后，还可以继续花钱安抚，每点价格是安抚价的 2 倍、3 倍、4 倍……（90 层时 48、72、96 币）。商店的安抚栏、躁动栏和“躁动可能失控”警告里都能买，每进入新的十层重新计价。',
+    '放人提示：放下或挪动乘客时，如果同时连上了红线，或者造成“儿童无人照顾”“醉汉未安抚”“小偷未受控”“名人被围”等躁动，提示会在后面写“注意：与醉汉红线 +1躁动/层；儿童无人照顾 +1躁动/层”，并且不播放连线成功的庆祝效果。快递员的纸箱还在候客里时不提示“在找纸箱”。大纸箱放进无人看管的小偷手边时，也会提示小偷会带走它。',
+    '炸弹客：警察锁住时倒计时停住，但拆弹奖金照样随真实时间流失（之前一路被锁住的炸弹客，到站总能拿满额奖金）。',
+    '出发确认：车上有炸弹客时，危险楼层的“再按一次确认上行”现在能确认（之前炸弹每 0.2 秒刷新一次局面，确认状态随之被清掉）；快递员已上车而他的纸箱还在候客里时，也会提醒并需要再按一次。',
+    '躁动失控警告：写出这一层躁动的主要来源，只给车上真的能做到的建议（挪护士或恋人到儿童旁、让警察挨着小偷、撤回刚上车的人、加急安抚）；没有办法时直说。结束画面的建议按主要来源给（夜深人躁、儿童、醉汉、小偷、红线、急躁）。',
+    '护士：座位写“安抚 N 人 · 各 −1躁动/层”；邻座都安静时写“邻座都安静 · 暂无可安抚”。卡片写“抵消每位邻座自身躁动 1/层”，说明里写明挡不住夜深人躁。',
+    '座位文字：小偷没人可偷时写“没人可偷 · +1躁动/层”；在教父身边写“教父罩着 · 不躁动”；复制人在上排写“上排没人可复制 · 本体车费 N币”；幽灵在下一次作祟前下车时写“下车前不会作祟”。大亨卡片写明“邻座超过1人 +1躁动”，教父卡片写明“身边的小偷不躁动”。',
+    '卡片数值：保密车费的乘客（神秘人、复制神秘人的复制人）净收益也显示乱码；乱码里去掉“*”；大纸箱在候客卡上的耗电显示 −2；价值标签放不下时换行，不再被截断。',
+    '传奇到站：到站卡写“信物 · 红绳”（之前写“+0 金币”），账单写“信物「红绳」”。',
+    '商店：能力位满时，能力卡写“能力位已满 · 先在下方卖出一项”；配电箱按钮写明“已达上限”“本店已升级”；充电按钮在电量满时写“电量已满”，未选目标时写“拖动滑块选择充到多少”；第 50、100、150 层进商店有里程碑提示和音效；进商店那一层不再在被遮住的钱包上弹“+N”。',
+    '车厢反馈：检查员给快递员验货时，纸箱闪绿光并弹出“验货 · 快递员晚一站 · +5 金币”；宽屏下每层结算小窗改成一行放在楼层数字下方，不再盖住上排座位；电量 / 躁动警告放在右栏上行按钮上方，不再压住下排乘客；幽灵作祟和小偷偷钱的动画在开始时才测量位置，不会再飞到候客卡上。',
+    '文字：急客楼层写“临近商店 · 急客时段”，离开商店写“商店已关门，继续上行。”（之前是“维修层”）；每日班次在标题上方写“每日班次 · 日期 · 今天所有人同一套乘客”；去掉复制人过时的“同一人物对固定”说明；英文界面句号后补空格，放人提示改为“Inspector takes seat 4.”。',
+    '候客：通勤者的候客搭档加上游客和恋人，前期不再几乎每层都出现快递员。',
+  ],
+  experiments: [
+    'AI 浏览器试玩 5 局（桌面 1280×820，中文，每层读局面后手动决定；第 5 局 70 层后用简单规则推进）：109 层躁动（大亨传奇）、98 层躁动（坐满 + 坏人）、96 层躁动（每日班次）、108 层躁动（媒人传奇、恋人路线）、89 层电量（老周传奇；推进规则强制出发、没用途中补电，是试玩方式的错）。每局笔记与修改记录在 docs/playtests/ai-playtest-notes.md。',
+    '五局共同的结论：前 40 层很平稳；金币在后期没有出口（60 层 354–406，90 层 606–701）；配电箱在 50 层前就满级；91 层后夜深人躁远超安抚额度，100 层后的结局像是定好的。“加急安抚”是给金币的第一个出口，还需要真人试玩看它是否让后期变得太长。',
+    '快递员频率（2 万批候客）：2–9 层有快递员的比例 63% → 44%（加游客）→ 再加恋人。',
+    '验收（14 组 × 300 局，同一种子，对照 v9.18.3）：均衡型中位 100 → 100 层，死因电量 / 躁动 / 炸弹 30.4 / 67.8 / 1.8% → 29.6 / 68.7 / 1.7%；新手 41 → 34；真人型 67 → 68；均衡型离店金币 206 → 191；上车率全部在 15–65%。新手下降一部分是抽样波动，一部分来自通勤者搭档：同一种子各 600 局，通勤者搭档为原来 / 加游客 / 再加恋人时，新手 39 / 38 / 36 层，真人型 66 / 68 / 71 层，均衡型都是 100 层。模拟器不会使用加急安抚。',
+    'verify 新增 2 项（共 38 项）：警察锁住时拆弹奖金照样流失（锁 12 秒后只剩 18 秒可计奖金，付 6 币而不是 10 币）；加急安抚价格 2×、3×，额度未用完时不能加急，钱不够不能买；放人提示（新红线、儿童无人照顾、名人被围、先放快递员不提示、大纸箱挨小偷提示）；调度次数。',
+  ],
+  watch: ['加急安抚会不会让熟练玩家的后期拖得太长（模拟器不会用它）。', '放人提示是否太长、太频繁。', '配电箱 5 级上限和 91 层后的电量需求（约 119 电，上限 90–110）仍然让后期像定好的结局。'],
+};
+
+export const V9184_EN: ChangelogEntry = {
+  version: '9.18.4', date: '2026-09-24', title: 'Polish from five playtests: Dispatch works, placement warnings, overtime calming',
+  summary: 'This release comes from five complete browser playtests: after each run the honest impressions were written down and fixed before the next. The biggest fix is the Dispatch stamp, which had no buttons at all since v9.0 and now holds riders and changes trips. Placing a rider now also warns about a red link, an unattended rider or a crowded neighbour it creates. Coins piling up late can buy overtime calming at a rising price.',
+  changes: [
+    'Dispatch stamp: waiting cards show “Hold for the next batch · N dispatch left”; the left panel shows “Dispatch stamp · N left this sector” with “1 stop earlier / 1 stop later” for a rider who boarded this floor. Twice per ten floors as the card says; legends cannot be held. The UI used to show buttons only for the retired Rebook and Reservation abilities, so the stamp did nothing.',
+    'Overtime calming: once the sector’s calming allowance (6 points) is spent, you can keep paying to calm, each point costing 2×, 3×, 4× … the calming price (48, 72, 96 coins at 90F). Available in the shop’s calm panel, the agitation panel and the “agitation can boil over” alert; the price resets each ten floors.',
+    'Placement warnings: placing or moving a rider now appends “Heads-up: red link with the Drunk (+1 agitation/floor); Child uncared for +1 agitation/floor” when the move also draws a red link or leaves someone unattended, uncontrolled or crowded, and the link celebration does not play. A Courier whose box is still waiting is not nagged. A crate placed within an unguarded Thief’s reach is announced too.',
+    'Bomber: an Officer’s lock stops the timer, but the defusal bonus keeps draining in real time (a Bomber locked all the way used to earn the full bonus).',
+    'Departure confirmation: with a Bomber aboard, “press again to ascend” on a dangerous floor now confirms (the bomb refreshed the run every 0.2 s and cleared the confirmation); a Courier aboard whose box is still waiting also needs a second press.',
+    'Agitation alert: names this floor’s main sources and only suggests moves this cabin allows (move a Nurse or Lover beside the Child, put an Officer beside the Thief, withdraw a new rider, overtime calming), or says plainly that nothing can help. The ending’s advice follows the main source (late-night unrest, Child, Drifter, Thief, red link, impatience).',
+    'Nurse: her seat reads “Soothing N · −1 agitation each/floor”, or “Neighbors are calm · nothing to soothe”. The card reads “Cancels 1 of each neighbor’s own agitation/floor”, and the details say she cannot block late-night unrest.',
+    'Seat labels: a Thief with nobody to rob reads “Nobody to rob · +1 agitation/floor”; beside the Don “Under the Don · calm”; a Mimic in the top row “Nothing above in the top row · own fare N”; a Ghost that leaves before its next haunting “Leaves before the next haunting”. The Tycoon card names “more than 1 neighbour: +1 agitation”, the Don card “a Thief beside him stays calm”.',
+    'Card values: riders with a sealed fare (Mystery, a Mimic copying one) show a scrambled net value too; the scramble no longer uses “*”; a crate’s waiting card shows −2 power; value tags wrap instead of being cut off.',
+    'Legend arrivals: the exit card reads “Keepsake · Red string” (it said “+0 coins”), the receipt “Keepsake “Red string””.',
+    'Shop: with every ability slot full, ability cards read “Slots full · Sell one below first”; power-box buttons say “At max” or “Upgraded this shop”; the charge button reads “Power is full” or “Drag the slider to choose a target”; floors 50, 100 and 150 get a milestone line and sound; the floor you enter a shop no longer pops “+N” over the hidden wallet.',
+    'Cabin feedback: an Inspector checking a Courier’s box flashes the box green with “Inspected · Courier one stop later · +5 coins”; on wide screens the per-floor result is one line under the floor number instead of covering the top row; power and agitation alerts sit above the ascend button instead of over the lower row; the Ghost’s haunting and the Thief’s coins measure positions when the animation starts, so they no longer fly to a waiting card.',
+    'Text: rush floors read “Shop ahead · Rush arrivals” and leaving a shop “Shop closed. Up we go.” (was “maintenance”); the daily shift shows “Daily shift · date · everyone gets the same riders today”; the Mimic’s outdated “fixed pairing” note is gone; English sentences no longer run together, and placing reads “Inspector takes seat 4.”.',
+    'Queue: the Commuter’s waiting partners now include the Tourist and the Lover, so a Courier no longer appears on almost every early floor.',
+  ],
+  experiments: [
+    'AI browser playtests, 5 runs (desktop 1280×820, Chinese, every floor decided by reading the board; run 5 used a simple rule after 70F): 109F agitation (Tycoon legend), 98F agitation (full cabin + crime riders), 96F agitation (daily shift), 108F agitation (Matchmaker legend, lovers), 89F power (Operator legend; the rule forced departures and skipped in-transit charging, a playtest mistake). Notes and fixes per run are in docs/playtests/ai-playtest-notes.md.',
+    'Shared conclusions: the first 40 floors are calm; coins have no late use (354–406 at 60F, 606–701 at 90F); the power box is maxed before 50F; after 91F late-night unrest far exceeds the calming allowance, so the ending past 100F feels decided. Overtime calming is a first outlet for coins; human playtests should show whether it drags the late game out.',
+    'Courier frequency (20,000 batches): floors 2–9 with a Courier 63% → 44% (Tourist added) → Lover added as well.',
+    'Acceptance (14 groups × 300 runs, same seeds, against v9.18.3): balanced median 100 → 100F; deaths power / agitation / bomb 30.4 / 67.8 / 1.8% → 29.6 / 68.7 / 1.7%; novice 41 → 34; human 67 → 68; balanced exit coins 206 → 191; all boarding rates within 15–65%. The novice drop is partly sampling noise and partly the Commuter partners: with the same seeds, 600 runs each, original / + Tourist / + Lover gave novice 39 / 38 / 36F and human 66 / 68 / 71F, balanced 100F throughout. The simulator never uses overtime calming.',
+    'verify: 2 new checks (38 in all): a locked Bomber’s bonus drains (after 12 s locked only 18 s count, paying 6 not 10); overtime calming costs 2× then 3×, is unavailable while the allowance lasts and needs the coins; placement warnings (new red link, unattended Child, crowded Celebrity, no nag for a Courier placed first, crate beside a Thief); Dispatch uses.',
+  ],
+  watch: ['Whether overtime calming makes skilled late games too long (the simulator never uses it).', 'Whether placement warnings are too long or too frequent.', 'The 5-level power-box cap versus power needs after 91F (about 119, cap 90–110) still make the late game feel decided.'],
+};

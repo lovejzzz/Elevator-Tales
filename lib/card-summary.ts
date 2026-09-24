@@ -52,7 +52,7 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     case 'cop': return { line: L('管住小偷 · 锁住炸弹', 'Controls Thieves · locks Bombs') };
     case 'lawyer': return { line: L('管住小偷 · 红线少扣 2 币', 'Controls Thieves · red links −2 coin loss') };
     case 'drunk': return { line: L('高躁动到站：基价翻倍', 'Arrives at high agitation: fare ×2') };
-    case 'nurse': return { line: L('每位邻座 −1 躁动/层', '−1 agitation per neighbor/floor') };
+    case 'nurse': return { line: L('抵消每位邻座自身躁动 1/层', 'Cancels 1 of each neighbor’s own agitation/floor') };
     case 'child': return (rider.careProgress ?? 0) >= CHILD_CARE_WORK ? { line: L(`已照顾好 · 到站 +${CHILD_CARE_BONUS}币`, `Cared for · +${CHILD_CARE_BONUS} coins on arrival`) } : { line: L(`有人照顾 ${CHILD_CARE_WORK} 层 → +${CHILD_CARE_BONUS}币`, `Cared for ${CHILD_CARE_WORK} floors → +${CHILD_CARE_BONUS} coins`), progress: `${rider.careProgress ?? 0}/${CHILD_CARE_WORK}` };
     case 'ghost': return { line: L('不耗电 · 没人管会延误邻座', 'No power · delays neighbors if uncontrolled') };
     case 'exorcist': return { line: L('管住幽灵 · 每只省 1 电/层', 'Controls Ghosts · −1 power each/floor') };
@@ -63,14 +63,14 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     // v9.18.3: no range any more; the card shows a scrambling readout after “Fare” (sealed).
     case 'mystery': return { line: L('车费', 'Fare'), sealed: true };
     case 'shifter': return { line: L('每层重抽属性', 'Rerolls every floor') };
-    case 'mimic': { const slot = run.cabin.findIndex(r => r?.id === rider.id); const above = slot >= 3 ? run.cabin[slot - 3] : null; if (above?.kind === 'parcel') return { line: L('↑ 复制纸箱 · 下车打开', '↑ Copies the box · opens it when leaving') }; if (above && profile.hidden) return { line: L(`↑ 复制${riderName(above.kind, locale)}车费`, `↑ Copies ${riderName(above.kind, locale)}: fare`), sealed: true }; return { line: above ? L(`↑ 复制${riderName(above.kind, locale)}车费 ${profile.fare}币`, `↑ Copies ${riderName(above.kind, locale)}: fare ${profile.fare} coins`) : L('↑ 复制正上方的车费', '↑ Copies the fare above') }; }
+    case 'mimic': { const slot = run.cabin.findIndex(r => r?.id === rider.id); const above = slot >= 3 ? run.cabin[slot - 3] : null; if (above?.kind === 'parcel') return { line: L('↑ 复制纸箱 · 下车打开', '↑ Copies the box · opens it when leaving') }; if (slot >= 0 && slot < 3) return { line: L(`上排没人可复制 · 本体车费 ${profile.fare}币`, `Top row: nothing above · own fare ${profile.fare} coins`) }; if (above && profile.hidden) return { line: L(`↑ 复制${riderName(above.kind, locale)}车费`, `↑ Copies ${riderName(above.kind, locale)}: fare`), sealed: true }; return { line: above ? L(`↑ 复制${riderName(above.kind, locale)}车费 ${profile.fare}币`, `↑ Copies ${riderName(above.kind, locale)}: fare ${profile.fare} coins`) : L('↑ 复制正上方的车费', '↑ Copies the fare above') }; }
     case 'operator': return { line: L('车内不满 6 人时运转 −1 电', 'Motor −1 unless the cabin is full') };
     case 'matchmaker': return { line: L(`恋人常来 · 邻座到站 +${LEGEND_RULES.matchmakerNeighbourCoins}币`, `More Lovers · neighbors +${LEGEND_RULES.matchmakerNeighbourCoins} coins`) };
-    case 'don': return { line: L(`每层存 ${LEGEND_RULES.donStashPerFloor} 币 · +1 躁动`, `Banks ${LEGEND_RULES.donStashPerFloor}/floor · +1 agitation`), progress: rider.stash ? L(`已存 ${rider.stash}币`, `${rider.stash} coins banked`) : undefined };
+    case 'don': return { line: L(`每层存 ${LEGEND_RULES.donStashPerFloor} 币 · +1 躁动 · 身边的小偷不躁动`, `Banks ${LEGEND_RULES.donStashPerFloor}/floor · +1 agitation · Thieves beside him stay calm`), progress: rider.stash ? L(`已存 ${rider.stash}币`, `${rider.stash} coins banked`) : undefined };
     case 'matron': return { line: L('全车 −1 躁动/层 · 安静多赚', 'Cabin −1 agitation/floor · calm pays') };
     case 'nightingale': return { line: L(`中躁动 +${LEGEND_RULES.nightingaleMediumCoins}币/层`, `+${LEGEND_RULES.nightingaleMediumCoins} coins/floor at medium`) };
     case 'medium': return { line: L('幽灵提前出现 · 身边幽灵受控', 'Ghosts come early · controls adjacent') };
-    case 'tycoon': return { line: L(`预付 ${LEGEND_RULES.tycoonPrepay}币 · 安静送达再付 ${LEGEND_RULES.tycoonBalance}币`, `Prepays ${LEGEND_RULES.tycoonPrepay} coins · ${LEGEND_RULES.tycoonBalance} more if calm`) };
+    case 'tycoon': return { line: L(`预付 ${LEGEND_RULES.tycoonPrepay}币 · 安静送达再付 ${LEGEND_RULES.tycoonBalance}币 · 邻座超过1人 +1躁动`, `Prepays ${LEGEND_RULES.tycoonPrepay} coins · ${LEGEND_RULES.tycoonBalance} more if calm · 2+ neighbours: +1 agitation`) };
     case 'stranger': return { line: L('每层随机小惊喜', 'A small surprise every floor') };
   }
 }

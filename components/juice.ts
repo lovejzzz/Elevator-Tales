@@ -26,7 +26,11 @@ export function flyPortrait(from: Element | null, to: Element | null, src: strin
 /** v9.18.1 pickpocket: a coin (with its amount) hops from one seat to another. */
 export function flyCoin(from: Element | null, to: Element | null, label: string, delay = 0, tone: 'coin' | 'ghost' = 'coin') {
   if (!from || !to) return;
-  const a = centre(from), b = centre(to), el = layer(tone === 'ghost' ? 'juice-coin juice-wisp' : 'juice-coin'); el.textContent = label;
+  // v9.18.4: measured when it starts; at settlement the cabin is still finishing its travel animation.
+  window.setTimeout(() => flyCoinNow(from, to, label, tone), delay * 1000);
+}
+function flyCoinNow(from: Element, to: Element, label: string, tone: 'coin' | 'ghost') {
+  const delay = 0, a = centre(from), b = centre(to), el = layer(tone === 'ghost' ? 'juice-coin juice-wisp' : 'juice-coin'); el.textContent = label;
   el.style.left = `${a.x}px`; el.style.top = `${a.y}px`;
   if (reduced()) { void animate(el, { opacity: [0, 1, 0] }, { duration: .9, delay }).then(() => el.remove()); return; }
   void animate(el, { x: [0, (b.x - a.x) * .5, b.x - a.x], y: [0, (b.y - a.y) * .5 - 46, b.y - a.y], scale: [.6, 1.15, .8], opacity: [0, 1, 1] }, { duration: .62, delay, ease: [.3, .7, .3, 1] })

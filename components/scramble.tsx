@@ -2,7 +2,7 @@
 // v9.18.3 Mystery fare: a sealed number shown as a flickering, glitching readout instead of a range.
 import { useEffect, useState } from 'react';
 
-const DIGITS = '0123456789', SIGNS = '#$%&?@*§¥';
+const DIGITS = '0123456789', SIGNS = '#$%&?@§¥';
 const pick = (set: string) => set[Math.floor(Math.random() * set.length)];
 // Always at least one sign, so a frame can never be mistaken for a real fare.
 const roll = (length: number) => { const at = Math.floor(Math.random() * length); return Array.from({ length }, (_, i) => (i === at ? pick(SIGNS) : pick(DIGITS + SIGNS))).join(''); };

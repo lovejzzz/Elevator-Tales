@@ -1,6 +1,18 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.18.3**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.18.4**. Publication status is tracked separately from the source version.
+
+## v9.18.4 — 2026-09-24 — Polish from five playtests: Dispatch works, placement warnings, overtime calming / 五局试玩打磨：调度印章能用了、放人提示、加急安抚
+
+- From five full AI browser playtests (notes and per-run fixes in `docs/playtests/ai-playtest-notes.md`): 109F, 98F, 96F (daily), 108F (all agitation) and 89F (power, a playtest-rule mistake).
+- Dispatch stamp finally has controls (it had none since v9.0): “Hold for the next batch · N dispatch left” under waiting cards, and “1 stop earlier / later” for a rider who boarded this floor; twice per ten floors, legends excluded.
+- Overtime calming: after the sector's 6-point allowance, each extra point costs 2×, 3×, 4× … the calming price (48 / 72 / 96 coins at 90F); in the shop, the agitation panel and the boil-over alert.
+- Placement warnings: a placement that also draws a red link, leaves a Child/Drifter/Thief unattended or crowds a neighbour appends “Heads-up: …” and skips the link celebration; no nag for a Courier placed before his box; a crate beside an unguarded Thief is announced.
+- Locked Bomber: the timer stops but the defusal bonus keeps draining. Ascend confirmation works with a Bomber aboard (was cleared every 0.2 s) and asks again when a Courier's box is still waiting.
+- Clearer text: situational agitation advice and endings by main source; Nurse “Soothing N” / “Neighbors are calm”; Thief/Mimic/Ghost/Tycoon/Don seat and card lines; sealed-fare nets scrambled (no “*”); crate −2 on its card; legend exit card shows the keepsake (was “+0 coins”); full-slot, box-cap and charge-button reasons in the shop; 50/100/150F milestones; Inspector stamp effect; one-line result on wide screens; alerts above the ascend button; “Shop ahead” instead of “maintenance”; daily-shift label; English sentence spacing.
+- Queue: Commuter partners now include Tourist and Lover (early floors with a Courier 63% → 44% → lower).
+- Acceptance 4,200 runs vs 9.18.3: balanced 100 → 100F, deaths 29.6/68.7/1.7%, novice 41 → 34, human 67 → 68, balanced exit coins 206 → 191. Partner study (600 runs each, original / +Tourist / +Lover): novice 39/38/36F, human 66/68/71F, balanced 100F. verify 38 checks.
+- Watch: whether overtime calming drags skilled late games out (the simulator never uses it); whether warnings are too wordy; the power-box cap vs power needs after 91F still makes the late game feel decided.
 
 ## v9.18.3 — 2026-09-24 — Readable links, box animations, cleaner sound; farther boxes / 连线看得清、开箱动画、音效修复、好箱子送得远
 
