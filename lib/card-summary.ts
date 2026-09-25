@@ -26,11 +26,12 @@ const EN_NAMES: Record<PassengerKind, string> = {
 };
 export const riderName = (kind: PassengerKind, locale: GameLocale) => (locale === 'zh' ? PASSENGERS[kind].name : EN_NAMES[kind]);
 /** v9.17 display name for one rider: box size, the Bomber in disguise. Rarity shows as the gem and foil, not in the name. */
-export function displayName(rider: Pick<Rider, 'kind' | 'big' | 'disguised'> & { contraband?: boolean }, locale: GameLocale) {
+export function displayName(rider: Pick<Rider, 'kind' | 'big' | 'disguised'> & { contraband?: boolean; master?: boolean }, locale: GameLocale) {
   const zh = locale === 'zh';
   if (rider.kind === 'parcel' && rider.contraband) return zh ? (rider.big ? '大黑箱' : '黑箱') : rider.big ? 'Black Crate' : 'Black Box';
   if (rider.kind === 'parcel') return zh ? (rider.big ? '大纸箱' : '纸箱') : rider.big ? 'Crate' : 'Parcel';
   if (rider.disguised) return zh ? '乔装的通勤者' : 'Disguised Commuter';
+  if (rider.kind === 'musician' && rider.master) return zh ? '大师音乐家' : 'Master Musician';
   return riderName(rider.kind, locale);
 }
 
@@ -54,14 +55,14 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     }
     case 'mechanic': return rider.repairDone ? { line: L(`检修完成 · ${REPAIR_DURATION} 层省电`, `Repaired · ${REPAIR_DURATION} floors cheaper`) } : { line: L(`低躁动检修 → ${REPAIR_DURATION} 层运转 −1`, `Calm repair → motor −1 for ${REPAIR_DURATION} floors`), progress: `${rider.repairProgress ?? 0}/${REPAIR_WORK}` };
     case 'lover': return { line: L('恋人相邻：基价翻倍', 'Beside a Lover: fare ×2') };
-    case 'musician': return { line: L('躁动拉向中档 · 中档 +2币/层', 'Pulls agitation to medium · +2 coins/floor there') };
+    case 'musician': return rider.master ? { line: L('大师：躁动拉向中档（最多 3 点）· 中档 +6币/层', 'Master: pulls agitation to medium (up to 3) · +6 coins/floor there') } : { line: L('躁动拉向中档 · 中档 +2币/层', 'Pulls agitation to medium · +2 coins/floor there') };
     case 'thief': return { line: L('没人管：每层偷邻座 1–4 币 · +1 躁动 · 挨纸箱就偷走', 'Unguarded: steals 1–4 per neighbor a floor · +1 agitation · steals boxes') };
     case 'cop': return { line: L('管住小偷 · 锁住炸弹', 'Controls Thieves · locks Bombs') };
-    case 'lawyer': return { line: L('管住小偷 · 红线少扣 2 币', 'Controls Thieves · red links −2 coin loss') };
+    case 'lawyer': return { line: L('管住小偷（和警察一样）', 'Controls Thieves (like an Officer)') }; // v10.1.2: red links no longer cost coins
     case 'drunk': return { line: L('高躁动到站：基价翻倍', 'Arrives at high agitation: fare ×2') };
     case 'nurse': return { line: L('抵消每位邻座自身躁动 1/层', 'Cancels 1 of each neighbor’s own agitation/floor') };
     case 'child': return (rider.careProgress ?? 0) >= CHILD_CARE_WORK ? { line: L(`已照顾好 · 到站 +${CHILD_CARE_BONUS}币`, `Cared for · +${CHILD_CARE_BONUS} coins on arrival`) } : { line: L(`有人照顾 ${CHILD_CARE_WORK} 层 → +${CHILD_CARE_BONUS}币`, `Cared for ${CHILD_CARE_WORK} floors → +${CHILD_CARE_BONUS} coins`), progress: `${rider.careProgress ?? 0}/${CHILD_CARE_WORK}` };
-    case 'ghost': return { line: L('不耗电 · 没人管会延误邻座', 'No power · delays neighbors if uncontrolled') };
+    case 'ghost': return { line: L('每坐一层 1 币 · 不耗电 · 没人管 +1 躁动/层', '1 coin a floor · no power · unheld +1 agitation/floor') };
     case 'exorcist': return { line: L('管住幽灵 · 每只省 1 电/层', 'Controls Ghosts · −1 power each/floor') };
     case 'coach': return { line: L('邻座车费 +50%', 'Neighbors’ fare +50%') };
     case 'celebrity': return { line: L('恰好 1 位邻座 +2币/层', 'Exactly 1 neighbor: +2 coins/floor') };
@@ -93,7 +94,7 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     case 'voyeur': return { line: L(`偷拍普通邻座：+1躁动/层 · 每张 +${DARK_RULES.voyeurPhoto}币`, `Photographs normal neighbors: +1 agitation/floor · +${DARK_RULES.voyeurPhoto} coins each`), progress: rider.stash ? L(`照片 ${rider.stash}币`, `${rider.stash} coins of photos`) : undefined };
     case 'smuggler': return { line: L(`黑箱在旁才付钱 · 箱价×${DARK_RULES.smugglerBoxMultiplier} · 普通检查员会没收`, `Pays only with his black box · box ×${DARK_RULES.smugglerBoxMultiplier} · an Inspector seizes it`) };
     case 'scrapper': return { line: L(`每层卖零件 +${DARK_RULES.scrapperCoins}币 · 运转 +${DARK_RULES.scrapperMotor}电`, `Sells parts +${DARK_RULES.scrapperCoins} coins/floor · motor +${DARK_RULES.scrapperMotor} power`) };
-    case 'exlover': return { line: L('两位怨偶相邻就吵 · 分开坐：基价×2', 'Two Exes side by side quarrel · apart: fare ×2') };
+    case 'exlover': return { line: L('两位怨偶相邻就吵（各 +1 躁动）· 分开坐：基价×2', 'Two Exes side by side fight (+1 agitation each) · apart: fare ×2') };
     case 'noisemaker': return { line: L(`躁动往上拉 +1/层 · 高躁动 +${DARK_RULES.noiseHighCoins}币/层 · 下车 −${DARK_RULES.troublemakerRelief}躁动`, `Pushes agitation up +1/floor · +${DARK_RULES.noiseHighCoins} coins/floor at high · −${DARK_RULES.troublemakerRelief} agitation when he leaves`) };
     case 'robber': return { line: L(`没人管：每层抢你的钱包、+1躁动 · 被管住：赏金 +${DARK_RULES.robberBounty}币`, `Unguarded: robs your wallet each floor, +1 agitation · held: bounty +${DARK_RULES.robberBounty} coins`) };
     case 'crookedcop': return { line: L(`管住身边坏人 · 全车 −1躁动/层 · 收保护费 ${DARK_RULES.crookedFee + 2 * abyssTier(run.floor + 1)}币/层`, `Holds bad riders beside him · cabin −1 agitation/floor · takes ${DARK_RULES.crookedFee + 2 * abyssTier(run.floor + 1)} coins/floor`) };
@@ -121,10 +122,22 @@ const ICON: Record<ConflictEffect, CardChip['icon']> = { agitation: 'agitation',
 
 /** Green partners: listed bonds plus the ability links a player can act on. */
 const ABILITY_PARTNERS: Partial<Record<PassengerKind, PassengerKind[]>> = {
-  lover: ['lover'], thief: ['cop', 'lawyer'], cop: ['thief', 'bomb'], lawyer: ['thief'], drunk: ['nurse'], child: ['lover', 'nurse'],
   ghost: ['exorcist'], exorcist: ['ghost'], bomb: ['cop'], musician: ['tourist'], medium: ['ghost'], matchmaker: ['lover'], don: ['thief'], matron: ['child', 'drunk'],
-  robber: ['cop', 'crookedcop'], crookedcop: ['robber', 'thief', 'drunk', 'brawler', 'madbomber'], wraith: ['exorcist', 'summoner'], summoner: ['ghost', 'wraith'], madbomber: ['crookedcop'],
   smuggler: ['grafter'], scrapper: ['grafter'], brawler: ['crookedcop'],
+};
+
+/** v10.1.2: what sitting beside an ability partner is worth, on the partner chip — only where the card's ability line does
+ * not already say it (a bare name said nothing; repeating the line said it twice). */
+const PARTNER_GAIN: Partial<Record<PassengerKind, [string, string]>> = {
+  lover: ['每位相邻恋人：到站基价 +100%', 'each Lover beside: base fare +100%'],
+  thief: ['被管住：不偷钱，车厢 −1 躁动', 'held: no stealing, cabin −1 agitation'],
+  drunk: ['护士在旁：他不加躁动', 'Nurse beside: he adds no agitation'],
+  ghost: ['受控：到站 +2 币、每层省 1 电', 'held: +2 on arrival, −1 power a floor'],
+  musician: ['中躁动时游客到站 +3', 'Tourists +3 at medium agitation'],
+  robber: ['被管住：不抢钱，送到 +15 赏金', 'held: no robbing, +15 bounty on delivery'],
+  smuggler: ['贪腐检查员放行黑箱', 'the Crooked Inspector lets the black box through'],
+  scrapper: ['贪腐检查员收零件 +2 币/层', 'the Crooked Inspector buys parts: +2 a floor'],
+  brawler: ['黑警按住他', 'a Crooked Cop holds him'],
 };
 
 export function cardChips(rider: Rider, run: RunState, locale: GameLocale): CardChip[] {
@@ -135,7 +148,8 @@ export function cardChips(rider: Rider, run: RunState, locale: GameLocale): Card
   const chips: CardChip[] = [];
   const names = (kinds: PassengerKind[]) => kinds.map(k => riderName(k, locale)).join(' / ');
   if (rider.kind === 'tourist' || rider.kind === 'coach' || rider.kind === 'nurse') chips.push({ tone: 'green', kinds: [], label: t(locale, '任何邻座', 'Any neighbor'), title: t(locale, '每位邻座都算', 'Every neighbor counts') });
-  if (green.length) chips.push({ tone: 'green', kinds: green, label: names(green), title: t(locale, `与${names(green)}相邻有加成`, `Bonus beside ${names(green)}`) });
+  const gain = PARTNER_GAIN[rider.kind];
+  if (green.length) chips.push({ tone: 'green', kinds: green, label: gain ? `${names(green)} · ${t(locale, ...gain)}` : names(green), title: t(locale, `与${names(green)}相邻有加成`, `Bonus beside ${names(green)}`) });
   const groups = new Map<ConflictEffect, PassengerKind[]>();
   for (const rule of riderConflictRules(rider, run.cabin)) if (met(rule.target)) groups.set(rule.effect, [...(groups.get(rule.effect) ?? []), rule.target]);
   for (const [effect, kinds] of groups) chips.push({ tone: 'red', kinds, label: names(kinds), icon: ICON[effect], title: `${names(kinds)}：${t(locale, ...ICON_TITLE[effect])}` });

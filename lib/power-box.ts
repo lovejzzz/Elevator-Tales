@@ -26,8 +26,9 @@ export const boxTotal = (box: PowerBox) => box.storage + box.transformer + box.m
 export const storageCap = (box: PowerBox) => STORAGE_CAPS[box.storage];
 export const shopEntryCharge = (box: PowerBox) => BASE_SHOP_ENTRY_CHARGE + 5 * box.storage;
 export const emergencySectorCap = (box: PowerBox) => (box.storage >= BOX_MAX_LEVEL ? 10 : EMERGENCY_SECTOR_CAP);
-/** v9.19: shops up to 30F sell power at a discount, so a careful early run is not starved (cautious-player aid). */
-export const EARLY_CHARGE = { until: 20, factor: 0.85 };
+/** v9.19: early shops sell power at a discount, so a careful early run is not starved (cautious-player aid).
+ * v10.1.2: up to 40F at 40% off — a first real playtest ran dry at 26F; the novice bot goes 31→54F, skilled play unchanged. */
+export const EARLY_CHARGE = { until: 40, factor: 0.6 };
 export const chargeUnitPrice = (box: PowerBox, floor = Infinity) => CHARGE_PRICES[box.transformer] * (floor <= EARLY_CHARGE.until ? EARLY_CHARGE.factor : 1);
 /** Whole coins, rounded up, for a batch of shop charge. */
 export const chargeCost = (box: PowerBox, units: number, floor = Infinity) => Math.ceil(units * chargeUnitPrice(box, floor) - 1e-9);

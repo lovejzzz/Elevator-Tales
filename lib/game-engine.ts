@@ -2,7 +2,7 @@ import { BONDS, conflictLinks, profileWeight, randomTraits, riderProfile, type V
 import { SYMBOL_RULES, greenCount, pairLink, symbolLedger, symbolsOf } from './symbols';
 import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
 import { ADJACENT, BASE_OF, DARK_LEGEND_KINDS, DARK_LEGEND_OF, DARK_OF, PASSENGERS, UNLOCK_TIERS, UPGRADES, isAnyLegend, isDark, isDarkLegend, isLegend, passengerCategory, type DarkLegendKind, type LegendKind, type PassengerKind, type UpgradeKey } from './game-data';
-import { ABYSS_EVENTS, ABYSS_EVENT_KINDS, type AbyssEventKind, DARK_RESONANCE, DARK_RULES, ITEMS, ITEM_SLOTS, MARKET_ITEM_KEYS, MARKET_STOCK, SHOP_ITEM_KEYS, MYSTERY_IDENTITIES, MYSTERY_RULES, abyssStep, abyssTier, outburstChance, outburstIsPower, corruptible, darkShare, isBombKind, isCarrierKind, isSurvivor, itemPrice, type ItemKey, type MysteryIdentity } from './dark-rules';
+import { ABYSS_EVENTS, ABYSS_EVENT_KINDS, type AbyssEventKind, DARK_RESONANCE, GHOST_RIDE, DARK_RULES, ITEMS, ITEM_SLOTS, MARKET_ITEM_KEYS, MARKET_STOCK, SHOP_ITEM_KEYS, MYSTERY_IDENTITIES, MYSTERY_RULES, abyssStep, abyssTier, outburstChance, outburstIsPower, corruptible, darkShare, isBombKind, isCarrierKind, isSurvivor, itemPrice, type ItemKey, type MysteryIdentity } from './dark-rules';
 import { BOX_MAX_LEVEL, BOX_PRICES, BOX_TOTAL_CAP, emergencySectorCap, EMPTY_BOX, affordableUnits, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, motorNoise, shopEntryCharge, storageCap, type BoxLine, type PowerBox } from './power-box';
 import { districtWeight } from './districts';
 import { CHILD_CARERS, DARK_LEGEND_RULES, DRUNK_CARERS, GHOST_CONTROLLERS, KEEPSAKE_KEYS, LEGEND_DECLINE_COINS, LEGEND_DESTINATION, LEGEND_KEEPSAKE, LEGEND_POOL_DEFAULT, LEGEND_RULES, type KeepsakeKey } from './legends';
@@ -12,7 +12,7 @@ import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning 
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
 
 /** v9.19 midnight fields: corruption progress, item effects, withdrawal, the Mystery's identity, contraband boxes. */
-export type MidnightRiderFields = { corruption?: number; warded?: boolean; cuffed?: boolean; alarm?: boolean; sedated?: number; sealed?: boolean; withdrawal?: number; identity?: MysteryIdentity; /** v9.20.1: abyss step when this dark card was drawn (its fare premium). */ extreme?: number; revealed?: boolean; contraband?: boolean; summoned?: boolean; crewFloors?: number; /** v9.21: extra coins on arrival (the eve-of-the-abyss bounty). */ bounty?: number };
+export type MidnightRiderFields = { /** v10.1.2 upgraded by a keepsake (the Vinyl makes every Musician a Master Musician). */ master?: boolean; corruption?: number; warded?: boolean; cuffed?: boolean; alarm?: boolean; sedated?: number; sealed?: boolean; withdrawal?: number; identity?: MysteryIdentity; /** v9.20.1: abyss step when this dark card was drawn (its fare premium). */ extreme?: number; revealed?: boolean; contraband?: boolean; summoned?: boolean; crewFloors?: number; /** v9.21: extra coins on arrival (the eve-of-the-abyss bounty). */ bounty?: number };
 export type Rider = MidnightRiderFields & { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; routeStops?: number; bombMs?: number; bombMsTotal?: number; /** v9.18.4: seconds that still count for the defusal bonus; they drain even while an Officer locks the timer. */ bonusMs?: number; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
 export type ChangeLine = { label: string; amount: number };
 export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number; power?:number; ability?:UpgradeKey; /** v9.18.4: the keepsake a delivered legend left behind. */ keepsake?:KeepsakeKey; /** UI only: an incident exit card (never set by the engine). */ incident?:boolean };
@@ -370,6 +370,8 @@ export const parcelLayoutOk = (cabin: Array<Rider | null>) => boxesIn(cabin).eve
   return owner < 0 || box.touching.includes(owner);
 });
 export const CONTROLLED_GHOST_SAVING = 1;
+/** v10.1.2 the Vinyl's Master Musician: fare ×2, +6 coins a floor at medium agitation (a Musician +2), pulls agitation up to 3 toward medium (2). */
+export const MASTER_MUSICIAN = { fareMultiplier: 2, mediumCoins: 6, step: 3 };
 export const SHOP_ENTRY_CHARGE = 5;
 export const INITIAL_ENERGY = 50;
 export const START_RULES = { energy: INITIAL_ENERGY };
@@ -507,6 +509,10 @@ function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
     case 'taskmaster': if (dark) add('监工催逼', DARK_RULES.taskmasterAgitation * survivorsBeside()); break;
     case 'grafter': if (dark) add('贪腐检查员敲诈', neighbourCount(cabin, slot) ? DARK_RULES.grafterAgitation : 0); break;
     case 'mystery': if (rider.revealed && rider.identity === 'fugitive') add('逃犯心虚', 1); break;
+    // v10.1.2: two Exes side by side fight — their matching symbols would otherwise make them a green pair.
+    case 'exlover': if (hasNeighbour(cabin, slot, ['exlover'])) add('怨偶吵架', 1); break;
+    // v10.1.2: an unheld Ghost haunts the cabin; an Exorcist, Summoner or Medium beside him (or the bell) settles him.
+    case 'ghost': if (GHOST_RIDE.unheldAgitation && !hasNeighbour(cabin, slot, GHOST_CONTROL_KINDS)) add('幽灵作祟', GHOST_RIDE.unheldAgitation); break;
     case 'smuggler':
     case 'courier': {
       const links = parcelLinks(state.cabin);
@@ -556,7 +562,7 @@ export const arrivalRegeneration = (_state: RunState, _arrivals: number, _extraA
 /** One cabin-wide beat, decided from departure state; musicians do not stack. */
 export function musicAgitation(state: RunState) {
   if (!state.cabin.some(r => r?.kind === 'musician')) return 0;
-  return musicBeatForAgitation(state.stress);
+  return musicBeatForAgitation(state.stress, state.cabin.some(r => r?.kind === 'musician' && r.master) ? MASTER_MUSICIAN.step : undefined);
 }
 /** Motor cost for the coming ascent after the power box. Legends and service savings are itemized separately. */
 export const effectiveMotor = (state: Pick<RunState,'floor'|'box'>) => boxedMotorCost(motorCost(state.floor+1), boxOf(state), state.floor+1);
@@ -676,7 +682,8 @@ export function availableKinds(floor: number, cabin: Array<Rider | null> = [], k
   const kinds = unlockedAt(floor);
   // The Medium draws spirits: ghosts join early and are drawn at double weight while she rides.
   if (legendInCabin(cabin, 'medium')) kinds.push(...(kinds.includes('ghost') ? ['ghost' as const] : ['ghost' as const, 'ghost' as const]));
-  if (keepsakes.includes('vinyl') && !kinds.includes('musician')) kinds.push('musician');
+  // v10.1.2: with the Vinyl, Master Musicians are drawn from the start and twice as often.
+  if (keepsakes.includes('vinyl')) kinds.push(...(kinds.includes('musician') ? ['musician' as const] : ['musician' as const, 'musician' as const]));
   return kinds;
 }
 export function darkLegendRider(kind: DarkLegendKind, floor: number = DARK_LEGEND_RULES.from, rng: () => number = Math.random): Rider {
@@ -733,6 +740,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
       destination: floor + expressTrip(baseTrip, upgrades.express), patience: 0, traits, volatile, ...(identity ? { identity } : {}),
       copySeed: kind === 'mimic' ? rand(0, 2147483647, rng) : undefined,
       boardedAt: floor, fareBonus: upgrades.concierge ? boosted({ upgrades }, 'concierge', ECONOMY_RULES.conciergeTip) : 0, stash: 0,
+      ...(kind === 'musician' && context.keepsakes?.includes('vinyl') ? { master: true } : {}),
       fuse: kind === 'bomb' ? rand(BOMB_RULES.fuseMin, BOMB_RULES.fuseMax, rng)+Number(Boolean(upgrades.delay)) : undefined,
       bombMs: kind === 'bomb' && BOMB_RULES.realtime ? bombSeconds(expressTrip(baseTrip, upgrades.express)) * 1000 : undefined,
       bombMsTotal: kind === 'bomb' && BOMB_RULES.realtime ? bombSeconds(expressTrip(baseTrip, upgrades.express)) * 1000 : undefined, calledByLover: (called || exCalled) && index === 2,
@@ -920,7 +928,9 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   cabin.forEach(rider => { if (rider?.kind === 'don') rider.stash = (rider.stash ?? 0) + LEGEND_RULES.donStashPerFloor; if (rider?.kind === 'kingpin') rider.stash = (rider.stash ?? 0) + DARK_LEGEND_RULES.kingpinStash; });
   if (departBand === 'medium') {
     const musicians = state.cabin.filter(r => r?.kind === 'musician').length;
-    if (musicians) addCoins('音乐家演出', musicians * (LEGEND_RULES.musicianMediumCoins + (hasKeepsake(state,'vinyl') ? LEGEND_RULES.vinylMusicianBonus : 0)));
+    const masters = state.cabin.filter(r => r?.kind === 'musician' && r.master).length;
+    if (musicians - masters) addCoins('音乐家演出', (musicians - masters) * LEGEND_RULES.musicianMediumCoins);
+    if (masters) addCoins('大师音乐家演出', masters * MASTER_MUSICIAN.mediumCoins);
     if (legendInCabin(state.cabin,'nightingale')) addCoins('夜莺驻唱', LEGEND_RULES.nightingaleMediumCoins);
   }
   if (state.floor === 1 && legendInCabin(state.cabin,'tycoon')) addCoins('大亨预付', LEGEND_RULES.tycoonPrepay);
@@ -997,6 +1007,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   let keepsakes = state.keepsakes ?? [];
   let freeBoxLevels = state.freeBoxLevels ?? 0;
   let stressCapBonus = 0;
+  let promoteMusicians = false;
   let punchCount=state.punchCount??0;
   const arrivalSlots: number[] = []; const lastArrivals:ArrivalReceipt[]=[];
   // v9.17 box events before arrivals, in priority order: a Courier delivering this floor keeps his box; otherwise
@@ -1129,7 +1140,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
         case 'otherthirteen': { const gift = rand(0, DARK_LEGEND_RULES.thirteenPayMax, rng); if (gift) pay('另一个13号的馈赠', gift); break; }
       }
     } else if (!isLegend(rider.kind)) {
-      if (delivered && departBand === 'medium') { const tip = V9_AGITATION.mediumTip + (hasKeepsake(state,'vinyl') ? 2 : 0); extra += tip; addCoins('热闹小费', tip); }
+      if (delivered && departBand === 'medium') { const tip = V9_AGITATION.mediumTip; extra += tip; addCoins('热闹小费', tip); }
       if (delivered && departBand === 'low') { const tip = V9_AGITATION.lowTip + (legendInCabin(state.cabin,'matron') ? LEGEND_RULES.matronQuietCoins : 0); extra += tip; addCoins('安静好评', tip); }
       if (delivered && departBand === 'low' && hasKeepsake(state,'roundsLog')) { extra += 1; addCoins('查房记录', 1); }
     } else {
@@ -1138,7 +1149,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       const gift = LEGEND_KEEPSAKE[rider.kind];
       const owned = new Set(keepsakes);
       const key = gift === 'random' ? KEEPSAKE_KEYS.filter(k => !owned.has(k))[rand(0, Math.max(0, KEEPSAKE_KEYS.filter(k => !owned.has(k)).length - 1), rng)] : gift;
-      if (key && !owned.has(key)) { keepsakeLeft = key; keepsakes = [...keepsakes, key]; notes.push(`${spec.name}留下信物`); if (key === 'wrench') freeBoxLevels += 1; if (key === 'roundsLog') stressCapBonus += 2; }
+      if (key && !owned.has(key)) { keepsakeLeft = key; keepsakes = [...keepsakes, key]; if (key === 'vinyl') promoteMusicians = true; notes.push(`${spec.name}留下信物`); if (key === 'wrench') freeBoxLevels += 1; if (key === 'roundsLog') stressCapBonus += 2; }
       if (gift === 'random') { const bonus = rand(0, LEGEND_RULES.strangerKeepsakeCoins, rng); if (bonus) { extra += bonus; addCoins('13号房客的馈赠', bonus); } }
     }
     lastArrivals.push({riderId:rider.id,kind:rider.kind,slot,coins:fare-(rider.stash??0)+stash+punchBonus+extra+defusal,...(keepsakeLeft?{keepsake:keepsakeLeft}:{})});
@@ -1253,6 +1264,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const abyssEvents = status === 'upgrade' && nextFloor === ABYSS_EVENTS.shopFloor ? drawAbyssEvents(shopRng) : state.abyssEvents;
   const marketHere = status === 'playing' && abyssEvents?.some(e => e.floor === nextFloor && e.kind === 'market');
   const marketStock = marketHere ? drawMarketStock(nextFloor, shopRng, state.itemBought) : undefined, marketFloor = marketHere ? nextFloor : undefined;
+  // v10.1.2: receiving the Vinyl promotes the Musicians already aboard.
+  if (promoteMusicians) cabin = cabin.map(r => r?.kind === 'musician' ? { ...r, master: true } : r);
   const settled: RunState = { ...state, abyssEvents, marketStock, marketFloor, lastOutbursts, lastThefts, lastHaunts, lastBoxEvents, lastIncident, lastBlast, lastCorruption, lastSummons, itemStock, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
   // Abilities found in boxes install like a shop pick (effects such as Safety Margin apply at once).
   return wonAbilities.reduce((run, key) => previewUpgrade(run, key), settled);

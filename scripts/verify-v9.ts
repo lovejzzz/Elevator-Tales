@@ -286,18 +286,18 @@ console.log('PASS intro opens only after storage is read');
 console.log('PASS rescue plans are real or the floor is declared lost');
 // v9.4 card net value: fare − trip power × charge price (+ courier refund) − trip agitation × 3; legends show none.
 {
-  const s = run(25, []); // past the v9.19 early charge discount
+  const s = run(45, []); // past the early charge discount (v10.1.2: up to 40F)
   // v10: fares ×0.6, so alone most riders roughly break even or lose a little; links make them pay (lib/symbols.ts).
   const F = (k: PassengerKind) => PASSENGERS[k].fare;
-  assert.equal(netValue(rider('commuter', 25, 3, { boardedAt: 25 }), s), F('commuter') - 6);
-  assert.equal(netValue(rider('courier', 25, 1, { boardedAt: 25 }), s), F('courier') - 2 + 4);
+  assert.equal(netValue(rider('commuter', 45, 3, { boardedAt: 45 }), s), F('commuter') - 6);
+  assert.equal(netValue(rider('courier', 45, 1, { boardedAt: 45 }), s), F('courier') - 2 + 4);
   // v9.16: a Courier carrying a parcel is valued as the pair; a parcel alone as its unclaimed contents.
-  assert.equal(netValue(rider('courier', 25, 1, { boardedAt: 25, parcelId: 'p' }), s), F('courier') - 2 - 2 + 4);
-  assert.equal(netValue(rider('parcel', 25, 1, { boardedAt: 25, ownerId: 'c' }), s), (6 + 3 * 2) / 2 - 2);
-  assert.equal(netValue(rider('thief', 25, 2, { boardedAt: 25 }), s), F('thief') - 4 - 6);
-  assert.equal(netValue(rider('operator', 25, 9, { boardedAt: 25 }), s), null);
-  // v9.19: until 20F power is 15% cheaper, so the same Commuter nets a little more.
-  assert.ok(netValue(rider('commuter', 15, 3, { boardedAt: 15 }), run(15, []))! > netValue(rider('commuter', 25, 3, { boardedAt: 25 }), s)!);
+  assert.equal(netValue(rider('courier', 45, 1, { boardedAt: 45, parcelId: 'p' }), s), F('courier') - 2 - 2 + 4);
+  assert.equal(netValue(rider('parcel', 45, 1, { boardedAt: 45, ownerId: 'c' }), s), (6 + 3 * 2) / 2 - 2);
+  assert.equal(netValue(rider('thief', 45, 2, { boardedAt: 45 }), s), F('thief') - 4 - 6);
+  assert.equal(netValue(rider('operator', 45, 9, { boardedAt: 45 }), s), null);
+  // v10.1.2: until 40F power is 40% cheaper, so the same Commuter nets a little more.
+  assert.ok(netValue(rider('commuter', 15, 3, { boardedAt: 15 }), run(15, []))! > netValue(rider('commuter', 45, 3, { boardedAt: 45 }), s)!);
 }
 console.log('PASS card net value');
 // v9.5 legend shuffle bag: each unlocked legend once per cycle, never the same twice in a row.

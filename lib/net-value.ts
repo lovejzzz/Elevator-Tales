@@ -21,7 +21,7 @@ export function netValue(rider: Rider, state: RunState): number | null {
   const trip = Math.max(1, rider.destination - state.floor);
   const profile = riderProfile(rider, state.cabin);
   const price = chargeUnitPrice(boxOf(state), state.floor);
-  const fare = rider.kind === 'mystery' ? 12 : PASSENGERS[rider.kind].fare;
+  const fare = rider.kind === 'mystery' ? 12 : rider.kind === 'ghost' ? profile.fare : PASSENGERS[rider.kind].fare;
   const agitation = (profile.agitation ?? 0) + (AGITATING.has(rider.kind) ? 1 : 0) + (rider.volatile ? 1 : 0);
   const refund = rider.kind === 'courier' ? COURIER_ARRIVAL_CHARGE * price : 0;
   // v9.16: a Courier with a parcel is valued as the pair (the parcel's power included); a parcel alone as unclaimed.

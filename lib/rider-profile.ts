@@ -1,4 +1,4 @@
-import { MYSTERY_RULES } from './dark-rules';
+import { GHOST_RIDE, MYSTERY_RULES } from './dark-rules';
 import { ADJACENT, PASSENGERS, type PassengerKind } from './game-data';
 import { SYMBOLS, SYMBOL_KEYS, pairLink, symbolEdges, symbolTitle, symbolsOf, type SymbolKey } from './symbols';
 import type { Rider } from './game-engine';
@@ -82,7 +82,10 @@ function ownProfile(rider:Rider){
  const spec=PASSENGERS[rider.kind];
  // v9.19: a Mystery's fare follows his identity and stays sealed until he is revealed (one floor after boarding).
  const identityFare=rider.kind==='mystery'&&rider.identity?MYSTERY_RULES[rider.identity].fare:undefined;
- return {weight:0,energy:rider.traits?.energy??spec.energy,agitation:rider.traits?.agitation??0,fare:rider.traits?.fare??identityFare??(rider.disguised?PASSENGERS.bomb.fare:spec.fare),bond:rider.traits?.bond??BONDS[rider.kind],conflictEffect:rider.traits?.conflictEffect,hidden:rider.kind==='mystery'&&!rider.revealed};
+ // v10.1.2: a Ghost's fare is his ride length times GHOST_RIDE.perFloor.
+ const masterFare=rider.kind==='musician'&&rider.master?PASSENGERS.musician.fare*2:undefined;
+ const ghostFare=rider.kind==='ghost'?Math.max(1,Math.round((rider.destination-rider.boardedAt)*GHOST_RIDE.perFloor)):undefined;
+ return {weight:0,energy:rider.traits?.energy??spec.energy,agitation:rider.traits?.agitation??0,fare:rider.traits?.fare??identityFare??ghostFare??masterFare??(rider.disguised?PASSENGERS.bomb.fare:spec.fare),bond:rider.traits?.bond??BONDS[rider.kind],conflictEffect:rider.traits?.conflictEffect,hidden:rider.kind==='mystery'&&!rider.revealed};
 }
 // A ticket adjustment applies only to the base fare, never to earned stashes,
 // tips or adjacency payouts. Express retains its full purchased benefit.

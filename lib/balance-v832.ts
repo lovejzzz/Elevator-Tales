@@ -36,10 +36,10 @@ export type AgitationBand = 'low' | 'medium' | 'high';
 export const agitationBand = (value: number): AgitationBand => value <= AGITATION_LOW_MAX ? 'low' : value < AGITATION_HIGH_MIN ? 'medium' : 'high';
 export const AGITATION_BAND_LABELS: Record<AgitationBand,string> = {low:'低躁动',medium:'中躁动',high:'高躁动'};
 export const bandLabel = (value: number) => AGITATION_BAND_LABELS[agitationBand(value)];
-export function musicBeatForAgitation(value: number) {
+export function musicBeatForAgitation(value: number, step: number = MUSIC_RULES.step) {
   const band = agitationBand(value);
-  return band === 'low' ? Math.min(MUSIC_RULES.step, AGITATION_LOW_MAX + 1 - value)
-    : band === 'high' ? -Math.min(MUSIC_RULES.step, value - (AGITATION_HIGH_MIN - 1)) : 0;
+  return band === 'low' ? Math.min(step, AGITATION_LOW_MAX + 1 - value)
+    : band === 'high' ? -Math.min(step, value - (AGITATION_HIGH_MIN - 1)) : 0;
 }
 // Local playtest candidate, adopted after matched and unused-seed comparisons.
 // The old schedule remains available only as an explicit research scenario.

@@ -13,7 +13,7 @@ export const KEEPSAKES: Record<KeepsakeKey, { name: string; description: string 
   redString: { name: '红绳', description: '赚钱的符号（热闹、江湖）每级绿线每层 +2 金币；此后未配对恋人呼唤同伴的概率为35%。' },
   pocketWatch: { name: '怀表', description: '坏人链接每层多存1金币；坏人链接躁动每层最多1点。' },
   roundsLog: { name: '查房记录', description: '躁动上限+2；每次进商店躁动−3；低躁动关门时，每位正常到站乘客再+1金币；检查员印章只需1层低躁动。' },
-  vinyl: { name: '黑胶唱片', description: '音乐家提前出现（不必等到16层）；中躁动时每位音乐家演出收入再+2金币，每位正常到站乘客小费再+2。' },
+  vinyl: { name: '黑胶唱片', description: '所有音乐家升级为大师音乐家：车费翻倍，中躁动时每位演出 +6 金币/层（普通 +2），把躁动往中档拉最多 3 点（普通 2 点）；而且从第 1 层起就出现，出现次数翻倍。' },
   bell: { name: '招魂铃', description: '幽灵永久视为受控：不再延误邻座，到站+2金币；另外每位幽灵到站再+3金币。' },
   stock: { name: '股票凭证', description: '每次进商店，未花金币得15%利息，最多+12金币。' },
 };

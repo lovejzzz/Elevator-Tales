@@ -3057,7 +3057,7 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 .crate-grid .crate-card { pointer-events:none; }
 .crate-grid .crate-card .rider-visual { animation:none; }
 .crate-card .crate-art { display:block; }
-.crate-card .crate-image { position:absolute; inset:0; background-repeat:no-repeat; background-position:center 55%; background-size:contain; }
+.crate-card .crate-image { position:absolute; inset:0; background-repeat:no-repeat; background-position:center 45%; background-size:cover; } /* v10.1.2: the tall box fills its two-seat column (the art is a tall box centred on a square) */
 .standing-slot.seat-crate { background:transparent !important; border-color:transparent !important; box-shadow:none !important; }
 .standing-slot.seat-crate .crate-half { display:block; position:absolute; inset:0; }
 
@@ -3486,3 +3486,50 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 .manual-symbol { display:grid; grid-template-columns:24px 1fr; align-items:center; column-gap:6px; font-weight:600; }
 .manual-symbol small { grid-column:2; font-weight:400; font-size:11px; color:#b9c7bd; }
 .manual-symbol .sym { grid-row:span 2; }
+
+/* v10.1.2: link labels explain themselves on hover or tap. */
+.game-shell .link-label-layer .link-label { pointer-events:auto; cursor:help; }
+.link-label:hover, .link-label:focus-within, .link-label:focus { z-index:30; outline:none; }
+.link-tip { position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%); display:none; flex-direction:column; gap:4px; width:max-content; max-width:260px; padding:8px 10px; border:1px solid #c99d52aa; border-radius:8px; background:#0d1410f7; color:#eadfc4; font:500 12px/1.45 var(--font-sans, system-ui); text-align:left; white-space:normal; box-shadow:0 6px 18px #000c; pointer-events:none; }
+.link-tip span { display:block; padding:0!important; border:0!important; }
+.link-label:hover .link-tip, .link-label:focus .link-tip { display:flex; }
+
+/* v10.1.2 symbol codex: a symbol's rule and every rider who carries it (unmet ones as dark boxes). */
+.sym-open { cursor:pointer; }
+.sym-open:hover, .sym-open:focus-visible { outline:2px solid var(--sym); outline-offset:1px; }
+.codex-title { display:flex; align-items:center; gap:10px; }
+.codex-big { width:38px; height:38px; }
+.codex-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:8px; margin:6px 0 12px; }
+.codex-rider { display:grid; justify-items:center; gap:3px; padding:6px 4px; border:1px solid #c99d5244; border-radius:8px; background:#0b1410cc; text-align:center; font-size:12px; }
+.codex-rider .portrait-window { width:56px; height:56px; }
+.codex-rider.locked { border-color:#ffffff14; color:#6f7a72; }
+.codex-blank { width:56px; height:56px; border-radius:6px; background:#050807; box-shadow:inset 0 0 0 1px #ffffff12; }
+.codex-other { display:inline-flex; align-items:center; gap:4px; color:#a9b8ae; font-size:11px; }
+.codex-other .sym { width:17px; height:17px; border-width:1px; }
+.codex-note { font-size:11px; color:#9aa89f; }
+
+/* v10.1.2: a card's symbols with their green-link effects. */
+.sym-slot { display:inline-flex; }
+.sym-row { display:flex; flex-wrap:wrap; gap:4px 8px; margin:3px 0 1px; }
+.sym-chip { display:inline-flex; align-items:center; gap:5px; padding:1px 8px 1px 1px; border:1px solid color-mix(in srgb, var(--sym) 45%, transparent); border-radius:999px; background:color-mix(in srgb, var(--sym) 10%, #0b1410); font-size:12px; line-height:20px; color:#e6dcc3; }
+.sym-chip .sym { width:20px; height:20px; }
+.sym-chip-text { display:inline-flex; gap:4px; white-space:nowrap; }
+.sym-chip-text b { color:var(--sym); font-weight:700; }
+
+.crate-ghost { opacity:.45; border-style:dashed; pointer-events:none; }
+
+.game-shell .standing-slot.crate-card .rider-visual .seat-art.crate-art { opacity:.85; } /* v10.1.2: a box has no face to read through the dimming, so it stays visible */
+
+/* v10.1.2 keepsakes: icon and name; the effect in a hover / tap tooltip. */
+.keepsake-chip { position:relative; display:inline-flex; align-items:center; gap:5px; padding:2px 9px 2px 5px; cursor:help; }
+.keepsake-chip .keepsake-icon { color:#f3d38f; flex:none; }
+.keepsake-chip.keepsake-redString .keepsake-icon { color:#e0655a; }
+.keepsake-chip b { color:#f3d38f; font-weight:700; }
+.keepsake-tip { position:absolute; left:0; bottom:calc(100% + 6px); display:none; width:max-content; max-width:260px; padding:7px 10px; border:1px solid #c99d52aa; border-radius:8px; background:#0d1410f7; color:#eadfc4; font-size:12px; font-weight:500; line-height:1.45; white-space:normal; box-shadow:0 6px 18px #000c; z-index:40; }
+.keepsake-chip:hover .keepsake-tip, .keepsake-chip:focus .keepsake-tip { display:block; }
+.keepsake-row { display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+
+/* v10.1.2: link labels and keepsake chips are buttons (hover or tap); keep their chip look. */
+button.link-label, button.keepsake-chip { font:inherit; appearance:none; }
+button.link-label { font:800 12px/1 var(--font-mono); }
+button.keepsake-chip { border:1px solid #c99d52; border-radius:999px; background:#33270f; color:#f6d98c; font-size:12px; }

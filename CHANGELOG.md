@@ -1,6 +1,36 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.1.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.0**. Publication status is tracked separately from the source version.
+
+## v10.2.0 — 2026-09-25 — Playtest feedback: hover explanations, symbol codex, keepsake icons, new Ghost, Master Musician / 试玩反馈
+
+- Interface:
+  - hover or tap a link label for why it adds or takes away;
+  - tap a symbol icon to open its codex (riders not met are dark boxes);
+  - cards spell out symbol effects;
+  - partner tags show a benefit only when the ability line doesn't.
+- Big box: a single tall drag preview; its art fills the whole column.
+- Keepsakes: seven line-art icons, with the effect on hover.
+- Ghost: 1 coin a floor ridden (5–10), no power; unheld +1 agitation a floor plus delays.
+- Vinyl Record → Master Musician:
+  - fare ×2;
+  - +6 coins a floor at medium agitation;
+  - pulls agitation up to 3 toward medium;
+  - drawn from 1F at double rate.
+- Power at 40% off until 40F (was 15% off until 20F).
+- Text fixes: Lawyer, Crooked Cop, Matchmaker; two Exes side by side fight (+1 agitation each).
+- Run record v2 adds, per floor: seats with symbols, links, itemized income/power/agitation, actions and events. Shop entries list purchases.
+- Replay of the first human run: links earned 30 coins in 25 floors and red links added 36 agitation; 239 coins earned vs 10–18 a floor spent on power.
+- Why the early discount, not fares:
+  - day fares at 80% of the originals made skilled play rich (205/146 coins at 70F);
+  - 40% off to 40F takes the novice from 31F to 54F with skilled play unchanged.
+- Ghost tuning: +1 unheld keeps boarding at 51% (73.6% without).
+- Acceptance, 4,200 runs:
+  - skilled endings 44.7 / 54.8 / 0.5% (power / agitation / bomb);
+  - 100F reached 1.2%;
+  - novice 58F, human-like 81F;
+  - boarding rates 18–53%.
+- Watch: "not affluent" is wider (73.3%, median 50 coins after a shop).
 
 ## v10.1.1 — 2026-09-25 — Cards no longer show “On arrival ±N coins” / 卡片不再显示净收益
 

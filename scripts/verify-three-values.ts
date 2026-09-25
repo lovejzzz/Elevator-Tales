@@ -42,9 +42,9 @@ const offers40=makeOffers(40,initialRun().upgrades,false,rngFor(13));
 assert(offers40.some(r=>!r.volatile),'every floor retains a non-high-risk offer');
 
 const shop=state({floor:10,status:'upgrade',coins:100,earned:100,energy:2});
-// v9.19: shops up to 20F sell power 15% cheaper (1.7 instead of 2 coins at transformer level 0).
-assert.equal(chargingPlan(shop).target,50);assert.equal(chargingPlan(shop).baseline,20);assert.equal(chargingPlan(shop).cost,82);
-assert.equal(chargeBattery(shop,20).energy,22);assert.equal(chargeBattery(shop,20).coins,66);
+// v10.1.2: shops up to 40F sell power 40% cheaper (1.2 instead of 2 coins at transformer level 0).
+assert.equal(chargingPlan(shop).target,50);assert.equal(chargingPlan(shop).baseline,20);assert.equal(chargingPlan(shop).cost,58);
+assert.equal(chargeBattery(shop,20).energy,22);assert.equal(chargeBattery(shop,20).coins,76);
 
 const rng=rngFor(812091);let transitions=0;
 for(let i=0;i<4000;i++){

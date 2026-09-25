@@ -109,6 +109,9 @@ export function mysteryClue(rider: { id: string; identity?: MysteryIdentity }): 
 export type ItemKey = 'cell' | 'swap' | 'dismiss' | 'candy' | 'fuse' | 'aroma' | 'holywater' | 'cuffs' | 'amulet' | 'alarm' | 'sedative' | 'seal' | 'cutter' | 'flare'
   | 'longflare' | 'sandalwood' | 'strongsedative' | 'greatamulet';
 export type ItemTarget = 'none' | 'rider' | 'dark' | 'normal' | 'thief' | 'overtimer' | 'child' | 'bomb' | 'parcel';
+/** v10.1.2: the Ghost's fare grows with the ride — coins per floor from boarding to his stop (he uses no power). */
+/** `unheldAgitation`: an unheld Ghost haunts the cabin (+N agitation a floor) — the price of his longer, dearer ride. */
+export const GHOST_RIDE = { perFloor: 1, unheldAgitation: 1 };
 export const ITEM_SLOTS = 4;
 export const ITEMS: Record<ItemKey, { name: string; en: string; zh: string; enText: string; from: number; price: number; target: ItemTarget; market?: true; art?: ItemKey }> = {
   cell: { name: '应急电池', en: 'Spare Cell', zh: '立即 +15 电（不超过上限）', enText: '+15 power now (up to the cap)', from: 1, price: 20, target: 'none' },
