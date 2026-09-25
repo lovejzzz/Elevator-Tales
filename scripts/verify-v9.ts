@@ -857,7 +857,8 @@ console.log('PASS v9.19.1 playtest fixes');
   const kingDone = E.resolveFloor(king, fixed(.9));
   assert.equal(kingDone.lastArrivals?.find(a => a.kind === 'kingpin')?.coins, 72 + DLR.kingpinStash, 'the Kingpin pays his bank on arrival');
   const bet = (stress: number) => E.resolveFloor(run(69, [R('highroller', 'h', 70), R('commuter', 'c', 72)], { stress, stressCap: 14, coins: 100 }), fixed(.9));
-  assert.equal(lines(bet(0), 'lastEarnings')['赌王赢了'], DLR.highRollerWin); assert.equal(lines(bet(9), 'lastEarnings')['赌王输了'], -DLR.highRollerLoss);
+  // v9.20.3 (English playtest 11): he pays per point of agitation when the doors close before 70F; a calm cabin earns nothing.
+  assert.equal(lines(bet(0), 'lastEarnings')['赌王的赌注'], undefined); assert.equal(lines(bet(9), 'lastEarnings')['赌王的赌注'], DLR.highRollerPerPoint * 9);
   const sev = E.resolveFloor(run(62, [R('severer', 's', 70), R('drunk', 'd', 66), R('commuter', 'c', 66)], { stress: 2, stressCap: 12 }), fixed(.9));
   assert.ok((lines(sev, 'lastEarnings')['剪线婆收怨'] ?? 0) === 3 * conflictLinks(run(62, [R('severer', 's', 70), R('drunk', 'd', 66), R('commuter', 'c', 66)]).cabin).length, 'the Severer pays per red link');
   // The Other Thirteen: the forecast brackets every roll.

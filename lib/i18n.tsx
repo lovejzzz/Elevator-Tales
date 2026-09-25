@@ -551,10 +551,13 @@ export function translateGameText(value: string, locale: GameLocale): string {
   // Only for known notes (exact phrases), so counted labels such as “协作邻座 ×1 · …” keep their own patterns.
   const counted = (part: string) => { const m = part.match(/^(.*?) ×(\d+)$/u); return Boolean(m && exact.has(m[1])); };
   if (core.split(' · ').some(counted) && core.split(' · ').every(part => counted(part) || exact.has(part))) return `${leading}${core.split(' · ').map(part => { const m = part.match(/^(.*?) ×(\d+)$/u); return m && exact.has(m[1]) ? `${translateGameText(m[1], 'en')} ×${m[2]}` : translateGameText(part, 'en'); }).join(' · ')}${trailing}`;
+  // v9.20.3 (English playtest 15): a floor's notes joined with “ · ” only matched when every part was an exact phrase;
+  // a regex-built part (“偷拍客发作，吸走 6 电 ×2”) stayed half Chinese. Translate the parts one by one.
   let translated = value
     // v9.18.4 placement warnings appended after the main message.
     .replace(/^(.+?) 注意：(.+)。$/u, (_m, head: string, body: string) => `${translateGameText(head, 'en')} Heads-up: ${body.split('；').map(part => part
-      .replace(/^与(.+?)红线 (.+)$/u, (_p, who: string, effect: string) => `red link with the ${translateGameText(who, 'en')} (${({ '+1躁动/层': '+1 agitation/floor', '+1耗电/层': '+1 power/floor', '−2金币/层': '−2 coins/floor', '两人耗电×2': 'both use ×2 power' } as Record<string, string>)[effect] ?? effect})`)
+      // v9.20.3 (English playtest 11): a merged count (“两人耗电×2 ×2”) kept the effect untranslated.
+      .replace(/^与(.+?)红线 (.+?)( ×(\d+))?$/u, (_p, who: string, effect: string, _t?: string, times?: string) => `${times ? `${times} red links with the ${translateGameText(who, 'en')}` : `red link with the ${translateGameText(who, 'en')}`} (${({ '+1躁动/层': '+1 agitation/floor', '+1耗电/层': '+1 power/floor', '−2金币/层': '−2 coins/floor', '两人耗电×2': 'both use ×2 power' } as Record<string, string>)[effect] ?? translateGameText(effect, 'en')})`)
       .replace(/^(.+?) \+(\d+)躁动\/层( ×\d+)?$/u, (_p, why: string, n: string, times?: string) => `${translateGameText(why, 'en')} +${n} agitation/floor${times ?? ''}`)
       .replace(/^(.+?)会被同化成(.+?)（(\d+)层后）$/u, (_p, who: string, to: string, n: string) => `the ${translateGameText(who, 'en')} turns into the ${translateGameText(to, 'en')} in ${n} floors`)).join('; ')}.`)
     .replace(/^(.+?)已站到 (\d+) 号位。$/u, (_m, who: string, n: string) => `${translateGameText(who, 'en')} takes seat ${n}.`)
@@ -729,7 +732,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^收保护费 (\d+)币\/层 · 全车−1躁动$/u, 'Protection $1 coins/floor · cabin −1 agitation')
     .replace(/^打官司 \+(\d+)币\/层$/u, 'Suing · +$1 coins/floor')
     // v9.20.1 the abyss gamble.
-    .replace(/^(.+?)发作，吸走 (\d+) 电$/u, (_m, who: string, n: string) => `${translateGameText(who, 'en')} lashes out, draining ${n} power`)
+    .replace(/^(.+?)发作，吸走 (\d+) 电( ×\d+)?$/u, (_m, who: string, n: string, times?: string) => `${translateGameText(who, 'en')} lashes out, draining ${n} power${times ?? ''}`)
     // v9.20 dark legends' seat states.
     .replace(/^运转 −(\d+)电 · 关灯 \+(\d+)躁动\/层$/u, 'Motor −$1 power · lights out +$2 agitation/floor')
     .replace(/^收怨 \+(\d+)币\/层 · 剪绿线 \+(\d+)躁动\/层$/u, 'Grudges +$1 coins/floor · cutting green links +$2 agitation/floor')
@@ -740,8 +743,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^哀歌 \+(\d+)币\/层$/u, 'Lament +$1 coins/floor')
     .replace(/^等车厢乱起来 · \+(\d+)躁动\/层$/u, 'Waiting for chaos · +$1 agitation/floor')
     .replace(/^收魂 \+(\d+)币\/层 · \+(\d+)躁动\/层$/u, 'Collecting souls +$1 coins/floor · +$2 agitation/floor')
-    .replace(/^押注中 · 不是高躁动到站 \+(\d+)币$/u, 'Betting · +$1 coins unless agitation is high')
-    .replace(/^要输了 · 现在到站 −(\d+)币$/u, 'Losing · arriving now costs $1 coins')
+    .replace(/^押注中 · 按现在的躁动 \+(\d+)币$/u, 'Betting · +$1 coins at this agitation')
     .replace(/^发狂 \+(\d+)躁动\/层$/u, 'Raging · +$1 agitation/floor')
     .replace(/^给 (\d+) 人下药 · 各 −(\d+)躁动\/层$/u, (_m, n: string, c: string) => `Dosing ${n} · −${c} agitation each/floor`)
     .replace(/^吓到 (\d+) 人 · \+(\d+)躁动\/层$/u, (_m, n: string, c: string) => `Scaring ${n} · +${c} agitation/floor`)
@@ -788,7 +790,13 @@ export function translateGameText(value: string, locale: GameLocale): string {
   translated = translated.replace(/([a-z])(Arrival|Power|Agitation)\b/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`);
   translated = canon(translated);
   // A Chinese full stop has no following space; after translation, sentences would run together ("+2.Late").
-  return normalizePunctuation(translated).replace(/([0-9a-z)])\.(?=[A-Z])/g, '$1. ');
+  const whole = normalizePunctuation(translated).replace(/([0-9a-z)])\.(?=[A-Z])/g, '$1. ');
+  const cjkCount = (text: string) => (text.match(/[\u3400-\u9fff]/gu) ?? []).length;
+  if (!cjkCount(whole) || !core.includes(' · ')) return whole;
+  const parts = core.split(' · ');
+  if (parts.length < 2 || parts.some(part => !part.trim())) return whole;
+  const split = `${leading}${parts.map(part => translateGameText(part, 'en')).join(' · ')}${trailing}`;
+  return cjkCount(split) < cjkCount(whole) ? split : whole;
 }
 
 const translatedProps = ['aria-label', 'title', 'placeholder'] as const;

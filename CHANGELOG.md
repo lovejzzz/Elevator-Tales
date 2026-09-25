@@ -2,6 +2,15 @@
 
 Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.20.2**. Publication status is tracked separately from the source version.
 
+## v9.20.4 — 2026-09-25 — English playtests 11–15: a High Roller who really bets, a harder road to 100F / 英文版第 11–15 局：赌王真的在赌、深渊更难撑到 100 层
+
+- Abyss outbursts 10% per step (was 8%; 20/30/40% at 85/90/95F, capped at 50%). High Roller: 8 coins per point of agitation when the doors close on 69F (was +40 unless high / −40); seat shows the stake at the current agitation.
+- Mad Bomber card shows seconds; Shyster card says a Robber beside him walks free; Mimic partner hint skips legends and boxes; Mechanic “for 4 floors”; “Incident 20%” chip at high agitation; tablet tags wrap inside the card.
+- English: merged red-link counts, “draining 6 power ×2”, joined floor notes translated part by part.
+- Abyss variants, 200 runs × 3 bots: half fare premium made 100F easier (3.0/6.0%); 10% odds 0.5/0.5%. New High Roller 150 runs: boarded 97%→79%, 28 coins on average. Acceptance 4,200 runs: skilled 50.3 / 49.0 / 0.8% (power/agitation/bomb), 100F 0.3%, balanced 87F (p90 94), human-like 78F, novice 34F, all boarding 16–61%.
+- Playtests 11–15: 103F (third run past 100F), 80F, 88F, 98F, 89F. Autopilot fixed (rescue before charging, worst-case in-transit charging).
+- Watch: abyss coins still plentiful (“not affluent” checks fail); 80–89F cards mostly ±0; hidden-pane playtests need snapshots.
+
 ## v9.20.3 — 2026-09-25 — English playtests 6–10: no false alarm before a shop, a Coach worth taking / 英文版第 6–10 局：商店前的躁动不再误报、教练值得带
 
 - Before a shop, agitation warnings, the gamble chance and the calm needed now count what the shop can fix (manual relief refilled on arrival + 8-coin repair with current coins); the agitation panel says “Calm it at the shop”. Round 8 at 109F had called a safe ascent a certain loss.

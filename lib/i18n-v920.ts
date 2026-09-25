@@ -8,7 +8,7 @@ const DETAIL_EN: Record<string, [string, string]> = {
   coldmatron: ['Dark legend · cabin −2 agitation/floor; uses 1 power/floor herself', 'The Matron’s night shift has only sedatives left. Boards after the 60F shop and leaves at the 70F shop; pays no fare. While aboard the whole cabin loses 2 agitation per floor, but her refrigerated drugs cost her 1 power per floor. On arrival your agitation cap rises by 2 for good.'],
   banshee: ['Dark legend · +1 agitation/floor; +10 coins/floor at high', 'The Nightingale’s song has become a wail. Boards after the 60F shop and leaves at the 70F shop; uses no power and pays no fare. +1 agitation per floor; at high agitation when the doors close she pays 10 coins per floor. Pays 15 coins on arrival.'],
   necromancer: ['Dark legend · +2 coins per dark rider/floor; +1 agitation/floor', 'The Medium no longer comforts the dead; she collects them. Boards after the 60F shop and leaves at the 70F shop; uses no power and pays no fare. +2 coins per floor for every dark rider aboard; +1 agitation per floor. Pays 20 coins on arrival.'],
-  highroller: ['Dark legend · pays 40 unless agitation is high on arrival; then takes 40', 'The Tycoon put everything on the table. Boards after the 60F shop and leaves at the 70F shop; uses no power and pays no fare. On arrival, unless the doors closed at high agitation he pays 40 coins; at high agitation he takes 40 of yours (or all you have).'],
+  highroller: ['Dark legend · pays 8 coins per agitation point when the doors close before his stop', 'The Tycoon put everything on the table. Boards after the 60F shop and leaves at the 70F shop; uses no power and pays no fare. On arrival he pays for the agitation at the moment the doors closed on 69F: 8 coins a point. The wilder the cabin, the happier he is, but a boil-over pays nothing; 70F is a shop, where you can bring agitation back down.'],
   otherthirteen: ['Dark legend · something good or bad every floor', 'The one in the mirror of room 13. Boards after the 60F shop and leaves at the 70F shop; uses no power and pays no fare. Every floor at random: +8 coins, +2 agitation, −2 power or nothing. Pays 0–25 coins at random on arrival.'],
 };
 const NAMES_EN: Record<string, string> = { nightoperator: 'Night Zhou', severer: 'Severer', kingpin: 'Kingpin', coldmatron: 'Cold Matron', banshee: 'Banshee', necromancer: 'Necromancer', highroller: 'High Roller', otherthirteen: 'Other Thirteen' };
@@ -20,7 +20,7 @@ export const V920_PAIRS: Array<[string, string]> = [
   ['剪线婆剪断绿线', 'The Severer cuts green links'], ['黑老大的威压', 'The Kingpin’s menace'], ['冷面护士长打镇静剂', 'Cold Matron’s sedatives'],
   ['哭丧女哀嚎', 'The Banshee wails'], ['死灵师低语', 'The Necromancer whispers'], ['暗黑共鸣', 'Dark resonance'], ['另一个13号的馈赠', 'A gift from the Other Thirteen'],
   ['剪线婆收怨', 'The Severer collects grudges'], ['哭丧女的哀歌', 'The Banshee’s lament'], ['死灵师收魂', 'The Necromancer collects souls'],
-  ['剪线婆的酬金', 'The Severer’s fee'], ['哭丧女的酬金', 'The Banshee’s fee'], ['死灵师的酬金', 'The Necromancer’s fee'], ['赌王赢了', 'The High Roller won'], ['赌王输了', 'The High Roller lost'],
+  ['剪线婆的酬金', 'The Severer’s fee'], ['哭丧女的酬金', 'The Banshee’s fee'], ['死灵师的酬金', 'The Necromancer’s fee'], ['赌王的赌注', 'The High Roller’s stake'],
   ['夜班老周留下一级免费配电箱升级', 'Night Zhou left a free power-box level'], ['冷面护士长留下病历：躁动上限 +2', 'The Cold Matron left her chart: agitation cap +2'],
   ['另一个13号：躁动 +2', 'Other Thirteen: agitation +2'],
   ['暗黑共鸣：全车都是黑夜里的人。', 'Dark resonance: everyone aboard belongs to the night.'],

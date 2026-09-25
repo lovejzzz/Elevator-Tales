@@ -63,6 +63,6 @@ export const DARK_LEGEND_RULES = {
   coldMatronCalm: 2, coldMatronPower: DARK_LEGEND_POWER, coldMatronCap: 2,
   bansheeAgitation: 1, bansheeHighCoins: 10, bansheePay: 15,
   necromancerPerDark: 2, necromancerAgitation: 1, necromancerPay: 20,
-  highRollerWin: 40, highRollerLoss: 40,
+  highRollerPerPoint: 8, // v9.20.3: pays per point of agitation when the doors close before 70F (was +40 unless high / −40)
   thirteenCoins: 8, thirteenAgitation: 2, thirteenPower: 2, thirteenPayMax: 25,
 };

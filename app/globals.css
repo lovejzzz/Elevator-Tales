@@ -3376,6 +3376,7 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 /* v9.20.1 the abyss gamble: outburst odds on cards, boil-over chance, the jolt when a rider lashes out. */
 .game-shell .compact-card .cc-tag-outburst { border-color:#d9534f; color:#ffb3a8; background:#4a121255; }
 .rail-forecast .rail-gamble { margin-left:8px; padding:0 6px; border-radius:6px; background:#5a1616; color:#ffc2b8; font-weight:700; }
+.rail-forecast .rail-incident { margin-left:8px; padding:0 6px; border-radius:6px; background:#3d2a14; color:#f3c48c; font-weight:700; }
 .rail-forecast .rail-shop-fix { margin-left:8px; padding:0 6px; border-radius:6px; background:#4a3a14; color:#f6dc9c; font-weight:700; }
 .power-alert.is-gamble { border-color:#c9763a; background:linear-gradient(180deg,#3a1d0dcc,#240f07cc); }
 .standing-slot.is-outburst { animation:outburst-jolt .9s ease-out; }
@@ -3397,7 +3398,8 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
     “Lashes out 16% · −6 power” wrapped into tall blocks. Narrower gutter and portrait; tags stay on one line. */
  .game-shell .compact-card .cc-head { padding-right:30px; }
  .game-shell .compact-card .cc-head .portrait-window { width:56px!important; height:56px!important; }
- .game-shell .compact-card .cc-tag { white-space:nowrap; font-size:11px; }
+ .game-shell .compact-card .cc-tag { white-space:normal; max-width:100%; font-size:11px; line-height:1.35; }
+ /* English playtest 15: with nowrap, the Drifter’s “Impatient: fare +4, +1/floor” ran past the card edge; the wider title column now wraps it to two lines at most. */
  /* Crooked Cop’s “+Robber / Thief / Drifter / Brawler / Mad Bomber” ran past the card edge. */
  .game-shell .compact-card .cc-chip { white-space:normal; max-width:100%; line-height:1.35; padding-top:1px; padding-bottom:1px; border-radius:9px; }
  .game-shell .compact-card .cc-net { white-space:normal; max-width:100%; }

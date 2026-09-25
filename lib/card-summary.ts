@@ -52,7 +52,7 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
       if (rider.contraband) return { line: rider.big ? L('占同一列上下两格 · 挨着走私客送达（箱价×2）· 检查员会没收', 'Fills one column · delivered beside the Smuggler (value ×2) · an Inspector seizes it') : L('挨着走私客送达（箱价×2）· 检查员会没收，贪腐检查员放行', 'Delivered beside the Smuggler (value ×2) · an Inspector seizes it, a Grafter waves it through') };
       return { line: rider.big ? L('占同一列上下两格 · 挨着快递员送达', 'Fills one column · delivered beside a Courier') : L('挨着快递员送达 · 无主时到站开箱，内容未知', 'Delivered beside a Courier · unclaimed, opens on arrival: contents unknown') };
     }
-    case 'mechanic': return rider.repairDone ? { line: L(`检修完成 · ${REPAIR_DURATION} 层省电`, `Repaired · ${REPAIR_DURATION} floors cheaper`) } : { line: L(`低躁动检修 → ${REPAIR_DURATION} 层运转 −1`, `Calm repair → motor −1 for ${REPAIR_DURATION}`), progress: `${rider.repairProgress ?? 0}/${REPAIR_WORK}` };
+    case 'mechanic': return rider.repairDone ? { line: L(`检修完成 · ${REPAIR_DURATION} 层省电`, `Repaired · ${REPAIR_DURATION} floors cheaper`) } : { line: L(`低躁动检修 → ${REPAIR_DURATION} 层运转 −1`, `Calm repair → motor −1 for ${REPAIR_DURATION} floors`), progress: `${rider.repairProgress ?? 0}/${REPAIR_WORK}` };
     case 'lover': return { line: L('恋人相邻：基价翻倍', 'Beside a Lover: fare ×2') };
     case 'musician': return { line: L('躁动拉向中档 · 中档 +2币/层', 'Pulls agitation to medium · +2 coins/floor there') };
     case 'thief': return { line: L('没人管：每层偷邻座 1–4 币 · +1 躁动 · 挨纸箱就偷走', 'Unguarded: steals 1–4 per neighbor a floor · +1 agitation · steals boxes') };
@@ -97,7 +97,7 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     case 'noisemaker': return { line: L(`躁动往上拉 +1/层 · 高躁动 +${DARK_RULES.noiseHighCoins}币/层 · 下车 −${DARK_RULES.troublemakerRelief}躁动`, `Pushes agitation up +1/floor · +${DARK_RULES.noiseHighCoins} coins/floor at high · −${DARK_RULES.troublemakerRelief} agitation when he leaves`) };
     case 'robber': return { line: L(`没人管：每层抢你的钱包、+1躁动 · 被管住：赏金 +${DARK_RULES.robberBounty}币`, `Unguarded: robs your wallet each floor, +1 agitation · held: bounty +${DARK_RULES.robberBounty} coins`) };
     case 'crookedcop': return { line: L(`管住身边坏人 · 全车 −1躁动/层 · 收保护费 ${DARK_RULES.crookedFee + 2 * abyssTier(run.floor + 1)}币/层`, `Holds bad riders beside him · cabin −1 agitation/floor · takes ${DARK_RULES.crookedFee + 2 * abyssTier(run.floor + 1)} coins/floor`) };
-    case 'shyster': return { line: L(`每条红线 +${DARK_RULES.shysterPerRed}币/层（最多${DARK_RULES.shysterCap}）`, `+${DARK_RULES.shysterPerRed} coins per red link/floor (max ${DARK_RULES.shysterCap})`) };
+    case 'shyster': return { line: L(`每条红线 +${DARK_RULES.shysterPerRed}币/层（最多${DARK_RULES.shysterCap}）· 身边的劫匪谁也管不住`, `+${DARK_RULES.shysterPerRed} coins per red link/floor (max ${DARK_RULES.shysterCap}) · a Robber beside him walks free`) };
     case 'brawler': return { line: L(`+1躁动/层，每位普通邻座再 +1 · 高躁动到站基价×3 · 下车 −${DARK_RULES.troublemakerRelief}躁动`, `+1 agitation/floor, +1 per normal neighbor · fare ×3 at high · −${DARK_RULES.troublemakerRelief} agitation when he leaves`) };
     case 'pusher': return { line: L(`邻座自身躁动 −${DARK_RULES.pusherCalm}/层 · 她下车后邻座戒断`, `Neighbors’ own agitation −${DARK_RULES.pusherCalm}/floor · withdrawal after she leaves`) };
     case 'creepychild': return { line: L(`每位普通邻座 +1躁动/层 · 独自到站 +${DARK_RULES.creepyAloneBonus}币`, `+1 agitation per normal neighbor/floor · alone on arrival +${DARK_RULES.creepyAloneBonus} coins`) };

@@ -551,7 +551,8 @@ export const synergyPartnerAtSlot = (kind: PassengerKind, cabin: Array<Rider | n
 };
 export const readyPartner = (kind: PassengerKind, cabin: Array<Rider | null>, excludeId?: string, candidate?: Rider): PassengerKind | null => {
   const atSlot = (slot: number): PassengerKind | null => {
-    if (kind === 'mimic') return slot >= 3 ? cabin[slot-3]?.kind ?? null : null;
+    // v9.20.3 (English playtest 12): a legend or a box above has no fare to copy, so it is not a partner.
+    if (kind === 'mimic') { const above = slot >= 3 ? cabin[slot-3] : null; return above && !isAnyLegend(above.kind) && above.kind !== 'parcel' ? above.kind : null; }
     if (!candidate || !['mystery', 'shifter', 'mimic'].includes(kind)) return synergyPartnerAtSlot(kind, cabin, slot, excludeId);
     const placed = cabin.map((r, i) => i === slot ? candidate : r);
     const profile = riderProfile(candidate, placed, slot);
@@ -1082,7 +1083,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
         case 'coldmatron': stressCapBonus += DARK_LEGEND_RULES.coldMatronCap; notes.push(`冷面护士长留下病历：躁动上限 +${DARK_LEGEND_RULES.coldMatronCap}`); break;
         case 'banshee': pay('哭丧女的酬金', DARK_LEGEND_RULES.bansheePay); break;
         case 'necromancer': pay('死灵师的酬金', DARK_LEGEND_RULES.necromancerPay); break;
-        case 'highroller': if (departBand !== 'high') pay('赌王赢了', DARK_LEGEND_RULES.highRollerWin); else { const loss = Math.min(Math.max(0, coins), DARK_LEGEND_RULES.highRollerLoss); if (loss) pay('赌王输了', -loss); } break;
+        case 'highroller': if (state.stress > 0) pay('赌王的赌注', DARK_LEGEND_RULES.highRollerPerPoint * state.stress); break; // v9.20.3: the agitation when the doors closed
         case 'otherthirteen': { const gift = rand(0, DARK_LEGEND_RULES.thirteenPayMax, rng); if (gift) pay('另一个13号的馈赠', gift); break; }
       }
     } else if (!isLegend(rider.kind)) {

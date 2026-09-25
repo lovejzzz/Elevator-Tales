@@ -1690,6 +1690,64 @@ export const V9201_EN: ChangelogEntry = {
   ],
 };
 
+export const V9204_ZH: ChangelogEntry = {
+  version: '9.20.4', date: '2026-09-25', title: '英文版第 11–15 局：赌王真的在赌、深渊更难撑到 100 层、疯炸客显示秒数',
+  summary: '30 轮英文版试玩的第 11–15 局。认真玩的深局里，我 5 局有 3 局过了 100 层（第 7、8、11 局）：深渊里钱多，安抚、照明弹、镇静剂能把每一次赌局都化解掉。这一版把深渊发作概率调高一点，把赌王从“白送 40 币”改成真正的赌局，并修掉这几局里发现的漏翻和误导。笔记在 docs/playtests/v920-english-rounds.md。',
+  changes: [
+    '深渊发作：每一级从 8% 提高到 10%（85 层 20%、90 层 30%、95 层 40%、100 层起 50% 封顶），发作的效果不变（+3 躁动或吸走 6 电）。',
+    '赌王：改成 69 层关门那一刻的躁动每点付 8 币；躁动为 0 就一分没有。原来是“不是高躁动就 +40”，第 11 局我整段躁动 0–2，白拿 40。想多拿就得把躁动推高，同时冒失控的风险；70 层是商店，可以用“到店降躁动”补救。座位显示“押注中 · 按现在的躁动 +N币”。',
+    '疯炸客的卡面显示倒计时秒数（原来显示旧的楼层引信“⏱ 5”，座位上却是秒）。',
+    '讼棍卡面写明“身边的劫匪谁也管不住”（第 11 局：黑警就在旁边，劫匪还是抢了我的钱）。',
+    '复制人的搭档提示不再算传奇和箱子（“可复制 · 赌王”其实只能复制到 0）。',
+    '维修工英文“motor −1 for 4 floors”（原来少了 floors，和进度 0/2 连成“40/2”）。',
+    '高躁动时躁动栏显示“事故 20%”，悬停说明这一层可能有一位乘客提前下车、不付车费（第 11 局：刚上车的偷拍客一站没坐就走了，出发前没有任何提醒）。',
+    '平板：候客卡的标签可以在卡内折成两行（第 7 局改成不折行后，醉汉的“急躁”标签被卡片右边缘截断）。',
+    '英文：合并计数的红线提示（“2 red links with the Celebrity (both use ×2 power)”）；两人同时发作的“吸走 6 电 ×2”；一层的几条消息用“ · ”连在一起时逐段翻译。',
+  ],
+  experiments: [
+    '收紧深渊的三种办法，每种 200 局 × 3 种机器人（抵达 100 层）：原版 均衡 2.5% / 合作 4.0%；深渊加价减半 3.0% / 6.0%（大家少带暗黑版，反而更容易）；发作每级 10% 0.5% / 0.5%，中位 88→87 层，真人型不受影响；两者都用 1.0% / 4.0%。采用发作每级 10%。',
+    '赌王新规则 150 局：上车率 97%→79%，平均拿到 28 币（机器人习惯把躁动压低）。',
+    '模拟器验收 4200 局：熟练型死因 断电 50.3% / 躁动 49.0% / 炸弹 0.8%；抵达 100 层 1.0%→0.3%；均衡型中位 89→87 层（p90 94）；真人型 78 层（断电 49% / 躁动 48%）；新手 34 层；均衡型上车率全部在 16–61%。',
+    '英文版试玩第 11–15 局：103 层躁动（窄屏，60–70、80–100 层亲手玩，第三次过 100 层）、80 层躁动（手机，亲手试新赌王：69 层停在 6 点，拿到 48 币）、88 层断电（手机，黑老大 70 层兑现 70 币）、98 层断电（窄屏，80–86 层亲手玩）、89 层断电（平板，逐帧截图检查界面）。',
+    '试玩用的代打脚本也修了：进店先用手动调节和最低抢救，充电时留出抢救的钱；途中补电按最坏情况判断。',
+    'verify 全部通过；赌王的测试改成新规则（躁动 0 不付、躁动 9 付 72）。',
+  ],
+  watch: [
+    '深渊的钱仍然很多（进 90 层商店时合作型平均 240 币，真人型 440 币），“不宽裕”两项验收仍不通过。',
+    '80–89 层保守打法下候客卡大多是 ±0，这 10 层比较平淡。',
+    '窗格隐藏时浏览器试玩要靠替代方案，截图会让页面重新开局，要靠快照恢复。',
+  ],
+};
+
+export const V9204_EN: ChangelogEntry = {
+  version: '9.20.4', date: '2026-09-25', title: 'English playtests 11–15: a High Roller who really bets, a harder road to 100F, the Mad Bomber’s seconds',
+  summary: 'Playtests 11–15 of the 30 English rounds. In careful deep runs I passed 100F three times in five (rounds 7, 8, 11): the abyss pays so well that calming, Flares and Sedatives defuse every bet. This release raises the abyss outburst odds a little, turns the High Roller from a free 40 coins into a real bet, and fixes the leaks and misleading hints found in these rounds. Notes in docs/playtests/v920-english-rounds.md.',
+  changes: [
+    'Abyss outbursts: 10% per step instead of 8% (20% at 85F, 30% at 90F, 40% at 95F, capped at 50% from 100F); the effect is unchanged (+3 agitation or 6 power drained).',
+    'High Roller: pays 8 coins per point of agitation at the moment the doors close on 69F; nothing at 0. He used to pay 40 unless agitation was high, and in round 11 I kept agitation at 0–2 and collected 40 for free. Now a bigger payout means pushing agitation up and risking a boil-over; 70F is a shop, where “Calm it at the shop” can save you. His seat shows “Betting · +N coins at this agitation”.',
+    'The Mad Bomber’s card shows his countdown in seconds (it showed the old floor fuse “⏱ 5” while his seat counted seconds).',
+    'The Shyster’s card says a Robber beside him walks free (round 11: a Crooked Cop sat right there and the Robber still robbed me).',
+    'The Mimic’s partner hint skips legends and boxes (“Can copy · High Roller” could only copy 0).',
+    'Mechanic in English: “motor −1 for 4 floors” (the missing word ran into the 0/2 progress as “40/2”).',
+    'At high agitation the agitation panel shows “Incident 20%”, with a tooltip: one rider may leave early this floor without paying (round 11: a Voyeur who had just boarded left before his first stop, with no warning).',
+    'Tablets: card tags may wrap to two lines inside the card (after round 7 made them one line, the Drifter’s impatient tag ran past the card edge).',
+    'English: merged red-link notes (“2 red links with the Celebrity (both use ×2 power)”); two riders draining power at once (“draining 6 power ×2”); a floor’s notes joined with “ · ” are translated part by part.',
+  ],
+  experiments: [
+    'Three ways to tighten the abyss, 200 runs × 3 bots each (reaching 100F): current balanced 2.5% / cooperation 4.0%; half the abyss fare premium 3.0% / 6.0% (fewer dark riders boarded, so it got easier); outbursts 10% per step 0.5% / 0.5%, median 88→87F, human-like unaffected; both 1.0% / 4.0%. Chose 10% per step.',
+    'New High Roller, 150 runs: boarded 97%→79%, paying 28 coins on average (the bots keep agitation low).',
+    'Acceptance, 4,200 runs: skilled endings 50.3% power / 49.0% agitation / 0.8% bomb; 100F reached 1.0%→0.3%; balanced 89→87F (p90 94); human-like 78F (49% power / 48% agitation); novice 34F; every balanced boarding rate within 16–61%.',
+    'English playtests 11–15: 103F agitation (narrow, hand-played 60–70F and 80–100F, the third run past 100F), 80F agitation (phone, tried the new High Roller: stopped at 6 on 69F for 48 coins), 88F power (phone, the Kingpin paid 70 at 70F), 98F power (narrow, hand-played 80–86F), 89F power (tablet, screenshots of every key screen).',
+    'The playtest autopilot was fixed too: at a shop it uses the manual relief and the minimum rescue first and keeps the rescue money while charging; in-transit charging is judged against the worst case.',
+    'verify passes; the High Roller test uses the new rule (nothing at 0, 72 at 9).',
+  ],
+  watch: [
+    'The abyss still pays a lot (at the 90F shop cooperation bots hold 240 coins on average, human-like 440); both “not affluent” acceptance checks still fail.',
+    'With careful play most cards at 80–89F are worth about ±0, so those ten floors feel flat.',
+    'Browser playtests with the pane hidden need a workaround, and a screenshot restarts the page’s run, so snapshots are needed to restore it.',
+  ],
+};
+
 export const V9203_ZH: ChangelogEntry = {
   version: '9.20.3', date: '2026-09-25', title: '英文版第 6–10 局：商店前的躁动不再误报、教练值得带、走私客有配对提示、漏翻清零',
   summary: '30 轮英文版试玩的第 6–10 局：手机 2 局、平板 2 局、窄屏 1 局，其中第 8 局从 60 层起亲手打到 112 层，第一次穿过 100 层。每局记笔记，玩完马上修，再用改后的数据跑模拟。最大的发现是商店前一层的躁动警告会误报“必输”：商店其实能把超上限的躁动救回来。完整笔记在 docs/playtests/v920-english-rounds.md。',
