@@ -1639,3 +1639,53 @@ export const V920_EN: ChangelogEntry = {
     'Robber boarding still below 15%; the two “not affluent” checks still fail; a box still counts as “at least one rider”.',
   ],
 };
+
+export const V9201_ZH: ChangelogEntry = {
+  version: '9.20.1', date: '2026-09-25', title: '深渊变成赌局：人物越来越极端，失控概率明码标价',
+  summary: 'v9.20.0 的深渊给每位暗黑版加固定躁动，结果九成的局都被慢慢耗到失控。这一版改成：深渊里的暗黑版越来越极端，车费越来越高，但每层都有几率发作。卡上写着几率，关门前告诉你这一层失控的概率。玩家为了钱去赌，最后多半是赌输了才结束。',
+  changes: [
+    '取消“深渊躁动”（每位暗黑版每层固定 +1/+2/+3…）。',
+    '深渊从 80 层起、每 5 层加一级。深渊里上车的暗黑版车费每级 +50%（第 2 级 ×2）。',
+    '发作：车上每位暗黑版每层有 8%×级数（最高 50%）的机会发作。狂徒、黑警、讼棍、怨偶、劫匪、药贩、怪童、监工、丑闻明星、疯炸客发作是 +3 躁动；拆机人、怨灵、加班魂、召魂人、走私客、贪腐检查员、噪音乐手、偷拍客发作是吸走 6 电。照明弹让这一层谁都不发作；被打了镇静剂的人不发作；护士、药贩挡不住。',
+    '卡上和座位上写着几率：“发作 16% · +3躁”或“−6电”；深渊里的卡面车费已含加价。',
+    '关门前算出这一层的真实失控概率（躁动到上限或断电），左侧写“失控 7%”。有 5% 以上的风险时，上行按钮要再按一次，提示写“赌一把？这一层有 7% 会失控”，列出会发作的人，并给出“安抚到稳”的按钮。原来的“一定会失控”的警告不变。',
+    '发作时座位红色一震、弹出“发作！”；吸电写进本层说明。深渊每加一级，横幅写出新的加价和发作几率；失控时的结算说明给出深渊专门的建议。',
+  ],
+  experiments: [
+    '模拟器验收 4200 局：熟练型死因从 电量 7.5% / 躁动 91.1% / 炸弹 1.4% 变为 33.1% / 66.2% / 0.7%；均衡型 48% 断电 / 51% 躁动，五个流派的合理购物版都在 44–53% 断电。均衡型中位 91→87 层（p90 94），抵达 100 层 0.4%，没有一局活过 150 层；真人型中位 63 层。',
+    '偏爱普通人的合作型、安静秩序型仍有 76–87% 死于躁动。检查它们最后一层的来源，主要是“发作”（330/345 点），其次是急躁乘客：死因虽然还是躁动，但它们是赌输的。',
+    '人物上车率检查第一次全部通过（劫匪回到 15% 以上）。',
+    '调参过程：只有“加躁动”一种发作时，各型中位 84–86 层、躁动仍占约 95%；加入吸电型并把几率从 10% 降到 8%、吸电 5→6 后，得到上面的结果。',
+    'fuzz 4000 个随机状态覆盖发作的上下限；新增检查：发作的人、照明弹和镇静剂、预报的确定最坏值、单人时失控概率等于他的发作几率、深渊卡的加价。浏览器里在 86–88 层检查了卡片、座位几率、“失控 7%”、赌一把确认和发作特效（中英文）。',
+  ],
+  watch: [
+    '真人型机器人大多在 60 多层就结束，死因约 94% 是躁动，那是中段的拥挤、急躁、小偷，不是深渊，这次没有改。',
+    '5% 就要求再按一次，深渊里会很频繁；要看玩家觉得刺激还是烦。',
+    '纸箱仍算作“至少一位乘客”，车上只有一个纸箱也能上行。',
+  ],
+};
+
+export const V9201_EN: ChangelogEntry = {
+  version: '9.20.1', date: '2026-09-25', title: 'The abyss becomes a gamble: riders grow extreme, the odds are on the table',
+  summary: 'In v9.20.0 the abyss taxed every dark rider a fixed amount of agitation, so nine runs in ten were slowly ground into a boil-over. Now dark riders in the abyss grow extreme: they pay more and more, but each floor they may lash out. Their odds are on their cards, and before the doors close the game tells you the chance this floor ends the run. Players take the money, roll the dice, and most runs end on a bet that went wrong.',
+  changes: [
+    'Removed the flat abyss unrest (+1/+2/+3… per dark rider per floor).',
+    'The abyss steps up every 5 floors from 80F. Dark cards drawn there pay +50% of their base fare per step (×2 at step 2).',
+    'Outbursts: each dark rider aboard lashes out 8% × step of floors (at most 50%). Brawler, Crooked Cop, Shyster, Ex, Robber, Pusher, Uncanny Child, Taskmaster, Scandal and Mad Bomber add +3 agitation; Scrapper, Wraith, Overtimer, Summoner, Smuggler, Grafter, Noisemaker and Voyeur drain 6 power. A Flare stops every outburst for a floor; a sedated rider never lashes out; Nurses and Pushers cannot hold it.',
+    'Cards and seats show the odds (“Lashes out 16% · +3 agit.” or “−6 power”); card fares in the abyss include the premium.',
+    'Before the doors close the game computes the real chance this ascent ends the run (agitation at the cap or power out) and shows “Boil-over 7%”. From 5% the ascend button asks for a second press: “Feeling lucky? 7% chance to boil over this floor”, with who may lash out and a “Calm to safe” button. The certain-loss warning is unchanged.',
+    'An outburst jolts the seat red with “Lashes out!”; power drains appear in the floor notes. Each abyss step’s banner states the new premium and odds; the ending gives abyss-specific advice.',
+  ],
+  experiments: [
+    'Acceptance, 4,200 runs: skilled endings went from 7.5% power / 91.1% agitation / 1.4% bomb to 33.1% / 66.2% / 0.7%; balanced 48% power / 51% agitation, and the five strategies with sensible shopping all 44–53% power. Balanced median 91→87F (p90 94), 100F reached in 0.4%, none survive to 150F; human-like 63F.',
+    'Cooperation and Quiet, which prefer normal riders, still end 76–87% on agitation; their last floor is mostly outbursts (330 of 345 points), then impatient riders: the label is agitation, but they lost a bet.',
+    'The rider adoption check passes for the first time (Robber back above 15%).',
+    'Tuning path: with agitation-only outbursts every strategy sat at 84–86F with ~95% agitation; adding the power-draining riders and lowering the odds from 10% to 8% (drain 5→6) gave the numbers above.',
+    'The 4,000-state fuzz covers the outburst bounds; new checks for who lashes out, Flare and Sedative, the certain worst case, one rider’s loss chance equalling his odds, and the abyss fare premium. Browser checks at 86–88F of cards, seat odds, “Boil-over 7%”, the gamble confirmation and the outburst effect, in Chinese and English.',
+  ],
+  watch: [
+    'The human-like bot mostly ends in the 60s, about 94% on agitation from mid-game crowding, impatience and Thieves rather than the abyss; not changed here.',
+    'A second press from 5% may come up very often in the abyss; watch whether it feels tense or tiresome.',
+    'A box still counts as “at least one rider”.',
+  ],
+};

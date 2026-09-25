@@ -63,6 +63,6 @@ const ui=readFileSync(new URL('../components/elevator-game.tsx',import.meta.url)
 assert.ok(ui.includes('本班结束')&&ui.includes('result-details'),'compact ending preserves expandable diagnostics');assert.ok(ui.includes('至少接1人'));assert.ok(!ui.includes('人物躁动 ×2'));assert.ok(!ui.includes('空驶休整'));
 // v9.17: the warning uses the ascend guard (worst-case forecast; 0 power on arriving at a shop floor is safe, as in settlement).
 assert.ok(ui.includes('const energyFatal = risk.fatal'),'fatal energy warning must use the worst-case ascend guard');
-{ const guard=readFileSync(new URL('../lib/departure-guard.ts',import.meta.url),'utf8'); assert.ok(guard.includes('energyForecast(state).lowDelta')&&guard.includes('minimumAfterAscent'),'guard uses the worst case and the shop-floor rule'); }
+{ const guard=readFileSync(new URL('../lib/departure-guard.ts',import.meta.url),'utf8'); assert.ok((guard.includes('energyForecast(state).lowDelta')||guard.includes('e.certainLowDelta ?? e.lowDelta'))&&guard.includes('minimumAfterAscent'),'guard uses the worst case and the shop-floor rule'); }
 assert.ok(ui.includes('positiveEnergySummary'),'arrival feedback must preserve positive recharge sources');
 console.log(JSON.stringify({version:'v9',transitions,threeValues:true,deterministicAgitation:true,mandatoryRider:true,courierRecharge:true,arrivalReliefCap:2}));

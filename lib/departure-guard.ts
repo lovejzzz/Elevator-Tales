@@ -24,7 +24,8 @@ export type DepartureRisk = {
  * matching settlement; anywhere else it must stay above 0. */
 export const minimumAfterAscent = (state: RunState) => ((state.floor + 1) % 10 === 0 ? 0 : 1);
 export function departureRisk(state: RunState): DepartureRisk {
-  const worst = state.energy + energyForecast(state).lowDelta;
+  // v9.20.1: abyss power drains are a priced gamble (see abyssLossChance), not part of the certain worst case.
+  const e = energyForecast(state), worst = state.energy + (e.certainLowDelta ?? e.lowDelta);
   const need = Math.max(0, minimumAfterAscent(state) - worst);
   return { fatal: state.status === 'playing' && need > 0, need, affordable: emergencyAllowance(state), unitPrice: emergencyUnitPrice(boxOf(state)), failFloor: sectorForecast(state).failFloor };
 }
@@ -57,7 +58,7 @@ export function rescuePlan(state: RunState): RescuePlan | null {
       remove.push({ id: r.id, kind: r.kind, paid: s.coins - next.coins }); paid += s.coins - next.coins; s = next;
     });
     if (!ok || !s.cabin.some(Boolean)) continue;
-    const need = Math.max(0, minimumAfterAscent(s) - (s.energy + energyForecast(s).lowDelta));
+    const f = energyForecast(s), need = Math.max(0, minimumAfterAscent(s) - (s.energy + (f.certainLowDelta ?? f.lowDelta)));
     if (need > emergencyAllowance(s)) continue;
     const plan = { remove, charge: need, cost: paid + need * risk.unitPrice };
     if (!best || plan.remove.length < best.remove.length || (plan.remove.length === best.remove.length && plan.cost < best.cost)) best = plan;
@@ -70,7 +71,8 @@ export type CalmPlan = { remove: Array<{ id: string; kind: Rider['kind']; paid: 
 /** Agitation counterpart of rescuePlan: withdraw new riders (free) or dismiss earlier ones (paid), then calm in transit,
  * so the worst case after the next floor stays below the cap. Null when nothing survives. */
 export function calmRescuePlan(state: RunState): CalmPlan | null {
-  const worst = (s: RunState) => s.stress + stressForecast(s).highDelta;
+  // v9.20.1: abyss outbursts are a gamble the ascend button prices separately; the rescue covers what is certain.
+  const worst = (s: RunState) => { const f = stressForecast(s); return s.stress + (f.certainHighDelta ?? f.highDelta); };
   if (state.status !== 'playing' || worst(state) < state.stressCap) return null;
   const candidates = state.cabin.filter((r): r is Rider => Boolean(r) && !isLegend(r!.kind) && r!.big !== 'bottom');
   let best: CalmPlan | null = null;

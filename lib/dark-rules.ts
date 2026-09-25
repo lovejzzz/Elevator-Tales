@@ -33,9 +33,13 @@ export const DARK_RULES = {
   survivorBonus: 5,
   /** From this floor, every `abyssEvery` floors the dark riders' troubles grow one step. */
   abyssFrom: 80, abyssEvery: 20,
-  /** v9.20: from this floor every dark rider adds agitation of his own (+1, then +1 more every `abyssUnrestEvery` floors).
-   * A Nurse, Pusher or Good Samaritan beside him can cancel it; a Flare stops it for a floor. */
-  abyssUnrestFrom: 80, abyssUnrestEvery: 5,
+  /** v9.20.1 the abyss: from `extremeFrom`, one step every `extremeEvery` floors. Dark riders grow more extreme with each
+   * step: a dark card drawn there pays +`extremeFarePerStep` of its base fare per step, and every dark rider aboard may lash
+   * out each floor (`outburstPerStep` per step, at most `outburstMax`) for +`outburstAgitation`. A Flare or a Sedative
+   * stops it; nothing else does. The odds are printed on the cards and the ascend button reports the chance to boil over. */
+  extremeFrom: 80, extremeEvery: 5, extremeFarePerStep: 0.5, outburstPerStep: 0.08, outburstMax: 0.5, outburstAgitation: 3,
+  /** Riders whose outburst drains power instead (the parts-strippers, the cold and the tireless). */
+  outburstPower: 6,
   /** An ordinary Bomber reaching zero blows his neighbours out of the cabin and costs this many coins. */
   blastCoins: 20,
 };
@@ -52,8 +56,13 @@ export function darkShare(floor: number) {
 }
 /** 0 before the abyss; 1, 2 … every `abyssEvery` floors from `abyssFrom`. */
 export const abyssTier = (floor: number) => floor >= DARK_RULES.abyssFrom ? 1 + Math.floor((floor - DARK_RULES.abyssFrom) / DARK_RULES.abyssEvery) : 0;
-/** v9.20: each dark rider's own abyss agitation on this floor (0 before `abyssUnrestFrom`). */
-export const abyssUnrest = (floor: number) => floor >= DARK_RULES.abyssUnrestFrom ? 1 + Math.floor((floor - DARK_RULES.abyssUnrestFrom) / DARK_RULES.abyssUnrestEvery) : 0;
+/** v9.20.1: the abyss step on this floor (0 before `extremeFrom`, then 1, 2 … every `extremeEvery` floors). */
+export const abyssStep = (floor: number) => floor >= DARK_RULES.extremeFrom ? 1 + Math.floor((floor - DARK_RULES.extremeFrom) / DARK_RULES.extremeEvery) : 0;
+/** v9.20.1: dark riders whose outburst drains power (the rest add agitation). */
+export const POWER_OUTBURSTS: PassengerKind[] = ['scrapper', 'wraith', 'overtimer', 'summoner', 'smuggler', 'grafter', 'noisemaker', 'voyeur'];
+export const outburstIsPower = (kind: PassengerKind) => POWER_OUTBURSTS.includes(kind);
+/** Chance that one dark rider lashes out on the ascent to this floor. */
+export const outburstChance = (floor: number) => Math.min(DARK_RULES.outburstMax, DARK_RULES.outburstPerStep * abyssStep(floor));
 /** A normal rider who can still turn dark (has a dark version, not a legend or a box). */
 export const corruptible = (kind: PassengerKind) => Boolean(DARK_OF[kind]) && !isLegend(kind);
 /** Riders the midnight rules call “normal” (survivors): people who are neither dark, legends nor boxes. */

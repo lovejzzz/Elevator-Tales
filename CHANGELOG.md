@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.20.0**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.20.1**. Publication status is tracked separately from the source version.
+
+## v9.20.1 — 2026-09-25 — The abyss becomes a gamble / 深渊变成赌局：人物越来越极端，失控概率明码标价
+
+- Flat abyss unrest removed. The abyss steps every 5 floors from 80F: dark cards drawn there pay +50% base fare per step; each dark rider aboard lashes out 8% × step of floors (max 50%): +3 agitation (Brawler, Crooked Cop, Shyster, Ex, Robber, Pusher, Uncanny Child, Taskmaster, Scandal, Mad Bomber) or −6 power (Scrapper, Wraith, Overtimer, Summoner, Smuggler, Grafter, Noisemaker, Voyeur). Flare stops all; sedated riders never lash out.
+- Odds on cards and seats; the forecast computes the exact chance this ascent ends the run (“Boil-over 7%”); from 5% the ascend button asks for a second press (“Feeling lucky?”) with a “Calm to safe” button. Red seat jolt on an outburst; abyss banners and endings updated.
+- Acceptance 4,200 runs: skilled deaths 7.5/91.1/1.4% → 33.1/66.2/0.7% (power/agitation/bomb); balanced 48/51%; balanced median 87F (p90 94), 100F in 0.4%; human-like 63F. Rider adoption check passes for the first time. Fuzz 4,000 states with outbursts; browser checks at 86–88F (zh/en).
+- Watch: human-like endings (~94% agitation, mid-game); frequency of the second press; a box still counts as a rider.
 
 ## v9.20.0 — 2026-09-25 — The abyss and the dark legends / 深渊与暗黑传奇：100 层前的墙、传奇的午夜版、神秘人线索、隐藏的暗黑共鸣
 

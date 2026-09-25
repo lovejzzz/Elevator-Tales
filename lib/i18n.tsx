@@ -725,6 +725,8 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^(戴着手铐|被管住) · 到站赏金\+(\d+)币$/u, (_m, how: string, n: string) => `${how === '戴着手铐' ? 'Handcuffed' : 'Held'} · +${n} bounty on arrival`)
     .replace(/^收保护费 (\d+)币\/层 · 全车−1躁动$/u, 'Protection $1 coins/floor · cabin −1 agitation')
     .replace(/^打官司 \+(\d+)币\/层$/u, 'Suing · +$1 coins/floor')
+    // v9.20.1 the abyss gamble.
+    .replace(/^(.+?)发作，吸走 (\d+) 电$/u, (_m, who: string, n: string) => `${translateGameText(who, 'en')} lashes out, draining ${n} power`)
     // v9.20 dark legends' seat states.
     .replace(/^运转 −(\d+)电 · 关灯 \+(\d+)躁动\/层$/u, 'Motor −$1 power · lights out +$2 agitation/floor')
     .replace(/^收怨 \+(\d+)币\/层 · 剪绿线 \+(\d+)躁动\/层$/u, 'Grudges +$1 coins/floor · cutting green links +$2 agitation/floor')

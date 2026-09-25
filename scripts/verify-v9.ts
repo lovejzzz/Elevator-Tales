@@ -13,7 +13,7 @@ import { translateGameText } from '../lib/i18n';
 import { sectorForecast } from '../lib/game-forecast';
 import { motorAdvanceNotice, motorScheduleText, nightUnrest } from '../lib/balance-v832';
 import { calmRescuePlan, departureRisk, rescuePlan, sectorNeed } from '../lib/departure-guard';
-import { stressForecast, energyForecast } from '../lib/game-forecast';
+import { stressForecast, energyForecast, abyssLossChance } from '../lib/game-forecast';
 import { boardNet, netValue, pairedNet } from '../lib/net-value';
 import { fuseState } from '../lib/bomb-state';
 import { drawLegend } from '../lib/legend-unlocks';
@@ -26,7 +26,7 @@ import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
 import { planPlacement } from '../lib/game-interaction';
 import { cardSummary, displayName } from '../lib/card-summary';
-import { DARK_RESONANCE, DARK_RULES as DARK, ITEMS as ITEMS_V, MYSTERY_CLUES, MYSTERY_IDENTITIES, abyssUnrest, itemPrice, mysteryClue } from '../lib/dark-rules';
+import { DARK_RESONANCE, DARK_RULES as DARK, ITEMS as ITEMS_V, MYSTERY_CLUES, MYSTERY_IDENTITIES, abyssStep, itemPrice, mysteryClue, outburstChance } from '../lib/dark-rules';
 
 // Most checks here predate the v9.18 real-time Bomber timer and verify floor timers; the real-time block switches it on.
 E.BOMB_RULES.realtime = false;
@@ -238,7 +238,7 @@ console.log('PASS generated motor notice and schedule translate');
   assert.equal(departureRisk(E.emergencyCharge(s, risk.need)).fatal, false, 'charging the offered amount clears the guard');
   assert.equal(departureRisk({ ...s, energy: 40 }).fatal, false, 'a safe floor never asks twice');
   const ui = readFileSync(new URL('../components/elevator-game.tsx', import.meta.url), 'utf8');
-  assert.ok(/if \(\(risk\.fatal \|\| stressFatal( \|\| strandedCourier)?\) && !departArmed\)/.test(ui), 'the ascend handler must stop a fatal floor until confirmed');
+  assert.ok(/if \(\(risk\.fatal \|\| stressFatal( \|\| gamble)?( \|\| strandedCourier)?\) && !departArmed\)/.test(ui), 'the ascend handler must stop a fatal floor (or an abyss gamble) until confirmed');
   const need = sectorNeed({ ...s, floor: 10, status: 'upgrade' });
   assert.deepEqual([need.from, need.to, need.riders], [11, 20, 40]);
   assert.equal(need.motor, Array.from({ length: 10 }, (_, i) => motorCost(11 + i)).reduce((a, b) => a + b, 0));
@@ -877,15 +877,31 @@ console.log('PASS v9.19.1 playtest fixes');
   for (const identity of MYSTERY_IDENTITIES) for (let i = 0; i < 20; i++) { const m = { id: `m${i}x${identity}`, identity }; const c = mysteryClue(m)!; assert.ok(MYSTERY_CLUES[c].fits.includes(identity) && mysteryClue(m) === c); }
   assert.ok(cardSummary(R('mystery', 'q', 66, { identity: 'fugitive' }), run(62, []), 'zh').line.startsWith('线索：'), 'an unrevealed Mystery shows a clue');
   assert.ok(cardSummary(R('mystery', 'q', 66, { identity: 'fugitive' }), run(62, []), 'en').line.startsWith('Clue: '));
-  // Abyss unrest: every dark rider's own agitation from 80F, one step more every few floors; a Flare stops it.
-  assert.equal(abyssUnrest(DARK.abyssUnrestFrom - 1), 0); assert.equal(abyssUnrest(DARK.abyssUnrestFrom), 1); assert.equal(abyssUnrest(DARK.abyssUnrestFrom + DARK.abyssUnrestEvery), 2);
-  const deep = run(DARK.abyssUnrestFrom, [R('summoner', 'a', 99), R('commuter', 'c', 99)]);
-  assert.ok(E.riderAgitation(deep, 0).fixed.some(l => l.label === '深渊躁动' && l.amount === abyssUnrest(DARK.abyssUnrestFrom + 1)), 'dark riders grow restless deep in the night');
-  assert.ok(!E.riderAgitation(deep, 1).fixed.some(l => l.label === '深渊躁动'), 'normal riders do not');
-  assert.ok(!E.riderAgitation({ ...deep, flareFloor: deep.floor }, 0).fixed.some(l => l.label === '深渊躁动'), 'a Flare stops it for a floor');
+  // v9.20.1 the abyss gamble: steps every 5 floors from 80F; dark riders pay more and may lash out (agitation or power).
+  assert.equal(abyssStep(DARK.extremeFrom - 1), 0); assert.equal(abyssStep(DARK.extremeFrom), 1); assert.equal(abyssStep(DARK.extremeFrom + DARK.extremeEvery), 2);
+  assert.equal(outburstChance(DARK.extremeFrom - 1), 0); assert.ok(outburstChance(200) <= DARK.outburstMax);
+  const deep = run(DARK.extremeFrom, [R('crookedcop', 'a', 99), R('commuter', 'c', 99), R('scrapper', 's', 99)], { stress: 1, stressCap: 20, energy: 60 });
+  assert.ok(!E.riderAgitation(deep, 0).fixed.some(l => l.label === '深渊躁动'), 'no flat abyss tax any more');
+  assert.deepEqual(E.outburstSlots(deep), [0, 2], 'only dark riders may lash out');
+  assert.deepEqual(E.outburstSlots({ ...deep, flareFloor: deep.floor }), [], 'a Flare stops every outburst for a floor');
+  assert.deepEqual(E.outburstSlots({ ...deep, cabin: deep.cabin.map((r, i) => i === 0 ? { ...r!, sedated: 2 } : r) }), [2], 'a sedated rider does not lash out');
+  const burst = E.resolveFloor(deep, fixed(0)), calmFloor = E.resolveFloor(deep, fixed(.99));
+  assert.equal(lines(burst, 'lastPressure')['黑警发作'], DARK.outburstAgitation); assert.equal(lines(burst, 'lastEnergy')['拆机人发作'], -DARK.outburstPower);
+  assert.deepEqual(burst.lastOutbursts, [0, 2]); assert.ok(!calmFloor.lastOutbursts?.length);
+  const fc = stressForecast(deep), ef = energyForecast(deep);
+  for (const r of [burst, calmFloor]) { assert.ok(r.lastPressure.delta >= fc.lowDelta && r.lastPressure.delta <= fc.highDelta); assert.ok(r.lastEnergy.delta >= ef.lowDelta && r.lastEnergy.delta <= ef.highDelta); }
+  assert.ok((fc.certainHighDelta ?? 99) < fc.highDelta && (ef.certainLowDelta ?? -99) > ef.lowDelta, 'the certain worst case leaves the gamble out');
+  // Loss chance: exact for one rider; zero with room to spare; the ascend guard prices it.
+  const edge = run(DARK.extremeFrom, [R('crookedcop', 'a', 99)], { stress: 9, stressCap: 11, energy: 60 });
+  const pEdge = abyssLossChance(edge); assert.ok(Math.abs(pEdge - outburstChance(DARK.extremeFrom + 1)) < 1e-9, 'one rider at the edge: the chance is his odds');
+  assert.equal(abyssLossChance({ ...edge, stress: 0, stressCap: 20 }), 0);
+  // Dark cards drawn in the abyss carry its step and pay more.
+  for (let i = 0; i < 30; i++) { const floor = 79 + i; for (const o of E.makeOffers(floor, E.EMPTY_UPGRADES, false, seq(((i * 37) % 97) / 97, ((i * 53) % 89) / 89, .5))) if (isDark(o.kind)) assert.equal(o.extreme ?? 0, abyssStep(floor + 1), `abyss dark cards at ${floor}F carry step ${abyssStep(floor + 1)}`); }
+  const ex = R('robber', 'x', 99, { extreme: 2 });
+  assert.equal(E.fareBreakdown(ex, [ex], 0).find(l => l.label === '深渊加价')?.amount, Math.round(PASSENGERS.robber.fare * DARK.extremeFarePerStep * 2));
   assert.equal(translateGameText('夜班老周关了灯', 'en'), 'Night Zhou turned the lights off');
   assert.deepEqual(addDiscoveredPassengers(sanitizeDiscoveredPassengers(['kingpin', 'lover']), ['severer']), ['lover', 'severer', 'kingpin'], 'met dark legends are archived');
   for (let i = 0; i < 20; i++) assert.ok(E.drawItemStock(80 + i, seq(((i * 37) % 97) / 97, ((i * 53) % 89) / 89)).some(c => c.key === 'flare'), 'a Flare is always on the abyss shelf');
 }
-console.log('PASS v9.20 dark legends, resonance, Mystery clues, abyss unrest');
+console.log('PASS v9.20 dark legends, resonance, Mystery clues, the abyss gamble');
 console.log(JSON.stringify({ version: 'v9', checks: 42, passed: true }));
