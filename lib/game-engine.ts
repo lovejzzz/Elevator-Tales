@@ -1095,7 +1095,6 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     // v9.20: legends pay no fare, so their arrival adds no empty “到站 0” line.
     if (!isAnyLegend(rider.kind) || fare - appetitePremium - stash) addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare - appetitePremium - stash);
     if (stash) addCoins(stashLabel(rider.kind) + '兑现', stash);
-    if (delivered && nextFloor > DARK_RULES.midnightFloor && isSurvivor(rider.kind)) addCoins('幸存者平安送达', DARK_RULES.survivorBonus);
     if (appetitePremium) addCoins('醉汉躁动加价', appetitePremium);
     let punchBonus=0;
     if(delivered&&state.upgrades.punchcard){punchCount=(punchCount+1)%5;if(punchCount===0){punchBonus=boosted(state,'punchcard',profile.fare);addCoins('第五位基价奖励',punchBonus);}}
@@ -1125,8 +1124,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       if (key && !owned.has(key)) { keepsakeLeft = key; keepsakes = [...keepsakes, key]; notes.push(`${spec.name}留下信物`); if (key === 'wrench') freeBoxLevels += 1; if (key === 'roundsLog') stressCapBonus += 2; }
       if (gift === 'random') { const bonus = rand(0, LEGEND_RULES.strangerKeepsakeCoins, rng); if (bonus) { extra += bonus; addCoins('13号房客的馈赠', bonus); } }
     }
-    const survivor = delivered && nextFloor > DARK_RULES.midnightFloor && isSurvivor(rider.kind) ? DARK_RULES.survivorBonus : 0;
-    lastArrivals.push({riderId:rider.id,kind:rider.kind,slot,coins:fare-(rider.stash??0)+stash+punchBonus+extra+defusal+survivor,...(keepsakeLeft?{keepsake:keepsakeLeft}:{})});
+    lastArrivals.push({riderId:rider.id,kind:rider.kind,slot,coins:fare-(rider.stash??0)+stash+punchBonus+extra+defusal,...(keepsakeLeft?{keepsake:keepsakeLeft}:{})});
     arrivals += 1; arrivalSlots.push(slot); return null;
   });
   // v9.19 midnight bookkeeping on the riders still aboard.

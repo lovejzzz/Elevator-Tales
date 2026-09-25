@@ -741,9 +741,8 @@ console.log('PASS crowding warning, merged notes, English coverage of engine mes
   assert.ok(mystery.cabin[0]?.revealed && mystery.log[0].includes('富商'));
   assert.equal(E.arrivalFare(mystery.cabin[0]!, mystery.cabin, 0, 0), 25);
 
-  // Survivors: a normal rider delivered after midnight earns the survivor bonus; before midnight he does not.
-  assert.equal(lines(E.resolveFloor(run(62, [R('commuter', 'a', 63)]), fixed(.9)), 'lastEarnings')['幸存者平安送达'], DARK.survivorBonus);
-  assert.equal(lines(E.resolveFloor(run(40, [R('commuter', 'a', 41)]), fixed(.9)), 'lastEarnings')['幸存者平安送达'], undefined);
+  // v9.22: the survivor bonus is gone; a normal rider delivered after midnight pays only his fare.
+  assert.equal(lines(E.resolveFloor(run(62, [R('commuter', 'a', 63)]), fixed(.9)), 'lastEarnings')['幸存者平安送达'], undefined);
 
   // Robber robs the wallet unless held; held he pays a bounty. The Crooked Cop takes protection money and calms the cabin.
   const robbed = lines(E.resolveFloor(run(62, [R('robber', 'r', 70)], { coins: 200 }), fixed(.9)), 'lastEarnings');

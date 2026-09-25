@@ -1,6 +1,21 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.21.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.22.0**. Publication status is tracked separately from the source version.
+
+## v9.22.0 — 2026-09-25 — Less money after midnight / 午夜后的钱少一点
+
+- Removed the survivor bonus (+5 per normal rider delivered after 60F). The abyss premium goes from +50% to +25% of base fare per step.
+- Most dark fares ×0.75:
+  - Voyeur 9, Smuggler 6, Scrapper 5, Ex-lover 7, Noisemaker 9, Robber 14, Crooked Cop 6;
+  - Shyster 9, Pusher 5, Creepy Child 6, Wraith 4, Summoner 5, Scandal Star 20.
+- Unchanged: Overtimer 8, Brawler 12, Crooked Inspector 16, Mad Bomber 50. Taskmaster 8→10. These riders were already rarely boarded.
+- Coin trace, 200 runs per bot: human-like coins left after the shop 70F 131→81 and 80F 97→58; balanced 70F 85→64, 80F 61→34, 90F 15→1.
+- Acceptance, 4,200 runs:
+  - skilled endings 55.5 / 43.4 / 1.1% (power / agitation / bomb);
+  - 100F reached 0.6%;
+  - balanced 88F, human-like 77F, novice 34F;
+  - boarding rates 16–61%.
+- Watch: the "not affluent" checks still fail because of early spare coins; runs are still long. Both go to the link redesign.
 
 ## v9.21.1 — 2026-09-25 — Night goods: pricey things found only at the Night market / 夜市货：只在夜市有的贵东西
 

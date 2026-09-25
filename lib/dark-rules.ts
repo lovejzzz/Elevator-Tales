@@ -30,14 +30,14 @@ export const DARK_RULES = {
   madbomberSeconds: 0.6,
   /** A normal rider beside at least this many dark riders for this many departures in a row turns dark. */
   corruptionNeighbours: 2, corruptionFloors: 2,
-  survivorBonus: 5,
   /** From this floor, every `abyssEvery` floors the dark riders' troubles grow one step. */
   abyssFrom: 80, abyssEvery: 20,
   /** v9.20.1 the abyss: from `extremeFrom`, one step every `extremeEvery` floors. Dark riders grow more extreme with each
    * step: a dark card drawn there pays +`extremeFarePerStep` of its base fare per step, and every dark rider aboard may lash
    * out each floor (`outburstPerStep` per step, at most `outburstMax`) for +`outburstAgitation`. A Flare or a Sedative
    * stops it; nothing else does. The odds are printed on the cards and the ascend button reports the chance to boil over. */
-  extremeFrom: 80, extremeEvery: 5, extremeFarePerStep: 0.5, outburstPerStep: 0.1, outburstMax: 0.5, outburstAgitation: 3,
+  // v9.22 late money: the premium went 0.5 → 0.25 per step (with dark fares ×0.75 and no survivor bonus) so post-midnight floors stop piling up coins.
+  extremeFrom: 80, extremeEvery: 5, extremeFarePerStep: 0.25, outburstPerStep: 0.1, outburstMax: 0.5, outburstAgitation: 3,
   /** Riders whose outburst drains power instead (the parts-strippers, the cold and the tireless). */
   outburstPower: 6,
   /** An ordinary Bomber reaching zero blows his neighbours out of the cabin and costs this many coins. */

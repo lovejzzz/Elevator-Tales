@@ -2158,3 +2158,66 @@ export const V9211_EN: ChangelogEntry = {
     'Night goods have no paintings of their own; they recolor the shop item’s art.',
   ],
 };
+
+export const V9220_ZH: ChangelogEntry = {
+  version: '9.22.0', date: '2026-09-25', title: '午夜后的钱少一点：不再越往上越富',
+  summary: '追踪金币发现，10–60 层真人型玩家基本把钱花光，60 层以后收入却从每层约 17 币涨到 24–28 币，而电池充满后就买不下更多电，钱越攒越多（70 层离店 131 币，80 层 97 币）。这一版削减午夜后的三项收入，电梯本身的耗电没有改。',
+  changes: [
+    '取消“幸存者平安送达”：午夜后普通人送到不再额外 +5 币。这是 60–79 层最大的一笔额外收入，也少了一条要记的规则。',
+    '深渊加价：每一级从基础车费的 +50% 降到 +25%（85 层的暗黑卡 +25%，95 层 +75%）。',
+    '暗黑版车费大多 ×0.75：偷拍客 12→9、走私客 8→6、拆机人 6→5、怨偶 9→7、噪音乐手 12→9、劫匪 18→14、黑警 8→6、讼棍 12→9、药贩 7→5、怪童 8→6、怨灵 5→4、召魂人 7→5、丑闻明星 22→20。',
+    '本来就很少被带上的几位暗黑版不降：加班魂 8、狂徒 12、贪腐检查员 16、疯炸客 50 不变；监工 8→10（他让邻座车费翻倍，邻座变便宜后他也跟着不值了）。',
+  ],
+  experiments: [
+    '金币追踪（每种机器人 200 局）。真人型离店剩余：70 层 131→81 币，80 层 97→58 币。均衡型：70 层 85→64 币，80 层 61→34 币，90 层 15→1 币（90 层已经充不满电）。真人型 60 层以后每层收入：60–69 层 24.2→19.4，70–79 层 23.2→18.9，80–89 层 28.1→22.9。机器人在普通商店不买道具，真人玩家剩下的钱会花在道具上。',
+    '先比较了 5 种削减组合（每种 150 局 × 3 种机器人）。只取消幸存者奖励最有效，70 层真人型剩余 131→66；只降深渊加价几乎没用，因为 80 层以后已经很少有人还富裕。车费降得越多，暗黑版被带上的比例越低（52%→45%）。',
+    '第一次验收有 5 位暗黑版上车率跌破 15%（贪腐检查员 11.5%、监工 11.8%、加班魂 13.9%、狂徒 14.6%、疯炸客 15.0%），所以这几位不降或回调；第二次验收监工 13.5%、丑闻明星 14.1%，再把监工调到 10、丑闻明星调到 20。',
+    '最终验收 4200 局：熟练型死因 断电 55.5% / 躁动 43.4% / 炸弹 1.1%；抵达 100 层 0.6%；均衡型中位 88 层（p10–p90 78–95）；真人型 77 层；新手 34 层；均衡型上车率全部在 16–61%。',
+    '钱少了，但一局并没有变短：对会玩的人来说，限制他们的是每段的电量和躁动，不是钱。',
+  ],
+  watch: [
+    '“不宽裕”两项验收仍不通过（63.9%，离店中位 26 币），主要来自均衡型机器人 20–60 层的富余，下一步和链接重做一起处理。',
+    '一局还是偏长：真人型中位 77 层，目标是普通玩家 60 层左右、高手 80 层以上、大师才到 100 层。',
+    '暗黑版的车费降了，赚钱主要还得靠暗黑版的能力和链接。',
+  ],
+};
+
+export const V9220_EN: ChangelogEntry = {
+  version: '9.22.0', date: '2026-09-25', title: 'Less money after midnight: no more getting richer the higher you go',
+  summary: 'A coin trace showed that a human-like player spends almost everything up to 60F. After 60F, though, income rose from about 17 to 24–28 coins a floor, and once the battery is full no more power can be bought, so coins piled up: 131 left after the 70F shop and 97 after 80F. This release trims three post-midnight income sources. The lift’s own power use is unchanged.',
+  changes: [
+    'The “Survivor delivered safely” bonus is gone: a normal rider delivered after midnight no longer pays 5 extra. It was the largest extra income at 60–79F, and it is one fewer rule to remember.',
+    'Abyss premium: each step now adds 25% of the base fare instead of 50% (+25% for a dark card at 85F, +75% at 95F).',
+    'Most dark fares ×0.75:',
+    '• Voyeur 12→9, Smuggler 8→6, Scrapper 6→5, Ex-lover 9→7, Noisemaker 12→9.',
+    '• Robber 18→14, Crooked Cop 8→6, Shyster 12→9, Pusher 7→5.',
+    '• Creepy Child 8→6, Wraith 5→4, Summoner 7→5, Scandal Star 22→20.',
+    'Dark riders who were already rarely boarded were not cut:',
+    '• Overtimer 8, Brawler 12, Crooked Inspector 16 and Mad Bomber 50 are unchanged.',
+    '• Taskmaster goes 8→10. He doubles his neighbours’ fares, so cheaper neighbours made him worth less too.',
+  ],
+  experiments: [
+    'Coin trace, 200 runs per bot. The bots buy no items at ordinary shops; real players would spend the leftovers on items.',
+    '• Human-like, coins left after the shop: 70F 131→81, 80F 97→58.',
+    '• Balanced: 70F 85→64, 80F 61→34, 90F 15→1. At 90F it can no longer fill the battery.',
+    '• Human-like income per floor: 60–69F 24.2→19.4, 70–79F 23.2→18.9, 80–89F 28.1→22.9.',
+    'I first compared five combinations of cuts, 150 runs × 3 bots each:',
+    '• Removing the survivor bonus alone worked best: the human-like bot’s 70F leftover went 131→66.',
+    '• Cutting only the abyss premium barely mattered, because few players are still well off by 80F.',
+    '• The deeper the fare cut, the fewer dark riders were boarded (52%→45%).',
+    'Two rounds of fare fixes:',
+    '• The first acceptance pushed five dark riders below 15% boarding: Crooked Inspector 11.5%, Taskmaster 11.8%, Overtimer 13.9%, Brawler 14.6%, Mad Bomber 15.0%. They were left uncut or raised.',
+    '• The second had the Taskmaster at 13.5% and the Scandal Star at 14.1%, so the Taskmaster went to 10 and the Scandal Star to 20.',
+    'Final acceptance, 4,200 runs:',
+    '• Skilled endings: 55.5% power, 43.4% agitation, 1.1% bomb.',
+    '• 100F reached in 0.6% of runs.',
+    '• Balanced median 88F (p10–p90 78–95); human-like 77F; novice 34F.',
+    '• Every balanced boarding rate is within 16–61%.',
+    'Less money did not make runs shorter: good players are limited by each sector’s power and agitation, not by coins.',
+  ],
+  watch: [
+    'Both “not affluent” checks still fail (63.9%; median 26 coins left after a shop), mostly because the balanced bot has spare coins at 20–60F. This will be handled with the link redesign.',
+    'Runs are still long. The human-like bot reaches a median of 77F; the target is about 60F for a normal player, 80F+ for a skilled one, and 100F for masters only.',
+    'Dark fares are lower, so the money in dark riders now comes mainly from their abilities and links.',
+  ],
+};
