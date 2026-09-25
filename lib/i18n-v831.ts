@@ -4,7 +4,7 @@ const riders: Partial<Record<PassengerKind, [string, string]>> = {
  inspector: ['Net rider power ≤3: +1 coin; otherwise +1 agitation/floor', 'Checks rider and red-link power after stabilizer and savings, excluding motor power. At most 3 earns 1 coin per floor; otherwise +1 agitation. Includes the Inspector’s own 1 power. Route motor increases cannot automatically fail this check.'],
  tourist: ['Each neighbor adds 2 coins on arrival', 'Base fare 10. Every neighbor still present at arrival adds 2 coins, including Tourists and simultaneous arrivals. No income while travelling.'],
  mechanic: ['Save 2 power per floor; stacks', 'Each Mechanic offsets 2 passenger power per floor. Multiple Mechanics stack. The Mechanic uses 2 power themselves. Savings cannot offset the motor or generate power.'],
- lover: ['Each adjacent Lover: +100% base arrival fare', 'With any unpaired Lover, one cabin-wide 15% roll per floor calls exactly one Lover, regardless of count. On success, the other two riders are non-Lovers who can interact; otherwise normal offers apply. Each adjacent Lover adds 100% base fare on arrival, stacking additively. No travel income. Tips, bond bonuses and the high-risk premium are not multiplied.'],
+ lover: ['Each adjacent Lover: +100% base arrival fare', 'With any unpaired Lover, one cabin-wide 15% roll per floor calls exactly one Lover, regardless of count. On success, the other two riders are non-Lovers who can interact; otherwise normal offers apply. Each adjacent Lover adds 100% base fare on arrival, stacking additively. No travel income. Tips, bond bonuses and the impatient premium are not multiplied.'],
  thief: ['Uncontrolled: +3 coins and +1 agitation per floor; can bank with other bad riders', 'Without an adjacent Officer or Lawyer: earn 3 coins and add 1 agitation per floor. Controlled: no travel income or theft agitation, and +5 coins on arrival. Adjacent uncontrolled Thieves, Drunks or Bomb Carriers each bank 2 coins per floor; every link adds 1 agitation. Banked coins are paid only on delivery and are not multiplied.'],
  lawyer: ['Control Thieves; prevent up to 2 red-link coin loss per floor', 'Control adjacent Thieves: no theft agitation and +5 coins on arrival. While aboard, prevent up to 2 coins of red-link loss for the whole cabin each floor. Multiple Lawyers do not stack. Cannot pause bombs.'],
  drunk: ['Agitation ≥3 and 2+ neighbors: +100% base arrival fare', 'Uncalmed: +1 agitation per floor. A Nurse or Musician prevents this agitation; no travel income. At departure before arrival, agitation of at least 3 and at least 2 neighbors add 100% base fare, additive with Coaches. Can bank rewards beside uncontrolled bad riders; calming stops that link.'],
@@ -22,7 +22,7 @@ const upgrades: Partial<Record<UpgradeKey,string>> = {
  meter:'Each rider completing at least 5 actual ascents pays 4 extra coins on normal arrival, once per rider. Ghost delays count. No payment while waiting or on dismissal. One installation per run.',
 };
 export const V831_PAIRS: Array<[string,string]> = [
- ['初始50电、容量60。抵达商店先补 5 电，再用金币充电或买升级。急躁乘客到站另加 4 金币，不参与倍率；每层多 +1 躁动。','Start with 50 power, capacity 60. Arriving at a shop restores 5 power; spend coins on more charging or an upgrade. High-risk riders pay 4 extra arrival coins outside multipliers and add 1 agitation each floor.'],
+ ['初始50电、容量60。抵达商店先补 5 电，再用金币充电或买升级。急躁乘客到站另加 4 金币，不参与倍率；每层多 +1 躁动。','Start with 50 power, capacity 60. Arriving at a shop restores 5 power; spend coins on more charging or an upgrade. Impatient riders pay 4 extra arrival coins outside multipliers and add 1 agitation each floor.'],
  ['每十层最多请离2位，进店恢复。选中旧客并打开详情后请离；赔偿4+剩余站数×2金币，不结算到站奖励和暂存。本层刚上车仍可免费撤回。','Up to 2 dismissals per sector, restored at shops. Select an existing rider and open details to dismiss them for 4 + 2×remaining floors. Arrival rewards and banked coins are forfeited. Undo newly boarded riders for free.'],
  ['人物净耗电≤3：每层+1币','Net rider power ≤3: +1 coin/floor'],
  ['人物净耗电','Net rider power'],['人物净耗电尽量不超过3','Keep net rider power at 3 or less'],
@@ -55,7 +55,7 @@ export const V831_PAIRS: Array<[string,string]> = [
  ['暂存+2/层 · 链接加躁动','Bank +2/floor · links add agitation'],
  ['已暂存 ','Banked '],[' · 送达兑现',' · paid on delivery'],['暂存 ','Banked '],
  ['坏人暂存兑现','Banked partnership payout'],['坏人链接躁动','Risk partnership agitation'],
- ['急躁加价、小费与暂存收益不参与倍率','High-risk premium, tips and banked rewards are not multiplied'],
+ ['急躁加价、小费与暂存收益不参与倍率','Impatient premium, tips and banked rewards are not multiplied'],
  ['至少3人：每站抵消1点人物耗电','3+ riders: offset 1 passenger power/floor'],
  ['每位邻座恋人：到站基价+100%','Each adjacent Lover: +100% base arrival fare'],
  ['恋人已配对：每位恋人邻座让本人到站基价 +100%；途中不产币。','Lovers linked: each adjacent Lover adds 100% base arrival fare. No travel income.'],

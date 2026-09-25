@@ -48,7 +48,7 @@ export const V9_PAIRS: Array<[string, string]> = [
   ['连续3次关门时不在高躁动（低或中躁动都算），获得合规印章，到站额外+12金币，不参与倍率。完成前遇到高躁动会重新计数；完成后印章保留，每位检查员只奖励一次。检查员本人不会带躁动。', '3 consecutive departures that are not at high agitation (low or medium both count) earn a compliance stamp worth 12 extra arrival coins outside multipliers. High agitation before completion resets the count; once earned the stamp stays, one reward per Inspector. The Inspector never brings agitation.'],
   ['↑ 复制正上方乘客的车费', '↑ Copies the fare of the rider directly above'],
   ['固定复制正上方紧邻乘客的基础车费，按那位乘客实际的票价，不再打自己的短途折扣；上方空缺时恢复本体车费。隐藏车费仍隐藏。不复制技能、耗电、倒计时、路程或已叠加奖励。', 'Always copies the base fare of the rider directly above, exactly as that rider is paid, without its own short-trip discount; with that seat empty, uses its own fare. Sealed fares stay sealed. Does not copy abilities, power, timers, trips or accumulated rewards.'],
-  ['非教练乘客抵达时，每位相邻教练增加其本体基价的50%；与恋人配对、醉汉加价等倍率相加，不再放大受控奖励、小费或状态奖励。教练自己抵达时，每位仍在身旁的邻座额外支付2金币。', 'When a non-Coach arrives, each adjacent Coach adds 50% of that rider’s own base fare; this adds with Lover pairing, Drifter premiums and other multipliers but no longer multiplies control rewards, tips or status rewards. When the Coach arrives, each neighbor still beside them pays 2 extra coins.'],
+  ['非教练乘客抵达时，每位相邻教练增加其本体基价的50%；与恋人配对、醉汉加价等倍率相加，不再放大受控奖励、小费或状态奖励。教练自己抵达时，每位仍在身旁的邻座额外支付3金币。', 'When a non-Coach arrives, each adjacent Coach adds 50% of that rider’s own base fare; this adds with Lover pairing, Drifter premiums and other multipliers but no longer multiplies control rewards, tips or status rewards. When the Coach arrives, each neighbor still beside them pays 3 extra coins.'],
   ['每到一层重新抽取自身躁动0–1、原始车费16–28与协作/冲突对象；耗电固定为1。短途再按固定比例折算基价。目的地不延长，关门前查看新状态。', 'Every floor rerolls its own agitation 0–1, raw fare 16–28 and bond/conflict partners; power is fixed at 1. Short trips prorate the base fare. The destination is not extended; check the new traits before departing.'],
   // Legends
   ['老周', 'Old Zhou'], ['月老', 'The Matchmaker'], ['教父', 'The Don'], ['护士长', 'The Matron'], ['夜莺', 'The Nightingale'], ['灵媒', 'The Medium'], ['大亨', 'The Tycoon'], ['13号房客', 'The Stranger in 13'],
@@ -81,7 +81,7 @@ export const V9_PAIRS: Array<[string, string]> = [
   ['20层起出售。关门时好人、坏人、特殊三类齐全，且本层有人正常到站，额外赚6金币，每层一次。请离不触发，不参与倍率。', 'Sold from floor 20. Depart with good, criminal and special riders all aboard and deliver someone normally that floor to earn 6 extra coins, once per floor. Dismissals do not count; excluded from multipliers.'],
   ['实际乘坐至少5次上行的乘客，正常到站额外支付4金币，每人一次。幽灵延误计入行程，途中和请离不支付。本局限装一次。', 'Each rider completing at least 5 actual ascents pays 4 extra coins on normal arrival, once per rider. Ghost delays count toward the trip; nothing is paid in transit or on dismissal. One installation per run.'],
   ['红线不再造成额外耗电（含耗电翻倍）和金币损失，且每条红线每层付1金币“冲突小费”（每层最多3）；红线躁动仍然生效。不抵消人物本身耗电或运转耗电。', 'Red links no longer cost extra power (including doubled power) or coins, and each red link pays a 1-coin “friction tip” per floor (at most 3); red-link agitation still applies. Does not offset passengers’ own power or motor power.'],
-  ['每层抵消最多1点普通红线躁动；坏人链接不再产生躁动。不降低已有躁动，不抵消人物自身或急躁带来的躁动。', 'Cancels up to 1 ordinary red-link agitation per floor; criminal links no longer create agitation. Does not reduce existing agitation or a rider’s own or high-risk agitation.'],
+  ['每层抵消最多1点普通红线躁动；坏人链接不再产生躁动。不降低已有躁动，不抵消人物自身或急躁带来的躁动。', 'Cancels up to 1 ordinary red-link agitation per floor; criminal links no longer create agitation. Does not reduce existing agitation or a rider’s own or impatient agitation.'],
   ['同层至少2人正常到站，且到站后车内最多剩1人，额外赚8金币，每层一次，不参与倍率。', 'When at least 2 riders arrive normally on one floor and at most 1 rider remains afterward, earn 8 extra coins, once per floor, excluded from multipliers.'],
   // Keepsakes and the power box
   ['老周的扳手', 'Old Zhou’s Wrench'], ['配电箱免费升1级；此后每次升级便宜5金币。', 'One free power-box level; every later level costs 5 coins less.'],
@@ -110,7 +110,7 @@ export const V9_PAIRS: Array<[string, string]> = [
   ['知道了', 'Got it'], ['？？？', '???'],
   ['满员 · 不省电', 'Full · no saving'], ['运转 −1 电', 'Motor −1'],
   ['夜深人躁', 'Late-night unrest'], ['途中安抚', 'Calming'],
-  ['急躁乘客', 'High-risk riders'], ['儿童无人照顾', 'Child uncared for'], ['小偷未受控', 'Thief uncontrolled'], ['醉汉未安抚', 'Drifter unsettled'], ['到站舒缓', 'Arrival relief'],
+  ['急躁乘客', 'Impatient riders'], ['儿童无人照顾', 'Child uncared for'], ['小偷未受控', 'Thief uncontrolled'], ['醉汉未安抚', 'Drifter unsettled'], ['到站舒缓', 'Arrival relief'],
   ['连续不高躁动 ', 'Below high in a row '], ['达标后保留签章；未达标时升至高躁动会中断连续计数', 'The stamp stays once earned; high agitation before then resets the count'], ['卖出能力', 'Sold ability'],
   ['坏人链接', 'Criminal links'],
   ['急躁乘客', 'Impatient riders'], ['急躁', 'Impatient'], ['急躁 +1', 'Impatient +1'],

@@ -1690,6 +1690,68 @@ export const V9201_EN: ChangelogEntry = {
   ],
 };
 
+export const V9203_ZH: ChangelogEntry = {
+  version: '9.20.3', date: '2026-09-25', title: '英文版第 6–10 局：商店前的躁动不再误报、教练值得带、走私客有配对提示、漏翻清零',
+  summary: '30 轮英文版试玩的第 6–10 局：手机 2 局、平板 2 局、窄屏 1 局，其中第 8 局从 60 层起亲手打到 112 层，第一次穿过 100 层。每局记笔记，玩完马上修，再用改后的数据跑模拟。最大的发现是商店前一层的躁动警告会误报“必输”：商店其实能把超上限的躁动救回来。完整笔记在 docs/playtests/v920-english-rounds.md。',
+  changes: [
+    '商店前一层的躁动：商店层是检查点，到店时躁动超上限，只要进店后用手动调节（到店补满）和紧急维修（8 币/点）降回上限以下就能继续。以前“这一层会失控”“赌一把 X%”、需要安抚的点数都把它当成当场输，第 8 局 109 层警告“必输”，其实只带加班魂上行、到店修一下就安全。现在这些判断都把商店能救回的量算进去，躁动栏会显示“到店要降躁动”。',
+    '教练：车费 7→10；教练到站时每位邻座多付 3 币（原 2）。仍是每层 2 电。一个人出现时卡上不再是明显的亏本。',
+    '走私客：卡上像快递员一样显示“配黑箱 +N 金币”（第 8 局：单独 −9，放上黑箱 +11，但卡上没写）；黑箱没上车的提示写走私客和黑箱，不再说“快递员的纸箱”。',
+    '冷面护士长卡：数值行只写“不付车费”；效果行改成“全车 −2躁动/层 · 她的药品每层耗 1 电”（英文原来写“+1 power/floor”，读起来像给电）。',
+    '途中补电：预报会在商店前断电时，按钮一次补到够撑到商店（钱不够就补能买的最多），不用再一下一下点“+1”；断电警告里也有“补足本段”。',
+    '镇静剂说明写明“不会深渊发作”。',
+    '疯炸客、炸弹客的座位说明按语言显示；实时倒计时里原来的“来不及！”改成“快上行！/Hurry!”（第 8 局 2.19 秒、1 站，按下上行后准时送到）。',
+    '英文漏翻和半中半英：收据“1号位 · Lover”→“Seat 1 · Lover”；配电箱升级、老周免费升级、卖出能力、抢救钱不够的提示都有整句英文；商店收据写“Coins / Power / Agitation (cap +2)”，不再出现中文括号；列表里的“小偷急躁 +1”不再变成“ThiefImpatient +1”；残留的“High-risk”统一成卡上的“Impatient”；“1 coin left after charging”单复数。',
+    '商店危机提示：只有这家店的免费能力还没选时，才建议“免费装上安全余量”（第 9 局：那张卡已经是灰的，提示还在推荐）。',
+    '平板（701–1100px）：候客卡标题栏加宽，头像 56px，“Impatient: fare +4, +1/floor”“Lashes out 16% · −6 power”这类标签不再挤成竖条；长关系标签（黑警的“+Robber / Thief / Drifter / Brawler / Mad Bomber”）可以换行，候客卡这一排加高到 340px。',
+    '新手引导（第 6 局，手机）：开场白的耗电规则换成一句“每十层有一家商店；关门前先看电量和躁动的预报”；“让两位恋人成为邻座”的示例提示在手机上移到候客卡上方。',
+  ],
+  experiments: [
+    '教练四种改法各 150 局（真人型 / 均衡型 / 新手上车率）：原版 3% / 35% / 28%；改回 1 电 46% / 68% / 33%（均衡型超出 65% 的区间，太强）；每位邻座 +4 币 3% / 43% / 28%（真人型看不出来）；车费 10、邻座 +3 28% / 45% / 35%，中位楼层不变。采用最后一种；改完复测真人型 30%、均衡型 47%。',
+    '模拟器验收 4200 局：熟练型死因 断电 53.2% / 躁动 46.0% / 炸弹 0.8%；真人型中位 76→78 层（断电 51% / 躁动 46%）；均衡型中位 88→89 层（p90 96），抵达 100 层 1.0%；新手 34 层。均衡型上车率全部在 15–61%（教练 35%→45%，贪腐检查员 15% 在下限上）。暗黑传奇：赌王 97%、另一个13号 86%、黑老大 84%、剪线婆 82%、夜班老周 68%、死灵师 62%、哭丧女 57%、冷面护士长 32%。',
+    '英文版试玩第 6–10 局：59 层断电（手机，新存档）、101 层躁动（平板）、112 层躁动（窄屏，60 层起亲手玩，第一次过 100 层）、54 层躁动（手机，第一次开局在 22 层因 HMR 作废）、56 层断电（平板，机器人没理会补电警告）。',
+    'verify 全部通过；新增回归测试：商店前一层躁动到上限但能在店里修回来时失控概率为 0，没钱修时仍是赌局，进店后紧急维修能让你继续。教练的两条车费测试改成新数值。',
+  ],
+  watch: [
+    '新手中位约 33 层，主要断电：新手按票价挑人，而贵的人物大多 2 电。真人新存档第 6 局到了 59 层，继续看。',
+    '暗黑共鸣加冷面护士长时，80–90 层躁动几乎一直是 0，深渊只剩电量压力（第 8 局）。',
+    '100 层以后空车不能出发，而卡全是暗黑版，经常只能二选一地赌。',
+    '第 8 局连点补电时电量栏闪过一次“−55/90”（实际 28），没能复现。',
+    '监工的上车率 16%，接近 15% 的下限。',
+  ],
+};
+
+export const V9203_EN: ChangelogEntry = {
+  version: '9.20.3', date: '2026-09-25', title: 'English playtests 6–10: no false alarm before a shop, a Coach worth taking, the Smuggler’s pair hint, no more untranslated text',
+  summary: 'Playtests 6–10 of the 30 English rounds: two on a phone, two on a tablet, one narrow. In round 8 I played by hand from 60F to 112F, the first run past 100F. Each round was noted, fixed straight away and re-simulated with the new data. The biggest find: the agitation warning on the floor before a shop called some ascents certain losses when the shop could have fixed them. Full notes in docs/playtests/v920-english-rounds.md.',
+  changes: [
+    'Agitation before a shop: a shop floor is a checkpoint. Arriving over the cap only ends the shift if you cannot get back under it in the shop, with the manual relief (refilled on arrival) and the emergency repair (8 coins a point). The “boils over this floor” warning, the “Feeling lucky? X%” gamble and the calm needed all used to count it as an instant loss. In round 8 at 109F the warning said the run was lost, when carrying just the Overtimer and repairing at the shop was safe. They now count what the shop can fix, and the agitation panel says “Calm it at the shop”.',
+    'Coach: fare 7→10; each neighbor still beside him pays 3 on his arrival (was 2). Still 2 power a floor. His card no longer reads as a clear loss when he appears alone.',
+    'Smuggler: his card shows “w/ Black Box +N coins” like the Courier’s crate (round 8: −9 alone, +11 with the box, and nothing said so); the missing-box alert names the Smuggler and his black box instead of “the Courier’s box”.',
+    'Cold Matron card: the value line says only “No fare”; the effect line reads “Cabin −2 agitation/floor · her drugs use 1 power/floor” (it said “+1 power/floor”, which read like a gain).',
+    'In-transit charging: when the forecast runs out before the shop, the button charges enough to reach it in one press (or as much as you can afford) instead of “+1” a press; the power alert offers “Top up sector” too.',
+    'The Sedative says it also stops abyss outbursts.',
+    'Bomb seats show their captions in the current language; with a real-time fuse, the old “Too late!” now reads “Hurry!” (round 8: 2.19 s and 1 stop, and pressing ascend still delivered him).',
+    'English leaks and half-translated lines: the receipt’s arrival rows had a Chinese seat label and now read “Seat 1 · Lover”; the power-box upgrade, Night Zhou’s free level, selling an ability and the rescue shortfall have full English; the shop receipt writes “Coins / Power / Agitation (cap +2)” without Chinese brackets; “Thief impatient +1” no longer comes out as “ThiefImpatient +1” in lists; leftover “High-risk” wording now says “Impatient” like the cards; “1 coin left after charging”.',
+    'Shop crisis hint: “take Safety Margin for free” only appears while this shop’s free pick is unused (round 9: the card was already greyed out).',
+    'Tablets (701–1100px): a wider card title column and a 56px portrait keep tags such as “Impatient: fare +4, +1/floor” and “Lashes out 16% · −6 power” on one line; long relation chips (the Crooked Cop’s “+Robber / Thief / Drifter / Brawler / Mad Bomber”) wrap, and the waiting-card row is 340px tall.',
+    'First run (round 6, phone): the intro’s motor schedule is replaced by one useful line, “There is a shop every ten floors; check the power and agitation forecast before the doors close”; the “seat two Lovers together” example sits above the waiting cards on phones.',
+  ],
+  experiments: [
+    'Four Coach variants, 150 runs each (human-like / balanced / novice boarding): current 3% / 35% / 28%; back to 1 power 46% / 68% / 33% (balanced above the 65% band, too strong); +4 per neighbor 3% / 43% / 28% (invisible to human-like play); fare 10 and +3 per neighbor 28% / 45% / 35% with unchanged median floors. Chose the last; re-measured after the change at 30% human-like, 47% balanced.',
+    'Acceptance, 4,200 runs: skilled endings 53.2% power / 46.0% agitation / 0.8% bomb; human-like median 76→78F (51% power / 46% agitation); balanced 88→89F (p90 96), 100F reached in 1.0%; novice 34F. Every balanced boarding rate is within 15–61% (Coach 35%→45%; the Grafter sits on the 15% floor). Dark legends: High Roller 97%, Other Thirteen 86%, Kingpin 84%, Severer 82%, Night Zhou 68%, Necromancer 62%, Banshee 57%, Cold Matron 32%.',
+    'English playtests 6–10: 59F power (phone, new profile), 101F agitation (tablet), 112F agitation (narrow, hand-played from 60F, first run past 100F), 54F agitation (phone; the first attempt was lost to a hot reload at 22F), 56F power (tablet; the bot ignored the charge warning).',
+    'verify passes, with a new regression test: at the cap before a shop the loss chance is 0 when the repair is affordable, still a gamble without the coins, and the shop repair lets you continue. The two Coach fare tests use the new values.',
+  ],
+  watch: [
+    'Novice median is about 33F, mostly power: novices pick the priciest fares, and pricey riders mostly use 2 power. A real new profile reached 59F in round 6; keep watching.',
+    'With dark resonance plus the Cold Matron, agitation stayed near 0 through 80–90F and the abyss only pressed on power (round 8).',
+    'Past 100F an empty cabin cannot leave and every card is dark, so it is often a forced bet.',
+    'Round 8 briefly showed “−55/90” power while charging quickly (really 28); not reproduced.',
+    'The Taskmaster is boarded 16% of the time, near the 15% floor.',
+  ],
+};
+
 export const V9202_ZH: ChangelogEntry = {
   version: '9.20.2', date: '2026-09-25', title: '人物耗电各不相同，死因一半一半；英文版前 5 轮试玩',
   summary: '按玩家要求：死因要断电和躁动大约一半一半，而且要从人物出发、不动电梯本身的耗电。人物耗电不再都是 1：带设备、排场大的人更耗电，车费相应提高；车厢挤满不再加躁动，改成风扇耗电。模拟器里熟练型和真人型都变成约一半一半，所有人物都有人用。同时开始 30 轮英文版试玩，这一版包含前 5 轮的修改；笔记在 docs/playtests/v920-english-rounds.md。',

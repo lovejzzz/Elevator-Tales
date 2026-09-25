@@ -1,7 +1,7 @@
 export const V837_PAIRS:Array<[string,string]>=[
  ['惯性飞轮','Inertia Flywheel'],['长途续航','Long-trip endurance'],['飞轮本段可省','Flywheel allowance'],['到商店重置','Resets at shop'],['飞轮节能','Flywheel saving'],
  ['关门时至少2人，且本层无人到站：运转最多少耗2电。每十层累计最多省4电，到商店重置，不累存；不抵消人物耗电，不储存回充。','With 2+ riders at departure and no arrivals this floor, save up to 2 motor power. Save up to 4 per sector; resets at each shop, with no carryover. Does not offset rider power or store recharge.'],
- ['每层抵消最多1点普通红线躁动；关门时为中/高躁动，再抵消最多1点坏人链接躁动。不降低已有躁动，不抵消人物自身或急躁带来的躁动。','Each floor, cancel up to 1 ordinary red-link agitation. At medium/high agitation on departure, also cancel up to 1 criminal-link agitation. Does not lower existing agitation or cancel rider or high-risk agitation.'],
+ ['每层抵消最多1点普通红线躁动；关门时为中/高躁动，再抵消最多1点坏人链接躁动。不降低已有躁动，不抵消人物自身或急躁带来的躁动。','Each floor, cancel up to 1 ordinary red-link agitation. At medium/high agitation on departure, also cancel up to 1 criminal-link agitation. Does not lower existing agitation or cancel rider or impatient agitation.'],
  ['本局4个永久安装位，每店最多选一项，已选能力不再出现。仅在商店内可用金币充电；躁动仅在失控时允许最低抢救。','4 permanent slots per run; choose at most one ability per shop. Installed abilities never reappear. Spend coins on charging only inside shops; agitation relief is emergency-only.'],
  ['上行前手动改签 · 每十层一次','Rebook manually before departure · once per sector'],
  ['上行前手动留座 · 每十层一次','Reserve manually before departure · once per sector'],
@@ -18,7 +18,7 @@ export const V837_PAIRS:Array<[string,string]>=[
  ['延时保险','Longer Fuse'],['回充缓冲槽','Overflow Cell'],['隔音门','Soundproof Door'],['改签印章','Rebooking Stamp'],['第五张票','Fifth Ticket'],['谢幕礼','Curtain Call'],
  ['30层起出售。以后新出现的炸弹客倒计时+1；不改变路程、不重置旧炸弹。','Available from floor 30. Newly generated Bomb riders get +1 fuse turn. Trips are unchanged; existing fuses are not reset.'],
  ['到站回充溢出时暂存最多4电；以后上行结算缺电量时自动补入。不储存金币充电或应急电池。','Store up to 4 power from overflow on arrivals. Automatically refill missing power after a later ascent. Purchased charging and emergency cells cannot fill this buffer.'],
- ['每层抵消最多1点普通红线躁动。不抵消人物自身、高危或坏人链接躁动，不降低已有躁动。','Cancel up to 1 ordinary red-link agitation per floor. Does not cancel rider, high-risk or criminal-link agitation, or lower existing agitation.'],
+ ['每层抵消最多1点普通红线躁动。不抵消人物自身、高危或坏人链接躁动，不降低已有躁动。','Cancel up to 1 ordinary red-link agitation per floor. Does not cancel rider, impatient or criminal-link agitation, or lower existing agitation.'],
  ['每十层一次：选中本层新上客，路程缩短或延长1站，最短1站。车费、倒计时和随机属性不变；撤回不退次数。','Once per sector: select a newly boarded rider and shorten or extend their trip by 1 stop, minimum 1. Fare, fuse and random traits stay fixed. Undoing boarding does not refund the use.'],
  ['每送达第5位乘客，额外获得其基价100%。只算安装后的正常到站；同层按1→6号位计数，不放大其他奖励。','Every fifth normal arrival after installation adds 100% of that rider’s base fare. Simultaneous arrivals count in seat order 1→6. Other rewards are not multiplied.'],
  ['同层至少2人正常到站，且到站后车内最多剩1人，额外赚6金币，每层一次，不参与倍率。','Deliver at least 2 riders together with at most 1 rider left aboard to earn 6 extra coins, once per floor, without multipliers.'],

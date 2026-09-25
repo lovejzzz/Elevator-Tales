@@ -28,7 +28,7 @@ export const MUSIC_RULES = { step: 2 };
 // Defaults unchanged after R01. Isolated Lab scenarios may override these;
 // never use player resources or floor to change their values mid-run.
 export const ECONOMY_RULES = { thiefTravel: 0, thiefPerVictim: 2, celebrityTravel: 2, conciergeTip: 1, conciergeCondition: 'any' as 'any'|'medium', tipReward: 4, cooperationIncrement: 2 };
-export const FARE_RULES = { baseOnlyMultipliers: true, coachNeighbour: 2 };
+export const FARE_RULES = { baseOnlyMultipliers: true, coachNeighbour: 3 }; // v9.20.3: 2 → 3 (with fare 7 → 10) so the Coach reads as worth it
 export const GHOST_RULES = { oneSavingPerExorcist: true };
 export const JOURNEY_RULES = { extraFrom31: 0, extraFrom51: 0, localFrom31: true, localExtra: 0, prorateLocalFare: true };
 export const journeyExtension = (floor: number) => floor >= 51 ? JOURNEY_RULES.extraFrom51 : floor >= 31 ? JOURNEY_RULES.extraFrom31 : 0;

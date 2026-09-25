@@ -3,6 +3,7 @@ import { passengerBrief } from './passenger-presentation';
 import { ADJACENT, PASSENGERS, isAnyLegend, type PassengerKind } from './game-data';
 import { riderProfile } from './rider-profile';
 import { chargeUnitPrice } from './power-box';
+import { isCarrierKind } from './dark-rules';
 
 /** Coins one point of agitation per floor is worth in the net estimate (tuned in scripts/balance-sim). */
 export const NET_AGITATION_COINS = 3;
@@ -88,7 +89,8 @@ export function pairedNet(rider: Rider, state: RunState): { value: number; partn
   const now = boardNet(rider, state); if (!now) return null;
   const at = state.cabin.findIndex(r => r?.id === rider.id);
   const trip = Math.max(1, rider.destination - state.floor);
-  if (rider.kind === 'courier' && rider.parcelId) return courierWithParcel(rider, state, now.value, at);
+  // v9.20.3: the Smuggler and his black box too (English playtest 8: his card said −9 alone, +11 with the box, and gave no hint).
+  if (isCarrierKind(rider.kind) && rider.parcelId) return courierWithParcel(rider, state, now.value, at);
   const likes = riderProfile(rider, state.cabin).bond.likes.filter(k => !isAnyLegend(k)).slice(0, 3);
   if (!likes.length) return null;
   let best: { value: number; partner: PassengerKind } | null = null;
@@ -114,7 +116,7 @@ export function pairedNet(rider: Rider, state: RunState): { value: number; partn
  * power included) when the parcel is not aboard yet; null once it is. */
 function courierWithParcel(rider: Rider, state: RunState, now: number, at: number): { value: number; partner: PassengerKind } | null {
   if (state.cabin.some(r => r?.id === rider.parcelId)) return null;
-  const parcel: Rider = { id: rider.parcelId!, kind: 'parcel', ownerId: rider.id, destination: rider.destination, patience: 0, boardedAt: state.floor, fareBonus: 0, stash: 0, volatile: false, ...(rider.parcelBig ? { big: 'top' as const, boxId: rider.parcelId } : {}), ...(rider.tier ? { tier: rider.tier } : {}) };
+  const parcel: Rider = { id: rider.parcelId!, kind: 'parcel', ownerId: rider.id, destination: rider.destination, patience: 0, boardedAt: state.floor, fareBonus: 0, stash: 0, volatile: false, ...(rider.parcelBig ? { big: 'top' as const, boxId: rider.parcelId } : {}), ...(rider.tier ? { tier: rider.tier } : {}), ...(rider.kind === 'smuggler' ? { contraband: true } : {}) };
   const price = chargeUnitPrice(boxOf(state), state.floor), trip = Math.max(1, rider.destination - state.floor);
   const power = trip * (riderProfile(rider, state.cabin).energy + PASSENGERS.parcel.energy * (rider.parcelBig ? 2 : 1)) * price;
   // Both aboard versus neither aboard (not versus an unclaimed parcel), with both trips' power.

@@ -13,7 +13,7 @@ import { translateGameText } from '../lib/i18n';
 import { sectorForecast } from '../lib/game-forecast';
 import { motorAdvanceNotice, motorScheduleText, nightUnrest } from '../lib/balance-v832';
 import { calmRescuePlan, departureRisk, rescuePlan, sectorNeed } from '../lib/departure-guard';
-import { stressForecast, energyForecast, abyssLossChance } from '../lib/game-forecast';
+import { stressForecast, energyForecast, abyssLossChance, shopAgitationRoom } from '../lib/game-forecast';
 import { boardNet, netValue, pairedNet } from '../lib/net-value';
 import { fuseState } from '../lib/bomb-state';
 import { drawLegend } from '../lib/legend-unlocks';
@@ -896,6 +896,14 @@ console.log('PASS v9.19.1 playtest fixes');
   const edge = run(DARK.extremeFrom, [R('crookedcop', 'a', 99)], { stress: 9, stressCap: 11, energy: 60 });
   const pEdge = abyssLossChance(edge); assert.ok(Math.abs(pEdge - outburstChance(DARK.extremeFrom + 1)) < 1e-9, 'one rider at the edge: the chance is his odds');
   assert.equal(abyssLossChance({ ...edge, stress: 0, stressCap: 20 }), 0);
+  // v9.20.3 (English playtest 8): a shop floor is a checkpoint — the relief that refills there and the 8-coin repair
+  // count before the gamble; the ascend guard said 50% where the shop could fix it.
+  const beforeShop = run(109, [R('exlover', 'a', 115)], { stress: 11, stressCap: 12, energy: 60, coins: 24 });
+  assert.equal(shopAgitationRoom(beforeShop), 3); assert.equal(shopAgitationRoom({ ...beforeShop, floor: 108 }), 0);
+  assert.equal(abyssLossChance(beforeShop), 0, 'reaching the cap at a shop is survivable when the repair can pay for it');
+  assert.ok(abyssLossChance({ ...beforeShop, coins: 0 }) > 0, 'without the coins to repair it, it is still a gamble');
+  const atShop = E.resolveFloor(beforeShop, fixed(0)); assert.equal(atShop.status, 'upgrade'); assert.ok(atShop.stress >= atShop.stressCap);
+  assert.equal(E.leaveShop(E.repairEmergency(atShop)).status, 'playing', 'and the shop repair gets you out');
   // Dark cards drawn in the abyss carry its step and pay more.
   for (let i = 0; i < 30; i++) { const floor = 79 + i; for (const o of E.makeOffers(floor, E.EMPTY_UPGRADES, false, seq(((i * 37) % 97) / 97, ((i * 53) % 89) / 89, .5))) if (isDark(o.kind)) assert.equal(o.extreme ?? 0, abyssStep(floor + 1), `abyss dark cards at ${floor}F carry step ${abyssStep(floor + 1)}`); }
   const ex = R('robber', 'x', 99, { extreme: 2 });

@@ -24,7 +24,7 @@ export const V920_PAIRS: Array<[string, string]> = [
   ['夜班老周留下一级免费配电箱升级', 'Night Zhou left a free power-box level'], ['冷面护士长留下病历：躁动上限 +2', 'The Cold Matron left her chart: agitation cap +2'],
   ['另一个13号：躁动 +2', 'Other Thirteen: agitation +2'],
   ['暗黑共鸣：全车都是黑夜里的人。', 'Dark resonance: everyone aboard belongs to the night.'],
-  ['深渊躁动', 'Abyss unrest'], ['深渊加价', 'Abyss premium'], ['车厢挤满：风扇耗电', 'Full cabin: fans'], ['车厢坐满：风扇 +', 'Full cabin: fans +'], ['电/层', ' power/floor'], ['发作', ' lashes out'], ['暗黑版可能发作', 'Dark riders may lash out'], ['（每位 ', ' ('], ['%）', '% each)'],
+  ['深渊躁动', 'Abyss unrest'], ['深渊加价', 'Abyss premium'], ['每十层有一家商店；关门前先看电量和躁动的预报。', 'There is a shop every ten floors; check the power and agitation forecast before the doors close.'], ['车厢挤满：风扇耗电', 'Full cabin: fans'], ['车厢坐满：风扇 +', 'Full cabin: fans +'], ['电/层', ' power/floor'], ['发作', ' lashes out'], ['暗黑版可能发作', 'Dark riders may lash out'], ['（每位 ', ' ('], ['%）', '% each)'],
   ['深渊里的暗黑版越来越极端：车费更高，但每层都可能发作 +3 躁动（卡上写着几率）。关门前看“失控几率”，赚够了就少带几位；照明弹和镇静剂能压住发作。', 'Deep in the abyss dark riders grow extreme: they pay more, but each floor they may lash out for +3 agitation (the odds are on their cards). Check the boil-over chance before closing the doors, carry fewer once you have earned enough; a Flare or a Sedative holds them off.'], ['每层随机一件好事或坏事', 'Something good or bad every floor'], ['等着有人吵架', 'Waiting for a quarrel'],
   [' 也可以卖掉一项能力、换上“安全余量”：躁动上限 +2，再用它的手动调节 −3。', ' Or sell an ability and take Safety Margin: agitation cap +2, then use its manual −3.'],
   [' 也可以免费装上“安全余量”：躁动上限 +2，再用它的手动调节 −3。', ' Or take Safety Margin for free: agitation cap +2, then use its manual −3.'],

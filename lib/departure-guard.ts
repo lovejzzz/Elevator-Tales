@@ -1,6 +1,6 @@
 import { unseatRider, calmPrice, boxOf, calmAllowance, dismissRider, emergencyAllowance, nextShopFloor, type Rider, type RunState } from './game-engine';
 import { isLegend } from './game-data';
-import { energyForecast, sectorForecast, stressForecast } from './game-forecast';
+import { energyForecast, sectorForecast, shopAgitationRoom, stressForecast } from './game-forecast';
 import { motorCost } from './balance-v832';
 import { boxedMotorCost, emergencyUnitPrice } from './power-box';
 
@@ -73,7 +73,9 @@ export type CalmPlan = { remove: Array<{ id: string; kind: Rider['kind']; paid: 
 export function calmRescuePlan(state: RunState): CalmPlan | null {
   // v9.20.1: abyss outbursts are a gamble the ascend button prices separately; the rescue covers what is certain.
   const worst = (s: RunState) => { const f = stressForecast(s); return s.stress + (f.certainHighDelta ?? f.highDelta); };
-  if (state.status !== 'playing' || worst(state) < state.stressCap) return null;
+  // v9.20.3: before a shop, the shop's own relief and repair count (shopAgitationRoom).
+  const limit = (s: RunState) => s.stressCap + shopAgitationRoom(s);
+  if (state.status !== 'playing' || worst(state) < limit(state)) return null;
   const candidates = state.cabin.filter((r): r is Rider => Boolean(r) && !isLegend(r!.kind) && r!.big !== 'bottom');
   let best: CalmPlan | null = null;
   for (let mask = 0; mask < 1 << candidates.length; mask++) {
@@ -86,7 +88,9 @@ export function calmRescuePlan(state: RunState): CalmPlan | null {
       remove.push({ id: r.id, kind: r.kind, paid: s.coins - next.coins }); paid += s.coins - next.coins; s = next;
     });
     if (!ok || !s.cabin.some(Boolean)) continue;
-    const need = Math.max(0, worst(s) - s.stressCap + 1);
+    // Calm bought now spends coins the shop's repair would have used, so the room shrinks as it is bought.
+    let need = 0;
+    while (need <= calmAllowance(s) && worst(s) - need >= limit({ ...s, coins: s.coins - need * calmPrice(state.floor) })) need++;
     if (need > calmAllowance(s)) continue;
     const plan = { remove, calm: need, cost: paid + need * calmPrice(state.floor) };
     if (!best || plan.remove.length < best.remove.length || (plan.remove.length === best.remove.length && plan.cost < best.cost)) best = plan;

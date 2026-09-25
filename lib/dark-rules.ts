@@ -112,7 +112,7 @@ export const ITEMS: Record<ItemKey, { name: string; en: string; zh: string; enTe
   cuffs: { name: '手铐', en: 'Handcuffs', zh: '一位小偷或劫匪整段路程被管住', enText: 'A Thief or Robber is controlled for the whole trip', from: 60, price: 30, target: 'thief' },
   amulet: { name: '护身符', en: 'Amulet', zh: '一位普通人本次路程不会被同化', enText: 'A normal rider cannot be corrupted this trip', from: 60, price: 25, target: 'normal' },
   alarm: { name: '闹钟', en: 'Alarm Clock', zh: '加班魂到站就下车', enText: 'An Overtimer gets off at his floor', from: 60, price: 15, target: 'overtimer' },
-  sedative: { name: '镇静剂', en: 'Sedative', zh: '一位乘客 3 层内自身不产生躁动，也不会戒断', enText: 'A rider adds no agitation of their own for 3 floors, and no withdrawal', from: 60, price: 30, target: 'rider' },
+  sedative: { name: '镇静剂', en: 'Sedative', zh: '一位乘客 3 层内自身不产生躁动、不会深渊发作，也不会戒断', enText: 'A rider adds no agitation of their own for 3 floors: no abyss outbursts, no withdrawal', from: 60, price: 30, target: 'rider' },
   seal: { name: '封条', en: 'Seal', zh: '一个纸箱或黑箱不会被没收、偷走或拆开', enText: 'A box cannot be seized, stolen or opened', from: 60, price: 20, target: 'parcel' },
   cutter: { name: '引线剪', en: 'Wire Cutter', zh: '当场拆掉一颗炸弹：炸弹客下车并付车费', enText: 'Defuse one bomb now: the bomber gets off and pays', from: 60, price: 45, target: 'bomb' },
   flare: { name: '照明弹', en: 'Flare', zh: '本层所有暗黑版的麻烦都不发生', enText: 'No dark rider causes trouble this floor', from: 80, price: 120, target: 'none' },

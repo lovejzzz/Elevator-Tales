@@ -2,6 +2,17 @@
 
 Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.20.2**. Publication status is tracked separately from the source version.
 
+## v9.20.3 — 2026-09-25 — English playtests 6–10: no false alarm before a shop, a Coach worth taking / 英文版第 6–10 局：商店前的躁动不再误报、教练值得带
+
+- Before a shop, agitation warnings, the gamble chance and the calm needed now count what the shop can fix (manual relief refilled on arrival + 8-coin repair with current coins); the agitation panel says “Calm it at the shop”. Round 8 at 109F had called a safe ascent a certain loss.
+- Coach fare 7→10, +3 per neighbor on his arrival (was +2), still 2 power. Smuggler card shows “w/ Black Box +N”; the missing-box alert names the Smuggler. Cold Matron card: “No fare” / “her drugs use 1 power/floor”. The Sedative says it stops outbursts.
+- In-transit charging tops up to the shop in one press when the forecast runs out before it. Bomb seat captions per language; real-time “Too late!” → “Hurry!”.
+- English leaks fixed: receipt seat rows, power-box / Night Zhou / ability-sale / rescue-shortfall messages, shop receipt labels and “(cap +2)”, “Thief impatient +1” in lists, “High-risk” → “Impatient”, “1 coin”. Safety Margin crisis hint only while the free pick is unused.
+- Tablet: wider card titles (56px portrait, one-line tags), wrapping relation chips, 340px card row. First run on phones: one-line intro, pair lesson above the cards.
+- Coach variants, 150 runs each: 1 power → balanced 68% (too strong); fare 10 / +3 → human-like 3%→28–30%, balanced 35%→45–47%. Acceptance 4,200 runs: skilled 53.2 / 46.0 / 0.8% (power/agitation/bomb), human-like 78F (51 / 46%), balanced 89F (p90 96), 100F 1.0%, novice 34F; all balanced boarding 15–61%.
+- Playtests 6–10: 59F power (phone), 101F agitation (tablet), 112F agitation (hand-played from 60F), 54F agitation (phone), 56F power (tablet). New regression test for the shop checkpoint.
+- Watch: novice ~33F (power); resonance + Cold Matron keeps agitation near 0 in 80–90F; forced bets past 100F; a one-off “−55/90” flash; Grafter at 15%.
+
 ## v9.20.2 — 2026-09-25 — Riders use different power; endings about half and half / 人物耗电各不相同，死因一半一半；英文版前 5 轮试玩
 
 - Rider power 2 for Musician, Celebrity, Coach, Bomb Carrier, Mystery, Overtimer, Summoner, Taskmaster, Brawler, Grafter, Noisemaker, Scandal; Mad Bomber 3; motor unchanged. Fares: Celebrity 18, Musician 9, Noisemaker 12, Scandal 22, Voyeur 12, Grafter 16, Overtimer 8.

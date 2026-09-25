@@ -49,7 +49,7 @@ assert.equal(energyBreakdown(overloadRun).total,7);
 
 const gambleCabin=[rider('coach','coach',{destination:2}),rider('celebrity','celebrity',{destination:2}),null,null,null,null];
 const gambleResult=resolveFloor(state(gambleCabin),()=>.9);
-assert.equal(amount(gambleResult.lastEarnings.sources,'教练到站'),16,'v9.20: 7 base doubled, plus one 2-coin neighbor');
+assert.equal(amount(gambleResult.lastEarnings.sources,'教练到站'),23,'v9.20.3: 10 base doubled, plus one 3-coin neighbor');
 assert.equal(amount(gambleResult.lastEarnings.sources,'名人到站'),45,'v9.20.2: Celebrity base 18 (was 12) doubled, plus the Coach’s +50%');
 
 const independentCabin=[rider('courier','green'),rider('commuter','center'),rider('drunk','red'),null,null,null];
@@ -71,7 +71,7 @@ assert.deepEqual({conflict:energyBreakdown(state(doubleOverload)).conflict,total
 
 const doubleGamble=[rider('celebrity','left',{destination:2}),rider('coach','center',{destination:2}),rider('celebrity','right',{destination:2}),null,null,null];
 const doubleGambleResult=resolveFloor(state(doubleGamble),()=>.9);
-assert.equal(amount(doubleGambleResult.lastEarnings.sources,'教练到站'),25,'v9.20: two x2 links produce 7x3 base plus two 2-coin neighbors');
+assert.equal(amount(doubleGambleResult.lastEarnings.sources,'教练到站'),36,'v9.20.3: two x2 links produce 10x3 base plus two 3-coin neighbors');
 assert.equal(amount(doubleGambleResult.lastEarnings.sources,'名人到站'),90,'each Celebrity receives its own coach and gamble multipliers (base 18 since v9.20.2)');
 
 const dynamicTraits:VariableTraits={weight:0,energy:1,agitation:0,fare:30,bond:{likes:['nurse'],avoids:['commuter']},conflictEffect:'coins',revision:0};

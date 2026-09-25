@@ -1,4 +1,4 @@
-import { GHOST_CONTROL_KINDS, overtimerLingers, troubleFree, COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, nightOperatorSaving, outburstSlots, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
+import { CALM_RULES, SOOTHE_PRICE, GHOST_CONTROL_KINDS, overtimerLingers, troubleFree, COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, nightOperatorSaving, outburstSlots, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
 import { riderProfile } from './rider-profile';
 import { DARK_RULES, outburstChance, outburstIsPower } from './dark-rules';
 
@@ -167,18 +167,27 @@ export function sectorForecast(state: RunState): { shop: number; projected: numb
 
 /** v9.20.1 the abyss gamble: the chance this ascent ends the run through outbursts (agitation at the cap, or power
  * below what the floor needs). Every dark rider aboard lashes out independently; all subsets are enumerated. */
+/** v9.20.3 (English playtest 8): a shop floor is a checkpoint. Reaching the agitation cap on arrival there only ends the
+ * shift if it still sits at the cap when you leave: the manual relief refills on arrival and the emergency repair soothes
+ * at SOOTHE_PRICE a point. Counted with the coins held now (fares only add). Zero unless the next floor is a shop. */
+export function shopAgitationRoom(state: RunState): number {
+  if ((state.floor + 1) % 10 !== 0) return 0;
+  return (state.upgrades.calm ? CALM_RULES.relief : 0) + Math.floor(Math.max(0, state.coins) / SOOTHE_PRICE);
+}
+
 export function abyssLossChance(state: RunState, stressWith?: (extra: number) => number[]): number {
   const slots = outburstSlots(state), p = outburstChance(state.floor + 1);
   if (!slots.length || state.status !== 'playing') return 0;
   const stressOutcomes = stressWith ?? ((extra: number) => [state.stress + stressForecast(state).lowDelta + extra]);
   const energy = energyForecast(state), certain = energy.certainLowDelta ?? energy.lowDelta;
   const floorNeeds = (state.floor + 1) % 10 === 0 ? 0 : 1;
+  const room = shopAgitationRoom(state);
   let chance = 0;
   for (let mask = 0; mask < 1 << slots.length; mask++) {
     let agitated = 0, drained = 0, k = 0;
     slots.forEach((slot, i) => { if (!(mask & (1 << i))) return; k++; if (outburstIsPower(state.cabin[slot]!.kind)) drained++; else agitated++; });
     const pm = p ** k * (1 - p) ** (slots.length - k);
-    const boils = Math.max(...stressOutcomes(agitated * DARK_RULES.outburstAgitation)) >= state.stressCap;
+    const boils = Math.max(...stressOutcomes(agitated * DARK_RULES.outburstAgitation)) >= state.stressCap + room;
     const dark = state.energy + certain - drained * DARK_RULES.outburstPower < floorNeeds;
     if (boils || dark) chance += pm;
   }
