@@ -54,6 +54,8 @@ for(let i=0;i<4000;i++){
   run.upgrades={...run.upgrades,...Object.fromEntries((Object.keys(UPGRADES) as UpgradeKey[]).map(k=>[k,rng()<.2?1:0]))};
   run.cabin=Array.from({length:6},(_,slot)=>rng()<.38?null:rider(pool[Math.floor(rng()*pool.length)],`r${i}-${slot}`,{destination:floor+1+Math.floor(rng()*5),boardedAt:floor-1,volatile:rng()<.35,fuse:1+Math.floor(rng()*5),copySeed:i+slot}));
   if(!run.cabin.some(Boolean))run.cabin[0]=rider('commuter',`forced-${i}`,{destination:floor+2});
+  // v9.21: a quarter of the states sit on a Hush or Surge floor of the eve of the abyss.
+  if(rng()<.25)run.abyssEvents=[{floor,kind:rng()<.5?'hush':'surge'}];
   const pressure=stressForecast(run),energy=energyForecast(run),after=resolveFloor(run,rngFor(i+99));
   assert.ok(after.lastEnergy.delta>=energy.lowDelta&&after.lastEnergy.delta<=energy.highDelta);assert.ok(after.lastPressure.delta>=pressure.lowDelta&&after.lastPressure.delta<=pressure.highDelta);
   assert.ok(!after.lastPressure.sources.some(s=>/疲劳|班次|倍率/.test(s.label)));

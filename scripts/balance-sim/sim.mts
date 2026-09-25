@@ -6,7 +6,8 @@ import { ADJACENT } from '../../lib/game-data.ts';
 // every run, and never feeling rich.
 import * as E from '../../lib/game-engine.ts';
 import { PASSENGERS, isDark, isDarkLegend, isLegend, type LegendKind, type PassengerKind, type UpgradeKey } from '../../lib/game-data.ts';
-import { DARK_RULES, isBombKind } from '../../lib/dark-rules.ts';
+import { DARK_RULES, isBombKind, outburstIsPower } from '../../lib/dark-rules.ts';
+import { abyssLossChance } from '../../lib/game-forecast.ts';
 import { DARK_LEGEND_RULES } from '../../lib/legends.ts';
 import { conflictLinks, riderProfile } from '../../lib/rider-profile.ts';
 import { motorCost, agitationBand, ECONOMY_RULES } from '../../lib/balance-v832.ts';
@@ -331,7 +332,7 @@ export type RunLog = {
   bot: BotId; seed: number; floor: number; cause: 'energy' | 'agitation' | 'bomb' | 'alive';
   closeCalls: number; escapes: number; powerCalls: number; stressCalls: number; bombCalls: number;
   emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; calmUnits?: number; inspectors?: number; stamped?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
-  bombDismissals?: number; overtimeCharge?: number; boxAbilities?: number; boxAbilityFinds?: number; parcel?: Record<'offered' | 'paired' | 'courierOnly' | 'parcelOnly' | 'opened' | 'adopted' | 'unpaid' | 'delivered' | 'thefts' | 'bigOffered' | 'bigBoarded' | 'childOpens' | 'parts' | 'inspected' | 'contested' | 'bombCarry' | 'mimicCopy' | 'rareBoarded' | 'rareOffered', number>; legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
+  bombDismissals?: number; marketBuys?: number; itemsUsed?: number; overtimeCharge?: number; boxAbilities?: number; boxAbilityFinds?: number; parcel?: Record<'offered' | 'paired' | 'courierOnly' | 'parcelOnly' | 'opened' | 'adopted' | 'unpaid' | 'delivered' | 'thefts' | 'bigOffered' | 'bigBoarded' | 'childOpens' | 'parts' | 'inspected' | 'contested' | 'bombCarry' | 'mimicCopy' | 'rareBoarded' | 'rareOffered', number>; legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
   shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
 };
 
@@ -411,6 +412,15 @@ export function runOne(opt: RunOptions): RunLog {
       const calmDeath = () => { const t = test(); return t.status === 'lost' && t.message.includes('躁动'); };
       guard = 0;
       while ((bot.id !== 'human' || HUMAN.transitCalm) && guard++ < 12 && calmDeath() && E.calmAllowance(state) > 0) { state = E.buyCalm(state, 1); log.calmUnits = (log.calmUnits ?? 0) + 1; }
+    }
+    // v9.21 the night market: skilled and human-like bots buy a Flare (else a Sedative) when coins allow; held tools
+    // are used on a real gamble (a 20%+ chance this ascent ends the run). Bots still buy nothing at ordinary shops.
+    if (state.marketFloor === state.floor && state.marketStock && bot.id !== 'novice') {
+      for (const want of ['flare', 'sedative'] as const) { const i = state.marketStock.findIndex(c => c.key === want && !c.sold); if (i >= 0 && state.coins - state.marketStock[i].price >= 40) { state = E.buyMarketItem(state, i); log.marketBuys = (log.marketBuys ?? 0) + 1; break; } }
+    }
+    if (state.items?.length && abyssLossChance(state) >= 0.2) {
+      if (E.itemUsable(state, 'flare')) { state = E.applyItem(state, 'flare'); log.itemsUsed = (log.itemsUsed ?? 0) + 1; }
+      else if (state.items.includes('sedative')) { const slot = E.outburstSlots(state).find(i => !outburstIsPower(state.cabin[i]!.kind)); const target = slot === undefined ? null : state.cabin[slot]; if (target && E.itemUsable(state, 'sedative', target)) { state = E.applyItem(state, 'sedative', target.id); log.itemsUsed = (log.itemsUsed ?? 0) + 1; } }
     }
     log.stressFloors[agitationBand(state.stress)]++;
     { const aboard = state.cabin.filter(r => r && !isLegend(r.kind)); log.riderFloors = (log.riderFloors ?? 0) + aboard.length; log.links = (log.links ?? 0) + ADJACENT.filter(([a, b]) => activeConnection(state.cabin, a, b)).length; }

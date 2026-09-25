@@ -1,7 +1,7 @@
 import { BONDS, bondStatus, conflictLinks, profileWeight, randomTraits, riderProfile, type VariableTraits } from './rider-profile';
 import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
 import { ADJACENT, BASE_OF, DARK_LEGEND_KINDS, DARK_LEGEND_OF, DARK_OF, PASSENGERS, UNLOCK_TIERS, UPGRADES, isAnyLegend, isDark, isDarkLegend, isLegend, passengerCategory, type DarkLegendKind, type LegendKind, type PassengerKind, type UpgradeKey } from './game-data';
-import { DARK_RESONANCE, DARK_RULES, ITEMS, ITEM_KEYS, ITEM_SLOTS, MYSTERY_IDENTITIES, MYSTERY_RULES, abyssStep, abyssTier, outburstChance, outburstIsPower, corruptible, darkShare, isBombKind, isCarrierKind, isSurvivor, itemPrice, type ItemKey, type MysteryIdentity } from './dark-rules';
+import { ABYSS_EVENTS, ABYSS_EVENT_KINDS, type AbyssEventKind, DARK_RESONANCE, DARK_RULES, ITEMS, ITEM_KEYS, ITEM_SLOTS, MYSTERY_IDENTITIES, MYSTERY_RULES, abyssStep, abyssTier, outburstChance, outburstIsPower, corruptible, darkShare, isBombKind, isCarrierKind, isSurvivor, itemPrice, type ItemKey, type MysteryIdentity } from './dark-rules';
 import { BOX_MAX_LEVEL, BOX_PRICES, BOX_TOTAL_CAP, emergencySectorCap, EMPTY_BOX, affordableUnits, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, motorNoise, shopEntryCharge, storageCap, type BoxLine, type PowerBox } from './power-box';
 import { districtWeight } from './districts';
 import { CHILD_CARERS, DARK_LEGEND_RULES, DRUNK_CARERS, GHOST_CONTROLLERS, KEEPSAKE_KEYS, LEGEND_DECLINE_COINS, LEGEND_DESTINATION, LEGEND_KEEPSAKE, LEGEND_POOL_DEFAULT, LEGEND_RULES, type KeepsakeKey } from './legends';
@@ -11,7 +11,7 @@ import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning 
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
 
 /** v9.19 midnight fields: corruption progress, item effects, withdrawal, the Mystery's identity, contraband boxes. */
-export type MidnightRiderFields = { corruption?: number; warded?: boolean; cuffed?: boolean; alarm?: boolean; sedated?: number; sealed?: boolean; withdrawal?: number; identity?: MysteryIdentity; /** v9.20.1: abyss step when this dark card was drawn (its fare premium). */ extreme?: number; revealed?: boolean; contraband?: boolean; summoned?: boolean; crewFloors?: number };
+export type MidnightRiderFields = { corruption?: number; warded?: boolean; cuffed?: boolean; alarm?: boolean; sedated?: number; sealed?: boolean; withdrawal?: number; identity?: MysteryIdentity; /** v9.20.1: abyss step when this dark card was drawn (its fare premium). */ extreme?: number; revealed?: boolean; contraband?: boolean; summoned?: boolean; crewFloors?: number; /** v9.21: extra coins on arrival (the eve-of-the-abyss bounty). */ bounty?: number };
 export type Rider = MidnightRiderFields & { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; routeStops?: number; bombMs?: number; bombMsTotal?: number; /** v9.18.4: seconds that still count for the defusal bonus; they drain even while an Officer locks the timer. */ bonusMs?: number; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
 export type ChangeLine = { label: string; amount: number };
 export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number; power?:number; ability?:UpgradeKey; /** v9.18.4: the keepsake a delivered legend left behind. */ keepsake?:KeepsakeKey; /** UI only: an incident exit card (never set by the engine). */ incident?:boolean };
@@ -76,6 +76,10 @@ export type RunState = {
   /** v9.19 items: the bag, this shop's stock and how many of each were bought (prices rise). */
   items?: ItemKey[];
   itemStock?: Array<{ key: ItemKey; price: number; sold: boolean }>;
+  /** v9.21 the eve of the abyss: the announced events of floors 81–89, and the night market's stall on its floor. */
+  abyssEvents?: Array<{ floor: number; kind: AbyssEventKind }>;
+  marketStock?: Array<{ key: ItemKey; price: number; sold: boolean }>;
+  marketFloor?: number;
   itemBought?: Partial<Record<ItemKey, number>>;
   /** A flare lit on this floor: no dark rider causes trouble on the ascent from it. */
   flareFloor?: number;
@@ -140,6 +144,11 @@ export function nextOfferBatch(state:RunState,rng:()=>number=Math.random):{state
     const kind=state.legendOffer?DARK_LEGEND_OF[state.legendOffer]:DARK_LEGEND_KINDS[rand(0,DARK_LEGEND_KINDS.length-1,rng)];
     offers.push(darkLegendRider(kind,state.floor,rng));
     state={...state,darkLegendOffer:kind};
+  }
+  // v9.21 a Bounty floor: one dark card waiting here pays extra on arrival.
+  if(abyssEventAt(state,state.floor)==='bounty'){
+    const dark=offers.findIndex(o=>isDark(o.kind)&&!isAnyLegend(o.kind)),at=dark>=0?dark:offers.findIndex(o=>o.kind!=='parcel'&&!isAnyLegend(o.kind)&&!o.parcelId);
+    if(at>=0)offers[at]={...offers[at],bounty:ABYSS_EVENTS.bountyCoins};
   }
   if(!state.reservedRider)return {state,offers};
   const held=state.reservedRider;
@@ -426,7 +435,21 @@ export function bombLocked(cabin: Array<Rider | null>, slot: number): boolean {
 }
 export const GHOST_CONTROL_KINDS: PassengerKind[] = [...GHOST_CONTROLLERS, 'summoner'];
 /** A flare lit on this floor: no dark rider causes trouble on the coming ascent. */
-export const troubleFree = (state: Pick<RunState, 'flareFloor' | 'floor'>) => state.flareFloor === state.floor;
+/** v9.21 the eve of the abyss: the event announced for this floor, if any. */
+export const abyssEventAt = (state: Pick<RunState, 'abyssEvents'>, floor: number): AbyssEventKind | undefined => state.abyssEvents?.find(e => e.floor === floor)?.kind;
+/** A Flare, or a Hush floor: no dark rider causes trouble on the ascent from this floor. */
+export const troubleFree = (state: Pick<RunState, 'flareFloor' | 'floor' | 'abyssEvents'>) => state.flareFloor === state.floor || abyssEventAt(state, state.floor) === 'hush';
+/** Outburst odds for the ascent from this floor: the abyss step, doubled on a Surge floor (never above the cap); none
+ * on a Hush floor or after a Flare, so the cards and seats stop printing odds that cannot happen. */
+export const outburstChanceAt = (state: Pick<RunState, 'floor' | 'abyssEvents' | 'flareFloor'>) => troubleFree(state) ? 0 : Math.min(DARK_RULES.outburstMax, outburstChance(state.floor + 1) * (abyssEventAt(state, state.floor) === 'surge' ? ABYSS_EVENTS.surgeMultiplier : 1));
+/** Four of floors 81–89, one of each event, drawn on the shop's stream as the 80F shop opens. */
+export function drawAbyssEvents(rng: () => number): Array<{ floor: number; kind: AbyssEventKind }> {
+  const floors = Array.from({ length: ABYSS_EVENTS.to - ABYSS_EVENTS.from + 1 }, (_, i) => ABYSS_EVENTS.from + i);
+  for (let i = floors.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [floors[i], floors[j]] = [floors[j], floors[i]]; }
+  const kinds = [...ABYSS_EVENT_KINDS];
+  for (let i = kinds.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [kinds[i], kinds[j]] = [kinds[j], kinds[i]]; }
+  return kinds.map((kind, i) => ({ floor: floors[i], kind })).sort((a, b) => a.floor - b.floor);
+}
 export const MYSTERY_NAMES = Object.fromEntries(MYSTERY_IDENTITIES.map(k => [k, MYSTERY_RULES[k].name])) as Record<MysteryIdentity, string>;
 /** What a rider's banked coins are called when paid out. */
 /** v9.19: an Overtimer at (or past) his stop stays aboard unless a neighbour is getting off on the same floor, his
@@ -860,7 +883,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   // v9.20.1 the abyss: every dark rider aboard may lash out (the odds are on his card); a Flare or a Sedative stops it.
   const lastOutbursts: number[] = [];
   outburstSlots(state).forEach(slot => {
-    if (rng() >= outburstChance(nextFloor)) return;
+    if (rng() >= outburstChanceAt(state)) return;
     const kind = state.cabin[slot]!.kind, name = PASSENGERS[kind].name;
     if (outburstIsPower(kind)) { adjustEnergy(`${name}发作`, -DARK_RULES.outburstPower); notes.push(`${name}发作，吸走 ${DARK_RULES.outburstPower} 电`); }
     else { adjustPressure(`${name}发作`, DARK_RULES.outburstAgitation); stressReasons.push(`${name}发作，躁动 +${DARK_RULES.outburstAgitation}`); }
@@ -1207,7 +1230,11 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   state=consumeFlywheel(state,flywheel);
   const stabilized = stabilizedEnergy(state);
   const itemStock = status === 'upgrade' ? drawItemStock(nextFloor, shopRng, state.itemBought) : state.itemStock;
-  const settled: RunState = { ...state, lastOutbursts, lastThefts, lastHaunts, lastBoxEvents, lastIncident, lastBlast, lastCorruption, lastSummons, itemStock, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
+  // v9.21 the eve of the abyss: announced as the 80F shop opens; the night market's stall stands only on its own floor.
+  const abyssEvents = status === 'upgrade' && nextFloor === ABYSS_EVENTS.shopFloor ? drawAbyssEvents(shopRng) : state.abyssEvents;
+  const marketHere = status === 'playing' && abyssEvents?.some(e => e.floor === nextFloor && e.kind === 'market');
+  const marketStock = marketHere ? drawItemStock(nextFloor, shopRng, state.itemBought) : undefined, marketFloor = marketHere ? nextFloor : undefined;
+  const settled: RunState = { ...state, abyssEvents, marketStock, marketFloor, lastOutbursts, lastThefts, lastHaunts, lastBoxEvents, lastIncident, lastBlast, lastCorruption, lastSummons, itemStock, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
   // Abilities found in boxes install like a shop pick (effects such as Safety Margin apply at once).
   return wonAbilities.reduce((run, key) => previewUpgrade(run, key), settled);
 }
@@ -1554,6 +1581,7 @@ export function fareBreakdown(rider: Rider, cabin: Array<Rider | null>, slot: nu
   add('急躁加价', rider.volatile ? RISK_RULES.highRiskBonus : 0);
   // v9.20.1: a dark card drawn in the abyss pays more the deeper it was drawn.
   add('深渊加价', rider.extreme && isDark(rider.kind) ? Math.round(PASSENGERS[rider.kind].fare * DARK_RULES.extremeFarePerStep * rider.extreme) : 0);
+  add('悬赏', rider.bounty ?? 0);
   add(stashLabel(rider.kind), rider.stash ?? 0);
   const bonds = bondStatus(rider, cabin, slot).supportCount;
   add(`默契 ${bonds} 条 × ${bonus}`, bonus * bonds);
@@ -1606,6 +1634,15 @@ export function buyItem(state: RunState, index: number): RunState {
   return { ...state, coins: state.coins - card.price, items: [...(state.items ?? []), card.key], itemBought: bought,
     itemStock: state.itemStock!.map((c, i) => i === index ? { ...c, sold: true } : c),
     message: `买下${ITEMS[card.key].name}，支付 ${card.price} 金币。`, log: [`${state.floor}F · 买下${ITEMS[card.key].name} −${card.price} 金币`, ...state.log].slice(0, 4) };
+}
+/** v9.21 the night market: buy one of its items on its floor, at shop prices (each repeat still costs more). */
+export function buyMarketItem(state: RunState, index: number): RunState {
+  const card = state.marketStock?.[index];
+  if (state.status !== 'playing' || state.marketFloor !== state.floor || !card || card.sold || state.coins < card.price || (state.items?.length ?? 0) >= ITEM_SLOTS) return state;
+  const bought = { ...state.itemBought, [card.key]: (state.itemBought?.[card.key] ?? 0) + 1 };
+  return { ...state, coins: state.coins - card.price, items: [...(state.items ?? []), card.key], itemBought: bought,
+    marketStock: state.marketStock!.map((c, i) => i === index ? { ...c, sold: true } : c),
+    message: `在夜市买下${ITEMS[card.key].name}，支付 ${card.price} 金币。`, log: [`${state.floor}F · 夜市买下${ITEMS[card.key].name} −${card.price} 金币`, ...state.log].slice(0, 4) };
 }
 /** Whether an item can be used now, optionally on this rider. */
 export function itemUsable(state: RunState, key: ItemKey, target?: Rider | null): boolean {

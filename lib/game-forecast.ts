@@ -1,6 +1,6 @@
-import { CALM_RULES, SOOTHE_PRICE, GHOST_CONTROL_KINDS, overtimerLingers, troubleFree, COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, nightOperatorSaving, outburstSlots, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
+import { CALM_RULES, SOOTHE_PRICE, outburstChanceAt, GHOST_CONTROL_KINDS, overtimerLingers, troubleFree, COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, nightOperatorSaving, outburstSlots, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
 import { riderProfile } from './rider-profile';
-import { DARK_RULES, outburstChance, outburstIsPower } from './dark-rules';
+import { DARK_RULES, outburstIsPower } from './dark-rules';
 
 import { DARK_LEGEND_RULES } from './legends';
 import { motorCost } from './balance-v832';
@@ -76,7 +76,7 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
   // 13号房客 arriving at a shop may hand over the Rounds Log at random.
   const maybeShopRelief = !shopRelief && nextFloor % 10 === 0 && state.cabin.some(r => r?.kind === 'stranger' && r.destination <= nextFloor);
   // v9.20.1: abyss outbursts (+amount each, independent) are the gamble; outcomes grow with the extra agitation.
-  const burstSlots = outburstSlots(state).filter(slot => !outburstIsPower(state.cabin[slot]!.kind)), burstChance = outburstChance(nextFloor), burstAmount = DARK_RULES.outburstAgitation;
+  const burstSlots = outburstSlots(state).filter(slot => !outburstIsPower(state.cabin[slot]!.kind)), burstChance = outburstChanceAt(state), burstAmount = DARK_RULES.outburstAgitation;
   const outcomesWith = (extra: number) => variants.flatMap((variant) => strangerOptions.map((calm) => {
     const before = state.stress + passengerRise + redRise + calm + extra;
     const arrived = Math.max(0, before - reliefFor(before, variant.arrivals));
@@ -176,7 +176,7 @@ export function shopAgitationRoom(state: RunState): number {
 }
 
 export function abyssLossChance(state: RunState, stressWith?: (extra: number) => number[]): number {
-  const slots = outburstSlots(state), p = outburstChance(state.floor + 1);
+  const slots = outburstSlots(state), p = outburstChanceAt(state);
   if (!slots.length || state.status !== 'playing') return 0;
   const stressOutcomes = stressWith ?? ((extra: number) => [state.stress + stressForecast(state).lowDelta + extra]);
   const energy = energyForecast(state), certain = energy.certainLowDelta ?? energy.lowDelta;

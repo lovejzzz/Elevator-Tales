@@ -1,6 +1,23 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.20.2**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.21.0**. Publication status is tracked separately from the source version.
+
+## v9.21.0 — 2026-09-25 — The eve of the abyss: four special floors between 80 and 89 / 深渊前夜：80–89 层有了四个特殊楼层
+
+- The 80F shop announces four random special floors among 81–89F, one of each kind; the side panel keeps the schedule, and a banner marks each floor on arrival.
+  - Hush: no dark outbursts on the ascent from that floor.
+  - Surge: outburst odds ×2, capped at 50%.
+  - Bounty: one waiting rider pays +20 coins on arrival; a dark rider is picked first.
+  - Night market: three items at shop prices, sold on that floor only.
+- Fix: the odds tags now hide on Flare floors too. Manual updated. The lift's own power use is unchanged.
+- Floors 80–88, 200 runs × 3 bots: the balanced bot's quiet floors fell from 22% to 14%, the cooperation bot's from 13% to 8%.
+- Acceptance, 4,200 runs:
+  - skilled endings 52.4 / 46.7 / 0.9% (power / agitation / bomb);
+  - 100F reached 0.3% → 0.6%;
+  - balanced median 87F, human-like 78F, novice 34F;
+  - boarding rates 16–61%.
+- Browser (English narrow window and Chinese phone) confirmed each event. Four fixes followed: the market log translation, a double colon, the bounty wording, and the phone schedule layout. verify now runs 43 v9 checks.
+- Watch: the abyss is slightly easier; a Surge on 81F comes right after the shop; market items have no markup.
 
 ## v9.20.7 — 2026-09-25 — English playtests 26–30: no English in the Chinese interface, the Other Thirteen spelled out / 英文版第 26–30 局：中文模式也不混英文、另一个13号写清楚
 

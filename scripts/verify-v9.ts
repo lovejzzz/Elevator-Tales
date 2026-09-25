@@ -26,7 +26,7 @@ import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
 import { planPlacement } from '../lib/game-interaction';
 import { cardSummary, displayName } from '../lib/card-summary';
-import { DARK_RESONANCE, DARK_RULES as DARK, ITEMS as ITEMS_V, MYSTERY_CLUES, MYSTERY_IDENTITIES, abyssStep, itemPrice, mysteryClue, outburstChance } from '../lib/dark-rules';
+import { ABYSS_EVENTS, DARK_RESONANCE, DARK_RULES as DARK, ITEMS as ITEMS_V, MYSTERY_CLUES, MYSTERY_IDENTITIES, abyssStep, itemPrice, mysteryClue, outburstChance } from '../lib/dark-rules';
 
 // Most checks here predate the v9.18 real-time Bomber timer and verify floor timers; the real-time block switches it on.
 E.BOMB_RULES.realtime = false;
@@ -915,4 +915,42 @@ console.log('PASS v9.19.1 playtest fixes');
   for (let i = 0; i < 20; i++) assert.ok(E.drawItemStock(80 + i, seq(((i * 37) % 97) / 97, ((i * 53) % 89) / 89)).some(c => c.key === 'flare'), 'a Flare is always on the abyss shelf');
 }
 console.log('PASS v9.20 dark legends, resonance, Mystery clues, the abyss gamble');
-console.log(JSON.stringify({ version: 'v9', checks: 42, passed: true }));
+// v9.21 the eve of the abyss: four announced floors among 81–89 (Hush, Surge, Bounty, Night market).
+{
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 78, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  const shop80 = E.resolveFloor(run(79, [R('commuter', 'c', 80)], { energy: 60, stressCap: 12 }), fixed(.5));
+  const evs = shop80.abyssEvents ?? [];
+  assert.equal(shop80.status, 'upgrade'); assert.equal(evs.length, 4, 'four events are announced at the 80F shop');
+  assert.equal(new Set(evs.map(e => e.kind)).size, 4, 'one of each kind'); assert.equal(new Set(evs.map(e => e.floor)).size, 4, 'on four different floors');
+  assert.ok(evs.every(e => e.floor >= ABYSS_EVENTS.from && e.floor <= ABYSS_EVENTS.to), 'all within 81–89');
+  assert.ok(!E.resolveFloor(run(69, [R('commuter', 'c', 70)], { energy: 60 }), fixed(.5)).abyssEvents, 'no schedule before the 80F shop');
+  // Hush: no dark trouble on the ascent from that floor.
+  const darkCab = [R('crookedcop', 'a', 99), R('scrapper', 'b', 99), R('commuter', 'c', 99)];
+  const hush = run(86, darkCab, { stress: 2, stressCap: 12, energy: 80, abyssEvents: [{ floor: 86, kind: 'hush' }] });
+  assert.deepEqual(E.outburstSlots(hush), [], 'a Hush floor quiets every dark rider');
+  assert.ok(!E.resolveFloor(hush, fixed(0)).lastOutbursts?.length, 'and nobody lashes out');
+  // Surge: doubled odds on that ascent, capped.
+  const surge = run(86, darkCab, { stress: 2, stressCap: 12, energy: 80, abyssEvents: [{ floor: 86, kind: 'surge' }] });
+  assert.ok(Math.abs(E.outburstChanceAt(surge) - Math.min(DARK.outburstMax, 2 * outburstChance(87))) < 1e-9, 'a Surge floor doubles the odds');
+  const between = (outburstChance(87) + E.outburstChanceAt(surge)) / 2;
+  assert.ok(E.resolveFloor(surge, fixed(between)).lastOutbursts?.length, 'a roll between the two odds lashes out on a Surge floor');
+  assert.ok(!E.resolveFloor({ ...surge, abyssEvents: [] }, fixed(between)).lastOutbursts?.length, 'and not on an ordinary one');
+  assert.ok(abyssLossChance(surge) >= abyssLossChance({ ...surge, abyssEvents: [] }), 'the gamble chance counts the Surge');
+  // Bounty: one dark card waiting there pays extra on arrival.
+  const bounty = E.nextOfferBatch(run(83, [], { abyssEvents: [{ floor: 83, kind: 'bounty' }] }), fixed(.4));
+  const marked = bounty.offers.filter(o => o.bounty);
+  assert.equal(marked.length, 1, 'exactly one bounty card'); assert.equal(marked[0].bounty, ABYSS_EVENTS.bountyCoins);
+  assert.equal(E.fareBreakdown(marked[0], [marked[0]], 0).find(l => l.label === '悬赏')?.amount, ABYSS_EVENTS.bountyCoins, 'the bounty is paid with the fare');
+  assert.ok(!E.nextOfferBatch(run(84, [], { abyssEvents: [{ floor: 83, kind: 'bounty' }] }), fixed(.4)).offers.some(o => o.bounty), 'only on its own floor');
+  // Night market: a stall on its floor, gone after the next ascent.
+  const atMarket = E.resolveFloor(run(84, [R('commuter', 'c', 87)], { coins: 300, energy: 80, stressCap: 12, abyssEvents: [{ floor: 85, kind: 'market' }] }), fixed(.5));
+  assert.equal(atMarket.marketFloor, 85); assert.equal(atMarket.marketStock?.length, 3, 'the stall shows three items');
+  const bought = E.buyMarketItem(atMarket, 0);
+  assert.equal(bought.items?.length, 1); assert.equal(bought.coins, atMarket.coins - atMarket.marketStock![0].price); assert.ok(bought.marketStock![0].sold);
+  const away = { ...atMarket, floor: 86 }; assert.equal(E.buyMarketItem(away, 0), away, 'nothing to buy away from the market floor');
+  const leftMarket = E.resolveFloor(bought, fixed(.5));
+  assert.ok(!leftMarket.marketStock && leftMarket.marketFloor === undefined, 'the stall closes behind you');
+  assert.equal(translateGameText('在夜市买下照明弹，支付 132 金币。', 'en'), 'Bought Flare at the night market for 132 coins.');
+}
+console.log('PASS v9.21 the eve of the abyss');
+console.log(JSON.stringify({ version: 'v9', checks: 43, passed: true }));

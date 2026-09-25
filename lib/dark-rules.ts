@@ -44,6 +44,14 @@ export const DARK_RULES = {
   blastCoins: 20,
 };
 
+/** v9.21 “the eve of the abyss”: leaving the 80F shop, four of floors 81–89 are announced, one of each kind.
+ * Hush: no dark rider causes trouble on the ascent from that floor (a free Flare). Surge: outburst odds ×`surgeMultiplier`
+ * on that ascent. Bounty: one dark card waiting there pays +`bountyCoins` on arrival. Market: a stall at that floor sells
+ * items at shop prices. Known in advance, so the floors between can be planned around them. */
+export const ABYSS_EVENTS = { shopFloor: 80, from: 81, to: 89, surgeMultiplier: 2, bountyCoins: 20 } as const;
+export type AbyssEventKind = 'hush' | 'surge' | 'bounty' | 'market';
+export const ABYSS_EVENT_KINDS: AbyssEventKind[] = ['hush', 'surge', 'bounty', 'market'];
+
 /** v9.20 hidden “dark resonance”: a cabin of at least `min` riders, all dark versions or dark legends, calms down and pays.
  * Deliberately not described on any card or rule page. */
 export const DARK_RESONANCE = { min: 4, calm: 2, coinsPerRider: 1 };

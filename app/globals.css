@@ -3427,3 +3427,26 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 /* v9.20.6: item badges in a seat corner (handcuffs, alarm clock, protected, sedative), visible on short phone seats too. */
 .seat-item-badges { position:absolute; right:3px; bottom:3px; z-index:6; display:flex; gap:2px; pointer-events:auto; }
 .seat-item-badges svg { width:13px; height:13px; padding:1px; border-radius:3px; color:#f6d98c; background:#0b1712d9; border:1px solid #c99d5266; }
+/* v9.21 the eve of the abyss: the four announced floors of 81–89, the night market stall and the bounty tag. */
+.abyss-schedule { display:grid; gap:5px; padding:8px 10px; border:1px solid #6b4f9a88; border-radius:8px; background:#1a1226d9; }
+.abyss-schedule-label { font:600 10px var(--font-mono); letter-spacing:.12em; color:#c9b2f0; text-transform:uppercase; }
+.abyss-schedule-list { display:flex; flex-wrap:wrap; gap:4px; }
+.abyss-event { padding:2px 6px; border-radius:5px; font:600 11px/1.4 var(--font-sans); border:1px solid #6b4f9a88; color:#e2d0ff; background:#2a1746aa; }
+.abyss-event.abyss-surge { border-color:#d9534f99; color:#ffb3a8; background:#4a1212aa; }
+.abyss-event.abyss-hush { border-color:#6fa3c099; color:#bfe3f5; background:#12303faa; }
+.abyss-event.abyss-bounty { border-color:#e3bb6299; color:#f6d98c; background:#3a2c12aa; }
+.abyss-event.abyss-market { border-color:#7fbf8f99; color:#c3ecd0; background:#123a22aa; }
+.abyss-event.is-now { outline:2px solid currentColor; outline-offset:1px; }
+.abyss-event.is-past { opacity:.45; text-decoration:line-through; }
+.abyss-event-now { margin:0; font-size:12px; line-height:1.4; color:#e2d0ff; }
+.night-market { display:grid; gap:5px; padding:8px 10px; border:1px solid #7fbf8f88; border-radius:8px; background:#10261ad9; }
+.night-market-stall { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }
+.night-market-stall button { display:grid; justify-items:center; gap:2px; padding:5px 4px; border:1px solid #7fbf8f66; border-radius:6px; background:#0b1a12; color:#d8f0df; font-size:11px; line-height:1.2; cursor:pointer; }
+.night-market-stall button:disabled { opacity:.45; cursor:not-allowed; }
+.night-market-stall .item-icon { width:26px; height:26px; background-size:cover; border-radius:4px; }
+.night-market-stall b { font:600 11px var(--font-mono); color:#f6d98c; }
+.game-shell .compact-card .cc-tag-bounty { border-color:#e3bb62; color:#f6d98c; background:#3a2c1255; }
+.shop-abyss-schedule { padding:8px 10px; border:1px solid #6b4f9a88; border-radius:8px; background:#1a1226d9; color:#e2d0ff; font-size:12px; line-height:1.45; }
+.shop-abyss-schedule ul { margin:4px 0 0; padding:0; list-style:none; display:grid; gap:2px; }
+.shop-abyss-schedule li { display:grid; grid-template-columns:minmax(76px,max-content) 1fr; column-gap:8px; }
+.shop-abyss-schedule li span { font-weight:700; white-space:nowrap; }

@@ -704,6 +704,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^检查员没收了黑箱：举报奖励 \+(\d+) 金币$/u, 'The Inspector seized a black box: +$1 coins reward')
     .replace(/^炸弹客的炸弹炸了：(\d+) 人被炸下车，没付车费，损失 (\d+) 金币。$/u, 'The Bomb Carrier’s bomb went off: $1 blown out without paying, −$2 coins.')
     .replace(/^买下(.+?)，支付 (\d+) 金币。$/u, (_m, item: string, n: string) => `Bought ${translateGameText(item, 'en')} for ${n} coins.`)
+    .replace(/^(\d+)F · 夜市买下(.+?) −(\d+) 金币$/u, (_m, f: string, item: string, n: string) => `${f}F · Night market: bought ${translateGameText(item, 'en')} −${n} coins`)
     .replace(/^(\d+)F · 买下(.+?) −(\d+) 金币$/u, (_m, f: string, item: string, n: string) => `${f}F · Bought ${translateGameText(item, 'en')} −${n} coins`)
     .replace(/^买下(.+)$/u, (_m, item: string) => `Bought ${translateGameText(item, 'en')}`)
     .replace(/^使用(.+)$/u, (_m, item: string) => `Used ${translateGameText(item, 'en')}`)
@@ -769,6 +770,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     // v9.20.2 (English playtest 1): every “paid” message, not only shop charging.
     .replace(/^途中补电 \+(\d+)，支付 (\d+) 金币。$/u, 'In-transit charge +$1 for $2 coins.')
     .replace(/^配电箱升级，支付 (\d+) 金币。$/u, 'Power box upgraded for $1 coins.')
+    .replace(/^在夜市买下(.+)，支付 (\d+) 金币。$/u, (_m, item: string, n: string) => `Bought ${translateGameText(item, 'en')} at the night market for ${n} coins.`)
     .replace(/^老周的扳手：配电箱免费升级。$/u, 'Night Zhou’s wrench: a free power-box level.')
     .replace(/^加急补电 \+(\d+)，支付 (\d+) 金币；下一包更贵。$/u, 'Overtime charge +$1 for $2 coins; the next pack costs more.')
     .replace(/^途中安抚 −(\d+) 躁动，支付 (\d+) 金币。$/u, 'Calmed −$1 agitation in transit for $2 coins.')
