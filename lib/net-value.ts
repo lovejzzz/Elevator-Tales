@@ -1,4 +1,5 @@
-import { boxOf, COURIER_ARRIVAL_CHARGE, PARCEL_RULES, parcelBeside, parcelLinks, boxCoins, boxPower, seatRider, unseatRider, parcelLayoutOk, isBigParcel, cooperationBonus, cooperationRelief, eventPressureMultiplier, riderAgitation, type Rider, type RunState } from './game-engine';
+import { SYMBOL_RULES, redCount } from './symbols';
+import { symbolCoins, boxOf, COURIER_ARRIVAL_CHARGE, PARCEL_RULES, parcelBeside, parcelLinks, boxCoins, boxPower, seatRider, unseatRider, parcelLayoutOk, isBigParcel, cooperationBonus, cooperationRelief, eventPressureMultiplier, riderAgitation, type Rider, type RunState } from './game-engine';
 import { passengerBrief } from './passenger-presentation';
 import { ADJACENT, PASSENGERS, isAnyLegend, type PassengerKind } from './game-data';
 import { riderProfile } from './rider-profile';
@@ -20,7 +21,7 @@ export function netValue(rider: Rider, state: RunState): number | null {
   const trip = Math.max(1, rider.destination - state.floor);
   const profile = riderProfile(rider, state.cabin);
   const price = chargeUnitPrice(boxOf(state), state.floor);
-  const fare = rider.kind === 'mystery' ? 16 : PASSENGERS[rider.kind].fare;
+  const fare = rider.kind === 'mystery' ? 12 : PASSENGERS[rider.kind].fare;
   const agitation = (profile.agitation ?? 0) + (AGITATING.has(rider.kind) ? 1 : 0) + (rider.volatile ? 1 : 0);
   const refund = rider.kind === 'courier' ? COURIER_ARRIVAL_CHARGE * price : 0;
   // v9.16: a Courier with a parcel is valued as the pair (the parcel's power included); a parcel alone as unclaimed.
@@ -36,7 +37,7 @@ function cabinFares(state: RunState, cabin: Array<Rider | null>) {
   return cabin.reduce((sum, r) => {
     if (!r || isAnyLegend(r.kind) || r.kind === 'parcel') return sum;
     const fare = passengerBrief(r, state.floor, cabin, bonus, relief, mult, state.stress).expectedFare;
-    return sum + (fare ?? (r.kind === 'mystery' ? 16 : PASSENGERS[r.kind].fare));
+    return sum + (fare ?? (r.kind === 'mystery' ? 12 : PASSENGERS[r.kind].fare));
   }, 0);
 }
 
@@ -56,6 +57,12 @@ function cabinExtras(state: RunState, cabin: Array<Rider | null>, price: number)
     return sum;
   }, 0);
 }
+/** v10: one floor of a cabin's symbol links in coins: coins paid, power saved at the charge price, and the agitation of
+ * red links (and Street links) less the calm of Order and Hearth links at NET_AGITATION_COINS a point. */
+function symbolWorth(state: RunState, cabin: Array<Rider | null>, price: number) {
+  const l = symbolCoins({ ...state, cabin });
+  return l.coins + l.power * price - (redCount(cabin) * SYMBOL_RULES.redAgitation + l.agitationLines.reduce((n, x) => n + x.amount, 0)) * NET_AGITATION_COINS;
+}
 /** Expected contents of an unclaimed box in coins: half coins, half power at the shop price. */
 const boxValue = (r: Rider, price: number) => (boxCoins(r) + boxPower(r) * price) / 2;
 
@@ -68,7 +75,9 @@ export function boardNet(rider: Rider, state: RunState): { value: number; seated
   const trip = Math.max(1, rider.destination - state.floor), price = chargeUnitPrice(boxOf(state), state.floor);
   const power = trip * riderProfile(rider, state.cabin).energy * price * (isBigParcel(rider) ? 2 : 1);
   const value = (withRider: Array<Rider | null>, without: Array<Rider | null>) =>
-    cabinFares(state, withRider) - cabinFares(state, without) + cabinExtras(state, withRider, price) - cabinExtras(state, without, price) - power - trip * (cabinAgitation(state, withRider) - cabinAgitation(state, without)) * NET_AGITATION_COINS;
+    cabinFares(state, withRider) - cabinFares(state, without) + cabinExtras(state, withRider, price) - cabinExtras(state, without, price) - power - trip * (cabinAgitation(state, withRider) - cabinAgitation(state, without)) * NET_AGITATION_COINS
+    // v10: symbol links pay and cost every floor the rider rides.
+    + trip * (symbolWorth(state, withRider, price) - symbolWorth(state, without, price));
   const at = state.cabin.findIndex(r => r?.id === rider.id);
   if (at >= 0) return { value: Math.round(value(state.cabin, unseatRider(state.cabin, rider.id))), seated: true };
   let best: number | null = null;

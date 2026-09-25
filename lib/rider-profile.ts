@@ -1,12 +1,13 @@
 import { MYSTERY_RULES } from './dark-rules';
-import { ADJACENT, PASSENGERS, PASSENGER_ORDER, type PassengerKind } from './game-data';
+import { ADJACENT, PASSENGERS, type PassengerKind } from './game-data';
+import { SYMBOLS, SYMBOL_KEYS, pairLink, symbolEdges, symbolTitle, symbolsOf, type SymbolKey } from './symbols';
 import type { Rider } from './game-engine';
 
 export type Bond = { likes: PassengerKind[]; avoids: PassengerKind[] };
 // weight is a retired compatibility field for archived simulations, not a rule.
 export type ConflictEffect = 'agitation' | 'energy' | 'coins' | 'overload' | 'gamble';
 export type ConflictLink = { first: number; second: number; effect: ConflictEffect };
-export type VariableTraits = { weight: number; energy?: number; agitation?: number; fare: number; bond: Bond; conflictEffect?: ConflictEffect; revision: number };
+export type VariableTraits = { weight: number; energy?: number; agitation?: number; fare: number; bond: Bond; conflictEffect?: ConflictEffect; revision: number; symbols?: SymbolKey[] };
 export type CopyField = 'energy' | 'fare' | 'agitation' | 'weight' | 'bond';
 export type CopiedTrait = { sourceId: string; sourceKind: PassengerKind; field: CopyField };
 export const COPY_LABELS: Record<CopyField,string> = {energy:'每站耗电',fare:'车费',agitation:'躁动与联动偏好',weight:'旧属性（已停用）',bond:'联动偏好'};
@@ -73,7 +74,9 @@ export function randomTraits(kind:'mystery'|'shifter', available:PassengerKind[]
  const rest=pool.filter(k=>k!==liked);
  const avoided=rest[randomInt(0,rest.length-1,rng)]??'drunk';
  const conflictEffect=(['agitation','energy','coins'] as ConflictEffect[])[randomInt(0,2,rng)];
- return {weight:0,energy:kind==='shifter'?1:randomInt(1,2,rng),agitation:randomInt(0,1,rng),fare:randomInt(kind==='shifter'?16:8,kind==='shifter'?28:24,rng),bond:{likes:[liked],avoids:[avoided]},conflictEffect,revision};
+ // v10: two random non-opposite symbols.
+ const first=SYMBOL_KEYS[randomInt(0,5,rng)],others=SYMBOL_KEYS.filter(k=>k!==first&&SYMBOLS[first].opposite!==k),symbols:SymbolKey[]=[first,others[randomInt(0,others.length-1,rng)]];
+ return {weight:0,energy:kind==='shifter'?1:randomInt(1,2,rng),agitation:randomInt(0,1,rng),fare:randomInt(kind==='shifter'?10:5,kind==='shifter'?17:14,rng),bond:{likes:[liked],avoids:[avoided]},conflictEffect,revision,symbols};
 }
 function ownProfile(rider:Rider){
  const spec=PASSENGERS[rider.kind];
@@ -107,63 +110,41 @@ export function riderProfile(rider:Rider,cabin:Array<Rider|null>=[],slot=cabin.f
 }
 export function bondStatus(rider:Rider,cabin:Array<Rider|null>,slot=cabin.findIndex(r=>r?.id===rider.id)){
  const profile=riderProfile(rider,cabin,slot);
- const kinds=slot<0?[]:nearby(slot).flatMap(i=>cabin[i]?[cabin[i]!.kind]:[]);
- const supportCount=kinds.filter(kind=>profile.bond.likes.includes(kind)).length;
- const rawConflictCount=kinds.filter(kind=>profile.bond.avoids.includes(kind)).length;
- const supported=supportCount>0;
- const conflictCount=rawConflictCount;
- const conflict=conflictCount>0;
- return {supported,conflict,supportCount,conflictCount,...profile};
+ // v10: support and conflict count shared and opposite symbols with the neighbours (lib/symbols.ts).
+ const own=symbolsOf(rider,cabin,slot);
+ const links=slot<0?[]:nearby(slot).map(i=>pairLink(own,symbolsOf(cabin[i],cabin,i)));
+ const supportCount=links.reduce((n,l)=>n+l.shared.length,0);
+ const conflictCount=links.reduce((n,l)=>n+l.clashes.length,0);
+ return {supported:supportCount>0,conflict:conflictCount>0,supportCount,conflictCount,...profile};
 }
 export function conflictEffectBetween(a:Rider,b:Rider,cabin:Array<Rider|null>=[],aSlot=cabin.findIndex(r=>r?.id===a.id),bSlot=cabin.findIndex(r=>r?.id===b.id)):ConflictEffect|null{
- const aProfile=riderProfile(a,cabin,aSlot),bProfile=riderProfile(b,cabin,bSlot);
- const aAvoids=aProfile.bond.avoids.includes(b.kind),bAvoids=bProfile.bond.avoids.includes(a.kind);
- if(!aAvoids&&!bAvoids)return null;
- return CONFLICT_EFFECTS[pairKey(a.kind,b.kind)]??(aAvoids?aProfile.conflictEffect:undefined)??(bAvoids?bProfile.conflictEffect:undefined)??'agitation';
+ return pairLink(symbolsOf(a,cabin,aSlot),symbolsOf(b,cabin,bSlot)).clashes.length?'agitation':null;
 }
+/** v10: one red link per pair of opposite symbols between neighbours; every red link adds agitation. */
 export function conflictLinks(cabin:Array<Rider|null>):ConflictLink[]{
- return ADJACENT.flatMap(([first,second])=>{
-  const a=cabin[first],b=cabin[second];
-  if(!a||!b)return [];
-  const effect=conflictEffectBetween(a,b,cabin,first,second);
-  return effect?[{first,second,effect}]:[];
- });
+ return symbolEdges(cabin).flatMap(e=>e.clashes.map(()=>({first:e.first,second:e.second,effect:'agitation' as ConflictEffect})));
 }
 export const conflictEffectText=(effect:ConflictEffect)=>({
  agitation:'🔥 每层 +1 躁动',energy:'⚡ 每层额外耗 1 电',coins:'🪙 每层损失 2 金币',
  overload:'⚡ 两人耗电 ×2',gamble:'⚡ 两人耗电 ×2；🪙 双方到站：基价额外 +100%',
 }[effect]);
-export function riderConflictRules(rider:Rider,cabin:Array<Rider|null>=[]){
- const profile=riderProfile(rider,cabin);
- // The engine creates a red link if EITHER rider avoids the other. Static
- // incoming conflicts must be readable on both cards before placement too.
- // Do not invent randomized Mystery/Shifter preferences from their defaults.
- const incoming=PASSENGER_ORDER.filter(target=>!['mystery','shifter'].includes(target)&&BONDS[target].avoids.includes(rider.kind));
- const targets=[...new Set([...profile.bond.avoids,...incoming])];
- return targets.map(target=>{
-  const effect=CONFLICT_EFFECTS[pairKey(rider.kind,target)]??profile.conflictEffect??'agitation';
-  return {target,effect,text:conflictEffectText(effect)};
- });
+/** v10: red links come from opposite symbols (shown on the card), so there are no named opponents any more. */
+export function riderConflictRules(_rider:Rider,_cabin:Array<Rider|null>=[]):Array<{target:PassengerKind;effect:ConflictEffect;text:string}>{
+ return [];
 }
 export const profileWeight=(cabin:Array<Rider|null>)=>cabin.reduce((sum,r,i)=>sum+(r?riderProfile(r,cabin,i).weight:0),0);
+/** v10: relations come from symbols, so there are no named partners or opponents; the sheet explains the symbols. */
 export function bondSummary(rider:Rider,cabin:Array<Rider|null>=[],bonus=3){
- const {bond}=riderProfile(rider,cabin);
- const names=(kinds:PassengerKind[])=>kinds.map(k=>PASSENGERS[k].name).join(' / ');
- return {
-  partners:names(bond.likes),opponents:names(riderConflictRules(rider,cabin).map(rule=>rule.target)),bonus,
-  benefit:`每条协作连接：本人到站额外 +${bonus} 金币`,
-  condition:'到站时每位仍相邻的协作对象各算一条',
-  conflict:'红线效果每层生效；多条逐条相加，倍率按基础值线性叠加',
- };
+ void rider;void cabin;
+ return {partners:'',opponents:'',bonus,benefit:'',condition:'',conflict:''};
 }
-export function bondLines(rider:Rider,cabin:Array<Rider|null>=[],bonus=3){
+export const SYMBOL_SHAPE_RULE='相同和相反的符号一对一抵消。同一符号连成一排（+1级）、四人方块（+2级）或满车（+4级），效果更强。';
+export function bondLines(rider:Rider,cabin:Array<Rider|null>=[],_bonus=3){
+ const syms=symbolsOf(rider,cabin,cabin.findIndex(r=>r?.id===rider.id));
  const {copies}=riderProfile(rider,cabin);
- const summary=bondSummary(rider,cabin,bonus);
- const conflicts=riderConflictRules(rider,cabin).map(rule=>`${PASSENGERS[rule.target].name}：${rule.text}`).join('；');
  return [
-  `协作：${summary.partners}。本人到站时，每位仍相邻的协作对象 → 额外 +${bonus} 金币。`,
-  '只有列出的默契对象给到站奖励；人物能力产生的绿线另算。',
-  `冲突：${conflicts}。红线每层生效；多条逐条相加。`,
+  ...syms.map(sy=>symbolTitle(sy,true)),
+  ...(syms.length?[SYMBOL_SHAPE_RULE]:[]),
   ...copies.map(c=>'复制 '+PASSENGERS[c.sourceKind].name+' 的'+COPY_LABELS[c.field]+'。'),
  ];
 }

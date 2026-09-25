@@ -26,7 +26,7 @@ import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
 import { planPlacement } from '../lib/game-interaction';
 import { cardSummary, displayName } from '../lib/card-summary';
-import { ABYSS_EVENTS, DARK_RESONANCE, DARK_RULES as DARK, ITEMS as ITEMS_V, MARKET_ITEM_KEYS, MYSTERY_CLUES, MYSTERY_IDENTITIES, abyssStep, itemPrice, mysteryClue, outburstChance } from '../lib/dark-rules';
+import { ABYSS_EVENTS, DARK_RESONANCE, DARK_RULES as DARK, ITEMS as ITEMS_V, MARKET_ITEM_KEYS, MYSTERY_CLUES, MYSTERY_RULES, MYSTERY_IDENTITIES, abyssStep, itemPrice, mysteryClue, outburstChance } from '../lib/dark-rules';
 
 // Most checks here predate the v9.18 real-time Bomber timer and verify floor timers; the real-time block switches it on.
 E.BOMB_RULES.realtime = false;
@@ -172,10 +172,12 @@ console.log('PASS band tips, crowding at six, 20% high-band incident');
   const quiet = E.resolveFloor(run(20, thieves, { upgrades: { ...E.EMPTY_UPGRADES, soundproof: 1 } }), fixed());
   assert.ok((lines(noisy, 'lastPressure')['坏人链接躁动'] ?? 0) > 0);
   assert.ok(quiet.stress < noisy.stress, 'soundproof cancels criminal-link agitation');
-  const red = run(20, [rider('courier', 20, 4), rider('ghost', 20, 4)]);
-  assert.ok(E.energyBreakdown(red).conflict > 0);
+  // v10: red links only add agitation (no power or coin costs); Insulation pays its conflict tip per red link.
+  const red = run(20, [rider('commuter', 20, 4), rider('drunk', 20, 4)]);
+  assert.equal(E.energyBreakdown(red).conflict, 0);
   const insulated = { ...red, upgrades: { ...E.EMPTY_UPGRADES, insulation: 1 } };
-  assert.equal(E.energyBreakdown(insulated).conflictProtection, E.energyBreakdown(insulated).conflict);
+  // Commuter 🤫📋 beside Drunk 🎉🎲: both symbols clash, two red links.
+  assert.equal(lines(E.resolveFloor(insulated, fixed()), 'lastEarnings')['绝缘衬层：冲突小费'], 2);
   const stab = run(20, Array.from({ length: 5 }, () => rider('commuter', 20, 9)), { upgrades: { ...E.EMPTY_UPGRADES, reinforced: 1 } });
   let s = stab, saved = 0;
   for (let i = 0; i < 7; i++) { saved += E.stabilizedEnergy(s); s = E.resolveFloor({ ...s, stress: 0 }, fixed()); }
@@ -255,14 +257,13 @@ assert.ok(!districtFor(15).themed.includes('lover'));
   assert.ok(lovers / total < .13, `lover share 11-20F ${(lovers / total * 100).toFixed(1)}%`);
 }
 console.log('PASS lover share stays below 13% on 11-20F without a waiting Lover');
-// v9.0.3 Insulation pays 1 coin per red link per floor, capped at 3, and still removes red-link coin loss.
+// v9.0.3 Insulation pays 1 coin per red link per floor, capped at 3. v10: red links never cost coins.
 {
-  const cab = [rider('commuter', 12, 5), rider('celebrity', 12, 5)];
+  const cab = [rider('commuter', 12, 5), rider('celebrity', 12, 5)]; // 🤫📋 beside 🎉👻: one red link
   const plain = E.resolveFloor(run(12, cab), fixed(0.99));
   const insulated = E.resolveFloor(run(12, cab, { upgrades: { ...E.initialRun().upgrades, insulation: 1 } }), fixed(0.99));
   assert.equal(lines(insulated, 'lastEarnings')['绝缘衬层：冲突小费'], 1);
-  assert.equal(lines(insulated, 'lastEarnings')['红线金币损失'], undefined);
-  assert.ok(lines(plain, 'lastEarnings')['红线金币损失'] < 0);
+  assert.equal(lines(plain, 'lastEarnings')['红线金币损失'], undefined);
   assert.equal(E.INSULATION_RULES.cap, 3);
 }
 console.log('PASS insulation friction tip');
@@ -286,12 +287,14 @@ console.log('PASS rescue plans are real or the floor is declared lost');
 // v9.4 card net value: fare − trip power × charge price (+ courier refund) − trip agitation × 3; legends show none.
 {
   const s = run(25, []); // past the v9.19 early charge discount
-  assert.equal(netValue(rider('commuter', 25, 3, { boardedAt: 25 }), s), 0);
-  assert.equal(netValue(rider('courier', 25, 1, { boardedAt: 25 }), s), 10);
+  // v10: fares ×0.6, so alone most riders roughly break even or lose a little; links make them pay (lib/symbols.ts).
+  const F = (k: PassengerKind) => PASSENGERS[k].fare;
+  assert.equal(netValue(rider('commuter', 25, 3, { boardedAt: 25 }), s), F('commuter') - 6);
+  assert.equal(netValue(rider('courier', 25, 1, { boardedAt: 25 }), s), F('courier') - 2 + 4);
   // v9.16: a Courier carrying a parcel is valued as the pair; a parcel alone as its unclaimed contents.
-  assert.equal(netValue(rider('courier', 25, 1, { boardedAt: 25, parcelId: 'p' }), s), 8 - 2 - 2 + 4);
+  assert.equal(netValue(rider('courier', 25, 1, { boardedAt: 25, parcelId: 'p' }), s), F('courier') - 2 - 2 + 4);
   assert.equal(netValue(rider('parcel', 25, 1, { boardedAt: 25, ownerId: 'c' }), s), (6 + 3 * 2) / 2 - 2);
-  assert.equal(netValue(rider('thief', 25, 2, { boardedAt: 25 }), s), 5 - 4 - 6);
+  assert.equal(netValue(rider('thief', 25, 2, { boardedAt: 25 }), s), F('thief') - 4 - 6);
   assert.equal(netValue(rider('operator', 25, 9, { boardedAt: 25 }), s), null);
   // v9.19: until 20F power is 15% cheaper, so the same Commuter nets a little more.
   assert.ok(netValue(rider('commuter', 15, 3, { boardedAt: 15 }), run(15, []))! > netValue(rider('commuter', 25, 3, { boardedAt: 25 }), s)!);
@@ -330,10 +333,11 @@ console.log('PASS option A: flat motor, late-night unrest and calming');
 {
   const cab = [rider('child', 30, 2, { boardedAt: 30 }), rider('exorcist', 30, 4, { boardedAt: 28, volatile: true }), rider('lover', 30, 5, { boardedAt: 29, volatile: true }),
     rider('exorcist', 30, 1, { boardedAt: 27 }), rider('ghost', 30, 4, { boardedAt: 26 }), rider('exorcist', 30, 4, { boardedAt: 28 })];
-  const s = run(30, cab, { stress: 6, coins: 1 });
+  // v10: this cabin now also carries red symbol links (🏠 vs 👻, 🎉 vs 🤫), so the same rescue holds from 4/8, not 6/8.
+  const s = run(30, cab, { stress: 4, coins: 1 });
   const f = stressForecast(s);
   const src = Object.fromEntries((f.sources ?? []).map(x => [x.label, x.amount]));
-  assert.equal(src['急躁乘客'], 2); assert.equal(src['儿童无人照顾'], 1); assert.equal(src['车厢拥挤'], undefined, 'v9.20.2: a full cabin costs power, not agitation');
+  assert.equal(src['急躁乘客'], 2); assert.equal(src['儿童无人照顾'], 1); assert.ok(src['红线躁动'] > 0); assert.equal(src['车厢拥挤'], undefined, 'v9.20.2: a full cabin costs power, not agitation');
   assert.ok(s.stress + f.highDelta >= s.stressCap, 'the floor is fatal as shown');
   const plan = calmRescuePlan(s);
   assert.ok(plan && plan.remove.length === 1 && plan.remove[0].kind === 'child' && plan.remove[0].paid === 0 && plan.calm === 0, JSON.stringify(plan));
@@ -411,12 +415,14 @@ console.log('PASS partner potential on cards');
 console.log('PASS bomb timer display matches settlement');
 // v9.16 Courier parcel: an extra card that must sit beside its Courier; he pays only with it, an unclaimed one opens.
 {
-  assert.deepEqual([PASSENGERS.courier.fare, E.PARCEL_RULES.payoutCoins, E.PARCEL_RULES.payoutPower], [8, 6, 3], 'card texts quote these values');
-  const rng = seq(0.11, 0.62, 0.37, 0.93, 0.48, 0.05, 0.76, 0.29);
+  assert.deepEqual([PASSENGERS.courier.fare, E.PARCEL_RULES.payoutCoins, E.PARCEL_RULES.payoutPower], [5, 6, 3], 'card texts quote these values (v10: fares ×0.6)');
+  // v10: a seeded generator, not an 8-value cycle (a cycle can systematically skip one kind when the partner pools change).
+  let lcg = 12345; const rng = () => (lcg = (lcg * 16807) % 2147483647) / 2147483647;
   let withCourier = 0;
   for (let i = 0; i < 4000; i++) {
     const floor = 2 + (i % 100), offers = E.makeOffers(floor, E.EMPTY_UPGRADES, false, rng);
-    const couriers = offers.filter(r => r.kind === 'courier');
+    // After midnight a Courier may be drawn as his dark version, the Smuggler, who carries a black box.
+    const couriers = offers.filter(r => r.kind === 'courier' || r.kind === 'smuggler');
     assert.ok(couriers.length <= 1 && offers.length <= 4, 'one Courier per floor, so at most four cards after the opening');
     if (!couriers.length) { assert.ok(!offers.some(r => r.kind === 'parcel')); continue; }
     withCourier++;
@@ -429,7 +435,7 @@ console.log('PASS bomb timer display matches settlement');
   // Delivered together: fare and the power pack; the parcel leaves with him and is not an arrival.
   const pair = run(30, [courier(1, { id: 'courier-owner' }), parcel(1)], { energy: 30 });
   const delivered = E.resolveFloor(pair, fixed());
-  assert.equal(lines(delivered, 'lastEarnings')['快递员到站'], 8);
+  assert.equal(lines(delivered, 'lastEarnings')['快递员到站'], PASSENGERS.courier.fare);
   assert.equal(lines(delivered, 'lastEnergy')['快递员电池包'], 2);
   assert.ok(delivered.cabin.every(r => !r) && delivered.lastArrivals?.length === 1 && delivered.lastArrivals[0].kind === 'courier');
   // Without the parcel beside him: +1 agitation a floor, then no fare and no power pack.
@@ -487,12 +493,12 @@ console.log('PASS Courier parcel rules');
   assert.ok(E.unseatRider(seated, 'x').every(r => !r));
   const withCrate = run(30, seated, { energy: 30 });
   assert.ok(!planPlacement(withCrate, seated[1]!, 0).ok, 'a seated crate does not move');
-  // Legendary crate delivered: fare 8 + (60 − 6).
+  // Legendary crate delivered: the Courier's fare + (60 − 6).
   const legendary = go([R('parcel', 'p', 31, { ownerId: 'c', big: 'top', boxId: 'p', tier: 'legendary' }), R('courier', 'c', 31, { parcelId: 'p', parcelBig: true, tier: 'legendary' }), null, R('parcel', 'p-b', 31, { ownerId: 'c', big: 'bottom', boxId: 'p', tier: 'legendary' })]);
-  assert.equal(lines(legendary, 'lastEarnings')['快递员到站'], 62);
+  assert.equal(lines(legendary, 'lastEarnings')['快递员到站'], PASSENGERS.courier.fare + 54);
   assert.equal(lines(go([R('parcel', 'q', 31, { tier: 'rare' })], 0.1), 'lastEarnings')['纸箱开箱'], 7, 'rare average 12 × 0.6');
   // Adoption: an unclaimed box beside an empty-handed Courier counts as his.
-  assert.equal(lines(go([R('courier', 'c1', 31, { parcelId: 'gone' }), R('parcel', 'q', 35)]), 'lastEarnings')['快递员到站'], 8);
+  assert.equal(lines(go([R('courier', 'c1', 31, { parcelId: 'gone' }), R('parcel', 'q', 35)]), 'lastEarnings')['快递员到站'], PASSENGERS.courier.fare);
   // Dispute: another empty-handed Courier touching the box: both +1, the owner still pays.
   const dispute = run(30, [R('courier', 'c1', 34, { parcelId: 'p1' }), R('parcel', 'p1', 34, { ownerId: 'c1' }), R('courier', 'c2', 34, { parcelId: 'gone' })]);
   assert.deepEqual([E.riderAgitation(dispute, 0).low, E.riderAgitation(dispute, 2).low], [1, 2]);
@@ -520,7 +526,7 @@ console.log('PASS Courier parcel rules');
   assert.equal(Object.values(gifted.upgrades).filter(Boolean).length, 1, 'a 0.1 roll is inside the legendary 25% ability chance: installed at once');
   // Bomb hand-off: the empty-handed Courier leaves first with the bomb, pays, and the Bomber is a Disguised Commuter.
   const handoff = go([R('courier', 'c', 31, { parcelId: 'gone' }), R('bomb', 'b', 34, { fuse: 1 })]);
-  assert.equal(lines(handoff, 'lastEarnings')['快递员到站'], 8);
+  assert.equal(lines(handoff, 'lastEarnings')['快递员到站'], PASSENGERS.courier.fare);
   assert.ok(handoff.status === 'playing' && handoff.cabin[1]?.kind === 'commuter' && handoff.cabin[1]?.disguised && handoff.cabin[1]?.fuse === undefined);
   assert.equal(riderProfile(handoff.cabin[1]!, handoff.cabin).fare, PASSENGERS.bomb.fare, 'same fare in disguise');
   // v9.19: the timer still runs while he holds it; an ordinary bomb now blows the Bomber and his neighbours out instead of ending the shift.
@@ -585,7 +591,7 @@ console.log('PASS hidden box contents, ability finds and swaps');
   const rng = seq(0.2, 0.4, 0.6, 0.8, 0.1, 0.9, 0.3, 0.7);
   let dealt = 0;
   for (let i = 0; i < 3000 && !dealt; i++) for (const o of E.makeOffers(40 + (i % 60), E.EMPTY_UPGRADES, false, rng)) if (o.kind === 'bomb') { assert.equal(o.bombMs, E.bombSeconds(o.destination - o.boardedAt) * 1000); dealt++; }
-  assert.ok(dealt && PASSENGERS.bomb.fare === 26);
+  assert.ok(dealt && PASSENGERS.bomb.fare === 16); // v10: fares ×0.6
   const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 29, fareBonus: 0, stash: 0, volatile: false, ...extra });
   const armed = run(30, [R('bomb', 'b', 34, { fuse: 1, bombMs: 5000 })]);
   assert.equal(E.tickBombs(armed, 2000).cabin[0]?.bombMs, 3000);
@@ -739,7 +745,7 @@ console.log('PASS crowding warning, merged notes, English coverage of engine mes
   // The Mystery is revealed one floor after boarding and pays his identity's fare.
   const mystery = E.resolveFloor(run(40, [R('mystery', 'm', 45, { identity: 'magnate' })]), fixed(.9));
   assert.ok(mystery.cabin[0]?.revealed && mystery.log[0].includes('富商'));
-  assert.equal(E.arrivalFare(mystery.cabin[0]!, mystery.cabin, 0, 0), 25);
+  assert.equal(E.arrivalFare(mystery.cabin[0]!, mystery.cabin, 0, 0), MYSTERY_RULES.magnate.fare);
 
   // v9.22: the survivor bonus is gone; a normal rider delivered after midnight pays only his fare.
   assert.equal(lines(E.resolveFloor(run(62, [R('commuter', 'a', 63)]), fixed(.9)), 'lastEarnings')['幸存者平安送达'], undefined);
@@ -818,7 +824,8 @@ console.log('PASS v9.19 dark share, corruption, Mystery identity, survivors, dar
   assert.equal(displayName({ kind: 'parcel', contraband: true }, 'zh'), '黑箱');
   const early = cardSummary(R('lover', 'l', 5), run(1, []), 'zh');
   assert.ok(!early.chips.some(c => c.kinds.some(k => isDark(k))), 'ordinary cards name no dark rider before midnight');
-  assert.ok(cardSummary(R('lover', 'l', 70), run(62, []), 'zh').chips.some(c => c.kinds.includes('exlover')), 'after midnight they do');
+  // v10: red links come from symbols, so no card names an opponent any more, before or after midnight.
+  assert.ok(!cardSummary(R('lover', 'l', 70), run(62, []), 'zh').chips.some(c => c.tone === 'red'), 'no named opponents');
   // A lone Ex calls the other in; a Brawler getting off lowers agitation by 2 more, and the forecast knows.
   const ex = [R('exlover', 'e', 70), null, null, null, null, null];
   assert.ok(Array.from({ length: 40 }, (_, i) => E.makeOffers(64, E.initialRun().upgrades, false, seq(((i * 37) % 97) / 97, .01, ((i * 13) % 89) / 89), ex)).some(o => o[2]?.kind === 'exlover' && o[2].calledByLover), 'a lone Ex calls the other one');

@@ -6,6 +6,7 @@ import {V835_PAIRS} from './i18n-v835';
 import {V9_PAIRS} from './i18n-v9';
 import {V919_PAIRS} from './i18n-v919';
 import {V920_PAIRS} from './i18n-v920';
+import {V10_PAIRS, symbolHeadingEn} from './i18n-v10';
 
 export type GameLocale = 'en' | 'zh';
 
@@ -532,8 +533,8 @@ const phrasePairs: Array<[string, string]> = [
   ['或', ' or '], ['/条', '/link'], ['/站', '/floor'], ['/ 站', '/floor'], ['金币', 'Coins'], ['耗电', 'Power'], ['躁动', 'Agitation'], ['到站', 'Arrival'], ['车费', 'fare'],
 ];
 
-const exact = new Map([...exactPairs, ...V832_PAIRS, ...V835_PAIRS, ...V837_PAIRS, ...V9_PAIRS, ...V919_PAIRS, ...V920_PAIRS]);
-const phrases = [...V920_PAIRS, ...V919_PAIRS, ...V9_PAIRS, ...V837_PAIRS, ...V835_PAIRS, ...V832_PAIRS, ...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
+const exact = new Map([...exactPairs, ...V832_PAIRS, ...V835_PAIRS, ...V837_PAIRS, ...V9_PAIRS, ...V919_PAIRS, ...V920_PAIRS, ...V10_PAIRS]);
+const phrases = [...V10_PAIRS, ...V920_PAIRS, ...V919_PAIRS, ...V9_PAIRS, ...V837_PAIRS, ...V835_PAIRS, ...V832_PAIRS, ...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
 
 export function translateGameText(value: string, locale: GameLocale): string {
   if (locale === 'zh') return value;
@@ -711,6 +712,13 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^用了应急电池：\+(\d+) 电。$/u, 'Used a Spare Cell: +$1 power.')
     .replace(/^用了香薰：躁动 −(\d+)。$/u, 'Used Incense: agitation −$1.')
     .replace(/^用了檀香：躁动 −(\d+)。$/u, 'Burned Sandalwood: agitation −$1.')
+    // v10 symbol links.
+    .replace(/^(热闹|安静|秩序|江湖|人间|幽冥)绿线 ×(\d+)$/u, (_m, sym: string, n: string) => `${translateGameText(sym, 'en')} green ×${n}`)
+    .replace(/^绿线 (\d+) 条$/u, (_m, n: string) => `${n} green link${n === '1' ? '' : 's'}`)
+    .replace(/^例：两位基价(\d+)的游客相邻且同时下车，无其他加成，各得(\d+)金币；中躁动各得(\d+)。$/u, 'Example: two Tourists with base fare $1 sit together and leave on the same floor with nothing else: $2 coins each; $3 each at medium agitation.')
+    .replace(/^🎉🎲 每级绿线每层 \+(\d+) 金币$/u, '🎉🎲 +$1 coins per green-link level per floor')
+    .replace(/^🎉🎲 每级绿线每层 \+(\d+) → \+(\d+) 金币。$/u, '🎉🎲 +$1 → +$2 coins per green-link level per floor.')
+    .replace(/^符号：(.+)$/u, (m: string) => symbolHeadingEn(m))
     .replace(/^挂上大护身符：车里 (\d+) 位普通人这一趟不会被同化。$/u, 'Hung up a Great Amulet: $1 normal riders aboard are safe from corruption this trip.')
     .replace(/^给(.+?)用了强效镇静剂：直到下车都不产生躁动。$/u, (_m, who: string) => `Gave the ${translateGameText(who, 'en')} a Strong Sedative: no agitation of their own until they get off.`)
     .replace(/^用了请离券：(.+?)免费下车。$/u, (_m, who: string) => `Used an Exit Pass: the ${translateGameText(who, 'en')} got off for free.`)

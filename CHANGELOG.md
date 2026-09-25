@@ -1,6 +1,43 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.22.0**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.0.0**. Publication status is tracked separately from the source version.
+
+## v10.0.0 — 2026-09-25 — Symbol links: green and red links come from symbols / 符号链接：绿线红线由符号决定
+
+- Every rider carries two of six symbols (🎉 Lively↔🤫 Quiet, 📋 Order↔🎲 Street, 🏠 Hearth↔👻 Spirit), shown on cards and seats.
+- Links:
+  - a shared symbol is a green link, opposite symbols a red link;
+  - a pair's matches and clashes cancel one for one;
+  - each red link adds +1 agitation per floor, and red links no longer cost power or coins.
+- Each symbol with any green link works once a floor:
+  - 🎉 +2 coins;
+  - 🎲 +3 coins, +1 agitation;
+  - 📋 and 🏠 −1 agitation;
+  - 🤫 and 👻 save 1 power.
+- Shapes add levels: row +1, square +2, full cabin +4.
+- Named partner/opponent lists are removed; ability partners stay.
+- Interface: a new "Links this floor" panel, symbols on link lines, a Symbols block on the rider sheet, and a "Symbols and links" manual section.
+- Fares:
+  - day ×0.6; dark 80% of v9.22 (Robber 14, Summoner 6);
+  - Ghost 1; Mystery identities 6/16/20/6.
+- Cooperation Pact and Red String: 🎉🎲 +2 per level. Insulation keeps only its conflict tip.
+- Offers: dealt partners always really link.
+- Rules found by experiment:
+  - per-link coins → humans died at 15F;
+  - net rule → 63–68F but 617 coins;
+  - per-symbol effects per link → novice 68F;
+  - once-per-symbol plus shapes and fares ×0.6 → novice 32F, skilled 87F.
+- Acceptance, 4,200 runs:
+  - styles 86–87F;
+  - 100F reached 0.5%;
+  - skilled endings 43.6 / 55.5 / 0.9% (power / agitation / bomb);
+  - boarding rates 16–64%.
+- Green links per floor: 0.26 → 4.6 (human-like) and 0.75 → 3.0 (balanced).
+- Combinations: 7.26 billion seatings; 7,529,536 symbol layouts.
+- Watch:
+  - human-like bot still 76F, not the 60F target;
+  - "not affluent" checks still fail;
+  - Street and Spirit are harder to build around.
 
 ## v9.22.0 — 2026-09-25 — Less money after midnight / 午夜后的钱少一点
 

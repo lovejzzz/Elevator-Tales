@@ -128,10 +128,10 @@ const ABILITY_PARTNERS: Partial<Record<PassengerKind, PassengerKind[]>> = {
 };
 
 export function cardChips(rider: Rider, run: RunState, locale: GameLocale): CardChip[] {
-  const profile = riderProfile(rider, run.cabin);
   // v9.19.1: before midnight the dark riders do not exist yet, so ordinary cards do not name them.
   const met = (k: PassengerKind) => !isDark(k) || run.floor >= DARK_RULES.midnightFloor || run.cabin.some(r => r?.kind === k);
-  const green = [...new Set([...(ABILITY_PARTNERS[rider.kind] ?? []), ...profile.bond.likes])].filter(met);
+  // v10: named partners come only from abilities (the Officer holds the Thief…); everyday links are the symbols.
+  const green = [...new Set(ABILITY_PARTNERS[rider.kind] ?? [])].filter(met);
   const chips: CardChip[] = [];
   const names = (kinds: PassengerKind[]) => kinds.map(k => riderName(k, locale)).join(' / ');
   if (rider.kind === 'tourist' || rider.kind === 'coach' || rider.kind === 'nurse') chips.push({ tone: 'green', kinds: [], label: t(locale, '任何邻座', 'Any neighbor'), title: t(locale, '每位邻座都算', 'Every neighbor counts') });

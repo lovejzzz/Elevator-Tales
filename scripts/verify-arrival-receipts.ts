@@ -5,10 +5,10 @@ const r=(kind:E.Rider['kind'],slot:number):E.Rider=>({id:'p'+slot,kind,boardedAt
 const s={...E.initialRun(),floor:6,coins:10,energy:50,upgrades:{...E.EMPTY_UPGRADES,tipjar:1,meter:1,punchcard:1,finale:1},punchCount:4,
  cabin:[r('tourist',0),r('tourist',1),r('tourist',2),null,null,null]};
 const out=E.resolveFloor(s,()=>0);
-// Tourists: 10/12/10 fare; +8 fifth-ticket to seat1, +4 tip to
-// middle seat, +4 meter and +1 low-band tip to each (v9). Curtain Call (+8) stays cabin-wide.
-assert.deepEqual(out.lastArrivals?.map(a=>[a.slot,a.coins]),[[0,23],[1,21],[2,15]]);
-assert.equal(out.lastArrivals!.reduce((n,a)=>n+a.coins,0)+8,out.lastEarnings.total);
+// Tourists (v10 fare 5): 7/9/7 with neighbours; +5 fifth-ticket to seat 0, +4 tip to the middle seat, +4 meter and
+// +1 low-band tip to each (v9). Curtain Call (+8) and the symbol links (🎉 row: +4) stay cabin-wide.
+assert.deepEqual(out.lastArrivals?.map(a=>[a.slot,a.coins]),[[0,17],[1,18],[2,12]]);
+assert.equal(out.lastArrivals!.reduce((n,a)=>n+a.coins,0)+8+E.symbolCoins(s).coins,out.lastEarnings.total);
 assert.equal(out.lastArrivals![0].riderId,'p0');
 const ghost={...E.initialRun(),floor:5,energy:40,cabin:[{...r('ghost',0),destination:10},{...r('commuter',1),destination:6},null,null,null,null]};
 assert.equal(E.resolveFloor(ghost,()=>0).lastArrivals?.length,0,'Delayed rider does not fade out or receive a receipt');

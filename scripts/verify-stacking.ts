@@ -1,28 +1,24 @@
 import assert from 'node:assert/strict';
-import { BONDS, bondStatus, conflictLinks, riderProfile } from '../lib/rider-profile';
-import { PASSENGER_ORDER, type PassengerKind } from '../lib/game-data';
+import { bondStatus, conflictLinks, riderProfile } from '../lib/rider-profile';
+import { RIDER_SYMBOLS, SYMBOLS } from '../lib/symbols';
+import { PASSENGERS, PASSENGER_ORDER, type PassengerKind } from '../lib/game-data';
 import { initialRun, resolveFloor, riderAgitation, energySavings, type Rider, type RunState } from '../lib/game-engine';
 
 const rider=(kind:PassengerKind,id:string,extra:Partial<Rider>={}):Rider=>({kind,id,destination:20,patience:0,boardedAt:1,fareBonus:0,copySeed:id.length,...extra});
 const state=(extra:Partial<RunState>={}):RunState=>({...initialRun(),...extra});
 
+// v10: links follow symbols. Two identical neighbours share both symbols (4 green links counted at the rider); two
+// neighbours whose symbols are both opposite give 4 red links; red links do not depend on odd/even floors.
 let directedLinkChecks=0;
 for(const kind of PASSENGER_ORDER){
-  // Mimics copy values, never bonds; their own directed bonds remain testable.
-  const liked=BONDS[kind].likes[0],avoided=BONDS[kind].avoids[0];
-  // v9.19: some dark riders have no green (Overtimer, Ex, Uncanny Child, Taskmaster) or no red partner at all.
-  if(!liked||!avoided){
-    if(liked)assert.equal(bondStatus(rider(kind,'s'),[rider(liked,'a'),rider(kind,'s'),rider(liked,'b'),null,null,null],1).supportCount,2,`${kind}: every green neighbor must count`);
-    if(avoided)assert.equal(conflictLinks([rider(avoided,'a'),rider(kind,'s'),rider(avoided,'b'),null,null,null]).length,2,`${kind}: every red edge is counted once`);
-    continue;
-  }
-  const twoGreen=[rider(liked,`${kind}-good-a`),rider(kind,`${kind}-self`),rider(liked,`${kind}-good-b`),null,null,null];
-  const twoRed=[rider(avoided,`${kind}-bad-a`),rider(kind,`${kind}-self`),rider(avoided,`${kind}-bad-b`),null,null,null];
-  const protectedCabin=[rider(liked,`${kind}-good`),rider(kind,`${kind}-self`),rider(avoided,`${kind}-bad`),null,null,null];
-  assert.equal(bondStatus(twoGreen[1]!,twoGreen,1).supportCount,2,`${kind}: every green neighbor must count`);
-  assert.equal(bondStatus(twoRed[1]!,twoRed,1).conflictCount,2,`${kind}: every red neighbor must count`);
-  assert.equal(bondStatus(protectedCabin[1]!,protectedCabin,1).conflictCount,1,`${kind}: green and red links resolve independently`);
-  assert.equal(conflictLinks(twoRed).length,2,`${kind}: every red edge is counted once`);
+  const own=RIDER_SYMBOLS[kind]; if(!own)continue;
+  const twin=[rider(kind,`${kind}-a`),rider(kind,`${kind}-self`),rider(kind,`${kind}-b`),null,null,null];
+  assert.equal(bondStatus(twin[1]!,twin,1).supportCount,4,`${kind}: every shared symbol of every neighbour counts`);
+  const foe=PASSENGER_ORDER.find(k=>{const o=RIDER_SYMBOLS[k];return o&&own.every(s=>o.includes(SYMBOLS[s].opposite));});
+  if(!foe)continue;
+  const twoRed=[rider(foe,`${kind}-bad-a`),rider(kind,`${kind}-self`),rider(foe,`${kind}-bad-b`),null,null,null];
+  assert.equal(bondStatus(twoRed[1]!,twoRed,1).conflictCount,4,`${kind}: every clash of every neighbour counts`);
+  assert.equal(conflictLinks(twoRed).length,4,`${kind}: every red link is counted once`);
   assert.deepEqual(conflictLinks(state({floor:1,cabin:twoRed}).cabin),conflictLinks(state({floor:2,cabin:twoRed}).cabin),`${kind}: red links do not depend on odd/even floors`);
   directedLinkChecks+=3;
 }
@@ -37,10 +33,10 @@ assert.equal(energySavings(occult),1,'v9: one Exorcist offsets at most one contr
 const lovers=state({floor:1,cabin:[rider('lover','l1'),rider('lover','l2',{destination:2}),rider('lover','l3'),null,null,null]});
 const loverResult=resolveFloor(lovers,()=>.9);
 assert.equal(loverResult.lastEarnings.sources.find(line=>line.label==='恋人连携')?.amount??0,0);
-assert.equal(loverResult.lastEarnings.sources.find(line=>line.label==='恋人到站')?.amount,17,'v9: 5 base times three, plus two unmultiplied bonds');
+assert.equal(loverResult.lastEarnings.sources.find(line=>line.label==='恋人到站')?.amount,PASSENGERS.lover.fare*3,'base times three (two paired neighbours); v10: no named-partner bonus');
 
 const coaches=state({floor:1,cabin:[rider('coach','c1'),rider('tourist','t',{destination:2}),rider('coach','c2'),null,null,null]});
-assert.equal(resolveFloor(coaches,()=>.9).lastEarnings.sources.find(line=>line.label==='游客到站')?.amount,20,'two coaches linearly double a non-coach base fare');
+assert.equal(resolveFloor(coaches,()=>.9).lastEarnings.sources.find(line=>line.label==='游客到站')?.amount,PASSENGERS.tourist.fare*2+4,'two coaches linearly double a non-coach base fare (plus the Tourist’s 2 per neighbour)');
 
 const calmers=state({floor:1,cabin:[rider('nurse','n1'),rider('thief','hot',{volatile:true}),null,null,rider('musician','m1'),null]});
 assert.equal(riderAgitation(calmers,1).low,1,'the Nurse offsets one point; the Musician does not provide neighbor care');
@@ -53,7 +49,7 @@ const nurseFanout=state({cabin:[agitated('nurse-a'),rider('nurse','nurse'),agita
 assert.deepEqual([0,2,4].map(slot=>riderAgitation(nurseFanout,slot).low),[1,1,1],'one Nurse cancels one point from every adjacent rider');
 
 const inspectors=state({floor:1,cabin:[rider('inspector','i1',{quietStreak:2,destination:2}),rider('inspector','i2',{quietStreak:2,destination:2}),null,null,null,null]});
-assert.equal(resolveFloor(inspectors,()=>.9).lastEarnings.sources.find(line=>line.label==='检查员到站')?.amount,40,'v9.7: two Inspectors on their third calm-enough floor independently finish stamps and pay 8 base +12 bonus each');
+assert.equal(resolveFloor(inspectors,()=>.9).lastEarnings.sources.find(line=>line.label==='检查员到站')?.amount,2*(PASSENGERS.inspector.fare+12),'v9.7: two Inspectors on their third calm-enough floor independently finish stamps and pay base (v10: 5) +12 bonus each');
 
 const controlledDrunks=state({floor:1,cabin:[rider('drunk','d1'),rider('nurse','n'),rider('drunk','d2'),null,null,null]});
 assert.equal(resolveFloor(controlledDrunks,()=>.9).lastEarnings.sources.find(line=>line.label==='醉汉安抚')?.amount??0,0,'calming no longer generates travel income');

@@ -1,3 +1,4 @@
+import { symbolLedger } from './symbols';
 import { CALM_RULES, SOOTHE_PRICE, outburstChanceAt, GHOST_CONTROL_KINDS, overtimerLingers, troubleFree, COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, nightOperatorSaving, outburstSlots, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
 import { riderProfile } from './rider-profile';
 import { DARK_RULES, outburstIsPower } from './dark-rules';
@@ -157,7 +158,9 @@ export function sectorForecast(state: RunState): { shop: number; projected: numb
     const aboard = state.cabin.map((r, slot) => (r && r.destination >= f ? { r, slot } : null)).filter(Boolean) as Array<{ r: Rider; slot: number }>;
     const riders = aboard.reduce((n, { r, slot }) => n + riderProfile(r, state.cabin, slot).energy, 0);
     const motor = boxedMotorCost(motorCost(f), boxOf(state), f) - (f === state.floor + 1 ? operatorSaving(state) + nightOperatorSaving(state) + serviceSaving(state) : 0);
-    energy -= Math.max(0, motor) + (aboard.length ? riders : 1);
+    // v10: Quiet and Spirit green links among the riders still aboard save power (never more than they use).
+    const symbolSaving = aboard.length ? Math.min(riders, symbolLedger(state.cabin.map(r => r && r.destination >= f ? r : null)).power) : 0;
+    energy -= Math.max(0, motor) + (aboard.length ? riders - symbolSaving : 1);
     energy += state.cabin.filter((r, slot) => r?.kind === 'courier' && r.destination === f && parcelBeside(state.cabin, slot)).length * COURIER_ARRIVAL_CHARGE;
     if (f === shop) energy = Math.min(state.energyCap, energy + shopEntryCharge(boxOf(state)));
     if (failFloor === null && (energy < 0 || (f < shop && energy <= 0))) failFloor = f;

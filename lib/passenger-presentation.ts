@@ -1,6 +1,7 @@
 import { PASSENGERS, isDark, type PassengerKind } from './game-data';
 import { DARK_RULES, MYSTERY_CLUES, MYSTERY_RULES, mysteryClue } from './dark-rules';
-import { bondLines, bondSummary, riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
+import { SYMBOL_SHAPE_RULE, bondLines, bondSummary, riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
+import { SYMBOLS, SYMBOL_GLYPH, symbolTitle, symbolsOf } from './symbols';
 import { BOMB_RULES, arrivalFare, fareBreakdown, arrivalTip, HIGH_RISK_BONUS, riderAfterWork, riderAgitation, type Rider, type RunState } from './game-engine';
 import { CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
 import { RISK_PARTNERS, RISK_STASH_PER_ASCENT, riskPartnerships } from './shift-rules';
@@ -19,7 +20,6 @@ export type PassengerRuleBlock = {
 
 export function passengerFace(rider: Rider, state: RunState) {
  const profile=riderProfile(rider,state.cabin);
- const names=(kinds:PassengerKind[])=>kinds.map(k=>(k===rider.kind?'另一位':'')+PASSENGERS[k].name).join('或');
  const energy=[`耗电 ${profile.energy} /站`];
  const pressure=[profile.agitation||rider.volatile?`每站躁动 +${profile.agitation+(rider.volatile?1:0)}`:'自身躁动 +0'];
  let moneyNote='',special='';
@@ -52,7 +52,7 @@ export function passengerFace(rider: Rider, state: RunState) {
  const slot=state.cabin.findIndex(r=>r?.id===rider.id),actual=slot>=0?riderAgitation(state,slot):null;
  const conflicts=riderConflictRules(rider,state.cabin).map(rule=>`邻${PASSENGERS[rule.target].name}：${rule.text}`);
  return {energy,pressure,moneyNote,special,
-  cooperative:`到站每邻${names(profile.bond.likes)}`,
+  cooperative:'',
   conflict:conflicts.join('；'),
   conflicts,
   actual:actual?`下站人物躁动 ${actual.low===actual.high?actual.low:actual.low+'～'+actual.high}`:null,
@@ -191,8 +191,8 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
  };
  if(rider.kind==='tourist') {
   cooperation.heading='游客自己的到站收入';
-  cooperation.lines=[`卡面基价 + 每位邻座2金币 + 每位相邻名人再加${bonus}金币；中躁动再加3金币。`, '只在游客本人下车时结算，不给邻座发钱。其他游客也算邻座；同层下车仍互算，先下车的以后不再算。', '例：两位基价8的游客相邻且同时下车，无其他加成，各得10金币，共20；中躁动各得13，共26。'];
-  cooperation.note='邻座奖励、中躁动奖励和名人协作奖励直接相加，不参与基价倍率。';
+  cooperation.lines=['卡面基价 + 每位邻座2金币；中躁动再加3金币。', '只在游客本人下车时结算，不给邻座发钱。其他游客也算邻座；同层下车仍互算，先下车的以后不再算。', `例：两位基价${PASSENGERS.tourist.fare}的游客相邻且同时下车，无其他加成，各得${PASSENGERS.tourist.fare+2}金币；中躁动各得${PASSENGERS.tourist.fare+5}。`];
+  cooperation.note='邻座奖励和中躁动奖励直接相加，不参与基价倍率。';
  }
  if(relief>0){
   cooperation.lines.push(`契约生效：${name}协作到站，额外躁动 −${relief}。`);
@@ -204,8 +204,10 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
   lines:conflictLines,
   note:'红线每层生效；多条逐条相加。同类倍率按基础值线性叠加。',
  };
- // v9.19: some dark riders have no green or no red partners; their sheets leave out the empty section.
- return [ability,...(partners||rider.kind==='tourist'?[cooperation]:[]),...(opponents?[conflict]:[])];
+ // v10: one block for the rider's symbols (what each green link does, what clashes); no named partners any more.
+ const syms=symbolsOf(rider,cabin,cabin.findIndex(r=>r?.id===rider.id));
+ const symbols:PassengerRuleBlock={tone:'good',heading:`符号：${syms.map(sy=>SYMBOL_GLYPH[sy]+SYMBOLS[sy].zh).join(' · ')}`,lines:syms.map(sy=>symbolTitle(sy,true)),note:SYMBOL_SHAPE_RULE};
+ return [ability,...(rider.kind==='tourist'?[cooperation]:[]),...(syms.length?[symbols]:[]),...(opponents?[conflict]:[])];
 }
 
 export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|null>=[], bonus=1, relief=0, multiplier=1, agitation=0) {
@@ -221,7 +223,8 @@ export function passengerBrief(rider: Rider, floor: number, cabin: Array<Rider|n
   limit:relief>0 ? '每位协作送达各舒缓1次' : null,
  };
  const skillRules=PASSENGER_RULES[rider.kind].map(rule=>pressureText(rule,multiplier)),bondRules=bondLines(rider,cabin,bonus).map(rule=>pressureText(rule,multiplier));
- const detailRules=[bondRules[1],'绿色协作和红色冲突分别结算，互不抵消。',...bondRules.slice(3)];
+ // v10: the symbol lines already have their own block on the sheet; the notes keep only what is not shown there.
+ const detailRules=bondRules.filter(line=>line.startsWith('复制'));
  const slot=cabin.findIndex(candidate=>candidate?.id===rider.id);
  const quotedRider=slot>=0&&rider.destination<=floor+1?riderAfterWork(rider,cabin,slot,agitation):rider;
  if(quotedRider!==rider&&riskPartnerships(cabin).members.includes(slot)) {

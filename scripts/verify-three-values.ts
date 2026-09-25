@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { DARK_LEGEND_KINDS, PASSENGER_ORDER, LEGEND_KINDS, UPGRADES, type UpgradeKey } from '../lib/game-data';
+import { DARK_LEGEND_KINDS, PASSENGERS, PASSENGER_ORDER, LEGEND_KINDS, UPGRADES, type UpgradeKey } from '../lib/game-data';
 import { KEEPSAKE_KEYS } from '../lib/legends';
 import { AGITATION_CAPACITY, ENERGY_CAPACITY, HIGH_RISK_BONUS, HIGH_RISK_START, INITIAL_ENERGY, OFFER_PRESSURE_STEP, chargeBattery, chargingPlan, initialRun, makeOffers, resolveFloor, riderAgitation, type Rider, type RunState } from '../lib/game-engine';
 import { energyForecast, stressForecast } from '../lib/game-forecast';
@@ -20,7 +20,7 @@ assert.equal(courierArrival.lastEnergy.sources.find(line=>line.label==='快递�
 const hot=rider('commuter','hot',{volatile:true,destination:2});
 const hotState=state({cabin:[hot,null,null,null,null,null]});const hotResult=resolveFloor(hotState,()=>.9);
 assert.equal(riderAgitation(hotState,0).low,1);
-assert.equal(hotResult.lastEarnings.sources.find(line=>line.label==='通勤者到站')?.amount,13,'6 base +4 high-risk premium +3 low-departure bonus (the +1 low-band tip is a separate line)');
+assert.equal(hotResult.lastEarnings.sources.find(line=>line.label==='通勤者到站')?.amount,PASSENGERS.commuter.fare+7,'base (v10: 4) +4 high-risk premium +3 low-departure bonus (the +1 low-band tip is a separate line)');
 assert.equal(hotResult.lastPressure.delta,0,'arrival relief cancels one visible high-risk point');
 
 const cancelled=state({cabin:[rider('child','child'),rider('nurse','nurse'),null,null,null,null]});
@@ -28,9 +28,10 @@ assert.equal(riderAgitation(cancelled,0).low,0,'one adjacent calmer cancels the 
 const stacked=state({cabin:[rider('commuter','hotter',{volatile:true}),rider('nurse','n1'),null,rider('musician','m1'),null,null]});
 assert.equal(riderAgitation(stacked,0).low,0,'two adjacent calmers may stack without creating negative agitation');
 
-const twoArrivals=state({stress:4,cabin:[rider('commuter','a',{destination:2,volatile:true}),rider('courier','b',{destination:2,volatile:true}),null,null,null,null]});
+// v10: seats 0, 2 and 4 are not neighbours, so no symbol link changes the agitation being tested.
+const twoArrivals=state({stress:4,cabin:[rider('commuter','a',{destination:2,volatile:true}),null,rider('courier','b',{destination:2,volatile:true}),null,null,null]});
 assert.equal(resolveFloor(twoArrivals,()=>.9).lastPressure.delta,0,'each arrival relieves one risk point, capped at two per floor');
-const threeArrivals=state({stress:2,cabin:[rider('commuter','a',{destination:2,volatile:true}),rider('courier','b',{destination:2,volatile:true}),rider('lawyer','c',{destination:2,volatile:true}),null,null,null]});
+const threeArrivals=state({stress:2,cabin:[rider('commuter','a',{destination:2,volatile:true}),null,rider('courier','b',{destination:2,volatile:true}),null,rider('lawyer','c',{destination:2,volatile:true}),null]});
 assert.equal(resolveFloor(threeArrivals,()=>.9).lastPressure.delta,1,'three arrivals still use the two-point floor cap');
 
 // v9.7: support riders never roll high risk, so check across seeds rather than one fixed draw.

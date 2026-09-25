@@ -82,10 +82,10 @@ export const isCarrierKind = (kind: PassengerKind | undefined) => kind === 'cour
 export type MysteryIdentity = 'undercover' | 'fugitive' | 'magnate' | 'saint';
 export const MYSTERY_IDENTITIES: MysteryIdentity[] = ['undercover', 'fugitive', 'magnate', 'saint'];
 export const MYSTERY_RULES: Record<MysteryIdentity, { fare: number; name: string; en: string; zh: string; enLine: string }> = {
-  undercover: { fare: 8, name: '便衣警察', en: 'Undercover Officer', zh: '管住身边的小偷、劫匪，锁住炸弹客（锁不住疯炸客）', enLine: 'Controls adjacent Thieves and Robbers; locks Bomb Carriers (not the Mad Bomber)' },
-  fugitive: { fare: 20, name: '逃犯', en: 'Fugitive', zh: '每层 +1 躁动 · 车费 20', enLine: '+1 agitation/floor · fare 20' },
-  magnate: { fare: 25, name: '富商', en: 'Magnate', zh: '车费 25', enLine: 'Fare 25' },
-  saint: { fare: 8, name: '好心人', en: 'Good Samaritan', zh: '抵消每位邻座自身躁动 1/层', enLine: 'Cancels 1 of each neighbor’s own agitation/floor' },
+  undercover: { fare: 6, name: '便衣警察', en: 'Undercover Officer', zh: '管住身边的小偷、劫匪，锁住炸弹客（锁不住疯炸客）', enLine: 'Controls adjacent Thieves and Robbers; locks Bomb Carriers (not the Mad Bomber)' },
+  fugitive: { fare: 16, name: '逃犯', en: 'Fugitive', zh: '每层 +1 躁动 · 车费 16', enLine: '+1 agitation/floor · fare 16' },
+  magnate: { fare: 20, name: '富商', en: 'Magnate', zh: '车费 20', enLine: 'Fare 20' },
+  saint: { fare: 6, name: '好心人', en: 'Good Samaritan', zh: '抵消每位邻座自身躁动 1/层', enLine: 'Cancels 1 of each neighbor’s own agitation/floor' },
 };
 
 /** v9.20: before the reveal, a Mystery shows one clue. Each clue fits exactly two identities (a ring:

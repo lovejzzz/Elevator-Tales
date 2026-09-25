@@ -1,3 +1,4 @@
+import { pairLink, symbolsOf } from './symbols';
 import { riskPartnerships } from './shift-rules';
 import { bondStatus, conflictLinks, riderProfile, type ConflictEffect } from './rider-profile';
 import { ADJACENT, DARK_OF, PASSENGERS, isDark, type PassengerKind } from './game-data';
@@ -29,7 +30,8 @@ export function activeConnection(cabin: Array<Rider | null>, first: number, seco
   // sole source of generic cooperation arrival rewards.
   if(a.kind==='tourist'||b.kind==='tourist')return true;
   if (a.kind === 'nurse' || b.kind === 'nurse') return true;
-  if(riderProfile(a,cabin,first).bond.likes.includes(b.kind)||riderProfile(b,cabin,second).bond.likes.includes(a.kind))return true;
+  // v10: a shared symbol is a green link.
+  if(pairLink(symbolsOf(a,cabin,first),symbolsOf(b,cabin,second)).shared.length)return true;
   const supports = (source: PassengerKind, target: PassengerKind, slot: number) => {
     if (source === 'lover') return target === 'lover';
     if (source === 'thief') return target === 'cop' || target === 'lawyer';

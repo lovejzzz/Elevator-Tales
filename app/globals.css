@@ -3456,3 +3456,22 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 .shop-abyss-schedule ul { margin:4px 0 0; padding:0; list-style:none; display:grid; gap:2px; }
 .shop-abyss-schedule li { display:grid; grid-template-columns:minmax(76px,max-content) 1fr; column-gap:8px; }
 .shop-abyss-schedule li span { font-weight:700; white-space:nowrap; }
+
+/* v10 symbol links: two symbol icons per rider, the link-line glyphs and the “links this floor” panel. */
+.sym-badges { display:inline-flex; gap:3px; margin-left:6px; vertical-align:middle; }
+.sym { --sym:#c9c2b0; display:inline-grid; place-items:center; width:22px; height:22px; border-radius:50%; border:1.5px solid var(--sym); background:color-mix(in srgb, var(--sym) 22%, #0c1310); font-size:13px; line-height:1; font-style:normal; box-shadow:0 0 6px color-mix(in srgb, var(--sym) 45%, transparent); }
+.sym-lively { --sym:#f0a040; } .sym-quiet { --sym:#7ab4f0; } .sym-order { --sym:#e6c27a; }
+.sym-street { --sym:#b58ae6; } .sym-hearth { --sym:#8fd18f; } .sym-spirit { --sym:#7fd6d0; }
+.sym-hidden, .sym-copy { font:700 11px var(--font-mono); color:#c9c2b0; }
+.seat-heading .sym-badges { margin-left:4px; }
+.seat-heading .sym { width:20px; height:20px; font-size:12px; background:color-mix(in srgb, var(--sym) 30%, #0c1310); }
+.ll-sym { font-size:12px; letter-spacing:1px; }
+.link-ledger { display:grid; gap:5px; padding:8px 10px; border:1px solid #c99d5255; border-radius:8px; background:#0d1713cc; color:#e8dcc0; }
+.link-ledger-label { font:600 10px var(--font-mono); letter-spacing:.08em; text-transform:uppercase; color:#c9b27a; }
+.link-ledger-rows { display:flex; flex-wrap:wrap; gap:4px; }
+.link-ledger-item { --sym:#c9c2b0; display:inline-flex; align-items:center; gap:4px; padding:2px 7px 2px 3px; border:1px solid color-mix(in srgb, var(--sym) 60%, transparent); border-radius:999px; font-size:11px; line-height:18px; }
+.link-ledger-item b { display:inline-grid; place-items:center; width:18px; height:18px; font-size:11px; }
+.link-ledger-item em { font-style:normal; color:#f6d98c; font-family:var(--font-mono); }
+.link-ledger-item.is-red { --sym:#e0655a; color:#f3b3aa; }
+.link-ledger-item.is-red em { color:#f3b3aa; }
+.link-ledger-empty { font-size:11px; color:#a9b8ae; }

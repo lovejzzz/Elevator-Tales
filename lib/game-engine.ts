@@ -1,4 +1,5 @@
-import { BONDS, bondStatus, conflictLinks, profileWeight, randomTraits, riderProfile, type VariableTraits } from './rider-profile';
+import { BONDS, conflictLinks, profileWeight, randomTraits, riderProfile, type VariableTraits } from './rider-profile';
+import { SYMBOL_RULES, greenCount, pairLink, symbolLedger, symbolsOf } from './symbols';
 import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
 import { ADJACENT, BASE_OF, DARK_LEGEND_KINDS, DARK_LEGEND_OF, DARK_OF, PASSENGERS, UNLOCK_TIERS, UPGRADES, isAnyLegend, isDark, isDarkLegend, isLegend, passengerCategory, type DarkLegendKind, type LegendKind, type PassengerKind, type UpgradeKey } from './game-data';
 import { ABYSS_EVENTS, ABYSS_EVENT_KINDS, type AbyssEventKind, DARK_RESONANCE, DARK_RULES, ITEMS, ITEM_SLOTS, MARKET_ITEM_KEYS, MARKET_STOCK, SHOP_ITEM_KEYS, MYSTERY_IDENTITIES, MYSTERY_RULES, abyssStep, abyssTier, outburstChance, outburstIsPower, corruptible, darkShare, isBombKind, isCarrierKind, isSurvivor, itemPrice, type ItemKey, type MysteryIdentity } from './dark-rules';
@@ -634,7 +635,9 @@ export function energyBreakdown(state: RunState) {
   const multiplied=riderCosts.reduce((sum,rider)=>sum+rider.extra,0);
   const conflict=flat+multiplied;
   const conflictProtection=state.upgrades.insulation ? conflict : 0;
-  return {motor,people,stabilizer,shared,service,conflict,conflictProtection,riderCosts,dark,saved:stabilizer+shared+service+conflictProtection,total:motor+people+conflict+dark-stabilizer-shared-service-conflictProtection};
+  // v10: Quiet and Spirit green links save power, never more than the riders themselves use.
+  const symbol=Math.min(people,symbolLedger(state.cabin).power);
+  return {motor,people,stabilizer,shared,service,conflict,conflictProtection,symbol,riderCosts,dark,saved:stabilizer+shared+service+conflictProtection+symbol,total:motor+people+conflict+dark-stabilizer-shared-service-conflictProtection-symbol};
 }
 export const totalEnergyCost = (state: RunState) => energyBreakdown(state).total;
 // Inspector judges the controllable load, not the route's unavoidable motor.
@@ -695,8 +698,16 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
   const courierAboard = cabin.some(r => isCarrierKind(r?.kind));
   const anchor = weightedKind(floor, rng, false, called, available, courierAboard);
   const eligible = (kind: PassengerKind) => available.includes(kind) && (!called || kind !== 'lover') && (darkShare(floor) < 1 || Boolean(DARK_OF[kind]));
-  const tension = floor >= 21 && rng() < .3 ? BONDS[anchor].avoids.filter(eligible) : [];
-  const partners = tension.length ? tension : OFFER_PARTNERS[anchor].filter(eligible);
+  // v10: a tense packet pairs the anchor with someone holding an opposite symbol.
+  const anchorSymbols = symbolsOf({ kind: anchor });
+  const tension = floor >= 21 && rng() < .3 ? available.filter(k => eligible(k) && pairLink(anchorSymbols, symbolsOf({ kind: k })).clashes.length > 0) : [];
+  // v10: a partner must really interact with the anchor — an ability pair (READY_PARTNERS) or a symbol link that does not
+  // cancel out — and anyone sharing a symbol with the anchor is a partner too. Mimic, Mystery and Shifter keep their list.
+  const linksWith = (k: PassengerKind) => { const l = pairLink(anchorSymbols, symbolsOf({ kind: k })); return l.shared.length + l.clashes.length > 0; };
+  const variable = ['mimic', 'mystery', 'shifter'].includes(anchor);
+  const story = OFFER_PARTNERS[anchor].filter(k => eligible(k) && (variable || (READY_PARTNERS[anchor] ?? []).includes(k) || linksWith(k)));
+  const bySymbol = variable ? [] : available.filter(k => eligible(k) && pairLink(anchorSymbols, symbolsOf({ kind: k })).shared.length > 0);
+  const partners = tension.length ? tension : [...new Set([...story, ...bySymbol])];
   const partner = partners[rand(0, partners.length - 1, rng)] ?? 'tourist';
   const kinds: PassengerKind[] = guided ? ['lover', 'lover', 'courier'] : [anchor, partner, called ? 'lover' : exCalled ? 'exlover' : weightedKind(floor, rng, false, false, available, courierAboard)];
   // v9.16: a Courier brings his parcel as an extra card, so one Courier per floor keeps the row at five cards or fewer.
@@ -816,12 +827,17 @@ export function cabinPressureLines(state: RunState): ChangeLine[] {
   if (legendInCabin(state.cabin, 'necromancer')) lines.push({ label: '死灵师低语', amount: DARK_LEGEND_RULES.necromancerAgitation });
   // Undocumented on purpose: a cabin of nothing but night people settles down (players find it themselves).
   if (darkResonance(state.cabin)) lines.push({ label: '暗黑共鸣', amount: -DARK_RESONANCE.calm });
+  // v10: Order and Hearth green links calm the cabin; Street ones stir it.
+  lines.push(...symbolLedger(state.cabin).agitationLines);
   return lines;
 }
 /** v9.20.1: seats whose dark rider may lash out on the next ascent (none under a Flare, none while sedated). */
 export const outburstSlots = (state: Pick<RunState, 'cabin' | 'floor' | 'flareFloor' | 'flareUntil'>) => troubleFree(state) || !outburstChance(state.floor + 1) ? [] : state.cabin.flatMap((r, slot) => r && isDark(r.kind) && !((r.sedated ?? 0) > 0) ? [slot] : []);
 /** Green links (active cooperation) in the cabin, each pair counted once. */
-export const greenLinks = (cabin: Array<Rider | null>) => ADJACENT.filter(([a, b]) => cabin[a] && cabin[b] && cabin[a]!.kind !== 'parcel' && cabin[b]!.kind !== 'parcel' && (riderProfile(cabin[a]!, cabin, a).bond.likes.includes(cabin[b]!.kind) || riderProfile(cabin[b]!, cabin, b).bond.likes.includes(cabin[a]!.kind))).length;
+/** v10: green links are shared symbols between neighbours (lib/symbols.ts). */
+export const greenLinks = (cabin: Array<Rider | null>) => greenCount(cabin);
+/** v10: what the cabin's symbol links pay on this ascent; the Battery and the Red String raise each green link. */
+export const symbolCoins = (state: Pick<RunState, 'cabin' | 'upgrades' | 'keepsakes'>) => symbolLedger(state.cabin, SYMBOL_RULES, cooperationBonus(state as RunState) - 1);
 /** v9.20 hidden “dark resonance”: at least four riders aboard and every one of them a dark version or a dark legend.
  * Returns the number of riders (0 when the cabin does not qualify). */
 export function darkResonance(cabin: Array<Rider | null>): number {
@@ -857,6 +873,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if(redEnergy)adjustEnergy('红线额外耗电',-redEnergy);
   for (const line of darkEnergyLines(state)) adjustEnergy(line.label, -line.amount);
   if(conflictProtection)adjustEnergy('绝缘衬层抵消',conflictProtection);
+  if(energyBreakdown(state).symbol)adjustEnergy('符号绿线省电',energyBreakdown(state).symbol);
   const inspectionWork = hasKeepsake(state,'roundsLog') ? 1 : INSPECTION_RULE.work;
   let cabin = state.cabin.map((rider,slot) => rider ? riderAfterWork(rider,state.cabin,slot,state.stress,inspectionWork) : null);
   const notes: string[] = []; const stressReasons: string[] = [];
@@ -1186,6 +1203,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       cabin = cabin.map((rider, i) => i === slot ? null : rider);
     }
   }
+  for (const line of symbolCoins(state).lines) addCoins(line.label, line.amount);
   const riskIncome = rollExperimentalRiskIncome(state.cabin, fareTuning.riskLinks, rng);
   if (riskIncome) addCoins('同伙收入', riskIncome);
   const redCoinDemand=Math.max(0, redLinks.filter(link=>link.effect==='coins').length*2 - (state.cabin.some(r=>r?.kind==='lawyer') ? 2 : 0) - (state.upgrades.insulation ? Infinity : 0));
@@ -1528,7 +1546,7 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  switch(key){
   // v9.17.2: live values only where they change; otherwise the ability's own (translated, current) description.
   // The old Stabilizer line said "at least 3 riders" after the rule became 5.
-  case 'battery':return `每条默契到站加成 +${cooperationBonus(state)} 金币`;
+  case 'battery':return `🎉🎲 每级绿线每层 +${cooperationBonus(state) - 1} 金币`;
   case 'calm':return `躁动上限 ${state.stressCap} · ${state.calmCharge?'手动调节可用（−3 躁动）':'手动调节已用，下个商店补满'}`;
   default:return count>=2&&LEVEL2_TEXT[key]?`2级：${LEVEL2_TEXT[key]![0]}`:UPGRADES[key].description;
  }
@@ -1584,8 +1602,8 @@ export function fareBreakdown(rider: Rider, cabin: Array<Rider | null>, slot: nu
   add('深渊加价', rider.extreme && isDark(rider.kind) ? Math.round(PASSENGERS[rider.kind].fare * DARK_RULES.extremeFarePerStep * rider.extreme) : 0);
   add('悬赏', rider.bounty ?? 0);
   add(stashLabel(rider.kind), rider.stash ?? 0);
-  const bonds = bondStatus(rider, cabin, slot).supportCount;
-  add(`默契 ${bonds} 条 × ${bonus}`, bonus * bonds);
+  // v10: links pay every floor (symbolCoins), not on arrival; `bonus` is kept for callers' signatures.
+  void bonus;
   return lines;
 }
 export function arrivalFare(rider: Rider, cabin: Array<Rider | null>, slot: number, bonus = 1, agitation = 0, tuning: FareTuning = {}, bellFare = false) {

@@ -1,9 +1,10 @@
-import { netValue, netIncludesAgitation } from '../../lib/net-value.ts';
+import { boardNet, netValue, netIncludesAgitation } from '../../lib/net-value.ts';
 import { activeConnection } from '../../lib/game-interaction.ts';
 import { ADJACENT } from '../../lib/game-data.ts';
 // v9 balance simulator. Archetype bots play the production engine (no second rule set)
 // and every run records the three design targets: many viable styles, close calls in
 // every run, and never feeling rich.
+import { SYMBOL_RULES, redCount } from '../../lib/symbols.ts';
 import * as E from '../../lib/game-engine.ts';
 import { PASSENGERS, isDark, isDarkLegend, isLegend, type LegendKind, type PassengerKind, type UpgradeKey } from '../../lib/game-data.ts';
 import { DARK_RULES, isBombKind, outburstIsPower } from '../../lib/dark-rules.ts';
@@ -55,7 +56,8 @@ export const BOTS: Record<BotId, Bot> = {
 };
 
 /** Knobs fitted so the human bot's behaviour matches the real records (occupancy, boarding, time at low agitation). */
-export const HUMAN = { fill: 6, stressMargin: 1, avoid: ['thief', 'drunk'] as PassengerKind[], minNet: -2, transitCalm: false, lookahead: false };
+// v10: lookahead on — with symbol links the ascend button's agitation forecast is what a player checks before boarding more.
+export const HUMAN = { fill: 6, stressMargin: 1, avoid: ['thief', 'drunk'] as PassengerKind[], minNet: -2, transitCalm: false, lookahead: true };
 export type LegendMode = 'auto' | 'board' | 'decline' | 'none';
 export type RunOptions = { bot: BotId; seed: number; horizon: number; legendMode: LegendMode; forceLegend?: LegendKind; genericShop?: boolean; forceAbility?: UpgradeKey; boxOrder?: BoxLine[];
   /** Audit hook: called with the cabin as it departs and the settled result (scripts/audit). */
@@ -114,6 +116,20 @@ function agitationPenalty(stress: number, cap: number, bot: Bot) {
   return p;
 }
 
+/** v10: the coins a cabin's symbol links will pay over the floors each pair stays together, minus their red links'
+ * agitation at the bot's price for it. The one-step preview only sees a single floor of them. */
+function linkOutlook(state: RunState, bot: Bot) {
+  // Rule-agnostic: the ledger of the cabin as it thins out floor by floor (riders leave at their destinations).
+  const agi = bot.band === 'high' ? 2 : 3;
+  let v = 0;
+  for (let t = 1; t <= 6; t++) {
+    const cabin = state.cabin.map(r => r && r.destination > state.floor + t ? r : null);
+    if (!cabin.some(Boolean)) break;
+    const l = E.symbolCoins({ ...state, cabin });
+    v += Math.pow(0.9, t) * (l.coins + EP * Math.min(l.power, cabin.reduce((n, r, i) => n + (r ? riderProfile(r, cabin, i).energy : 0), 0)) - agi * (redCount(cabin) * SYMBOL_RULES.redAgitation + l.agitationLines.reduce((n, x) => n + x.amount, 0)));
+  }
+  return v;
+}
 const LEGEND_HEURISTIC = 14; // keepsake and in-sector effects the one-step preview cannot see
 function evaluate(state: RunState, bot: Bot): number {
   const after = E.resolveFloor(state, previewRng());
@@ -144,6 +160,8 @@ function evaluate(state: RunState, bot: Bot): number {
     if (r.kind === 'inspector' && !r.complianceReady && low && rem >= 2) v += 0.6 * 12;
     if (r.kind === 'child' && (r.careProgress ?? 0) < 2 && E.hasNeighbour(after.cabin, slot, ['lover', 'nurse', 'matron']) && rem >= 1) v += 0.6 * 6;
   });
+  // v10: symbol links keep paying (and red ones keep agitating) until one of the pair gets off.
+  v += linkOutlook(after, bot);
   v -= agitationPenalty(after.stress, after.stressCap, bot);
   if (after.status === 'playing') {
     // Second ascent with the same riders: agitation and power trends a player can read from the forecast.
@@ -178,14 +196,19 @@ function chooseBoarding(state: RunState, offers: Rider[], bot: Bot, mode: Legend
   }
   if (bot.id === 'human') {
     // Board the best card values first, skip Thieves and Drifters, stop at a comfortable cabin, keep well below the cap.
-    const net = (o: Rider) => cardNet(o, cur);
+    // v10: the card shows the rider's value at his best seat in this cabin (symbol links included).
+    const net = (o: Rider) => boardNet(o, cur)?.value ?? cardNet(o, cur);
     for (const o of [...pool].sort((a, b) => net(b) - net(a))) {
       if (cur.cabin.filter(Boolean).length >= HUMAN.fill) break;
       if (o.kind === 'parcel' || HUMAN.avoid.includes(o.kind) || (cur.cabin.some(Boolean) && net(o) < HUMAN.minNet)) continue;
       const parcel = o.parcelId ? pool.find(p => p.id === o.parcelId) : undefined;
       let cand: RunState | null = null;
       if (parcel) { for (const [a, b] of ADJACENT.flatMap(([a, b]) => [[a, b], [b, a]])) { const c = place(place(cur, o, a), parcel, b); if (c && valid(c)) { cand = c; break; } } }
-      else { const slot = cur.cabin.findIndex(r => !r); cand = slot >= 0 ? place(cur, o, slot) : null; }
+      else {
+        // v10: a player sees the symbol lines while dragging, so the rider goes to the seat with the best links.
+        const seatValue = (c: RunState) => { const l = E.symbolCoins(c); return l.coins + EP * l.power - 2 * (redCount(c.cabin) * SYMBOL_RULES.redAgitation + l.agitationLines.reduce((n, x) => n + x.amount, 0)); };
+        for (const slot of [0, 1, 2, 3, 4, 5].filter(i => !cur.cabin[i])) { const c = place(cur, o, slot); if (c && (!cand || seatValue(c) > seatValue(cand))) cand = c; }
+      }
       if (!cand) continue;
       if (HUMAN.lookahead) {
         const preview = E.resolveFloor(cand, previewRng());

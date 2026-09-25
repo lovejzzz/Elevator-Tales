@@ -1,85 +1,76 @@
+// v10 symbol links: the rulebook the old per-kind like/avoid tables used to be (lib/symbols.ts).
 import assert from 'node:assert/strict';
-import { PASSENGER_ORDER, type PassengerKind } from '../lib/game-data';
-import { energyBreakdown, initialRun, resolveFloor, type Rider, type RunState } from '../lib/game-engine';
-import { BONDS, CONFLICT_EFFECTS, bondStatus, conflictLinks, type ConflictEffect, type VariableTraits } from '../lib/rider-profile';
+import { PASSENGER_ORDER, isAnyLegend, isDark, type PassengerKind } from '../lib/game-data';
+import { EMPTY_UPGRADES, energyBreakdown, initialRun, resolveFloor, symbolCoins, type Rider, type RunState } from '../lib/game-engine';
+import { stressForecast } from '../lib/game-forecast';
+import { conflictLinks, randomTraits } from '../lib/rider-profile';
+import { RIDER_SYMBOLS, SYMBOLS, SYMBOL_KEYS, greenBySymbol, opposes, pairLink, redCount, symbolLedger, symbolShapes, symbolsOf, type SymbolKey } from '../lib/symbols';
 
-const pairKey=(a:PassengerKind,b:PassengerKind)=>[a,b].sort().join(':');
-const rider=(kind:PassengerKind,id:string,extra:Partial<Rider>={}):Rider=>({kind,id,destination:20,patience:0,boardedAt:1,fareBonus:0,fuse:9,...extra});
-const state=(cabin:Array<Rider|null>,extra:Partial<RunState>={}):RunState=>({...initialRun(),energy:50,stressCap:99,coins:100,cabin,...extra});
-const amount=(lines:Array<{label:string;amount:number}>,label:string)=>lines.find(line=>line.label===label)?.amount??0;
+const rider = (kind: PassengerKind, id: string, extra: Partial<Rider> = {}): Rider => ({ kind, id, destination: 20, patience: 0, boardedAt: 1, fareBonus: 0, ...extra });
+const state = (cabin: Array<Rider | null>, extra: Partial<RunState> = {}): RunState => ({ ...initialRun(), floor: 20, energy: 50, stressCap: 99, coins: 100, cabin, ...extra });
+const amount = (lines: Array<{ label: string; amount: number }>, label: string) => lines.find(line => line.label === label)?.amount ?? 0;
+const seat = (...kinds: Array<PassengerKind | null>) => [...kinds, ...Array(6 - kinds.length).fill(null)].map((k, i) => k ? rider(k, `${k}-${i}`) : null);
 
-const allDefinedKinds=Object.keys(BONDS) as PassengerKind[]; // includes archived definitions
-const greenPairs=new Set(allDefinedKinds.flatMap(kind=>BONDS[kind].likes.map(target=>pairKey(kind,target))));
-const redPairs=new Set(allDefinedKinds.flatMap(kind=>BONDS[kind].avoids.map(target=>pairKey(kind,target))));
-assert.equal(greenPairs.size,30); // v9.19: 12 green pairs among the dark riders
-assert.equal(redPairs.size,35); // v9.18.3: Thief/Tourist and Thief/Inspector removed, Tourist/Drifter added; v9.19: 6 dark red pairs
-assert.deepEqual([...greenPairs].filter(pair=>redPairs.has(pair)),[],'one pair must never be both a static green and red relationship');
-assert.deepEqual(new Set(Object.keys(CONFLICT_EFFECTS)),redPairs,'every static red pair needs an explicit effect');
-
-const effectCounts=Object.values(CONFLICT_EFFECTS).reduce<Record<ConflictEffect,number>>((counts,effect)=>({...counts,[effect]:counts[effect]+1}),{agitation:0,energy:0,coins:0,overload:0,gamble:0});
-assert.deepEqual(effectCounts,{agitation:15,energy:8,coins:9,overload:2,gamble:1});
-
-for(const kind of ['tourist','lover','musician','nurse','thief'] as const){
- const cabin=[rider('inspector','inspector'),rider(kind,kind),null,null,null,null];
- assert.equal(conflictLinks(cabin).length,0,'Quiet-work Inspector must not retain retired conflicts with '+kind);
+// Every ordinary and dark rider carries exactly two symbols, never a pair of opposites.
+const symbolled = PASSENGER_ORDER.filter(k => !isAnyLegend(k) && !['parcel', 'mystery', 'shifter', 'mimic'].includes(k));
+for (const kind of symbolled) {
+  const s = RIDER_SYMBOLS[kind];
+  assert.ok(s && s.length === 2 && s[0] !== s[1] && !opposes(s[0], s[1]), `${kind} has two non-opposite symbols`);
 }
-for(const kind of ['drunk','celebrity','ghost','mystery'] as const){
- const cabin=[rider('inspector','inspector'),rider(kind,kind),null,null,null,null];
- assert.equal(conflictLinks(cabin).length,1,'Inspector still has a conditional placement cost with '+kind);
-}
+// Each symbol is on at least four day riders, so every symbol can be built around before midnight.
+for (const k of SYMBOL_KEYS) assert.ok(symbolled.filter(kind => !isDark(kind) && RIDER_SYMBOLS[kind]!.includes(k)).length >= 4, `${SYMBOLS[k].zh} on four day riders`);
 
-const agitationCabin=[rider('commuter','commuter'),rider('drunk','drunk'),null,null,null,null];
-const agitationResult=resolveFloor(state(agitationCabin),()=>.9);
-assert.equal(amount(agitationResult.lastPressure.sources,'红线躁动'),1);
+// Shared minus opposite, one for one.
+assert.deepEqual(pairLink(['quiet', 'order'], ['lively', 'order']), { shared: [], clashes: [] }, 'one match and one clash draw no line');
+assert.deepEqual(pairLink(['quiet', 'order'], ['quiet', 'order']).shared, ['quiet', 'order'], 'identical symbols: two green links');
+assert.equal(pairLink(['quiet', 'order'], ['lively', 'street']).clashes.length, 2, 'both symbols opposite: two red links');
+assert.equal(conflictLinks(seat('commuter', 'drunk')).length, 2);
+assert.equal(conflictLinks(seat('commuter', 'cop')).length, 0);
+assert.equal(amount(resolveFloor(state(seat('commuter', 'drunk')), () => .9).lastPressure.sources, '红线躁动'), 2, 'each red link adds 1 agitation');
+assert.equal(energyBreakdown(state(seat('courier', 'ghost'))).conflict, 0, 'red links never cost power');
+assert.equal(amount(resolveFloor(state(seat('drunk', 'inspector')), () => .9).lastEarnings.sources, '红线金币损失'), 0, 'red links never cost coins');
 
-const energyCabin=[rider('courier','courier'),rider('ghost','ghost'),null,null,null,null];
-const energyRun=state(energyCabin);
-assert.equal(energyBreakdown(energyRun).conflict,1);
-assert.equal(amount(resolveFloor(energyRun,()=>.9).lastEnergy.sources,'红线额外耗电'),-1);
+// A symbol with any green link works once; shapes raise its level (row +1, square +2, full +4 and nothing else).
+const threeTourists = seat('tourist', 'tourist', 'tourist');
+assert.deepEqual(greenBySymbol(threeTourists), { lively: 2, hearth: 2 }, 'a row of Tourists: 🎉 and 🏠 at level 2');
+assert.equal(greenBySymbol(seat('tourist', 'tourist', null, 'tourist')).lively, 1, 'many links, no shape: level 1');
+const square = seat('tourist', 'tourist', null, 'tourist', 'tourist');
+assert.equal(greenBySymbol(square).lively, 3, 'a 2×2 square: level 3');
+const full = seat('tourist', 'tourist', 'tourist', 'tourist', 'tourist', 'tourist');
+assert.equal(greenBySymbol(full).lively, 5, 'a full cabin: level 5, its rows and squares not counted again');
+assert.deepEqual(symbolShapes(full).map(s => s.kind), ['full', 'full']);
 
-const coinCabin=[rider('drunk','drunk'),rider('inspector','inspector'),null,null,null,null];
-const coinResult=resolveFloor(state(coinCabin),()=>.9);
-assert.equal(amount(coinResult.lastEarnings.sources,'红线金币损失'),-2);
+// The six effects, per level and per floor.
+const ledger = (kinds: Array<PassengerKind | null>) => symbolLedger(seat(...kinds));
+assert.equal(ledger(['tourist', 'child']).coins, 2, '🎉 +2 coins');
+assert.deepEqual(ledger(['tourist', 'child']).agitationLines, [{ label: '人间绿线 ×1', amount: -1 }], '🏠 −1 agitation');
+const street = ledger(['drunk', 'coach']);
+assert.equal(street.lines.find(l => l.label.startsWith('江湖'))?.amount, 3, '🎲 +3 coins');
+assert.ok(street.agitationLines.some(l => l.label.startsWith('江湖') && l.amount === 1), '🎲 +1 agitation');
+assert.deepEqual(ledger(['commuter', 'inspector']).agitationLines, [{ label: '秩序绿线 ×1', amount: -1 }], '📋 −1 agitation');
+assert.equal(ledger(['commuter', 'inspector']).power, 1, '🤫 saves 1 power');
+assert.equal(ledger(['ghost', 'thief']).power, 1, '👻 saves 1 power');
+// Power saved never exceeds what the riders themselves use (two Ghosts use no power).
+assert.equal(energyBreakdown(state(seat('ghost', 'ghost'))).symbol, 0);
+const quietPair = state(seat('commuter', 'inspector'));
+assert.equal(energyBreakdown(quietPair).symbol, 1);
+assert.equal(amount(resolveFloor(quietPair, () => .9).lastEnergy.sources, '符号绿线省电'), 1, 'settlement saves what the forecast shows');
+assert.ok((stressForecast(quietPair).sources ?? []).some(s => s.label === '秩序绿线 ×1'), 'the agitation forecast lists the 📋 calm');
 
-const overloadCabin=[rider('mechanic','mechanic'),rider('bomb','bomb'),null,null,null,null];
-const overloadRun=state(overloadCabin);
-assert.equal(energyBreakdown(overloadRun).conflict,3,'x2 power adds one more copy of both riders base power (Mechanic 1 + Bomb Carrier 2 since v9.20.2)');
-assert.equal(energyBreakdown(overloadRun).conflictProtection,0,'ordinary savings never erase the separately itemized red-line multiplier');
-assert.equal(energyBreakdown(overloadRun).total,7);
+// The Battery and the Red String add 2 per level of a coin symbol.
+assert.equal(symbolCoins({ cabin: seat('tourist', 'child'), upgrades: { ...EMPTY_UPGRADES, battery: 1 }, keepsakes: [] } as unknown as RunState).coins, 4);
+assert.equal(symbolCoins({ cabin: seat('tourist', 'child'), upgrades: EMPTY_UPGRADES, keepsakes: ['redString'] } as unknown as RunState).coins, 4);
 
-const gambleCabin=[rider('coach','coach',{destination:2}),rider('celebrity','celebrity',{destination:2}),null,null,null,null];
-const gambleResult=resolveFloor(state(gambleCabin),()=>.9);
-assert.equal(amount(gambleResult.lastEarnings.sources,'教练到站'),23,'v9.20.3: 10 base doubled, plus one 3-coin neighbor');
-assert.equal(amount(gambleResult.lastEarnings.sources,'名人到站'),45,'v9.20.2: Celebrity base 18 (was 12) doubled, plus the Coach’s +50%');
+// Variable riders: the Mimic shows the symbols above him, the Mystery none until revealed, the Shifter two random ones.
+const mimicCabin = [rider('ghost', 'g'), null, null, rider('mimic', 'm'), null, null];
+assert.deepEqual(symbolsOf(mimicCabin[3], mimicCabin, 3), RIDER_SYMBOLS.ghost);
+assert.deepEqual(symbolsOf(rider('mimic', 'm'), [null, null, null, rider('mimic', 'm'), null, null], 3), []);
+assert.deepEqual(symbolsOf(rider('mystery', 'x', { identity: 'magnate' })), []);
+assert.deepEqual(symbolsOf(rider('mystery', 'x', { identity: 'magnate', revealed: true })), ['lively', 'order']);
+let seed = 5; const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+for (let i = 0; i < 200; i++) { const sy = randomTraits('shifter', ['commuter', 'tourist'], rng).symbols as SymbolKey[]; assert.ok(sy.length === 2 && sy[0] !== sy[1] && !opposes(sy[0], sy[1])); }
 
-const independentCabin=[rider('courier','green'),rider('commuter','center'),rider('drunk','red'),null,null,null];
-assert.deepEqual({support:bondStatus(independentCabin[1]!,independentCabin,1).supportCount,conflict:bondStatus(independentCabin[1]!,independentCabin,1).conflictCount},{support:1,conflict:1});
-assert.equal(conflictLinks(independentCabin).length,1,'green support must not erase a red line');
-assert.equal(amount(resolveFloor(state(independentCabin),()=>.9).lastPressure.sources,'红线躁动'),1);
+// Legends and boxes carry no symbols and draw no symbol lines.
+assert.equal(redCount(seat('matchmaker', 'commuter', 'parcel')), 0);
 
-const doubleAgitation=[rider('drunk','left'),rider('commuter','center'),rider('drunk','right'),null,null,null];
-assert.equal(amount(resolveFloor(state(doubleAgitation),()=>.9).lastPressure.sources,'红线躁动'),2,'two identical red lines stack');
-
-const doubleCoins=[rider('inspector','left'),rider('drunk','center'),rider('inspector','right'),null,null,null];
-assert.equal(amount(resolveFloor(state(doubleCoins),()=>.9).lastEarnings.sources,'红线金币损失'),-4,'coin losses stack per red line');
-
-const doubleEnergy=[rider('ghost','left'),rider('courier','center'),rider('ghost','right'),null,null,null];
-assert.equal(energyBreakdown(state(doubleEnergy)).conflict,2,'flat energy costs stack per red line');
-
-const doubleOverload=[rider('bomb','left'),rider('mechanic','center'),rider('bomb','right'),null,null,null];
-assert.deepEqual({conflict:energyBreakdown(state(doubleOverload)).conflict,total:energyBreakdown(state(doubleOverload)).total},{conflict:6,total:12},'two x2 links add two base copies instead of multiplying exponentially (Bomb Carrier 2 since v9.20.2)');
-
-const doubleGamble=[rider('celebrity','left',{destination:2}),rider('coach','center',{destination:2}),rider('celebrity','right',{destination:2}),null,null,null];
-const doubleGambleResult=resolveFloor(state(doubleGamble),()=>.9);
-assert.equal(amount(doubleGambleResult.lastEarnings.sources,'教练到站'),36,'v9.20.3: two x2 links produce 10x3 base plus two 3-coin neighbors');
-assert.equal(amount(doubleGambleResult.lastEarnings.sources,'名人到站'),90,'each Celebrity receives its own coach and gamble multipliers (base 18 since v9.20.2)');
-
-const dynamicTraits:VariableTraits={weight:0,energy:1,agitation:0,fare:30,bond:{likes:['nurse'],avoids:['commuter']},conflictEffect:'coins',revision:0};
-const dynamicCabin=[rider('commuter','commuter'),rider('shifter','shifter',{traits:dynamicTraits}),null,null,null,null];
-assert.equal(conflictLinks(dynamicCabin)[0]?.effect,'coins','dynamic riders keep their visible randomized red-line effect');
-
-console.log(JSON.stringify({version:'v8.32',activeRoles:PASSENGER_ORDER.length,definedRoles:allDefinedKinds.length,greenPairs:greenPairs.size,redPairs:redPairs.size,effectCounts,representativeEffects:5,stackingChecks:5,greenRedIndependent:true,multipliers:'linear-from-base'}));
-
-// v9.18.3: a Thief's neighbours lose nothing to red links; his pickpocketing is the whole interaction.
-assert.equal(conflictLinks([rider('tourist','t'),rider('thief','s'),null,null,null,null]).length,0,'no Thief/Tourist red link');
-assert.equal(conflictLinks([rider('inspector','i'),rider('thief','s'),null,null,null,null]).length,0,'no Thief/Inspector red link');
+console.log(JSON.stringify({ version: 'v10', symbolled: symbolled.length, perSymbol: Object.fromEntries(SYMBOL_KEYS.map(k => [k, symbolled.filter(kind => RIDER_SYMBOLS[kind]!.includes(k)).length])) }));

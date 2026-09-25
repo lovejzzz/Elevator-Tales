@@ -7,7 +7,7 @@ import type { Rider, RunState } from './game-engine';
 export const ABILITY_LEVEL2 = { boost: 1.5, price: 60, step: 30, keys: ['battery', 'concierge', 'reinforced', 'tipjar', 'crowd', 'meter', 'insulation', 'single', 'buffer', 'soundproof', 'punchcard', 'dispatch', 'finale'] as UpgradeKey[] };
 /** Level-2 effect lines for the shop, [zh, en]. */
 export const LEVEL2_TEXT: Partial<Record<UpgradeKey, [string, string]>> = {
-  battery: ['每条默契 +3 金币（原 +2）', 'Each bond +3 coins (was +2)'], concierge: ['新乘客小费 +2（原 +1）', 'New riders tip +2 (was +1)'],
+  battery: ['🎉🎲 每级绿线每层 +3 金币（原 +2）', '🎉🎲 +3 coins per green-link level per floor (was +2)'], concierge: ['新乘客小费 +2（原 +1）', 'New riders tip +2 (was +1)'],
   reinforced: ['每十层最多 8 次（原 5 次）', 'Up to 8 times per ten floors (was 5)'], tipjar: ['额外小费 6 金币（原 4）', 'Extra tip 6 coins (was 4)'],
   crowd: ['混乘奖励 9 金币（原 6）', 'Mixed-ticket bonus 9 coins (was 6)'], meter: ['长途奖励 6 金币（原 4）', 'Long-ride bonus 6 coins (was 4)'],
   insulation: ['冲突小费每层最多 5（原 3）', 'Conflict tips up to 5 per floor (was 3)'], single: ['单站奖励 3 金币（原 2）', 'Single-arrival bonus 3 coins (was 2)'],
