@@ -2,6 +2,14 @@
 
 Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.20.2**. Publication status is tracked separately from the source version.
 
+## v9.20.5 — 2026-09-25 — English playtests 16–20: a friendlier shop, a visible daily shift / 英文版第 16–20 局：商店更顺手、每日班次看得见
+
+- Shop: “All you can afford: +N power” when the target is unaffordable; “or raise the cap with Storage” when the next sector needs more than the cap.
+- Phone shop: the three ability cards share one sideways-scrolling row (they pushed charging two screens down). Daily shift: the “DAILY SHIFT · date” header shows on phones and narrow windows.
+- Interface only; rules and numbers unchanged, so the v9.20.4 acceptance stands (skilled 50.3 / 49.0% power/agitation, 100F 0.3%).
+- Playtests 16–20: 90F (tablet, new-profile guided shift), 47F, 89F (Night Zhou by hand), 91F, daily 99F. Night Zhou’s trade-off (−2 motor, +1 agitation) holds; unchanged.
+- Watch: long ability descriptions; the Coach–Celebrity gamble link as a mid-game power trap; Severer, Kingpin, Other Thirteen boarded over 80%.
+
 ## v9.20.4 — 2026-09-25 — English playtests 11–15: a High Roller who really bets, a harder road to 100F / 英文版第 11–15 局：赌王真的在赌、深渊更难撑到 100 层
 
 - Abyss outbursts 10% per step (was 8%; 20/30/40% at 85/90/95F, capped at 50%). High Roller: 8 coins per point of agitation when the doors close on 69F (was +40 unless high / −40); seat shows the stake at the current agitation.

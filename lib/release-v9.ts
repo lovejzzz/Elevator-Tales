@@ -1690,6 +1690,52 @@ export const V9201_EN: ChangelogEntry = {
   ],
 };
 
+export const V9205_ZH: ChangelogEntry = {
+  version: '9.20.5', date: '2026-09-25', title: '英文版第 16–20 局：商店更顺手、手机上的商店不再翻两屏、每日班次看得见',
+  summary: '30 轮英文版试玩的第 16–20 局：平板新存档走了一遍引导局，亲手玩了夜班老周，看了手机上的商店和每日班次。这一版只改界面，规则和数值不变。笔记在 docs/playtests/v920-english-rounds.md。',
+  changes: [
+    '商店充电：目标充不起时，多一个“买得起的最多：充入 N 电”按钮，不用再去拖滑杆（第 18 局：60 层升了蓄电后只剩 50 币，充电按钮直接变灰）。',
+    '商店充电：这一段需要的电超过电量上限、而蓄电还能升级时，提示“或者升级蓄电，提高上限”（第 18 局：40 层上限 60、这一段约需 70，只提示途中补电）。',
+    '手机商店：三张能力卡改成横向滑动的一排，每张 84% 宽，露出下一张的一角；原来三张竖排，要往下翻两屏才到充电区（第 19 局）。',
+    '每日班次：手机和窄屏上顶栏也显示“DAILY SHIFT · 日期”（第 20 局：窄屏隐藏了这行，玩的时候看不出是每日班次）。',
+  ],
+  experiments: [
+    '英文版试玩第 16–20 局：90 层断电（平板，新存档，引导局到商店都看了一遍）、47 层断电（窄屏，两次开局都在中段断电，机器人的问题）、89 层断电（窄屏，59–70 层亲手玩夜班老周）、91 层躁动（手机，赌输了 30%）、每日班次 99 层断电（窄屏，结算页写着“今日最佳 99 层”）。',
+    '引导局（平板）：两位恋人并排后出现绿色协作线、座位显示“Paired”、车费 5→11，底部说明配对规则；第一次配对很好懂。',
+    '夜班老周：带上后下一层耗电 −4→−2，到店预计剩电 32→39；但每层 +1 躁动会打断维修工和检查员的低躁动条件，65–69 层躁动一直在 7/8。70 层商店显示“Wrench: free”。取舍成立，未改。',
+    '规则和数值没有变，沿用 v9.20.4 的验收（4200 局：熟练型 断电 50.3% / 躁动 49.0%，抵达 100 层 0.3%）。',
+    '试玩用的代打脚本：断电警告里有补电或加急补电按钮时先点；页面在隐藏窗格里重开后，快照不会被新局覆盖。',
+  ],
+  watch: [
+    '能力说明偏长（20–40 个词），第一次进店的人要读很多；手机上改成横向滑动后好一些。',
+    '教练和名人之间的赌局红线，一对每层多耗 4 电，中段电量紧时最容易把人拖死。',
+    '暗黑传奇里剪线婆、黑老大、另一个13号的上车率仍在 80% 以上。',
+  ],
+};
+
+export const V9205_EN: ChangelogEntry = {
+  version: '9.20.5', date: '2026-09-25', title: 'English playtests 16–20: a friendlier shop, a phone shop without two screens of scrolling, a visible daily shift',
+  summary: 'Playtests 16–20 of the 30 English rounds: a new-profile guided shift on a tablet, Night Zhou played by hand, and a look at the phone shop and the daily shift. This release changes only the interface; rules and numbers are unchanged. Notes in docs/playtests/v920-english-rounds.md.',
+  changes: [
+    'Shop charging: when the target is unaffordable, a second button offers “All you can afford: +N power”, so there is no need to drag the slider (round 18: after buying Storage at 60F only 50 coins were left and the charge button just greyed out).',
+    'Shop charging: when the next sector needs more power than the cap and Storage can still be upgraded, the note adds “or raise the cap with Storage” (round 18: a 60 cap against a sector of about 70, and the note only mentioned in-transit charging).',
+    'Phone shop: the three ability cards share one sideways-scrolling row, each 84% wide with the next one peeking in; stacked, they pushed charging two screens down (round 19).',
+    'Daily shift: phones and narrow windows show “DAILY SHIFT · date” in the header too (round 20: that line was hidden, so nothing said this was the daily).',
+  ],
+  experiments: [
+    'English playtests 16–20: 90F power (tablet, new profile, guided shift through the first shop), 47F power (narrow, both attempts ran dry mid-game, the bot’s fault), 89F power (narrow, Night Zhou by hand at 59–70F), 91F agitation (phone, lost a 30% bet), the daily shift 99F power (narrow; the end screen shows today’s best 99F).',
+    'Guided shift (tablet): seating the two Lovers together draws the green cooperation line, the seats say “Paired”, the fare goes 5→11 and the footer explains the pairing; the first pair is easy to understand.',
+    'Night Zhou: the next floor’s power went from −4 to −2 and the shop forecast from 32 to 39, but his +1 agitation a floor breaks the Mechanic’s and Inspector’s low-agitation streaks, and agitation sat at 7/8 through 65–69F. The 70F shop shows “Wrench: free”. A real trade-off; unchanged.',
+    'No rule or number changed; the v9.20.4 acceptance stands (4,200 runs: skilled 50.3% power / 49.0% agitation, 100F reached in 0.3%).',
+    'Playtest autopilot: it presses the alert’s charge or overtime-charge button first; a page restarted in a hidden pane no longer overwrites a deeper snapshot.',
+  ],
+  watch: [
+    'Ability descriptions run 20–40 words, a lot to read on a first shop visit; the sideways row on phones helps.',
+    'The Coach–Celebrity gamble link costs a pair 4 more power a floor and is the likeliest mid-game power trap.',
+    'The Severer, Kingpin and Other Thirteen are still boarded over 80% of the time.',
+  ],
+};
+
 export const V9204_ZH: ChangelogEntry = {
   version: '9.20.4', date: '2026-09-25', title: '英文版第 11–15 局：赌王真的在赌、深渊更难撑到 100 层、疯炸客显示秒数',
   summary: '30 轮英文版试玩的第 11–15 局。认真玩的深局里，我 5 局有 3 局过了 100 层（第 7、8、11 局）：深渊里钱多，安抚、照明弹、镇静剂能把每一次赌局都化解掉。这一版把深渊发作概率调高一点，把赌王从“白送 40 币”改成真正的赌局，并修掉这几局里发现的漏翻和误导。笔记在 docs/playtests/v920-english-rounds.md。',

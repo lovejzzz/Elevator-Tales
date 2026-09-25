@@ -3414,3 +3414,13 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 /* v9.20.2 (English playtest 6): on phones the first-shift lesson sat under the ascend button, below the fold; repeat it above the cards. */
 .mobile-lesson-banner { display:none; }
 @media (max-width:700px) { .game-shell .mobile-lesson-banner { display:block; margin:0 0 8px; padding:8px 10px; border:1px solid #5a9e7c88; border-radius:10px; background:#10261c; color:#bfe8cf; font:600 13px/1.4 var(--font-sans),sans-serif; text-align:center; } }
+/* v9.20.5 (English playtest 19, 375px): three ability cards stacked at ~200px each pushed charging two screens down;
+   on phones they share one sideways-scrolling row. */
+@media (max-width:700px) {
+ .upgrade-dialog .upgrade-grid { grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:84%; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x mandatory; padding-bottom:4px; }
+ .upgrade-dialog .upgrade-grid > * { scroll-snap-align:start; }
+}
+/* v9.20.5 (English playtest 20): phones hide the eyebrow, and with it the only sign that this is the daily shift. */
+@media (max-width:700px) {
+ .brand-bar .eyebrow.eyebrow-daily { display:block; margin:0 0 2px; font-size:9px; letter-spacing:.12em; color:#e3bb62; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:62vw; }
+}
