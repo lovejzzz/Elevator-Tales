@@ -1689,3 +1689,61 @@ export const V9201_EN: ChangelogEntry = {
     'A box still counts as “at least one rider”.',
   ],
 };
+
+export const V9202_ZH: ChangelogEntry = {
+  version: '9.20.2', date: '2026-09-25', title: '人物耗电各不相同，死因一半一半；英文版前 5 轮试玩',
+  summary: '按玩家要求：死因要断电和躁动大约一半一半，而且要从人物出发、不动电梯本身的耗电。人物耗电不再都是 1：带设备、排场大的人更耗电，车费相应提高；车厢挤满不再加躁动，改成风扇耗电。模拟器里熟练型和真人型都变成约一半一半，所有人物都有人用。同时开始 30 轮英文版试玩，这一版包含前 5 轮的修改；笔记在 docs/playtests/v920-english-rounds.md。',
+  changes: [
+    '人物耗电：音乐家、名人、教练、炸弹客、神秘人、加班魂、召魂人、监工、狂徒、贪腐检查员、噪音乐手、丑闻明星每层 2 电，疯炸客 3 电，其余仍是 1 电（幽灵、怨灵 0）。电梯运转耗电不变。',
+    '车费跟着补：名人 12→18、音乐家 6→9、噪音乐手 6→12、丑闻明星 14→22、偷拍客 8→12、贪腐检查员 8→16、加班魂 6→8。',
+    '车厢挤满：坐满 6 人不再每层 +1 躁动，改成风扇每层 +1 电（放人提示和电量明细里会写）。',
+    '暗黑传奇：冷面护士长自己每层耗 1 电；赌王改为“到站那层不是高躁动付 40，高躁动拿走 40”（原来要低躁动才赢，几乎没人带）；夜班老周每层 +1 躁动（原 +2）；黑老大每层存 7（原 8）；另一个13号到站随机 0–25（原 0–40）。',
+    '深渊赌局：失控概率 20% 以上才要求再按一次上行（原来 5%，深渊里一半楼层都要按两次）；只剩一人会发作时直接点名。',
+    '英文版：预报区间和所有“支付”消息补上英文；“1 stop”单复数；赌王座位状态跟新规则；躁动标签可以换行；“危！”横幅只在刚进入危险时弹，不再每层重复；车上有会加躁动的暗黑传奇时，建议里会提“请离他”。',
+    '说明书：玩法说明新增“午夜与深渊”“道具”，传奇段加上暗黑传奇，电量段加上风扇；躁动规则删掉已不存在的“夜深人躁”，新增深渊发作。',
+    '平板（701–1100px）：改成两列，上行按钮在电梯下方；候客卡改成可以左右滑动的一排；名字不再截断，顶栏不再折行。',
+    '配对提示只在配对后真的赚钱时显示。',
+  ],
+  experiments: [
+    '模拟器验收 4200 局：熟练型死因 断电 51.7% / 躁动 47.6% / 炸弹 0.7%（v9.20.1 为 33.1 / 66.2 / 0.7）；真人型 断电 53% / 躁动 44%（原 4 / 94），中位 63→76 层；均衡型中位 87→88 层（p90 95），抵达 100 层 0.9%；新手 49→34 层（下限 25）。验收里的死因目标改成“电量、躁动各 35–65%”。',
+    '拥挤的代价比较（每种 120 局）：只 +1 躁动时真人型 断电:躁动 = 15:99；+1 躁动 +1 电 40:76（新手掉到 32 层）；只 +1 电 63:53（真人型中位 77）；只 +2 电 86:34（真人型掉到 49 层）。采用只 +1 电。',
+    '所有普通人物的上车率都在 17–62%，这是第一次没有越界的人物。曾经太低的：偷拍客 5%→39%、丑闻明星 2%→24%、噪音乐手 6%→21%、贪腐检查员 10%→17%。暗黑传奇：冷面护士长 5%→34%、赌王 0%→92%、夜班老周 21%→74%。',
+    '英文版试玩 5 轮：99 层断电、68 层躁动、102 层躁动（连赌 35–69% 都没输）、95 层躁动（输了 32% 的赌局）、83 层躁动；窄屏 3 轮、平板 1 轮。英文审计记录画面上出现的所有中文，5 轮里只抓到上面这些漏翻。',
+    'verify 全部通过（测试随人物耗电和车费更新：教练、炸弹客、名人的数值，坐满的检查改为风扇耗电）。',
+  ],
+  watch: [
+    '暗黑传奇里赌王 92%、另一个13号 89%、黑老大 85% 仍然很好拿。',
+    '偏爱普通人的合作型、安静秩序型仍有约 70% 死于躁动（多数是赌输）。',
+    '60–80 层经常缺电，要看真人会不会觉得太紧。',
+    '手机布局座位只显示三个数字，暗黑传奇的状态要点 ⓘ 才看得到。',
+  ],
+};
+
+export const V9202_EN: ChangelogEntry = {
+  version: '9.20.2', date: '2026-09-25', title: 'Riders use different power; endings split about half and half; first five English playtests',
+  summary: 'The player asked for endings split roughly half power, half agitation, driven by the riders and without touching the lift’s own power. Riders no longer all use 1 power: those with gear or an entourage use more and pay more, and a packed cabin now costs fan power instead of agitation. In the simulator both skilled and human-like players now end about half and half, and every rider gets boarded. The first 5 of 30 English playtests are in this release; notes in docs/playtests/v920-english-rounds.md.',
+  changes: [
+    'Rider power: Musician, Celebrity, Coach, Bomb Carrier, Mystery, Overtimer, Summoner, Taskmaster, Brawler, Grafter, Noisemaker and Scandal use 2 power per floor, the Mad Bomber 3; everyone else still 1 (Ghost and Wraith 0). The lift’s motor power is unchanged.',
+    'Fares follow: Celebrity 12→18, Musician 6→9, Noisemaker 6→12, Scandal 14→22, Voyeur 8→12, Grafter 8→16, Overtimer 6→8.',
+    'Full cabin: all 6 seats taken no longer adds 1 agitation per floor; the fans cost 1 more power per floor instead (shown in placement notes and the power details).',
+    'Dark legends: the Cold Matron uses 1 power per floor; the High Roller pays 40 unless agitation is high on arrival, then takes 40 (he used to need low agitation and was almost never boarded); Night Zhou +1 agitation per floor (was +2); the Kingpin banks 7 (was 8); the Other Thirteen pays 0–25 (was 0–40).',
+    'Abyss gamble: the ascend button asks twice only from a 20% chance to end the run (5% asked on half of all abyss floors); with one rider left who may lash out, the warning names him.',
+    'English: forecast ranges and every “paid” message translated; “1 stop”; the High Roller’s seat state matches his rule; agitation chips wrap; the danger banner shows only on entering danger instead of every floor; with a loud dark legend aboard the advice suggests dismissing him.',
+    'Manual: new “Midnight and the abyss” and “Items” sections, dark legends in the legend section, fans in the power section; the agitation rules drop the removed late-night unrest and add abyss outbursts.',
+    'Tablets (701–1100px): two columns with the ascend button under the cabin; waiting cards in a sideways-scrolling row; names no longer clipped; the header stays on one line.',
+    'A pairing hint only appears when the pair actually earns.',
+  ],
+  experiments: [
+    'Acceptance, 4,200 runs: skilled endings 51.7% power / 47.6% agitation / 0.7% bomb (v9.20.1: 33.1 / 66.2 / 0.7); human-like 53% power / 44% agitation (was 4 / 94), median 63→76F; balanced 87→88F (p90 95), 100F reached in 0.9%; novice 49→34F (floor 25). The acceptance death target is now “power and agitation each 35–65%”.',
+    'Crowding cost compared (120 runs each): +1 agitation gave human-like power:agitation 15:99; +1 agitation +1 power 40:76 (novice fell to 32F); +1 power only 63:53 (human-like median 77); +2 power only 86:34 (human-like fell to 49F). Chose +1 power only.',
+    'Every ordinary rider is boarded 17–62% of the time, the first time none is out of range. Previously too low: Voyeur 5%→39%, Scandal 2%→24%, Noisemaker 6%→21%, Grafter 10%→17%. Dark legends: Cold Matron 5%→34%, High Roller 0%→92%, Night Zhou 21%→74%.',
+    'Five English playtests: 99F power, 68F agitation, 102F agitation (won bets at 35–69%), 95F agitation (lost a 32% bet), 83F agitation; three narrow, one tablet. An English audit logs every Chinese character that reaches the screen; the leaks above were all it found.',
+    'verify passes (tests updated for the new power and fares of the Coach, Bomb Carrier and Celebrity, and for fan power instead of crowding agitation).',
+  ],
+  watch: [
+    'Among dark legends the High Roller (92%), Other Thirteen (89%) and Kingpin (85%) are still easy picks.',
+    'Cooperation and Quiet, which prefer normal riders, still end about 70% on agitation (mostly lost bets).',
+    'Power is often short at 60–80F; watch whether real players find it too tight.',
+    'Phone seats show only three numbers; a dark legend’s state needs the ⓘ.',
+  ],
+};

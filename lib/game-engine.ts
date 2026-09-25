@@ -582,6 +582,8 @@ export const inspectionExtraEnergy = (state: RunState) => Math.max(0, passengerE
 /** v9.19: power the dark riders cost on the coming ascent (Scrappers strip parts, uncontrolled Wraiths drain). */
 export function darkEnergyLines(state: RunState): ChangeLine[] {
   const lines: ChangeLine[] = [];
+  // v9.20.2: a packed cabin needs the fans on (the riders' cost, not the motor's; a Flare does not help).
+  if (V9_AGITATION.crowdingPower && state.cabin.filter(Boolean).length >= crowdingThreshold(state.floor + 1)) lines.push({ label: '车厢挤满：风扇耗电', amount: V9_AGITATION.crowdingPower });
   if (troubleFree(state)) return lines;
   const scrappers = state.cabin.filter(r => r?.kind === 'scrapper').length;
   if (scrappers) lines.push({ label: '拆机人拆零件', amount: scrappers * DARK_RULES.scrapperMotor });
@@ -762,7 +764,7 @@ export function riderAfterWork(rider: Rider, cabin: Array<Rider | null>, slot: n
 export function cabinPressureLines(state: RunState): ChangeLine[] {
   const occupied = state.cabin.filter(Boolean).length, band = agitationBand(state.stress), red = conflictLinks(state.cabin).length;
   const lines: ChangeLine[] = [];
-  if (occupied >= crowdingThreshold(state.floor + 1)) lines.push({ label: '车厢拥挤', amount: V9_AGITATION.crowding });
+  if (occupied >= crowdingThreshold(state.floor + 1) && V9_AGITATION.crowding) lines.push({ label: '车厢拥挤', amount: V9_AGITATION.crowding });
   // A floor where someone is due to get off stays calm when arrivalsCalm is on (players can plan around the clock).
   const unrest = nightUnrest(state.floor + 1, occupied), arriving = state.cabin.some(r => r && r.destination <= state.floor + 1);
   const quiet = boxOf(state).motor >= 3 ? 1 : 0;
@@ -1080,7 +1082,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
         case 'coldmatron': stressCapBonus += DARK_LEGEND_RULES.coldMatronCap; notes.push(`冷面护士长留下病历：躁动上限 +${DARK_LEGEND_RULES.coldMatronCap}`); break;
         case 'banshee': pay('哭丧女的酬金', DARK_LEGEND_RULES.bansheePay); break;
         case 'necromancer': pay('死灵师的酬金', DARK_LEGEND_RULES.necromancerPay); break;
-        case 'highroller': if (departBand === 'low') pay('赌王赢了', DARK_LEGEND_RULES.highRollerWin); else { const loss = Math.min(Math.max(0, coins), DARK_LEGEND_RULES.highRollerLoss); if (loss) pay('赌王输了', -loss); } break;
+        case 'highroller': if (departBand !== 'high') pay('赌王赢了', DARK_LEGEND_RULES.highRollerWin); else { const loss = Math.min(Math.max(0, coins), DARK_LEGEND_RULES.highRollerLoss); if (loss) pay('赌王输了', -loss); } break;
         case 'otherthirteen': { const gift = rand(0, DARK_LEGEND_RULES.thirteenPayMax, rng); if (gift) pay('另一个13号的馈赠', gift); break; }
       }
     } else if (!isLegend(rider.kind)) {

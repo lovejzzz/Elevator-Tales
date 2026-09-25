@@ -149,9 +149,10 @@ console.log('PASS free first ability, 40-coin second, retired abilities never of
   const mid = E.resolveFloor(run(20, [rider('commuter', 20, 1)], { stress: 3 }), fixed());
   assert.equal(lines(mid, 'lastEarnings')['热闹小费'], 1);
   const six = E.resolveFloor(run(20, Array.from({ length: 6 }, () => rider('commuter', 20, 4))), fixed());
-  assert.equal(lines(six, 'lastPressure')['车厢拥挤'], 1);
+  // v9.20.2: a full cabin costs power (fans), not agitation.
+  assert.equal(lines(six, 'lastPressure')['车厢拥挤'], undefined); assert.equal(lines(six, 'lastEnergy')['车厢挤满：风扇耗电'], -1);
   const five = E.resolveFloor(run(20, Array.from({ length: 5 }, () => rider('commuter', 20, 4))), fixed());
-  assert.equal(lines(five, 'lastPressure')['车厢拥挤'], undefined);
+  assert.equal(lines(five, 'lastEnergy')['车厢挤满：风扇耗电'], undefined);
   const high = run(20, [rider('commuter', 20, 4), rider('courier', 20, 4)], { stress: AGITATION_HIGH_MIN });
   const hit = E.resolveFloor(high, fixed(0.1));
   assert.equal(hit.cabin.filter(Boolean).length, 1, 'incident removes one rider without pay');
@@ -332,7 +333,7 @@ console.log('PASS option A: flat motor, late-night unrest and calming');
   const s = run(30, cab, { stress: 6, coins: 1 });
   const f = stressForecast(s);
   const src = Object.fromEntries((f.sources ?? []).map(x => [x.label, x.amount]));
-  assert.equal(src['急躁乘客'], 2); assert.equal(src['儿童无人照顾'], 1); assert.equal(src['车厢拥挤'], 1);
+  assert.equal(src['急躁乘客'], 2); assert.equal(src['儿童无人照顾'], 1); assert.equal(src['车厢拥挤'], undefined, 'v9.20.2: a full cabin costs power, not agitation');
   assert.ok(s.stress + f.highDelta >= s.stressCap, 'the floor is fatal as shown');
   const plan = calmRescuePlan(s);
   assert.ok(plan && plan.remove.length === 1 && plan.remove[0].kind === 'child' && plan.remove[0].paid === 0 && plan.calm === 0, JSON.stringify(plan));
@@ -706,7 +707,7 @@ console.log('PASS overtime calming price ladder, placement warnings, Dispatch us
   const R = (kind: PassengerKind, id: string, dest: number): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 30, fareBonus: 0, stash: 0, volatile: false });
   const five = run(30, [R('commuter', 'a', 34), R('commuter', 'b', 34), R('commuter', 'c', 34), R('commuter', 'd', 34), R('commuter', 'e', 34), null]);
   const sixth = planPlacement(five, R('commuter', 'f', 33), 5);
-  assert.ok(sixth.ok && /车厢坐满 \+1躁动\/层/.test(sixth.next.message), 'filling the cabin to the crowding line is announced');
+  assert.ok(sixth.ok && /车厢坐满：风扇 \+1电\/层/.test(sixth.next.message), 'filling the cabin to the crowding line is announced');
   const src = readFileSync('lib/game-engine.ts', 'utf8') + readFileSync('lib/game-interaction.ts', 'utf8');
   const leaks = [...src.matchAll(/(?:notes\.(?:push|unshift)|message:|message=|stressReasons\.push|return reject)\(?\s*'([^'\n]*[\u3400-\u9fff][^'\n]*)'/g)].map(m => m[1]).filter(text => /[\u3400-\u9fff]/.test(translateGameText(text, 'en')));
   assert.deepEqual(leaks, [], 'every fixed engine message has an English translation');
@@ -850,7 +851,7 @@ console.log('PASS v9.19.1 playtest fixes');
   assert.equal(zhou.freeBoxLevels, DLR.nightOperatorBoxLevels, 'Night Zhou leaves a free power-box level at 70F');
   const matronDone = E.resolveFloor(run(69, [R('coldmatron', 'm', 70), R('commuter', 'c', 72)], { stress: 1, stressCap: 10 }), fixed(.9));
   assert.equal(matronDone.stressCap, 10 + DLR.coldMatronCap, 'the Cold Matron raises the agitation cap for good');
-  assert.ok(/夜班老周关了灯 \+2躁动\/层/.test(planPlacement(run(60, [R('commuter', 'c', 64)]), E.darkLegendRider('nightoperator', 60, fixed(.3)), 3).next.message), 'placing Night Zhou warns about the lights');
+  assert.ok(/夜班老周关了灯 \+1躁动\/层/.test(planPlacement(run(60, [R('commuter', 'c', 64)]), E.darkLegendRider('nightoperator', 60, fixed(.3)), 3).next.message), 'placing Night Zhou warns about the lights');
   const king = run(69, [R('kingpin', 'k', 70, { stash: 72 }), R('commuter', 'c', 72)], { stress: 1, stressCap: 12 });
   assert.equal(E.dismissalCost(king, king.cabin[0]!), DLR.kingpinDismissal, 'the Kingpin is expensive to put off');
   const kingDone = E.resolveFloor(king, fixed(.9));
@@ -899,7 +900,7 @@ console.log('PASS v9.19.1 playtest fixes');
   for (let i = 0; i < 30; i++) { const floor = 79 + i; for (const o of E.makeOffers(floor, E.EMPTY_UPGRADES, false, seq(((i * 37) % 97) / 97, ((i * 53) % 89) / 89, .5))) if (isDark(o.kind)) assert.equal(o.extreme ?? 0, abyssStep(floor + 1), `abyss dark cards at ${floor}F carry step ${abyssStep(floor + 1)}`); }
   const ex = R('robber', 'x', 99, { extreme: 2 });
   assert.equal(E.fareBreakdown(ex, [ex], 0).find(l => l.label === '深渊加价')?.amount, Math.round(PASSENGERS.robber.fare * DARK.extremeFarePerStep * 2));
-  assert.equal(translateGameText('夜班老周关了灯', 'en'), 'Night Zhou turned the lights off');
+  assert.equal(translateGameText('夜班老周关了灯', 'en'), 'Night Zhou: lights out');
   assert.deepEqual(addDiscoveredPassengers(sanitizeDiscoveredPassengers(['kingpin', 'lover']), ['severer']), ['lover', 'severer', 'kingpin'], 'met dark legends are archived');
   for (let i = 0; i < 20; i++) assert.ok(E.drawItemStock(80 + i, seq(((i * 37) % 97) / 97, ((i * 53) % 89) / 89)).some(c => c.key === 'flare'), 'a Flare is always on the abyss shelf');
 }

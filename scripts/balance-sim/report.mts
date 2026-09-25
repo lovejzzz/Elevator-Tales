@@ -65,7 +65,7 @@ export function report(logs: RunLog[]) {
   const deaths = skilled.filter(l => l.cause !== 'alive');
   const dp = (c: string) => pct(deaths.filter(l => l.cause === c).length, deaths.length);
   // v2 gate: the original 'power ≤ 60 and agitation 20–40' only admitted agitation 39–40 (bombs ~1%).
-  checks.push(check('死因：电量 / 躁动 / 炸弹', `${f1(dp('energy'))} / ${f1(dp('agitation'))} / ${f1(dp('bomb'))}`, '躁动 20–40，电量 ≤ 80，炸弹 ≤ 10', dp('energy') <= 80 && dp('agitation') >= 20 && dp('agitation') <= 40 && dp('bomb') <= 10));
+  checks.push(check('死因：电量 / 躁动 / 炸弹', `${f1(dp('energy'))} / ${f1(dp('agitation'))} / ${f1(dp('bomb'))}`, '电量、躁动各 35–65%（v9.20.2 玩家目标：大约一半一半），炸弹 ≤ 10', dp('energy') >= 35 && dp('energy') <= 65 && dp('agitation') >= 35 && dp('agitation') <= 65 && dp('bomb') <= 10));
   const shops = skilled.flatMap(l => l.shops);
   const aff = pct(shops.filter(s => s.affluent).length, shops.length);
   checks.push(check('不宽裕：进店时钱够“充满所需电量 + 升一级电箱 + 余 20”', f1(aff) + '%', '≤ 15%', aff <= 15));

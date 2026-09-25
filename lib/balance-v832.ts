@@ -21,7 +21,7 @@ export const nightUnrest = (floor: number, occupied = 5) => {
   if (level === 1) return d % 2 === 0 ? 1 : 0;
   return Math.min(NIGHT_UNREST.cap, level - 1);
 };
-export const V9_AGITATION = { crowdingFrom: 6, crowding: 1, mediumTip: 1, lowTip: 1, incidentChance: 0.2, lateCrowdingFloor: 999, lateCrowdingFrom: 5, crowdSteps: [] as number[], crowdMin: 3 };
+export const V9_AGITATION = { crowdingFrom: 6, /** v9.20.2: a packed cabin no longer adds agitation; it costs power instead (the riders need the fans on). */ crowding: 0, crowdingPower: 1, mediumTip: 1, lowTip: 1, incidentChance: 0.2, lateCrowdingFloor: 999, lateCrowdingFrom: 5, crowdSteps: [] as number[], crowdMin: 3 };
 /** Late night: each floor in crowdSteps lowers the crowding threshold by one rider (never below crowdMin). */
 export const crowdingThreshold = (floor: number) => Math.max(V9_AGITATION.crowdMin, (floor >= V9_AGITATION.lateCrowdingFloor ? V9_AGITATION.lateCrowdingFrom : V9_AGITATION.crowdingFrom) - V9_AGITATION.crowdSteps.filter(step => floor >= step).length);
 export const MUSIC_RULES = { step: 2 };

@@ -57,12 +57,12 @@ export const DRUNK_CARERS = ['nurse', 'matron'] as const;
  * Each pays in its own way and costs in its own way; tuned in scripts/balance-sim. */
 export const DARK_LEGEND_RULES = {
   from: 60, destination: 70,
-  nightOperatorSaving: 2, nightOperatorAgitation: 2, nightOperatorBoxLevels: 1,
+  nightOperatorSaving: 2, nightOperatorAgitation: 1, nightOperatorBoxLevels: 1,
   severerPerRed: 3, severerPerGreen: 1, severerPay: 25,
-  kingpinStash: 8, kingpinAgitation: 1, kingpinDismissal: 30,
+  kingpinStash: 7, kingpinAgitation: 1, kingpinDismissal: 30,
   coldMatronCalm: 2, coldMatronPower: DARK_LEGEND_POWER, coldMatronCap: 2,
   bansheeAgitation: 1, bansheeHighCoins: 10, bansheePay: 15,
   necromancerPerDark: 2, necromancerAgitation: 1, necromancerPay: 20,
-  highRollerWin: 80, highRollerLoss: 25,
-  thirteenCoins: 8, thirteenAgitation: 2, thirteenPower: 2, thirteenPayMax: 40,
+  highRollerWin: 40, highRollerLoss: 40,
+  thirteenCoins: 8, thirteenAgitation: 2, thirteenPower: 2, thirteenPayMax: 25,
 };

@@ -128,7 +128,7 @@ function evaluate(state: RunState, bot: Bot): number {
     if (bot.favored.includes(r.kind)) v += bot.favor * Math.min(rem, 5);
     if (isLegend(r.kind)) v += LEGEND_HEURISTIC + (bot.legends.includes(r.kind as LegendKind) ? 12 : 0);
     // v9.20: what a dark legend pays on reaching the 70F shop (the one-step preview only sees his per-floor effects).
-    if (isDarkLegend(r.kind)) v += Math.pow(0.95, rem) * ({ nightoperator: 20, severer: DARK_LEGEND_RULES.severerPay, kingpin: (r.stash ?? 0) + DARK_LEGEND_RULES.kingpinStash * rem, coldmatron: 15, banshee: DARK_LEGEND_RULES.bansheePay, necromancer: DARK_LEGEND_RULES.necromancerPay, highroller: bot.band === 'low' ? 45 : -15, otherthirteen: DARK_LEGEND_RULES.thirteenPayMax / 2 } as Record<string, number>)[r.kind];
+    if (isDarkLegend(r.kind)) v += Math.pow(0.95, rem) * ({ nightoperator: 20, severer: DARK_LEGEND_RULES.severerPay, kingpin: (r.stash ?? 0) + DARK_LEGEND_RULES.kingpinStash * rem, coldmatron: 15, banshee: DARK_LEGEND_RULES.bansheePay, necromancer: DARK_LEGEND_RULES.necromancerPay, highroller: bot.band === 'high' ? -10 : 30, otherthirteen: DARK_LEGEND_RULES.thirteenPayMax / 2 } as Record<string, number>)[r.kind];
     if (r.kind === 'parcel' && r.big !== 'bottom' && !links.carrier.has(slot) && !after.cabin.some(o => Boolean(r.ownerId) && o?.id === r.ownerId)) v += Math.pow(0.95, rem) * (E.boxCoins(r) + EP_FUTURE * E.boxPower(r)) / 2;
     if (r.kind === 'courier' && r.parcelId && E.parcelBeside(after.cabin, slot, links)) v += Math.pow(0.95, rem) * EP_FUTURE * E.COURIER_ARRIVAL_CHARGE;
     // A Courier still waiting for a box: the chance one is dealt (about one floor in four) before he leaves.

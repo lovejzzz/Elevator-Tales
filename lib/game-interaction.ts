@@ -143,7 +143,7 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
   cabinPressureLines({...state,cabin}).forEach(l=>{const d=l.amount-(cabinBefore.get(l.label)??0);if(d>0&&l.label!=='车厢拥挤')warnings.push(`${l.label} +${d}躁动/层`);});
   // Filling the cabin to the crowding line adds cabin-wide agitation every floor.
   const crowdLine=crowdingThreshold(state.floor+1);
-  if(source<0&&cabin.filter(Boolean).length>=crowdLine&&state.cabin.filter(Boolean).length<crowdLine)warnings.push(`车厢坐满 +${V9_AGITATION.crowding}躁动/层`);
+  if(source<0&&cabin.filter(Boolean).length>=crowdLine&&state.cabin.filter(Boolean).length<crowdLine)warnings.push(V9_AGITATION.crowding?`车厢坐满 +${V9_AGITATION.crowding}躁动/层`:`车厢坐满：风扇 +${V9_AGITATION.crowdingPower}电/层`);
   // Two Couriers contesting one box used to print the same line twice; merge repeats into “×2”.
   const merged=[...new Set(warnings)].map(w=>{const n=warnings.filter(x=>x===w).length;return n>1?`${w} ×${n}`:w;});
   if(merged.length&&!newlyEyed){message+=` 注意：${merged.join('；')}。`;celebrate=false;}

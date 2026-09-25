@@ -1,6 +1,14 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.20.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.20.2**. Publication status is tracked separately from the source version.
+
+## v9.20.2 — 2026-09-25 — Riders use different power; endings about half and half / 人物耗电各不相同，死因一半一半；英文版前 5 轮试玩
+
+- Rider power 2 for Musician, Celebrity, Coach, Bomb Carrier, Mystery, Overtimer, Summoner, Taskmaster, Brawler, Grafter, Noisemaker, Scandal; Mad Bomber 3; motor unchanged. Fares: Celebrity 18, Musician 9, Noisemaker 12, Scandal 22, Voyeur 12, Grafter 16, Overtimer 8.
+- Full cabin: fans +1 power/floor instead of +1 agitation. Dark legends: Cold Matron 1 power; High Roller +40 unless high / −40; Night Zhou +1 agitation; Kingpin banks 7; Other Thirteen 0–25.
+- Gamble confirmation from 20% (was 5%). English fixes (ranges, paid messages, plurals, chips wrap, danger banner once, dismissal advice), manual updated (midnight, abyss, items, fans), tablet layout (two columns, scrolling card row).
+- Acceptance 4,200 runs: skilled 51.7 / 47.6 / 0.7% (power/agitation/bomb), human-like 53 / 44%, balanced 88F (p90 95), 100F 0.9%, novice 34F; every rider boarded 17–62%. English playtests 1–5: 99, 68, 102, 95, 83F. Notes: `docs/playtests/v920-english-rounds.md`.
+- Watch: easy dark legends (High Roller 92%, Other Thirteen 89%, Kingpin 85%); Cooperation/Quiet ~70% agitation; tight power at 60–80F; phone seats hide legend states.
 
 ## v9.20.1 — 2026-09-25 — The abyss becomes a gamble / 深渊变成赌局：人物越来越极端，失控概率明码标价
 

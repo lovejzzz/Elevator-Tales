@@ -2743,7 +2743,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .game-shell .status-rail .meter-card .rail-power-line .sector-forecast.is-warn { color:#f0c07a; }
 /* v9.6.1 agitation sources on the rail. */
 .game-shell .agitation-sources { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
-.game-shell .agitation-sources>span { padding:2px 7px; border-radius:99px; font-size:11px; line-height:1.5; white-space:nowrap; border:1px solid #c99d5244; }
+.game-shell .agitation-sources>span { padding:2px 7px; border-radius:99px; font-size:11px; line-height:1.5; white-space:normal; max-width:100%; overflow-wrap:anywhere; border:1px solid #c99d5244; border-radius:10px; }
 .game-shell .agitation-sources>span.is-up { color:#ffb09a; border-color:#c8574b66; background:#c8574b14; }
 .game-shell .agitation-sources>span.is-down { color:#9ee3b5; border-color:#5a9e7c66; background:#5a9e7c14; }
 
@@ -3381,3 +3381,23 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 @keyframes outburst-jolt { 0% { box-shadow:none; transform:none; } 15% { box-shadow:0 0 0 3px rgba(230,70,60,.9), 0 0 24px 6px rgba(200,30,30,.6); transform:translateX(-3px); } 30% { transform:translateX(3px); } 45% { transform:translateX(-2px); } 100% { box-shadow:none; transform:none; } }
 @media (prefers-reduced-motion: reduce) { .standing-slot.is-outburst { animation:none !important; } }
 .seat-risk-tag.seat-outburst-tag { border-color:#d9534f; color:#ffb3a8; background:#4a1212cc; }
+/* v9.20.2 (English playtest 5, 768×1024): tablets had an empty third column above the ascend button, a 300px cabin,
+   clipped names (“Com…”, “Medi…”) and value chips running past the card edge. Two columns; the button sits under the cabin. */
+@media (min-width:701px) and (max-width:1100px) {
+ .game-shell .game-grid { grid-template-columns:184px minmax(0,1fr); grid-template-rows:310px minmax(0,1fr) 72px; }
+ .game-shell .candidate-panel { grid-column:1/-1; grid-row:1; }
+ .game-shell .status-rail { grid-column:1; grid-row:2/4; }
+ .game-shell .elevator-stage { grid-column:2; grid-row:2; }
+ .game-shell .departure-controls { grid-column:2; grid-row:3; align-self:stretch; }
+ .game-shell .depart-button b { display:inline; }
+ .game-shell .compact-card .cc-title strong { font-size:14px; white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:normal; word-break:normal; }
+ .game-shell .compact-card .cc-values { flex-wrap:wrap; gap:6px 10px; font-size:14px; }
+ .game-shell .compact-card .cc-net { white-space:normal; max-width:100%; }
+ .game-shell .brand-actions .text-button { white-space:nowrap; font-size:12px; letter-spacing:0; padding:0 10px; }
+ .game-shell .brand-bar h1 { font-size:28px; white-space:nowrap; }
+ .game-shell .brand-bar .eyebrow { white-space:nowrap; font-size:9px; }
+ /* Four or five waiting cards at 155px clipped their chips; scroll the row sideways instead, each card at least 210px. */
+ .game-shell .passenger-list, .game-shell .passenger-list.has-four { grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:minmax(210px,1fr); overflow-x:auto; overflow-y:hidden; scroll-snap-type:x proximity; }
+ .game-shell .passenger-item { scroll-snap-align:start; }
+ .game-shell .passenger-card { overflow-y:auto; scrollbar-width:thin; }
+}
