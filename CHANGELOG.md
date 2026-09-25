@@ -2,6 +2,14 @@
 
 Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.20.2**. Publication status is tracked separately from the source version.
 
+## v9.20.7 — 2026-09-25 — English playtests 26–30: no English in the Chinese interface, the Other Thirteen spelled out / 英文版第 26–30 局：中文模式也不混英文、另一个13号写清楚
+
+- Chinese mode: the floor plaque's “BEST” and the words above the cabin (DOORS OPEN / IN TRANSIT / guided-shift and Lover labels) now read in Chinese; English mode unchanged.
+- Other Thirteen card lists the four outcomes (+8 coins, +2 agitation, −2 power or nothing).
+- Reverse scan of the Chinese interface (floors 1–89) found only those words. Hand-played abyss check: careful play still just reaches 100F, stopped only by power; no further change because the player asked not to touch the lift's own power.
+- Round 30: a fresh phone run to 91F with the English audit finding no Chinese. All 30 rounds: 73 recorded fixes. Rules unchanged since v9.20.4 (skilled 50.3 / 49.0% power/agitation, 100F 0.3%).
+- Watch: careful players can just reach 100F; abyss coins plentiful; novice ~33F; Severer, Kingpin, Other Thirteen over 80% boarding.
+
 ## v9.20.6 — 2026-09-25 — English playtests 21–25: every item checked, Holy Water that lasts, item badges / 英文版第 21–25 局：道具逐个验过、圣水真的管用、座位上看得见道具
 
 - Holy Water now also protects the purified rider from corruption this trip (dark neighbours used to turn him back in two floors).

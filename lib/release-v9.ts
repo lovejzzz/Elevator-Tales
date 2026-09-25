@@ -1690,6 +1690,50 @@ export const V9201_EN: ChangelogEntry = {
   ],
 };
 
+export const V9207_ZH: ChangelogEntry = {
+  version: '9.20.7', date: '2026-09-25', title: '英文版第 26–30 局：中文模式也不混英文、另一个13号写清楚、30 轮试玩收尾',
+  summary: '30 轮英文版试玩的最后 5 局：在中文模式下反向扫了一遍英文，写清了另一个13号的四种结果，并用谨慎打法亲手检验了深渊的难度。30 局的完整笔记在 docs/playtests/v920-english-rounds.md。',
+  changes: [
+    '中文模式不再夹英文：楼层牌“当前楼层 · BEST”改成“当前楼层 · 最高”；电梯上方的“DOORS OPEN / IN TRANSIT / FIRST LINK · GUIDED SHIFT / LOVER SIGNAL · RESPONSE”在中文模式下写“门已开 / 运行中 / 第一条连线 · 引导班次 / 恋人信号 · 回应”。英文模式不变。',
+    '另一个13号：卡面写明四种结果——“每层随机一种：+8币、+2躁动、−2电或无事”。原来只写“每层一件随机的好事或坏事”，看不出值不值得带。',
+  ],
+  experiments: [
+    '中文模式反向检查（第 26 局，1–89 层）：只找到上面几处英文装饰字；按键名 ENTER、ESC 和底部型号“ELV–07”保留。这几轮新加的文字在中文模式下都是中文。',
+    '深渊难度的亲手检验（第 29 局）：从 79 层的认真玩家状态开始，只带不会失控的人、钱花在安抚上，走到了 100 层。躁动全程没超过 6/10，卡住我的是电量（90 层剩 7，99 层剩 3）。发作概率提高后，冒险打法很难过 100 层（模拟 0.3%），但谨慎打法仍能勉强到达。再收紧要动电梯运转耗电，玩家说过不要调，所以不改。',
+    '英文版试玩第 26–30 局：89 层断电（中文模式检查）、81 层躁动（我写的谨慎脚本出错，不计入评价）、第 28 局另一个13号（到 65 层）、102 层躁动（第 29 局，亲手过 100 层）、91 层躁动（第 30 局，手机，全新一局，英文审计全程零中文）。',
+    '30 局合计：笔记里记下的修改 73 处（其中漏翻或半中半英的句子二十多处，全部修好）；新手引导、商店、午夜、深渊、14 件道具、全部 8 位暗黑传奇都亲手玩过或逐屏看过。',
+    '规则和数值没有变，沿用 v9.20.4 的验收（4200 局：熟练型 断电 50.3% / 躁动 49.0%，抵达 100 层 0.3%）。verify 全部通过。',
+  ],
+  watch: [
+    '谨慎的玩家仍可能刚好撑到 100 层，拦住他们的只有电量。',
+    '深渊的钱仍然偏多（“不宽裕”两项验收不通过），但在深渊里钱主要用来安抚和补电，有实际用途。',
+    '新手（按票价挑人）中位约 33 层，多数断电。',
+    '剪线婆、黑老大、另一个13号的上车率仍在 80% 以上。',
+  ],
+};
+
+export const V9207_EN: ChangelogEntry = {
+  version: '9.20.7', date: '2026-09-25', title: 'English playtests 26–30: no English in the Chinese interface, the Other Thirteen spelled out, 30 rounds done',
+  summary: 'The last five of the 30 English playtests: a reverse scan for English in the Chinese interface, the Other Thirteen’s four outcomes written on his card, and a hand-played check of how hard the abyss is. Notes for all 30 rounds are in docs/playtests/v920-english-rounds.md.',
+  changes: [
+    'No English in the Chinese interface: the floor plaque’s “BEST” and the words above the cabin (“DOORS OPEN / IN TRANSIT / FIRST LINK · GUIDED SHIFT / LOVER SIGNAL · RESPONSE”) now read in Chinese in Chinese mode. The English interface is unchanged.',
+    'Other Thirteen: his card lists the four outcomes, “Each floor, one at random: +8 coins, +2 agitation, −2 power or nothing”. It used to say only “Something good or bad every floor”, which gave no way to judge him.',
+  ],
+  experiments: [
+    'Reverse check in Chinese mode (round 26, floors 1–89): only the decorative words above; the key names ENTER and ESC and the “ELV–07” footer stay. Every string added in these rounds is Chinese in Chinese mode.',
+    'Hand-played abyss check (round 29): from a careful player’s 79F state, boarding only riders who could not boil over and spending coins on calming, I reached 100F. Agitation never went past 6/10; power was the wall (7 left at the 90F shop, 3 at 99F). With the higher outburst odds a risk-taking style rarely passes 100F (0.3% in the simulator), but careful play can still just make it. Tightening further would mean touching the lift’s own power, which the player asked me not to do, so it stays.',
+    'English playtests 26–30: 89F power (Chinese-mode check), 81F agitation (my careful-player script misfired; not counted), round 28 the Other Thirteen (to 65F), 102F agitation (round 29, past 100F by hand), 91F agitation (round 30, phone, a fresh run with the English audit finding no Chinese at all).',
+    'All 30 rounds: 73 fixes recorded in the notes (more than twenty of them untranslated or half-translated lines, all fixed); the guided shift, shops, midnight, the abyss, all 14 items and all 8 dark legends were played by hand or checked screen by screen.',
+    'No rule or number changed; the v9.20.4 acceptance stands (4,200 runs: skilled 50.3% power / 49.0% agitation, 100F reached in 0.3%). verify passes.',
+  ],
+  watch: [
+    'A careful player can still just reach 100F; only power stops them.',
+    'The abyss still pays well (the “not affluent” checks fail), though there the coins go to calming and charging.',
+    'Novices (picking by fare) reach a median of about 33F, mostly running out of power.',
+    'The Severer, Kingpin and Other Thirteen are still boarded over 80% of the time.',
+  ],
+};
+
 export const V9206_ZH: ChangelogEntry = {
   version: '9.20.6', date: '2026-09-25', title: '英文版第 21–25 局：道具逐个验过、圣水真的管用、座位上看得见道具',
   summary: '30 轮英文版试玩的第 21–25 局：14 件道具逐个用了一遍，三位没亲手玩过的暗黑传奇（哭丧女、死灵师、剪线婆）各走了一段，并系统检查了座位状态的英文。笔记在 docs/playtests/v920-english-rounds.md。',
