@@ -1180,7 +1180,7 @@ export function failureLesson(state: RunState): string {
     const overtime = overtimeChargeOffer({ ...state, status: 'playing', energy: 0 });
     if (usedUp && overtime && state.coins >= overtime.price) return ledger+`本段途中补电已用满，但你还有 ${state.coins} 金币：断电警告里的“加急补电”（这一包 ${overtime.price} 币 / ${overtime.units} 电）能救这一层，下次看到它就买。`;
     if (usedUp) return ledger+`本段途中补电已用满（每十层 ${cap} 电）：离店前要充够到下个商店的电量，配电箱升级别挤掉充电的钱。`;
-    if (state.coins >= 8) return ledger+`你带着 ${state.coins} 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 ${cap} 电。`;
+    if (state.coins >= 8) return ledger+`你带着 ${state.coins} 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 ${cap} 电；用完后断电警告里还有更贵的“加急补电”。`;
     return ledger+'离店时要预留到下个商店的电量；电量栏会显示到店约剩多少。';
   }
   if (state.message.includes('躁动')) {
@@ -1510,7 +1510,11 @@ export function repairEmergency(state: RunState): RunState {
 export function drawItemStock(floor: number, rng: () => number, bought: RunState['itemBought'] = {}): NonNullable<RunState['itemStock']> {
   const pool = ITEM_KEYS.filter(k => ITEMS[k].from <= floor);
   const picked: ItemKey[] = [];
-  while (picked.length < 3 && picked.length < pool.length) { const rest = pool.filter(k => !picked.includes(k)); picked.push(rest[Math.min(rest.length - 1, Math.floor(rng() * rest.length))]); }
+  const draw = (from: ItemKey[]) => { const rest = from.filter(k => !picked.includes(k)); if (rest.length) picked.push(rest[Math.min(rest.length - 1, Math.floor(rng() * rest.length))]); };
+  // v9.19.1: from the midnight shop on, at least two of the three are tools against the dark riders.
+  const midnight = pool.filter(k => ITEMS[k].from >= DARK_RULES.midnightFloor);
+  if (midnight.length >= 2) { draw(midnight); draw(midnight); }
+  while (picked.length < 3 && picked.length < pool.length) draw(pool);
   return picked.map(key => ({ key, price: itemPrice(key, floor, bought?.[key] ?? 0), sold: false }));
 }
 export function buyItem(state: RunState, index: number): RunState {

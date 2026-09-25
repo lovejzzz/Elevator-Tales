@@ -1545,3 +1545,35 @@ export const V9191_EN: ChangelogEntry = {
   ],
   watch: ['Steady play still passes 130F; power still decides the end.', 'The Robber boards only 11–15% (a “bad” rider by design, but maybe too unwelcome).', 'Most legends only matter in the first ten floors and never meet the midnight cast.'],
 };
+
+export const V9192_ZH: ChangelogEntry = {
+  version: '9.19.2', date: '2026-09-25', title: '午夜试玩后四局：配对提示、午夜道具货架、结束说明',
+  summary: '十局午夜试玩的第 7–10 局（谨慎新手、全暗黑车厢、手机英文、逐层手动）。这一版让谨慎玩家更容易发现配对，60 层起的商店更容易买到对付暗黑版的道具，结束说明也会提醒加急补电。十局的完整笔记和总结在 docs/playtests/midnight-playtest-notes.md。',
+  changes: [
+    '配对提示：前 40 层，候客里如果有“单看亏、配对后赚”的人（例如两位恋人各写着 −3 / −7，但“配恋人 +9”），而且搭档就在候客或车上，提示直接点名：“两位恋人单看都亏，挨着坐就赚（卡上写着‘配恋人 +9’）：一起带上。”或“X 单看亏，和 Y 挨着坐就赚”。这条提示优先于普通的空座位提示。',
+    '道具货架：从 60 层商店起，三件道具里至少两件是午夜道具（圣水、手铐、护身符、闹钟、镇静剂、封条、引线剪，80 层起还有照明弹）。之前 60 层常常只能买到前期的请离券、换位券。',
+    '结束说明：带着钱断电时，除了“途中补电每十层最多 N 电”，还提醒“用完后断电警告里还有更贵的加急补电”。',
+  ],
+  experiments: [
+    '浏览器试玩第 7–10 局：101 层躁动（前期扮演只拿正数的谨慎新手）、81 层躁动（午夜后尽量只带暗黑版）、106 层电量（手机英文）、81 层躁动（午夜后逐层手动到 72 层）。第 8、10 局的失败主要来自代打脚本的决策（不看躁动总量、在商店直接调用引擎充电，绕过了界面里“先留抢救费”的保护），不代表真人体验。',
+    '十局结论：60–90 层用普通人加一两个暗黑版做组合是最好玩的一段；全暗黑车厢因为急躁、赖着不走、坐满会叠加躁动，不是一条独立的路；后期终点仍然主要是电量。',
+    '规则数值未改，模拟器验收沿用 v9.19.1 的结果（均衡型中位 115 层）。verify 41 项（v9.19.1 的新检查里加了一条：60 层起货架至少两件午夜道具）。',
+  ],
+  watch: ['后期终点仍然主要是电量，100 层后能否有更多“人物带来的”压力。', '传说人物大多只在前 10 层起作用，和午夜内容没有交集。', '神秘人的逃犯身份在上车时看不出来，两位逃犯会让躁动一层跳 2。', '全暗黑车厢不是独立流派；如果想要“暗黑流”，需要给它明确的回报。'],
+};
+
+export const V9192_EN: ChangelogEntry = {
+  version: '9.19.2', date: '2026-09-25', title: 'Last four midnight playtests: pair hints, a midnight item shelf, endings',
+  summary: 'Runs 7–10 of the ten midnight playtests (a cautious beginner, an all-dark cabin, a phone in English, midnight played floor by floor). Cautious players now see pairs more easily, shops from 60F more often stock the tools against dark riders, and endings mention overtime charging. Full notes and a ten-run summary are in docs/playtests/midnight-playtest-notes.md.',
+  changes: [
+    'Pair hint: in the first 40 floors, when a waiting card loses money on its own but pays when paired (two Lovers at −3 / −7 that each say “w/ Lover +9”) and its partner is waiting or aboard, the hint names it: “Two Lovers lose on their own but earn side by side … take both.” or “X loses on its own but earns beside Y”. It takes priority over the empty-seat hint.',
+    'Item shelf: from the 60F shop on, at least two of the three items are midnight tools (Holy Water, Handcuffs, Amulet, Alarm Clock, Sedative, Seal, Wire Cutter, and the Flare from 80F). The 60F shop used to offer only the early Exit Pass and Swap Ticket fairly often.',
+    'Ending: running out of power with coins left now also says that after the in-transit allowance the power alert sells pricier overtime charging.',
+  ],
+  experiments: [
+    'Browser playtests 7–10: 101F agitation (early floors as a cautious beginner who only takes positive cards), 81F agitation (only dark riders after midnight), 106F power (phone, English), 81F agitation (midnight by hand to 72F). Runs 8 and 10 were lost mostly to the auto-play script’s choices (it ignores total agitation and charges through the engine, bypassing the shop’s keep-the-rescue-fee guard), not to what a player would meet.',
+    'Ten-run conclusions: 60–90F, combining normal riders with one or two dark riders, is the best stretch; an all-dark cabin stacks impatience, lingering and crowding and is not a strategy of its own; power still decides most endings.',
+    'No rule values changed; simulator acceptance as in v9.19.1 (balanced median 115F). verify: 41 checks (one more assertion in the v9.19.1 check: from 60F at least two midnight items on the shelf).',
+  ],
+  watch: ['Power still decides most late endings; could more of the pressure after 100F come from riders?', 'Most legends only matter in the first ten floors and never meet the midnight cast.', 'A Fugitive cannot be seen on boarding; two of them add 2 agitation a floor at once.', 'An all-dark cabin is not a strategy of its own; a “dark build” would need a clear reward.'],
+};

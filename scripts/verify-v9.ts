@@ -23,7 +23,7 @@ import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
 import { planPlacement } from '../lib/game-interaction';
 import { cardSummary, displayName } from '../lib/card-summary';
-import { DARK_RULES as DARK, itemPrice } from '../lib/dark-rules';
+import { DARK_RULES as DARK, ITEMS as ITEMS_V, itemPrice } from '../lib/dark-rules';
 
 // Most checks here predate the v9.18 real-time Bomber timer and verify floor timers; the real-time block switches it on.
 E.BOMB_RULES.realtime = false;
@@ -823,6 +823,8 @@ console.log('PASS v9.19 dark share, corruption, Mystery identity, survivors, dar
   assert.equal(lines(settledCalm, 'lastPressure')['闹事的人下车了'], -DARK.troublemakerRelief);
   const fc = stressForecast(calmed);
   assert.ok(settledCalm.lastPressure.delta >= fc.lowDelta && settledCalm.lastPressure.delta <= fc.highDelta, 'the forecast counts the troublemaker relief');
+  // v9.19.2: from the midnight shop on, at least two of the three items are tools against the dark riders.
+  for (let i = 0; i < 30; i++) { const stock = E.drawItemStock(60 + i, seq(((i * 37) % 97) / 97, ((i * 53) % 89) / 89, ((i * 71) % 83) / 83)); assert.ok(stock.filter(c => ITEMS_V[c.key].from >= DARK.midnightFloor).length >= 2, `midnight items at ${60 + i}F: ${stock.map(c => c.key)}`); }
 }
 console.log('PASS v9.19.1 playtest fixes');
 console.log(JSON.stringify({ version: 'v9', checks: 41, passed: true }));

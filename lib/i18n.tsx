@@ -581,6 +581,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^(\d+)层起夜深人躁：每三层\+1躁动，(\d+)层起每两层，(\d+)层起每层(.*?)(；有乘客到站的那一层少1)?。$/u, (_m, a: string, b: string, c: string, rest: string, arr?: string) => `Late-night unrest from floor ${a}: +1 agitation every third floor, every second floor from ${b}, every floor from ${c}${rest.replace(/，(\d+)层起每层\+(\d+)/gu, ', +$2 per floor from $1')}${arr ? '; one less on any floor where a rider gets off' : ''}.`)
     .replace(/^(\d+)位邻座 · 到站\+(\d+)币$/u, (_m, n: string, c: string) => `${n} ${n === '1' ? 'neighbor' : 'neighbors'} · +${c} on arrival`)
     .replace(/^遇见过的乘客会录入档案；第一次把人送到站，就能读到他的故事。最高抵达 (\d+)F · 故事 (\d+)\/(\d+)。$/u, 'Riders you meet join the archive; deliver someone once to read their story. Best floor $1F · Stories $2/$3.')
+    .replace(/你带着 (\d+) 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 (\d+) 电；用完后断电警告里还有更贵的“加急补电”。/u, 'You left with $1 coins: when power runs short, use in-transit charging in the power panel, up to $2 per ten floors; after that the power alert sells pricier overtime charging.')
     .replace(/你带着 (\d+) 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 (\d+) 电。/u, 'You left with $1 coins: when power runs short, use in-transit charging in the power panel, up to $2 per ten floors.')
     .replace(/本段途中补电已用满（每十层 (\d+) 电）：离店前要充够到下个商店的电量，配电箱升级别挤掉充电的钱。/u, 'In-transit charging for this sector was used up ($1 per ten floors): leave each shop with enough power for the next one, and do not let power-box upgrades eat the charging money.')
     .replace(/^运转：(.+)。每十层可维修，人物耗电另计。$/u, (_m, body: string) => `Motor: ${body
@@ -710,6 +711,8 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^给(纸箱|黑箱)贴上封条。$/u, (_m, box: string) => `Sealed the ${box === '黑箱' ? 'black box' : 'box'}.`)
     .replace(/^用引线剪拆掉了炸弹：(.+?)下车，付了 (\d+) 金币。$/u, (_m, who: string, n: string) => `Cut the wires: the ${translateGameText(who, 'en')} got off and paid ${n} coins.`)
     .replace(/^正在被同化 (\d+)\/(\d+)$/u, 'Being corrupted $1/$2')
+    .replace(/^两位(.+?)单看都亏，挨着坐就赚（卡上写着“配(.+?) \+(\d+)”）：一起带上。$/u, (_m, a: string, _b: string, n: string) => `Two ${translateGameText(a, 'en')}s lose on their own but earn side by side (the card says “w/ ${translateGameText(a, 'en')} +${n}”): take both.`)
+    .replace(/^(.+?)单看亏，和(.+?)挨着坐就赚（卡上写着“配(.+?) \+(\d+)”）：一起带上。$/u, (_m, a: string, b: string, _c: string, n: string) => `The ${translateGameText(a, 'en')} loses on its own but earns beside the ${translateGameText(b, 'en')} (the card says “w/ ${translateGameText(b, 'en')} +${n}”): take them together.`)
     .replace(/^金币不够抢救：卖掉一项能力（退 (\d+) 币）就付得起。$/u, 'Not enough coins for the rescue: selling an ability (+$1 coins) covers it.')
     .replace(/本段途中补电已用满，但你还有 (\d+) 金币：断电警告里的“加急补电”（这一包 (\d+) 币 \/ (\d+) 电）能救这一层，下次看到它就买。/u, 'This sector’s in-transit charging was used up, but you still had $1 coins: the power alert’s overtime charging ($2 coins for $3 power) would have saved this floor; buy it next time.')
     .replace(/^镇静剂 · 还剩 (\d+) 层不躁动$/u, 'Sedated · no agitation for $1 more floors')

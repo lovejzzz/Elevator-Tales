@@ -1,6 +1,15 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.19.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.19.2**. Publication status is tracked separately from the source version.
+
+## v9.19.2 — 2026-09-25 — Last four midnight playtests / 午夜试玩后四局：配对提示、午夜道具货架、结束说明
+
+- Playtests 7–10 (101F cautious beginner, 81F all-dark cabin, 106F phone English, 81F by hand); ten-run notes and summary in `docs/playtests/midnight-playtest-notes.md`.
+- Pair hint in the first 40 floors names riders who lose alone but earn together (two Lovers, “X beside Y”).
+- From the 60F shop at least two of the three items are midnight tools.
+- Endings with coins left mention overtime charging.
+- No rule values changed (acceptance as v9.19.1, balanced 115F). verify 41 checks.
+- Watch: power still decides late endings; legends vs midnight; hidden Fugitive risk; no reward for an all-dark cabin.
 
 ## v9.19.1 — 2026-09-24 — First six midnight playtests / 午夜试玩前六局：同化提示、手机上的午夜、暗黑版平衡、商店自救
 

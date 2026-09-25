@@ -503,6 +503,8 @@ export default function ElevatorGame() {
   // v9.18.4: a Courier aboard whose own box is still waiting on the offer list (its placement failed or was skipped).
   // v9.19 cautious-player hint: three or more empty seats while a card that only loses a little waits in the queue.
   const cautiousHint = run.status === 'playing' && run.floor <= 40 && run.cabin.filter(r => !r).length >= 3 && offers.some(o => o.kind !== 'parcel' && !run.cabin.some(r => r?.id === o.id) && (() => { const v = boardNet(o, run)?.value; return v !== undefined && v !== null && v < 0 && v >= -2; })());
+  // v9.19.1: the cautious player's real miss was a pair (two Lovers at −3 / −7 that pay +9 / +5 together); name it.
+  const pairHint = run.status === 'playing' && run.floor <= 40 && run.cabin.filter(r => !r).length >= 2 ? offers.flatMap(o => { if (o.kind === 'parcel' || run.cabin.some(r => r?.id === o.id)) return []; const now = boardNet(o, run)?.value ?? 0, p = pairedNet(o, run); return p && now < 0 && p.value > 0 && (offers.some(x => x.id !== o.id && x.kind === p.partner) || run.cabin.some(r => r?.kind === p.partner)) ? [{ o, p }] : []; })[0] ?? null : null;
   const strandedCourier = run.status === 'playing' ? run.cabin.find(r => isCarrierKind(r?.kind) && r.parcelId && offers.some(o => o.id === r.parcelId) && !run.cabin.some(c => c && (c.id === r.parcelId || c.boxId === r.parcelId))) ?? null : null;
   const departSig = `${run.floor}|${run.cabin.map(r => r?.id ?? '-').join(',')}|${run.energy}|${run.stress}|${run.coins}`;
   const [departArmedFor, setDepartArmedFor] = useState<string | null>(null);
@@ -1108,7 +1110,7 @@ export default function ElevatorGame() {
           </div>}
           <button className={`depart-button ${departArmed?'is-armed':''}`} onClick={depart} disabled={locked || occupied===0} aria-label={language==='zh'?`关门上行 · 下一站电量 ${energyPreview.range}，躁动 ${pressurePreview.range}`:`Close doors and ascend`}><span>{doors === 'open' ? occupied===0?'至少接1人':departArmed?'确认冒险上行':'关门上行' : '正在上行'}</span><b>ENTER</b><ArrowUp className="mobile-depart-arrow" /></button>
           {(pendingOfferId || selectedSlot !== null || firstPairLesson && !firstPairActive) && <p className={`mobile-departure-note forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? `已选${activeRider ? PASSENGERS[activeRider.kind].name : '乘客'} · 点下方空位` : selectedSlot !== null ? run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : '点另一站位换位 · 再点原位取消' : '新手示例：让两位恋人成为邻座，观察绿色协作线'}</p>}
-          <p className={`panel-hint forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : firstPairLesson && !firstPairActive ? '新手示例 · 让两位恋人成为邻座，观察绿色协作线' : cautiousHint ? '空着的座位也在耗运转电：小亏几币的乘客带上，到站舒缓和邻座联动常常能赚回来。' : departureForecast}</p>
+          <p className={`panel-hint forecast-${forecastTone}`} aria-live="polite">{pendingOfferId ? '已选中乘客 · 请点电梯里的目标空位' : firstPairLesson && !firstPairActive ? '新手示例 · 让两位恋人成为邻座，观察绿色协作线' : pairHint ? pairHint.p.partner === pairHint.o.kind ? `两位${PASSENGERS[pairHint.o.kind].name}单看都亏，挨着坐就赚（卡上写着“配${PASSENGERS[pairHint.o.kind].name} +${pairHint.p.value}”）：一起带上。` : `${PASSENGERS[pairHint.o.kind].name}单看亏，和${pairHint.p.partner === 'parcel' ? '纸箱' : PASSENGERS[pairHint.p.partner].name}挨着坐就赚（卡上写着“配${pairHint.p.partner === 'parcel' ? '纸箱' : PASSENGERS[pairHint.p.partner].name} +${pairHint.p.value}”）：一起带上。` : cautiousHint ? '空着的座位也在耗运转电：小亏几币的乘客带上，到站舒缓和邻座联动常常能赚回来。' : departureForecast}</p>
         </div>
       </aside>
     </section>
