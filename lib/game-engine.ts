@@ -1642,7 +1642,8 @@ export function applyItem(state: RunState, key: ItemKey, targetId?: string): Run
     case 'fuse': return done({ cabin: patch(r => ({ ...r, bombMs: (r.bombMs ?? 0) + 20000, bombMsTotal: (r.bombMsTotal ?? r.bombMs ?? 0) + 20000, bonusMs: (r.bonusMs ?? r.bombMs ?? 0) + 20000, fuse: (r.fuse ?? 0) + 2 })) }, `用了${spec.name}：${name}的炸弹 +20 秒。`);
     case 'holywater': {
       const to = BASE_OF[target!.kind as keyof typeof BASE_OF];
-      const cabin = patch(r => ({ ...turnRider(r, to), bombMs: r.kind === 'madbomber' && r.bombMs !== undefined ? Math.ceil(r.bombMs / DARK_RULES.madbomberSeconds) : r.bombMs }));
+      // v9.20.6 (English playtest 21): purified “for this trip” means it stays purified; dark neighbours used to turn him back in 2 floors.
+      const cabin = patch(r => ({ ...turnRider(r, to), warded: true, corruption: 0, bombMs: r.kind === 'madbomber' && r.bombMs !== undefined ? Math.ceil(r.bombMs / DARK_RULES.madbomberSeconds) : r.bombMs }));
       return done({ cabin: cabin.map(r => r?.kind === 'parcel' && r.ownerId === target!.id ? { ...r, contraband: false } : r), lastCorruption: [{ slot: state.cabin.findIndex(r => r?.id === target!.id), from: target!.kind, to }] }, `用了${spec.name}：${name}变回了${PASSENGERS[to].name}。`);
     }
     case 'cuffs': return done({ cabin: patch(r => ({ ...r, cuffed: true })) }, `给${name}戴上${spec.name}：整段路程被管住。`);

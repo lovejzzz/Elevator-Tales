@@ -3424,3 +3424,6 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 @media (max-width:700px) {
  .brand-bar .eyebrow.eyebrow-daily { display:block; margin:0 0 2px; font-size:9px; letter-spacing:.12em; color:#e3bb62; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:62vw; }
 }
+/* v9.20.6: item badges in a seat corner (handcuffs, alarm clock, protected, sedative), visible on short phone seats too. */
+.seat-item-badges { position:absolute; right:3px; bottom:3px; z-index:6; display:flex; gap:2px; pointer-events:auto; }
+.seat-item-badges svg { width:13px; height:13px; padding:1px; border-radius:3px; color:#f6d98c; background:#0b1712d9; border:1px solid #c99d5266; }

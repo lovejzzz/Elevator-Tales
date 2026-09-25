@@ -386,3 +386,54 @@
 - 98 层断电警告给了三条路：“Charge +3 · 12c”“Overtime charge +5 · 140c”，以及“You can make it: Voyeur (dismiss, 6c), Scrapper (dismiss, 6c)…”（请离几位就能撑过去）。机器人没照做，99 层断电。
 - 结算页：“SHIFT ENDED | 99F | Power depleted | NEW BEST | Daily shift 2026-09-25 · today's best 99F | … | Back to the endless shift”，英文完整。
 - v9.20.5 发布（第 16–20 局的修改）。
+
+## 第 21 局（英文，窄屏和手机；道具专项：在 70 层的测试局面里逐个使用道具）
+
+- 之前的局里只用过照明弹和镇静剂。这次把圣水、手铐、护身符、闹钟、备用电池逐个用了一遍：点道具图标 → 发光的座位 → 看提示。
+- 英文提示都通顺：
+  - 圣水：“Used Holy Water: the Robber is a Thief again.”
+  - 手铐：“Handcuffed the Thief: held for the whole trip.”
+  - 护身符：“Gave the Commuter an Amulet: safe from corruption this trip.”
+  - 闹钟：“Set an Alarm Clock for the Overtimer: he gets off at his stop.”
+  - 备用电池：“Used a Spare Cell: +15 power.”
+  - 选目标时的提示：“Holy Water: tap a glowing rider (…)”，只有合适的人会发光（圣水只亮暗黑版，手铐只亮小偷和劫匪）。
+- 圣水的问题：
+  - 劫匪被净化回小偷后，座位马上显示“Turning 1/2”：旁边有两位暗黑版，两层后他又会被同化回去。
+  - 说明写的是“这一趟净化回原版”，花 60 币却可能两层后失效。
+  → 圣水净化的人这一趟也不会再被同化（和护身符一样）。新增回归测试。
+- 用完道具后，座位上看不出谁戴了手铐、谁设了闹钟、谁有护身符。
+  - 标签其实存在（“戴着手铐”“上了闹钟”），只是座位高度 ≤ 95px 时状态行被隐藏，手机和窄屏上的座位都这么矮。
+  → 座位右下角加小图标：手铐、闹钟、护盾（不会被同化，含圣水）、药丸（镇静剂），悬停有说明。已在手机上确认看得见。
+
+## 第 22 局（英文，手机；道具专项第二组）
+
+- 封条：“Sealed the black box.”（选目标时只亮黑箱）
+- 延时引信：“Used a Longer Fuse: the Bomb Carrier’s bomb +20 seconds.”
+- 糖果：“Gave the Child Candy: fully cared for.”
+- 香薰：“Used Incense: agitation −2.”
+- 引线剪：“Cut the wires: the Mad Bomber got off and paid 50 coins.”
+- 请离券：“Used an Exit Pass: the Drifter got off for free.”（可以选任何人）
+- 换位券：“Used a Swap Ticket: one more old-rider move this floor.”
+- 14 件道具的英文提示都通顺，选目标时只亮合适的人。
+- 贴了封条的箱子在手机座位上同样看不出来。
+  → 座位角标加上封条（箱子带勾的图标）。
+
+## 第 23 局（英文，平板；传奇设成夜莺，60–63 层亲手玩哭丧女，之后机器人）：到 70 层
+
+- 哭丧女的卡：“+1 agitation/floor · +10 coins/floor at high | Deliver to 70F: +15 coins”；座位状态先是“Waiting for chaos · +1 agitation/floor”，躁动到高档后变成“Lament +10 coins/floor”。英文清楚。
+- 玩法：她逼你把躁动推到高档。63 层到 5/10 开始进账。机器人接手后 67–69 层躁动一直在 9/10，每层都要花 18 币安抚。70 层结算“哭丧女的哀歌 10 · 酬金 15”，但一路上的安抚把钱吃掉了，到店只剩 79 币。这正是用躁动换钱的赌法，上车率 57%，不改。
+- 我把“黑色大箱”放到了走私客正下方：大箱要占一整列上下两格，所以没放上去，走私客一路没带箱子。座位写着“没有black box · 每层+1Agitation · 不付钱”，半中半英（英文审计抓到了）。
+  - 原因：走私客的三条座位标签只有快递员“纸箱”版本的翻译。
+  → 补上“No black box · +1 agitation per floor · pays nothing”“Fighting over a black box · +1 agitation”“Black box beside him”。
+- 系统检查：把座位状态函数里的 85 条中文标签全部翻译一遍，翻完只剩 1 条疑似带中文，是我的采样把条件表达式换成了数字造成的；用真实文字复测（“Handcuffed · +15 bounty on arrival”“Held · +15 bounty on arrival”）都正常。
+
+## 第 24 局（英文，平板；传奇设成通灵师，60 层起死灵师，机器人代打）：到 70 层
+
+- 死灵师的卡：“+2 coins per dark rider/floor · +1 agitation/floor | Deliver to 70F: +20 coins”；座位“Collecting souls +0 coins/floor · +1 agitation/floor”，车上有暗黑版时数字会跟着变。
+- 70 层结算“死灵师的酬金 20”，一路上每层收魂多数是 +2（车上只有一位暗黑版）。英文没有新漏翻。
+
+## 第 25 局（英文，平板；传奇设成红娘，60 层起剪线婆，机器人代打）：到 70 层
+
+- 剪线婆的卡：“+3 coins per red link/floor · +1 agitation per green link/floor | Deliver to 70F: +25 coins”；座位“Waiting for a quarrel”。她奖励红线、惩罚绿线，和平时的摆法正好相反，是个有意思的逆向玩法。
+- 机器人不会刻意摆红线，一路没收到红线钱，70 层只拿了 25 币酬金。收益主要看玩家愿不愿意故意制造冲突，设计成立。上车率 82% 可以接受：大多数时候她是“送 25 币、别摆绿线”的简单选择。
+- v9.20.6 发布（第 21–25 局的修改）。

@@ -1690,6 +1690,48 @@ export const V9201_EN: ChangelogEntry = {
   ],
 };
 
+export const V9206_ZH: ChangelogEntry = {
+  version: '9.20.6', date: '2026-09-25', title: '英文版第 21–25 局：道具逐个验过、圣水真的管用、座位上看得见道具',
+  summary: '30 轮英文版试玩的第 21–25 局：14 件道具逐个用了一遍，三位没亲手玩过的暗黑传奇（哭丧女、死灵师、剪线婆）各走了一段，并系统检查了座位状态的英文。笔记在 docs/playtests/v920-english-rounds.md。',
+  changes: [
+    '圣水：被净化的人这一趟不会再被同化（和护身符一样）。原来旁边有两位暗黑版时，他两层后又会被同化回去，花 60 币可能白买（第 21 局）。',
+    '座位角标：戴手铐、设了闹钟、不会被同化（护身符或圣水）、吃了镇静剂、贴了封条的人，座位右下角有小图标，悬停有说明。原来这些只写在状态行里，而手机和窄屏的座位太矮，状态行被隐藏。',
+    '英文：走私客的座位标签补上黑箱版本（“No black box · +1 agitation per floor · pays nothing”等），原来显示成“没有black box · 每层+1Agitation · 不付钱”（第 23 局）。',
+  ],
+  experiments: [
+    '道具专项（第 21、22 局）：圣水、手铐、护身符、闹钟、备用电池、封条、延时引信、糖果、香薰、引线剪、请离券、换位券，加上之前用过的照明弹和镇静剂，14 件道具的英文提示都通顺，选目标时只有合适的人会发光。',
+    '暗黑传奇（第 23–25 局）：哭丧女在高躁动时每层 +10、送达 +15，但 67–69 层躁动一直在 9/10，赚的钱多半花在安抚上；死灵师送达 +20，每层按车上暗黑版人数收魂；剪线婆送达 +25，红线收益要靠玩家故意摆冲突。三位都成立，未改数值。',
+    '座位状态英文检查：座位状态函数里 85 条中文标签逐条翻译，除走私客的黑箱版本外都有英文。',
+    '模拟（150 局）：均衡型中位 88 层，真人型 77 层，和 v9.20.5 相同（圣水的改动对机器人几乎没有影响）。',
+    'verify 全部通过；新增回归测试：圣水净化的人带有“不会被同化”。',
+  ],
+  watch: [
+    '剪线婆、黑老大、另一个13号的上车率仍在 80% 以上：大多数时候是“白送一笔钱”的简单选择。',
+    '座位角标只有 13px，在很小的手机上可能不够显眼。',
+  ],
+};
+
+export const V9206_EN: ChangelogEntry = {
+  version: '9.20.6', date: '2026-09-25', title: 'English playtests 21–25: every item checked, Holy Water that lasts, item badges on seats',
+  summary: 'Playtests 21–25 of the 30 English rounds: all 14 items used one by one, three dark legends not yet played by hand (Banshee, Necromancer, Severer) ridden for a stretch each, and a systematic check of the English seat states. Notes in docs/playtests/v920-english-rounds.md.',
+  changes: [
+    'Holy Water: the purified rider cannot be corrupted again this trip (like the Amulet). With two dark riders beside him he used to turn back within two floors, so 60 coins could buy nothing (round 21).',
+    'Seat badges: handcuffed, alarm set, protected from corruption (Amulet or Holy Water), sedated and sealed riders show a small icon in the seat corner, with a tooltip. These used to live only in the state line, which phone and narrow seats are too short to show.',
+    'English: the Smuggler’s seat labels now have black-box versions (“No black box · +1 agitation per floor · pays nothing”, …); round 23 showed a half-translated line.',
+  ],
+  experiments: [
+    'Item checks (rounds 21–22): Holy Water, Handcuffs, Amulet, Alarm Clock, Spare Cell, Seal, Longer Fuse, Candy, Incense, Wire Cutter, Exit Pass and Swap Ticket, plus the Flare and Sedative used earlier: all 14 items read well in English, and only valid riders light up as targets.',
+    'Dark legends (rounds 23–25): the Banshee pays 10 a floor at high agitation and 15 on delivery, but agitation sat at 9/10 through 67–69F and calming ate most of it; the Necromancer pays 20 and collects per dark rider aboard; the Severer pays 25, and her red-link income needs the player to stage conflicts. All three hold up; numbers unchanged.',
+    'Seat-state English check: all 85 Chinese labels in the seat-state function were translated one by one; only the Smuggler’s black-box versions were missing.',
+    'Simulation (150 runs): balanced median 88F, human-like 77F, the same as v9.20.5 (the Holy Water change barely touches the bots).',
+    'verify passes, with a new regression test: a rider purified with Holy Water is protected from corruption.',
+  ],
+  watch: [
+    'The Severer, Kingpin and Other Thirteen are still boarded over 80% of the time: most of the time they are a simple bonus.',
+    'Seat badges are 13px and may be easy to miss on very small phones.',
+  ],
+};
+
 export const V9205_ZH: ChangelogEntry = {
   version: '9.20.5', date: '2026-09-25', title: '英文版第 16–20 局：商店更顺手、手机上的商店不再翻两屏、每日班次看得见',
   summary: '30 轮英文版试玩的第 16–20 局：平板新存档走了一遍引导局，亲手玩了夜班老周，看了手机上的商店和每日班次。这一版只改界面，规则和数值不变。笔记在 docs/playtests/v920-english-rounds.md。',

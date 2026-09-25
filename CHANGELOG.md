@@ -2,6 +2,13 @@
 
 Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.20.2**. Publication status is tracked separately from the source version.
 
+## v9.20.6 — 2026-09-25 — English playtests 21–25: every item checked, Holy Water that lasts, item badges / 英文版第 21–25 局：道具逐个验过、圣水真的管用、座位上看得见道具
+
+- Holy Water now also protects the purified rider from corruption this trip (dark neighbours used to turn him back in two floors).
+- Seat badges for handcuffs, alarm clock, protected, sedated and sealed riders (the state line is hidden on short phone seats). Smuggler black-box seat labels translated.
+- All 14 items checked in English; Banshee, Necromancer and Severer ridden and unchanged; 85 seat-state labels audited. Simulation 150 runs: balanced 88F, human-like 77F (unchanged).
+- Watch: Severer, Kingpin, Other Thirteen boarded over 80%; 13px badges on small phones.
+
 ## v9.20.5 — 2026-09-25 — English playtests 16–20: a friendlier shop, a visible daily shift / 英文版第 16–20 局：商店更顺手、每日班次看得见
 
 - Shop: “All you can afford: +N power” when the target is unaffordable; “or raise the cap with Storage” when the next sector needs more than the cap.

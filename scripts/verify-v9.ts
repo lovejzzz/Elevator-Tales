@@ -800,6 +800,7 @@ console.log('PASS crowding warning, merged notes, English coverage of engine mes
   assert.equal(E.applyItem(bag, 'cell').energy, 25);
   const purified = E.applyItem(bag, 'holywater', 'r');
   assert.equal(purified.cabin[0]?.kind, 'thief'); assert.deepEqual(purified.lastCorruption, [{ slot: 0, from: 'robber', to: 'thief' }]);
+  assert.ok(purified.cabin[0]?.warded && !purified.cabin[0]?.corruption, 'v9.20.6: a purified rider stays purified for this trip (dark neighbours cannot turn him back)');
   assert.ok(!E.itemUsable(bag, 'holywater', bag.cabin[1]), 'Holy Water needs a dark rider');
   const cut = E.applyItem(bag, 'cutter', 'b');
   assert.ok(!cut.cabin.some(r => r?.id === 'b') && cut.coins > bag.coins && !cut.items!.includes('cutter'), 'the Wire Cutter removes the Bomber, who pays');
