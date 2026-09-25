@@ -1,6 +1,7 @@
-import { GHOST_CONTROL_KINDS, overtimerLingers, troubleFree, COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
+import { GHOST_CONTROL_KINDS, overtimerLingers, troubleFree, COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, nightOperatorSaving, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
 import { riderProfile } from './rider-profile';
 import { DARK_RULES } from './dark-rules';
+import { DARK_LEGEND_RULES } from './legends';
 import { motorCost } from './balance-v832';
 import { boxedMotorCost, shopEntryCharge } from './power-box';
 import { conflictLinks } from './rider-profile';
@@ -63,7 +64,7 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
   const minRelief = reliefFor(available, minArrivals); const maxRelief = reliefFor(available, maxArrivals);
   const arrivalReason = !maxRelief ? '' : minRelief === maxRelief ? `到站舒缓 −${maxRelief}` : `可能到站舒缓 −${minRelief}–${maxRelief}`;
   // 13号房客 may calm the cabin by 1; the Rounds Log relieves up to 3 on reaching a shop (also when the Matron arrives there).
-  const strangerOptions = legendInCabin(state.cabin, 'stranger') ? [0, -1] : [0];
+  const strangerOptions = (legendInCabin(state.cabin, 'stranger') ? [0, -1] : [0]).flatMap(calm => legendInCabin(state.cabin, 'otherthirteen') ? [calm, calm + DARK_LEGEND_RULES.thirteenAgitation] : [calm]);
   const shopRelief = nextFloor % 10 === 0 && (hasKeepsake(state, 'roundsLog') || state.cabin.some(r => r?.kind === 'matron' && r.destination <= nextFloor));
   // 13号房客 arriving at a shop may hand over the Rounds Log at random.
   const maybeShopRelief = !shopRelief && nextFloor % 10 === 0 && state.cabin.some(r => r?.kind === 'stranger' && r.destination <= nextFloor);
@@ -119,7 +120,9 @@ export function energyForecast(state: RunState, _legacyWeight?: number, _riskTun
  const strangerPower=legendInCabin(state.cabin,'stranger')?1:0;
  // Boxes opening next floor pay power half the time: an upside only, so the safe (low) bound is unchanged.
  const boxPower=possibleBoxPower(state);
- const lowDelta=Math.min(...deltas),highDelta=Math.max(...deltas)+strangerPower+boxPower;
+ // v9.20: the Other Thirteen may drain 2 power (a downside only).
+ const thirteenDrain=legendInCabin(state.cabin,'otherthirteen')?DARK_LEGEND_RULES.thirteenPower:0;
+ const lowDelta=Math.min(...deltas)-thirteenDrain,highDelta=Math.max(...deltas)+strangerPower+boxPower;
  const minCharge=Math.min(...charges),maxCharge=Math.max(...charges)+boxPower;
  const chargeNote=maxCharge?minCharge===maxCharge?`＋补电 ${maxCharge}`:`＋可能补电 ${minCharge}–${maxCharge}`:'';
  const range=lowDelta===highDelta?signedDelta(lowDelta):`${signedDelta(lowDelta)}～${signedDelta(highDelta)}`;
@@ -135,7 +138,7 @@ export function sectorForecast(state: RunState): { shop: number; projected: numb
   for (let f = state.floor + 1; f <= shop; f++) {
     const aboard = state.cabin.map((r, slot) => (r && r.destination >= f ? { r, slot } : null)).filter(Boolean) as Array<{ r: Rider; slot: number }>;
     const riders = aboard.reduce((n, { r, slot }) => n + riderProfile(r, state.cabin, slot).energy, 0);
-    const motor = boxedMotorCost(motorCost(f), boxOf(state), f) - (f === state.floor + 1 ? operatorSaving(state) + serviceSaving(state) : 0);
+    const motor = boxedMotorCost(motorCost(f), boxOf(state), f) - (f === state.floor + 1 ? operatorSaving(state) + nightOperatorSaving(state) + serviceSaving(state) : 0);
     energy -= Math.max(0, motor) + (aboard.length ? riders : 1);
     energy += state.cabin.filter((r, slot) => r?.kind === 'courier' && r.destination === f && parcelBeside(state.cabin, slot)).length * COURIER_ARRIVAL_CHARGE;
     if (f === shop) energy = Math.min(state.energyCap, energy + shopEntryCharge(boxOf(state)));

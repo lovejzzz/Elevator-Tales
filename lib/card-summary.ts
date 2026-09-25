@@ -6,8 +6,8 @@ import { riderConflictRules, riderProfile, type ConflictEffect } from './rider-p
 import { hasNeighbour, neighbourCount, type Rider, type RunState } from './game-engine';
 import { CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
 import { RISK_PARTNERS } from './shift-rules';
-import { LEGEND_RULES } from './legends';
-import { DARK_RULES, MYSTERY_RULES, abyssTier } from './dark-rules';
+import { DARK_LEGEND_RULES, LEGEND_RULES } from './legends';
+import { DARK_RULES, MYSTERY_CLUES, MYSTERY_RULES, abyssTier, mysteryClue } from './dark-rules';
 import type { GameLocale } from './i18n';
 
 export type ChipTone = 'green' | 'red' | 'risk';
@@ -22,6 +22,7 @@ const EN_NAMES: Record<PassengerKind, string> = {
   robber: 'Robber', crookedcop: 'Crooked Cop', shyster: 'Shyster', brawler: 'Brawler', pusher: 'Pusher', creepychild: 'Uncanny Child',
   wraith: 'Wraith', summoner: 'Summoner', taskmaster: 'Taskmaster', scandal: 'Scandal', grafter: 'Grafter', madbomber: 'Mad Bomber',
   operator: 'Old Zhou', matchmaker: 'Matchmaker', don: 'The Don', matron: 'Matron', nightingale: 'Nightingale', medium: 'Medium', tycoon: 'Tycoon', stranger: 'Stranger in 13',
+  nightoperator: 'Night Zhou', severer: 'Severer', kingpin: 'Kingpin', coldmatron: 'Cold Matron', banshee: 'Banshee', necromancer: 'Necromancer', highroller: 'High Roller', otherthirteen: 'Other Thirteen',
 };
 export const riderName = (kind: PassengerKind, locale: GameLocale) => (locale === 'zh' ? PASSENGERS[kind].name : EN_NAMES[kind]);
 /** v9.17 display name for one rider: box size, the Bomber in disguise. Rarity shows as the gem and foil, not in the name. */
@@ -67,7 +68,7 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     case 'inspector': return rider.complianceReady ? { line: L(`已盖章 · 到站 +${INSPECTION_BONUS}币`, `Stamped · +${INSPECTION_BONUS} coins on arrival`) } : { line: L(`连续不高躁动 → +${INSPECTION_BONUS}币`, `Stay below high → +${INSPECTION_BONUS} coins`), progress: `${rider.quietStreak ?? 0}/${INSPECTION_WORK}` };
     case 'bomb': return { line: L('归零会炸飞邻座 · 警察可锁', 'Blows out neighbors at zero · Officer locks'), progress: `⏱ ${rider.fuse ?? 0}` };
     // v9.19: a hidden identity, revealed one floor after boarding (the fare stays sealed until then).
-    case 'mystery': return rider.revealed && rider.identity ? { line: L(`${MYSTERY_RULES[rider.identity].name} · ${MYSTERY_RULES[rider.identity].zh}`, `${MYSTERY_RULES[rider.identity].en} · ${MYSTERY_RULES[rider.identity].enLine}`) } : { line: L('身份未知 · 上车后下一层揭晓 · 车费', 'Identity unknown · revealed the floor after boarding · Fare'), sealed: true };
+    case 'mystery': return rider.revealed && rider.identity ? { line: L(`${MYSTERY_RULES[rider.identity].name} · ${MYSTERY_RULES[rider.identity].zh}`, `${MYSTERY_RULES[rider.identity].en} · ${MYSTERY_RULES[rider.identity].enLine}`) } : (() => { const clue = mysteryClue(rider); return { line: clue ? L(`线索：${MYSTERY_CLUES[clue].zh} · 上车后下一层揭晓 · 车费`, `Clue: ${MYSTERY_CLUES[clue].en} · revealed the floor after boarding · Fare`) : L('身份未知 · 上车后下一层揭晓 · 车费', 'Identity unknown · revealed the floor after boarding · Fare'), sealed: true }; })();
     case 'shifter': return { line: L('每层重抽属性', 'Rerolls every floor') };
     case 'mimic': { const slot = run.cabin.findIndex(r => r?.id === rider.id); const above = slot >= 3 ? run.cabin[slot - 3] : null; if (above?.kind === 'parcel') return { line: L('↑ 复制纸箱 · 下车打开', '↑ Copies the box · opens it when leaving') }; if (slot >= 0 && slot < 3) return { line: L(`上排没人可复制 · 本体车费 ${profile.fare}币`, `Top row: nothing above · own fare ${profile.fare} coins`) }; if (above && profile.hidden) return { line: L(`↑ 复制${riderName(above.kind, locale)}车费`, `↑ Copies ${riderName(above.kind, locale)}: fare`), sealed: true }; return { line: above ? L(`↑ 复制${riderName(above.kind, locale)}车费 ${profile.fare}币`, `↑ Copies ${riderName(above.kind, locale)}: fare ${profile.fare} coins`) : L('↑ 复制正上方的车费', '↑ Copies the fare above') }; }
     case 'operator': return { line: L('车内不满 6 人时运转 −1 电', 'Motor −1 unless the cabin is full') };
@@ -78,6 +79,15 @@ export function cardLine(rider: Rider, run: RunState, locale: GameLocale): { lin
     case 'medium': return { line: L('幽灵提前出现 · 身边幽灵受控', 'Ghosts come early · controls adjacent') };
     case 'tycoon': return { line: L(`预付 ${LEGEND_RULES.tycoonPrepay}币 · 安静送达再付 ${LEGEND_RULES.tycoonBalance}币 · 邻座超过1人 +1躁动`, `Prepays ${LEGEND_RULES.tycoonPrepay} coins · ${LEGEND_RULES.tycoonBalance} more if calm · 2+ neighbors: +1 agitation`) };
     case 'stranger': return { line: L('每层随机小惊喜', 'A small surprise every floor') };
+    // v9.20 dark legends.
+    case 'nightoperator': return { line: L(`运转 −${DARK_LEGEND_RULES.nightOperatorSaving}电（满员也算） · +${DARK_LEGEND_RULES.nightOperatorAgitation}躁动/层`, `Motor −${DARK_LEGEND_RULES.nightOperatorSaving} power (even when full) · +${DARK_LEGEND_RULES.nightOperatorAgitation} agitation/floor`) };
+    case 'severer': return { line: L(`每条红线 +${DARK_LEGEND_RULES.severerPerRed}币/层 · 每条绿线 +${DARK_LEGEND_RULES.severerPerGreen}躁动/层`, `+${DARK_LEGEND_RULES.severerPerRed} coins per red link/floor · +${DARK_LEGEND_RULES.severerPerGreen} agitation per green link/floor`) };
+    case 'kingpin': return { line: L(`每层存 ${DARK_LEGEND_RULES.kingpinStash}币 · +${DARK_LEGEND_RULES.kingpinAgitation}躁动/层 · 请离赔 ${DARK_LEGEND_RULES.kingpinDismissal}币`, `Banks ${DARK_LEGEND_RULES.kingpinStash}/floor · +${DARK_LEGEND_RULES.kingpinAgitation} agitation/floor · dismissal costs ${DARK_LEGEND_RULES.kingpinDismissal}`), progress: rider.stash ? L(`已存 ${rider.stash}币`, `${rider.stash} coins banked`) : undefined };
+    case 'coldmatron': return { line: L(`全车 −${DARK_LEGEND_RULES.coldMatronCalm}躁动/层 · 多耗 ${DARK_LEGEND_RULES.coldMatronPower}电/层`, `Cabin −${DARK_LEGEND_RULES.coldMatronCalm} agitation/floor · +${DARK_LEGEND_RULES.coldMatronPower} power/floor`) };
+    case 'banshee': return { line: L(`+${DARK_LEGEND_RULES.bansheeAgitation}躁动/层 · 高躁动 +${DARK_LEGEND_RULES.bansheeHighCoins}币/层`, `+${DARK_LEGEND_RULES.bansheeAgitation} agitation/floor · +${DARK_LEGEND_RULES.bansheeHighCoins} coins/floor at high`) };
+    case 'necromancer': return { line: L(`每位暗黑乘客 +${DARK_LEGEND_RULES.necromancerPerDark}币/层 · +${DARK_LEGEND_RULES.necromancerAgitation}躁动/层`, `+${DARK_LEGEND_RULES.necromancerPerDark} coins per dark rider/floor · +${DARK_LEGEND_RULES.necromancerAgitation} agitation/floor`) };
+    case 'highroller': return { line: L('一路押注 · 只看到站那一层关门时的躁动', 'One long bet · only the agitation when the doors close before his stop counts') };
+    case 'otherthirteen': return { line: L('每层一件随机的好事或坏事', 'Something good or bad every floor') };
     // v9.19 dark versions.
     case 'overtimer': return { line: L(`加班费 +${DARK_RULES.overtimePay}币/层 · 要跟邻座一起下车`, `Overtime +${DARK_RULES.overtimePay} coins/floor · gets off only with a neighbor`), progress: rider.stash ? L(`已攒 ${rider.stash}币`, `${rider.stash} coins banked`) : undefined };
     case 'voyeur': return { line: L(`偷拍普通邻座：+1躁动/层 · 每张 +${DARK_RULES.voyeurPhoto}币`, `Photographs normal neighbors: +1 agitation/floor · +${DARK_RULES.voyeurPhoto} coins each`), progress: rider.stash ? L(`照片 ${rider.stash}币`, `${rider.stash} coins of photos`) : undefined };

@@ -2,7 +2,9 @@
 // abilities, agitation bands, crowding and incidents, reworked abilities and roles.
 import assert from 'node:assert/strict';
 import * as E from '../lib/game-engine';
-import { LEGEND_KINDS, PASSENGERS, isDark, isLegend, type PassengerKind } from '../lib/game-data';
+import { DARK_LEGEND_KINDS, LEGEND_KINDS, PASSENGERS, isDark, isDarkLegend, isLegend, type PassengerKind } from '../lib/game-data';
+import { DARK_LEGEND_RULES as DLR } from '../lib/legends';
+import { conflictLinks } from '../lib/rider-profile';
 import { motorCost, AGITATION_HIGH_MIN, ECONOMY_RULES } from '../lib/balance-v832';
 import { BOX_PRICES, chargeCost, storageCap } from '../lib/power-box';
 import { riderProfile } from '../lib/rider-profile';
@@ -15,6 +17,7 @@ import { stressForecast, energyForecast } from '../lib/game-forecast';
 import { boardNet, netValue, pairedNet } from '../lib/net-value';
 import { fuseState } from '../lib/bomb-state';
 import { drawLegend } from '../lib/legend-unlocks';
+import { addDiscoveredPassengers, sanitizeDiscoveredPassengers } from '../lib/passenger-discovery';
 import { QUIPS, quip } from '../lib/quips';
 import { playSfx, SAMPLES } from '../lib/game-sfx';
 import { existsSync } from 'node:fs';
@@ -23,7 +26,7 @@ import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
 import { planPlacement } from '../lib/game-interaction';
 import { cardSummary, displayName } from '../lib/card-summary';
-import { DARK_RULES as DARK, ITEMS as ITEMS_V, itemPrice } from '../lib/dark-rules';
+import { DARK_RESONANCE, DARK_RULES as DARK, ITEMS as ITEMS_V, MYSTERY_CLUES, MYSTERY_IDENTITIES, abyssUnrest, itemPrice, mysteryClue } from '../lib/dark-rules';
 
 // Most checks here predate the v9.18 real-time Bomber timer and verify floor timers; the real-time block switches it on.
 E.BOMB_RULES.realtime = false;
@@ -581,7 +584,7 @@ console.log('PASS hidden box contents, ability finds and swaps');
   const rng = seq(0.2, 0.4, 0.6, 0.8, 0.1, 0.9, 0.3, 0.7);
   let dealt = 0;
   for (let i = 0; i < 3000 && !dealt; i++) for (const o of E.makeOffers(40 + (i % 60), E.EMPTY_UPGRADES, false, rng)) if (o.kind === 'bomb') { assert.equal(o.bombMs, E.bombSeconds(o.destination - o.boardedAt) * 1000); dealt++; }
-  assert.ok(dealt && PASSENGERS.bomb.fare === 30);
+  assert.ok(dealt && PASSENGERS.bomb.fare === 26);
   const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 29, fareBonus: 0, stash: 0, volatile: false, ...extra });
   const armed = run(30, [R('bomb', 'b', 34, { fuse: 1, bombMs: 5000 })]);
   assert.equal(E.tickBombs(armed, 2000).cabin[0]?.bombMs, 3000);
@@ -824,7 +827,65 @@ console.log('PASS v9.19 dark share, corruption, Mystery identity, survivors, dar
   const fc = stressForecast(calmed);
   assert.ok(settledCalm.lastPressure.delta >= fc.lowDelta && settledCalm.lastPressure.delta <= fc.highDelta, 'the forecast counts the troublemaker relief');
   // v9.19.2: from the midnight shop on, at least two of the three items are tools against the dark riders.
-  for (let i = 0; i < 30; i++) { const stock = E.drawItemStock(60 + i, seq(((i * 37) % 97) / 97, ((i * 53) % 89) / 89, ((i * 71) % 83) / 83)); assert.ok(stock.filter(c => ITEMS_V[c.key].from >= DARK.midnightFloor).length >= 2, `midnight items at ${60 + i}F: ${stock.map(c => c.key)}`); }
+  for (let i = 0; i < 30; i++) { const stock = E.drawItemStock(60 + i, seq(((i * 37) % 97) / 97, ((i * 53) % 89) / 89, ((i * 71) % 83) / 83)); assert.ok(stock.filter(c => ITEMS_V[c.key].from >= DARK.midnightFloor).length >= 2, `midnight items at ${60 + i}F: ${stock.map(c => c.key).join(",")}`); }
 }
 console.log('PASS v9.19.1 playtest fixes');
-console.log(JSON.stringify({ version: 'v9', checks: 41, passed: true }));
+// v9.20: dark legends, the hidden dark resonance, Mystery clues and the abyss unrest.
+{
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 60, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  // The dark self of this shift's legend waits as a fourth card on leaving the 60F shop, and only there.
+  const at60 = E.nextOfferBatch(run(60, [], { legendOffer: 'matron', status: 'playing' }), fixed(.3));
+  const dl = at60.offers.find(o => isDarkLegend(o.kind));
+  assert.ok(dl?.kind === 'coldmatron' && dl.destination === DLR.destination && at60.state.darkLegendOffer === 'coldmatron', 'the Matron comes back as the Cold Matron at 60F');
+  assert.ok(!E.nextOfferBatch(at60.state, fixed(.3)).offers.some(o => isDarkLegend(o.kind)), 'only one dark legend per shift');
+  assert.ok(!E.nextOfferBatch(run(50, []), fixed(.3)).offers.some(o => isDarkLegend(o.kind)), 'no dark legend before midnight');
+  assert.ok(E.nextOfferBatch(run(60, []), fixed(.3)).offers.some(o => isDarkLegend(o.kind)), 'a shift without a legend still meets a random dark legend');
+  assert.equal(DARK_LEGEND_KINDS.length, LEGEND_KINDS.length); for (const k of DARK_LEGEND_KINDS) assert.ok(existsSync(`public/assets/riders/${k}.jpg`), k + ' has a portrait');
+  // Per-floor effects, shared by the settlement and the forecast.
+  const cold = E.resolveFloor(run(62, [R('coldmatron', 'm', 70), R('commuter', 'c', 66)], { stress: 5, stressCap: 12 }), fixed(.9));
+  assert.equal(lines(cold, 'lastPressure')['冷面护士长打镇静剂'], -DLR.coldMatronCalm); assert.equal(lines(cold, 'lastEnergy')['冷面护士长耗电'], -DLR.coldMatronPower);
+  const night = E.resolveFloor(run(62, [R('nightoperator', 'o', 70), R('commuter', 'c', 66)], { stress: 2, stressCap: 12 }), fixed(.9));
+  assert.equal(lines(night, 'lastEnergy')['夜班老周关灯省电'], DLR.nightOperatorSaving); assert.equal(lines(night, 'lastPressure')['夜班老周关了灯'], DLR.nightOperatorAgitation);
+  const zhou = E.resolveFloor(run(69, [R('nightoperator', 'o', 70), R('commuter', 'c', 72)], { stress: 1, stressCap: 12, freeBoxLevels: 0 }), fixed(.9));
+  assert.equal(zhou.freeBoxLevels, DLR.nightOperatorBoxLevels, 'Night Zhou leaves a free power-box level at 70F');
+  const matronDone = E.resolveFloor(run(69, [R('coldmatron', 'm', 70), R('commuter', 'c', 72)], { stress: 1, stressCap: 10 }), fixed(.9));
+  assert.equal(matronDone.stressCap, 10 + DLR.coldMatronCap, 'the Cold Matron raises the agitation cap for good');
+  assert.ok(/夜班老周关了灯 \+2躁动\/层/.test(planPlacement(run(60, [R('commuter', 'c', 64)]), E.darkLegendRider('nightoperator', 60, fixed(.3)), 3).next.message), 'placing Night Zhou warns about the lights');
+  const king = run(69, [R('kingpin', 'k', 70, { stash: 72 }), R('commuter', 'c', 72)], { stress: 1, stressCap: 12 });
+  assert.equal(E.dismissalCost(king, king.cabin[0]!), DLR.kingpinDismissal, 'the Kingpin is expensive to put off');
+  const kingDone = E.resolveFloor(king, fixed(.9));
+  assert.equal(kingDone.lastArrivals?.find(a => a.kind === 'kingpin')?.coins, 72 + DLR.kingpinStash, 'the Kingpin pays his bank on arrival');
+  const bet = (stress: number) => E.resolveFloor(run(69, [R('highroller', 'h', 70), R('commuter', 'c', 72)], { stress, stressCap: 14, coins: 100 }), fixed(.9));
+  assert.equal(lines(bet(0), 'lastEarnings')['赌王赢了'], DLR.highRollerWin); assert.equal(lines(bet(9), 'lastEarnings')['赌王输了'], -DLR.highRollerLoss);
+  const sev = E.resolveFloor(run(62, [R('severer', 's', 70), R('drunk', 'd', 66), R('commuter', 'c', 66)], { stress: 2, stressCap: 12 }), fixed(.9));
+  assert.ok((lines(sev, 'lastEarnings')['剪线婆收怨'] ?? 0) === 3 * conflictLinks(run(62, [R('severer', 's', 70), R('drunk', 'd', 66), R('commuter', 'c', 66)]).cabin).length, 'the Severer pays per red link');
+  // The Other Thirteen: the forecast brackets every roll.
+  const odd = run(62, [R('otherthirteen', 't', 70), R('commuter', 'c', 66)], { stress: 4, stressCap: 12 });
+  for (const v of [.05, .3, .55, .8]) { const after = E.resolveFloor(odd, fixed(v)); const sf = stressForecast(odd), ef = energyForecast(odd);
+    assert.ok(after.stress - odd.stress >= sf.lowDelta && after.stress - odd.stress <= sf.highDelta, 'Other Thirteen agitation is forecast');
+    assert.ok(after.energy - odd.energy >= ef.lowDelta && after.energy - odd.energy <= ef.highDelta, 'Other Thirteen power is forecast'); }
+  // Hidden dark resonance: at least four riders, all dark (a dark legend counts); one normal rider breaks it.
+  const allDark = run(64, [R('summoner', 'a', 70), R('shyster', 'b', 70), R('scrapper', 'c', 70), R('necromancer', 'd', 70)], { stress: 5, stressCap: 12 });
+  assert.equal(E.darkResonance(allDark.cabin), 4);
+  const res = E.resolveFloor(allDark, fixed(.9));
+  assert.equal(lines(res, 'lastPressure')['暗黑共鸣'], -DARK_RESONANCE.calm); assert.equal(lines(res, 'lastEarnings')['暗黑共鸣'], 4 * DARK_RESONANCE.coinsPerRider);
+  assert.equal(E.darkResonance(run(64, [R('summoner', 'a', 70), R('shyster', 'b', 70), R('scrapper', 'c', 70), R('commuter', 'd', 70)]).cabin), 0);
+  assert.equal(E.darkResonance(run(64, [R('summoner', 'a', 70), R('shyster', 'b', 70), R('scrapper', 'c', 70)]).cabin), 0);
+  for (const k of [...DARK_LEGEND_KINDS, 'mystery' as const]) assert.ok(!/共鸣|resonance/i.test(PASSENGERS[k].short + PASSENGERS[k].detail), 'no card documents the resonance');
+  // Mystery clues: each fits two identities, the shown clue always fits, and it never changes for the same rider.
+  for (const c of Object.values(MYSTERY_CLUES)) assert.equal(new Set(c.fits).size, 2);
+  for (const identity of MYSTERY_IDENTITIES) for (let i = 0; i < 20; i++) { const m = { id: `m${i}x${identity}`, identity }; const c = mysteryClue(m)!; assert.ok(MYSTERY_CLUES[c].fits.includes(identity) && mysteryClue(m) === c); }
+  assert.ok(cardSummary(R('mystery', 'q', 66, { identity: 'fugitive' }), run(62, []), 'zh').line.startsWith('线索：'), 'an unrevealed Mystery shows a clue');
+  assert.ok(cardSummary(R('mystery', 'q', 66, { identity: 'fugitive' }), run(62, []), 'en').line.startsWith('Clue: '));
+  // Abyss unrest: every dark rider's own agitation from 80F, one step more every few floors; a Flare stops it.
+  assert.equal(abyssUnrest(DARK.abyssUnrestFrom - 1), 0); assert.equal(abyssUnrest(DARK.abyssUnrestFrom), 1); assert.equal(abyssUnrest(DARK.abyssUnrestFrom + DARK.abyssUnrestEvery), 2);
+  const deep = run(DARK.abyssUnrestFrom, [R('summoner', 'a', 99), R('commuter', 'c', 99)]);
+  assert.ok(E.riderAgitation(deep, 0).fixed.some(l => l.label === '深渊躁动' && l.amount === abyssUnrest(DARK.abyssUnrestFrom + 1)), 'dark riders grow restless deep in the night');
+  assert.ok(!E.riderAgitation(deep, 1).fixed.some(l => l.label === '深渊躁动'), 'normal riders do not');
+  assert.ok(!E.riderAgitation({ ...deep, flareFloor: deep.floor }, 0).fixed.some(l => l.label === '深渊躁动'), 'a Flare stops it for a floor');
+  assert.equal(translateGameText('夜班老周关了灯', 'en'), 'Night Zhou turned the lights off');
+  assert.deepEqual(addDiscoveredPassengers(sanitizeDiscoveredPassengers(['kingpin', 'lover']), ['severer']), ['lover', 'severer', 'kingpin'], 'met dark legends are archived');
+  for (let i = 0; i < 20; i++) assert.ok(E.drawItemStock(80 + i, seq(((i * 37) % 97) / 97, ((i * 53) % 89) / 89)).some(c => c.key === 'flare'), 'a Flare is always on the abyss shelf');
+}
+console.log('PASS v9.20 dark legends, resonance, Mystery clues, abyss unrest');
+console.log(JSON.stringify({ version: 'v9', checks: 42, passed: true }));

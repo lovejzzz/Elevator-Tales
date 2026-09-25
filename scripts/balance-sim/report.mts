@@ -1,5 +1,5 @@
 import { BOTS, type BotId, type RunLog } from './sim.mts';
-import { PASSENGERS, LEGEND_KINDS, type PassengerKind } from '../../lib/game-data.ts';
+import { PASSENGERS, DARK_LEGEND_KINDS, LEGEND_KINDS, type PassengerKind } from '../../lib/game-data.ts';
 
 const q = (xs: number[], p: number) => { if (!xs.length) return NaN; const s = [...xs].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(p * (s.length - 1) + 0.5))]; };
 const med = (xs: number[]) => q(xs, 0.5);
@@ -49,10 +49,13 @@ export function report(logs: RunLog[]) {
   const bal = by('balanced');
   if (bal.length) {
     const m = med(bal.map(l => l.floor));
-    checks.push(check('长度：均衡型中位楼层', f1(m), '55–85', m >= 55 && m <= 85));
+    // v9.20 design goal (from the player): as good as nobody reaches 100F; the abyss after 80F decides the ending.
+    checks.push(check('长度：均衡型中位楼层', f1(m), '70–95', m >= 70 && m <= 95));
     const p90 = q(bal.map(l => l.floor), 0.9), p10 = q(bal.map(l => l.floor), 0.1);
-    checks.push(check('长度：均衡型 p10–p90 跨度', `${p10}–${p90}`, '跨度 ≥ 35 且 p90 ≤ 120', p90 - p10 >= 35 && p90 <= 120));
+    checks.push(check('长度：均衡型 p10–p90', `${p10}–${p90}`, 'p90 < 100', p90 < 100));
   }
+  const hundred = pct(skilled.filter(l => l.floor >= 100).length, skilled.length);
+  checks.push(check('长度：抵达 100 层（所有熟练型）', f1(hundred) + '%', '≤ 5%', hundred <= 5));
   const alive = pct(skilled.filter(l => l.cause === 'alive').length, skilled.length);
   checks.push(check('长度：150 层仍存活（所有熟练型）', f1(alive) + '%', '≤ 5%', alive <= 5));
   const esc = pct(skilled.filter(l => l.escapes >= 2).length, skilled.length);
@@ -83,7 +86,9 @@ export function report(logs: RunLog[]) {
   const offered: Record<string, number> = {}, boarded: Record<string, number> = {};
   for (const l of ref) { for (const [k, v] of Object.entries(l.offered)) offered[k] = (offered[k] ?? 0) + v; for (const [k, v] of Object.entries(l.boarded)) boarded[k] = (boarded[k] ?? 0) + v; }
   // The Courier's parcel is not a person; its usage is reported by parcel-report.mts.
-  const roles = Object.keys(offered).filter(k => !LEGEND_KINDS.includes(k as never) && k !== 'parcel' && offered[k] >= 20);
+  // v9.20: dark legends are a one-off fourth card (like legends) and are listed on their own line below.
+  const roles = Object.keys(offered).filter(k => !LEGEND_KINDS.includes(k as never) && !DARK_LEGEND_KINDS.includes(k as never) && k !== 'parcel' && offered[k] >= 20);
+  const darkLegendAdopt = DARK_LEGEND_KINDS.filter(k => offered[k]).map(k => `${PASSENGERS[k].name} ${Math.round(pct(boarded[k] ?? 0, offered[k]))}%`).join(' · ');
   const adopt = roles.map(k => ({ k, a: pct(boarded[k] ?? 0, offered[k]) })).sort((a, b) => a.a - b.a);
   const outOfBand = adopt.filter(r => r.a < 15 || r.a > 65);
   checks.push(check('人物：均衡型上车率都在 15–65%', outOfBand.length ? outOfBand.map(r => `${PASSENGERS[r.k as PassengerKind]?.name ?? r.k} ${f1(r.a)}%`).join('，') : '全部在区间内', '无越界', !outOfBand.length));
@@ -95,6 +100,7 @@ export function report(logs: RunLog[]) {
   const ptotal = Object.values(pressure).reduce((a, b) => a + b, 0);
   out.push('', '躁动来源占比：' + Object.entries(pressure).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, v]) => `${k} ${f1(pct(v, ptotal))}%`).join(' · '));
   out.push('', '均衡型上车率：' + adopt.map(r => `${PASSENGERS[r.k as PassengerKind]?.name ?? r.k} ${Math.round(r.a)}%`).join(' · '));
+  if (darkLegendAdopt) out.push('暗黑传奇上车率（第四张卡，不计入区间）：' + darkLegendAdopt);
   const abil: Record<string, number> = {};
   for (const l of skilled) for (const a of l.abilities) abil[a] = (abil[a] ?? 0) + 1;
   out.push('能力被选次数：' + Object.entries(abil).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · '));

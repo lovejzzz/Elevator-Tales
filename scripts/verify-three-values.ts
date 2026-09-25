@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { PASSENGER_ORDER, LEGEND_KINDS, UPGRADES, type UpgradeKey } from '../lib/game-data';
+import { DARK_LEGEND_KINDS, PASSENGER_ORDER, LEGEND_KINDS, UPGRADES, type UpgradeKey } from '../lib/game-data';
 import { KEEPSAKE_KEYS } from '../lib/legends';
 import { AGITATION_CAPACITY, ENERGY_CAPACITY, HIGH_RISK_BONUS, HIGH_RISK_START, INITIAL_ENERGY, OFFER_PRESSURE_STEP, chargeBattery, chargingPlan, initialRun, makeOffers, resolveFloor, riderAgitation, type Rider, type RunState } from '../lib/game-engine';
 import { energyForecast, stressForecast } from '../lib/game-forecast';
@@ -48,7 +48,7 @@ assert.equal(chargeBattery(shop,20).energy,22);assert.equal(chargeBattery(shop,2
 const rng=rngFor(812091);let transitions=0;
 for(let i=0;i<4000;i++){
   const floor=1+Math.floor(rng()*140),run=state({floor,energy:1+Math.floor(rng()*60),stress:Math.floor(rng()*8),coins:100,earned:100});
-  const pool=[...PASSENGER_ORDER,...LEGEND_KINDS];
+  const pool=[...PASSENGER_ORDER,...LEGEND_KINDS,...DARK_LEGEND_KINDS];
   run.keepsakes=KEEPSAKE_KEYS.filter(()=>rng()<.3);
   run.box={storage:Math.floor(rng()*4),transformer:Math.floor(rng()*4),motor:Math.floor(rng()*4)};
   run.upgrades={...run.upgrades,...Object.fromEntries((Object.keys(UPGRADES) as UpgradeKey[]).map(k=>[k,rng()<.2?1:0]))};

@@ -2,7 +2,7 @@ import { riskPartnerships } from './shift-rules';
 import { bondStatus, conflictLinks, riderProfile, type ConflictEffect } from './rider-profile';
 import { ADJACENT, DARK_OF, PASSENGERS, isDark, type PassengerKind } from './game-data';
 import { DARK_RULES, corruptible } from './dark-rules';
-import { hasNeighbour, neighbours, isBigParcel, seatRider, parcelLayoutOk, parcelLinks, isFreeReseat, neighbourCount, oldMovesRemaining, riderAgitation, type Rider, type RunState } from './game-engine';
+import { cabinPressureLines, hasNeighbour, neighbours, isBigParcel, seatRider, parcelLayoutOk, parcelLinks, isFreeReseat, neighbourCount, oldMovesRemaining, riderAgitation, type Rider, type RunState } from './game-engine';
 import { agitationBand, crowdingThreshold, V9_AGITATION } from './balance-v832';
 
 const RED_SHORT: Record<ConflictEffect,string> = { agitation:'+1躁动/层', energy:'+1耗电/层', coins:'−2金币/层', overload:'两人耗电×2', gamble:'两人耗电×2' };
@@ -138,6 +138,9 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
   const turning=(c:Array<Rider|null>)=>new Set(c.flatMap((r,i)=>r&&corruptible(r.kind)&&!r.warded&&neighbours(i).filter(j=>c[j]&&isDark(c[j]!.kind)).length>=DARK_RULES.corruptionNeighbours?[r.id]:[]));
   const turningBefore=turning(state.cabin);
   cabin.forEach(r=>{if(r&&turning(cabin).has(r.id)&&!turningBefore.has(r.id))warnings.push(`${PASSENGERS[r.kind].name}会被同化成${PASSENGERS[DARK_OF[r.kind]!].name}（${DARK_RULES.corruptionFloors}层后）`);});
+  // v9.20: cabin-wide agitation this placement starts (a dark legend's “lights out”, the Kingpin, the Severer cutting green links …).
+  const cabinBefore=new Map(cabinPressureLines(state).map(l=>[l.label,l.amount]));
+  cabinPressureLines({...state,cabin}).forEach(l=>{const d=l.amount-(cabinBefore.get(l.label)??0);if(d>0&&l.label!=='车厢拥挤')warnings.push(`${l.label} +${d}躁动/层`);});
   // Filling the cabin to the crowding line adds cabin-wide agitation every floor.
   const crowdLine=crowdingThreshold(state.floor+1);
   if(source<0&&cabin.filter(Boolean).length>=crowdLine&&state.cabin.filter(Boolean).length<crowdLine)warnings.push(`车厢坐满 +${V9_AGITATION.crowding}躁动/层`);

@@ -1,6 +1,15 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.19.2**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.20.0**. Publication status is tracked separately from the source version.
+
+## v9.20.0 — 2026-09-25 — The abyss and the dark legends / 深渊与暗黑传奇：100 层前的墙、传奇的午夜版、神秘人线索、隐藏的暗黑共鸣
+
+- Abyss unrest: from 80F each dark rider +1 agitation of his own per floor, +1 more every 5 floors; a banner one floor before each step. From 90F every new card is dark (no Mystery/Shifter/Mimic). A Flare on every shelf from 80F.
+- Eight dark legends (60F → 70F shop, fourth card, dark self of the shift's legend): Night Zhou (motor −2, +2 agitation; free box level), Severer (+3/red, +1 agitation/green; 25), Kingpin (banks 8, +1; dismissal 30), Cold Matron (cabin −2, 2 power; cap +2), Banshee (+1; +10 at high; 15), Necromancer (+2 per dark rider, +1; 20), High Roller (+80 if calm, else −25), Other Thirteen (random +8 / +2 agitation / −2 power; 0–40). New portraits, stories, lines, English, archive section.
+- Mystery clue before the reveal (each clue fits two identities). Hidden dark resonance: ≥4 riders, all dark → −2 agitation and +1 coin each per floor, undocumented; discovery banner and archive secret.
+- Fixes from ten playtests: dark legend card lines, seat states, no duplicate numbers, −25 on exit cards, no “arrives 0”, cabin-wide placement warnings, abyss banner above danger, archive records dark legends, district tag moved, Safety Margin preview/hint, abyss ending advice. Robber 18, Coach 7, Bomb Carrier 26; Banshee high pay 12→10.
+- Acceptance 4,200 runs: balanced 115 → 91F (p90 125 → 96), 100F reached in 0.6% of skilled runs, human-like 63F; deaths 7.5/91.1/1.4%. Two real bugs caught by the fuzz (flywheel double saving, Stranger + Other Thirteen forecast). Ten browser runs: 91, 93, 86, 89, 93, 91, 61, 91, 83, 93F. verify 42 check groups. Notes: `docs/playtests/v920-playtest-notes.md`.
+- Watch: agitation decides ~91% of endings; few options in the deepest floors; resonance + Necromancer pays a lot; Pusher withdrawal at 85F; Robber boarding; affluence checks.
 
 ## v9.19.2 — 2026-09-25 — Last four midnight playtests / 午夜试玩后四局：配对提示、午夜道具货架、结束说明
 

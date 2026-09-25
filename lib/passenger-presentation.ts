@@ -1,10 +1,12 @@
 import { PASSENGERS, isDark, type PassengerKind } from './game-data';
-import { MYSTERY_RULES } from './dark-rules';
+import { MYSTERY_CLUES, MYSTERY_RULES, mysteryClue } from './dark-rules';
 import { bondLines, bondSummary, riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
 import { BOMB_RULES, arrivalFare, fareBreakdown, arrivalTip, HIGH_RISK_BONUS, riderAfterWork, riderAgitation, type Rider, type RunState } from './game-engine';
 import { CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
 import { RISK_PARTNERS, RISK_STASH_PER_ASCENT, riskPartnerships } from './shift-rules';
 import { agitationBand } from './balance-v832';
+/** v9.20: an unrevealed Mystery shows his clue (it fits two of the four identities). */
+const mysteryHint=(rider:Rider)=>{const clue=mysteryClue(rider);return clue?`线索：${MYSTERY_CLUES[clue].zh} · 上车后下一层揭晓`:'身份未知 · 上车后下一层揭晓';};
 
 export const SHARED_SAVING_RULE = '检修完成：后续运转少耗1电；受控幽灵：抵消人物耗电。节能不产生电量，躁动不兑换电量。';
 
@@ -41,7 +43,7 @@ export function passengerFace(rider: Rider, state: RunState) {
   case 'cop':moneyNote='邻小偷：停止途中收入，到站+5';special='邻小偷：免偷窃躁动；邻炸弹：锁住倒计时';break;
   case 'lawyer':moneyNote='邻小偷：停止途中收入，到站+5';special='邻小偷：免偷窃躁动；不能暂停炸弹倒计时';break;
   case 'bomb':special=BOMB_RULES.realtime?'炸弹实时倒计时：到站前归零会炸飞邻座、损失金币；相邻警察锁住，高躁动时两倍速。':`炸弹倒计时 ${rider.fuse??0} 层：每上升一层 −1；到站前归零则失败。同层到站安全；幽灵可能延误。`;break;
-  case 'mystery':special=rider.revealed&&rider.identity?`${MYSTERY_RULES[rider.identity].name}：${MYSTERY_RULES[rider.identity].zh}`:'身份未知 · 上车后下一层揭晓';break;
+  case 'mystery':special=rider.revealed&&rider.identity?`${MYSTERY_RULES[rider.identity].name}：${MYSTERY_RULES[rider.identity].zh}`:mysteryHint(rider);break;
   default:if(isDark(rider.kind))special=PASSENGERS[rider.kind].short;
   case 'shifter':special='每站重抽三值和关系；基价16–28币';break;
   case 'mimic':special=profile.copies.length?profile.copies.map(c=>`↑ 复制${PASSENGERS[c.sourceKind].name}的${c.field==='energy'?'耗电':'基础车费'} · 同一人物对不重抽`).join('；'):'↑ 只复制正上方的耗电或基础车费；同一人物对不重抽';break;
@@ -148,7 +150,7 @@ export function passengerCardSections(
    self.push(BOMB_RULES.realtime&&rider.bombMs!==undefined?effect('timer',`倒计时 ${Math.ceil(rider.bombMs/1000)} 秒 · 未到站归零爆炸`):effect('timer',`倒计时 ${rider.fuse??0} · 未到站归零失败`),effect('neutral','同层到站安全；幽灵可能延误'));
    addGreen(['cop'],[effect('timer','倒计时锁定')]);
    break;
-  case 'mystery':self.push(effect('neutral',rider.revealed&&rider.identity?`${MYSTERY_RULES[rider.identity].name}：${MYSTERY_RULES[rider.identity].zh}`:'身份未知 · 上车后下一层揭晓'));break;
+  case 'mystery':self.push(effect('neutral',rider.revealed&&rider.identity?`${MYSTERY_RULES[rider.identity].name}：${MYSTERY_RULES[rider.identity].zh}`:mysteryHint(rider)));break;
   case 'shifter':self.push(effect('neutral','每层重抽三值与邻座关系'));break;
   case 'mimic':self.push(effect('neutral',profile.copies.length?`↑ 复制${PASSENGERS[profile.copies[0].sourceKind].name}的${profile.copies[0].field==='energy'?'耗电':'基础车费'}`:'↑ 只复制正上方 · 耗电或基础车费'));break;
   default:if(isDark(rider.kind))self.push(effect('neutral',PASSENGERS[rider.kind].short));

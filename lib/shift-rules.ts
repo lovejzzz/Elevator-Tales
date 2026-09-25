@@ -44,4 +44,5 @@ export const OFFER_PARTNERS: Record<PassengerKind, PassengerKind[]> = {
   overtimer: [], voyeur: [], smuggler: [], scrapper: [], exlover: [], noisemaker: [], robber: [], crookedcop: [], shyster: [],
   brawler: [], pusher: [], creepychild: [], wraith: [], summoner: [], taskmaster: [], scandal: [], grafter: [], madbomber: [],
   parcel: [], operator: ['mechanic'], matchmaker: ['lover'], don: ['thief'], matron: ['child'], nightingale: ['tourist'], medium: ['ghost'], tycoon: ['commuter'], stranger: ['tourist'],
+  nightoperator: [], severer: [], kingpin: [], coldmatron: [], banshee: [], necromancer: [], highroller: [], otherthirteen: [],
 };

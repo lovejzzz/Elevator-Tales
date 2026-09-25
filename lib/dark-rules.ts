@@ -1,10 +1,10 @@
-import { DARK_OF, isDark, isLegend, type PassengerKind } from './game-data';
+import { DARK_OF, isDark, isDarkLegend, isLegend, type PassengerKind } from './game-data';
 
 /** v9.19 “After midnight”: tuning for the dark versions, corruption and the late sectors (scripts/balance-sim). */
 export const DARK_RULES = {
   /** Share of new cards that arrive as their dark version, from each boarding floor on (cards drawn on leaving the
    * 60F shop ride to 61F and up, so the first dark cards appear right after the midnight bell). */
-  share: [[60, 0.35], [70, 0.6], [80, 0.85]] as Array<[number, number]>,
+  share: [[60, 0.35], [70, 0.6], [80, 0.85], [90, 1]] as Array<[number, number]>,
   /** Leaving the shop on this floor rings the midnight bell. */
   midnightFloor: 60,
   overtimePay: 2, overstayAgitation: 1, overstayMax: 3,
@@ -33,9 +33,16 @@ export const DARK_RULES = {
   survivorBonus: 5,
   /** From this floor, every `abyssEvery` floors the dark riders' troubles grow one step. */
   abyssFrom: 80, abyssEvery: 20,
+  /** v9.20: from this floor every dark rider adds agitation of his own (+1, then +1 more every `abyssUnrestEvery` floors).
+   * A Nurse, Pusher or Good Samaritan beside him can cancel it; a Flare stops it for a floor. */
+  abyssUnrestFrom: 80, abyssUnrestEvery: 5,
   /** An ordinary Bomber reaching zero blows his neighbours out of the cabin and costs this many coins. */
   blastCoins: 20,
 };
+
+/** v9.20 hidden “dark resonance”: a cabin of at least `min` riders, all dark versions or dark legends, calms down and pays.
+ * Deliberately not described on any card or rule page. */
+export const DARK_RESONANCE = { min: 4, calm: 2, coinsPerRider: 1 };
 
 /** Share of new cards turning dark on this floor (0 before midnight). */
 export function darkShare(floor: number) {
@@ -45,10 +52,12 @@ export function darkShare(floor: number) {
 }
 /** 0 before the abyss; 1, 2 … every `abyssEvery` floors from `abyssFrom`. */
 export const abyssTier = (floor: number) => floor >= DARK_RULES.abyssFrom ? 1 + Math.floor((floor - DARK_RULES.abyssFrom) / DARK_RULES.abyssEvery) : 0;
+/** v9.20: each dark rider's own abyss agitation on this floor (0 before `abyssUnrestFrom`). */
+export const abyssUnrest = (floor: number) => floor >= DARK_RULES.abyssUnrestFrom ? 1 + Math.floor((floor - DARK_RULES.abyssUnrestFrom) / DARK_RULES.abyssUnrestEvery) : 0;
 /** A normal rider who can still turn dark (has a dark version, not a legend or a box). */
 export const corruptible = (kind: PassengerKind) => Boolean(DARK_OF[kind]) && !isLegend(kind);
 /** Riders the midnight rules call “normal” (survivors): people who are neither dark, legends nor boxes. */
-export const isSurvivor = (kind: PassengerKind) => kind !== 'parcel' && !isLegend(kind) && !isDark(kind);
+export const isSurvivor = (kind: PassengerKind) => kind !== 'parcel' && !isLegend(kind) && !isDark(kind) && !isDarkLegend(kind);
 export const isBombKind = (kind: PassengerKind | undefined) => kind === 'bomb' || kind === 'madbomber';
 export const isCarrierKind = (kind: PassengerKind | undefined) => kind === 'courier' || kind === 'smuggler';
 
@@ -61,6 +70,23 @@ export const MYSTERY_RULES: Record<MysteryIdentity, { fare: number; name: string
   magnate: { fare: 25, name: '富商', en: 'Magnate', zh: '车费 25', enLine: 'Fare 25' },
   saint: { fare: 8, name: '好心人', en: 'Good Samaritan', zh: '抵消每位邻座自身躁动 1/层', enLine: 'Cancels 1 of each neighbor’s own agitation/floor' },
 };
+
+/** v9.20: before the reveal, a Mystery shows one clue. Each clue fits exactly two identities (a ring:
+ * Undercover–Fugitive–Magnate–Saint–Undercover), so the card narrows him down to a coin flip without giving him away. */
+export type MysteryClue = 'doors' | 'cash' | 'manners' | 'helpful';
+export const MYSTERY_CLUES: Record<MysteryClue, { zh: string; en: string; fits: [MysteryIdentity, MysteryIdentity] }> = {
+  doors: { zh: '一直盯着车门', en: 'Keeps watching the doors', fits: ['undercover', 'fugitive'] },
+  cash: { zh: '手里攥着一沓现金', en: 'Clutching a wad of cash', fits: ['fugitive', 'magnate'] },
+  manners: { zh: '衣着考究，彬彬有礼', en: 'Well dressed and polite', fits: ['magnate', 'saint'] },
+  helpful: { zh: '主动帮人按住电梯门', en: 'Holds the door for others', fits: ['saint', 'undercover'] },
+};
+/** The clue a Mystery shows: one of the two that fit his identity, fixed by his id (so it never changes on screen). */
+export function mysteryClue(rider: { id: string; identity?: MysteryIdentity }): MysteryClue | undefined {
+  if (!rider.identity) return undefined;
+  const fitting = (Object.keys(MYSTERY_CLUES) as MysteryClue[]).filter(k => MYSTERY_CLUES[k].fits.includes(rider.identity!));
+  let hash = 0; for (const ch of rider.id) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return fitting[hash % fitting.length];
+}
 
 /** v9.19 items: one-use tools kept in a four-slot bag, bought in shops at rising prices. */
 export type ItemKey = 'cell' | 'swap' | 'dismiss' | 'candy' | 'fuse' | 'aroma' | 'holywater' | 'cuffs' | 'amulet' | 'alarm' | 'sedative' | 'seal' | 'cutter' | 'flare';

@@ -1,4 +1,4 @@
-import { LEGEND_KINDS, type LegendKind } from './game-data';
+import { DARK_LEGEND_POWER, LEGEND_KINDS, type LegendKind } from './game-data';
 
 /** v9 legends ride floor 1 → floor 10 and leave a permanent keepsake on delivery.
  * Keepsakes live in their own row and never use one of the six ability slots. */
@@ -52,3 +52,17 @@ export const LEGEND_RULES = {
 export const GHOST_CONTROLLERS = ['exorcist', 'medium'] as const;
 export const CHILD_CARERS = ['lover', 'nurse', 'matron'] as const;
 export const DRUNK_CARERS = ['nurse', 'matron'] as const;
+
+/** v9.20 dark legends: one waits as a fourth card when leaving the 60F shop and rides to the 70F shop.
+ * Each pays in its own way and costs in its own way; tuned in scripts/balance-sim. */
+export const DARK_LEGEND_RULES = {
+  from: 60, destination: 70,
+  nightOperatorSaving: 2, nightOperatorAgitation: 2, nightOperatorBoxLevels: 1,
+  severerPerRed: 3, severerPerGreen: 1, severerPay: 25,
+  kingpinStash: 8, kingpinAgitation: 1, kingpinDismissal: 30,
+  coldMatronCalm: 2, coldMatronPower: DARK_LEGEND_POWER, coldMatronCap: 2,
+  bansheeAgitation: 1, bansheeHighCoins: 10, bansheePay: 15,
+  necromancerPerDark: 2, necromancerAgitation: 1, necromancerPay: 20,
+  highRollerWin: 80, highRollerLoss: 25,
+  thirteenCoins: 8, thirteenAgitation: 2, thirteenPower: 2, thirteenPayMax: 40,
+};

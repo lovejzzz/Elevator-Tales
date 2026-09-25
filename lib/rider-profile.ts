@@ -41,6 +41,7 @@ export const BONDS: Record<PassengerKind,Bond> = {
  scandal:{likes:['voyeur'],avoids:[]}, grafter:{likes:['smuggler','scrapper'],avoids:[]}, madbomber:{likes:['crookedcop'],avoids:[]},
  parcel:{likes:[],avoids:[]}, operator:{likes:[],avoids:[]}, matchmaker:{likes:[],avoids:[]}, don:{likes:[],avoids:[]}, matron:{likes:[],avoids:[]},
  nightingale:{likes:[],avoids:[]}, medium:{likes:[],avoids:[]}, tycoon:{likes:[],avoids:[]}, stranger:{likes:[],avoids:[]},
+ nightoperator:{likes:[],avoids:[]}, severer:{likes:[],avoids:[]}, kingpin:{likes:[],avoids:[]}, coldmatron:{likes:[],avoids:[]}, banshee:{likes:[],avoids:[]}, necromancer:{likes:[],avoids:[]}, highroller:{likes:[],avoids:[]}, otherthirteen:{likes:[],avoids:[]},
 };
 const pairKey=(a:PassengerKind,b:PassengerKind)=>[a,b].sort().join(':');
 const effectPairs=(effect:ConflictEffect,pairs:Array<[PassengerKind,PassengerKind]>)=>pairs.map(([a,b])=>[pairKey(a,b),effect] as const);

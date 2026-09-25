@@ -1,6 +1,6 @@
 import { boxOf, COURIER_ARRIVAL_CHARGE, PARCEL_RULES, parcelBeside, parcelLinks, boxCoins, boxPower, seatRider, unseatRider, parcelLayoutOk, isBigParcel, cooperationBonus, cooperationRelief, eventPressureMultiplier, riderAgitation, type Rider, type RunState } from './game-engine';
 import { passengerBrief } from './passenger-presentation';
-import { ADJACENT, PASSENGERS, isLegend, type PassengerKind } from './game-data';
+import { ADJACENT, PASSENGERS, isAnyLegend, type PassengerKind } from './game-data';
 import { riderProfile } from './rider-profile';
 import { chargeUnitPrice } from './power-box';
 
@@ -12,10 +12,10 @@ const AGITATING = new Set(['thief', 'drunk', 'child']);
  * It ignores neighbour bonuses on purpose, so a positive number is worth carrying even alone. Null for legends. */
 /** True when the net estimate includes the rider's own agitation (so the card can say so instead of plain coins). */
 export function netIncludesAgitation(rider: Rider, state: RunState) {
-  return !isLegend(rider.kind) && ((riderProfile(rider, state.cabin).agitation ?? 0) > 0 || AGITATING.has(rider.kind) || Boolean(rider.volatile));
+  return !isAnyLegend(rider.kind) && ((riderProfile(rider, state.cabin).agitation ?? 0) > 0 || AGITATING.has(rider.kind) || Boolean(rider.volatile));
 }
 export function netValue(rider: Rider, state: RunState): number | null {
-  if (isLegend(rider.kind)) return null;
+  if (isAnyLegend(rider.kind)) return null;
   const trip = Math.max(1, rider.destination - state.floor);
   const profile = riderProfile(rider, state.cabin);
   const price = chargeUnitPrice(boxOf(state), state.floor);
@@ -33,7 +33,7 @@ export function netValue(rider: Rider, state: RunState): number | null {
 function cabinFares(state: RunState, cabin: Array<Rider | null>) {
   const bonus = cooperationBonus(state), relief = cooperationRelief(state), mult = eventPressureMultiplier(state);
   return cabin.reduce((sum, r) => {
-    if (!r || isLegend(r.kind) || r.kind === 'parcel') return sum;
+    if (!r || isAnyLegend(r.kind) || r.kind === 'parcel') return sum;
     const fare = passengerBrief(r, state.floor, cabin, bonus, relief, mult, state.stress).expectedFare;
     return sum + (fare ?? (r.kind === 'mystery' ? 16 : PASSENGERS[r.kind].fare));
   }, 0);
@@ -63,7 +63,7 @@ const boxValue = (r: Rider, price: number) => (boxCoins(r) + boxPower(r) * price
  * over their trip at NET_AGITATION_COINS per point (so a Nurse calming a Child counts in her favour). Best empty seat
  * for a rider not yet aboard; their current seat once aboard. Null for legends or a full cabin. */
 export function boardNet(rider: Rider, state: RunState): { value: number; seated: boolean } | null {
-  if (isLegend(rider.kind)) return null;
+  if (isAnyLegend(rider.kind)) return null;
   const trip = Math.max(1, rider.destination - state.floor), price = chargeUnitPrice(boxOf(state), state.floor);
   const power = trip * riderProfile(rider, state.cabin).energy * price * (isBigParcel(rider) ? 2 : 1);
   const value = (withRider: Array<Rider | null>, without: Array<Rider | null>) =>
@@ -84,12 +84,12 @@ export function boardNet(rider: Rider, state: RunState): { value: number; seated
  * Lets a combination rider show "red now, green when paired" instead of just red. Null when no partner type
  * would add at least 3 coins over the current value, or when the rider is already beside such a partner. */
 export function pairedNet(rider: Rider, state: RunState): { value: number; partner: PassengerKind } | null {
-  if (isLegend(rider.kind)) return null;
+  if (isAnyLegend(rider.kind)) return null;
   const now = boardNet(rider, state); if (!now) return null;
   const at = state.cabin.findIndex(r => r?.id === rider.id);
   const trip = Math.max(1, rider.destination - state.floor);
   if (rider.kind === 'courier' && rider.parcelId) return courierWithParcel(rider, state, now.value, at);
-  const likes = riderProfile(rider, state.cabin).bond.likes.filter(k => !isLegend(k)).slice(0, 3);
+  const likes = riderProfile(rider, state.cabin).bond.likes.filter(k => !isAnyLegend(k)).slice(0, 3);
   if (!likes.length) return null;
   let best: { value: number; partner: PassengerKind } | null = null;
   for (const kind of likes) {

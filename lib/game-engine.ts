@@ -1,10 +1,10 @@
 import { BONDS, bondStatus, conflictLinks, profileWeight, randomTraits, riderProfile, type VariableTraits } from './rider-profile';
 import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
-import { ADJACENT, BASE_OF, DARK_OF, PASSENGERS, UNLOCK_TIERS, UPGRADES, isDark, isLegend, passengerCategory, type LegendKind, type PassengerKind, type UpgradeKey } from './game-data';
-import { DARK_RULES, ITEMS, ITEM_KEYS, ITEM_SLOTS, MYSTERY_IDENTITIES, MYSTERY_RULES, abyssTier, corruptible, darkShare, isBombKind, isCarrierKind, isSurvivor, itemPrice, type ItemKey, type MysteryIdentity } from './dark-rules';
+import { ADJACENT, BASE_OF, DARK_LEGEND_KINDS, DARK_LEGEND_OF, DARK_OF, PASSENGERS, UNLOCK_TIERS, UPGRADES, isAnyLegend, isDark, isDarkLegend, isLegend, passengerCategory, type DarkLegendKind, type LegendKind, type PassengerKind, type UpgradeKey } from './game-data';
+import { DARK_RESONANCE, DARK_RULES, ITEMS, ITEM_KEYS, ITEM_SLOTS, MYSTERY_IDENTITIES, MYSTERY_RULES, abyssTier, abyssUnrest, corruptible, darkShare, isBombKind, isCarrierKind, isSurvivor, itemPrice, type ItemKey, type MysteryIdentity } from './dark-rules';
 import { BOX_MAX_LEVEL, BOX_PRICES, BOX_TOTAL_CAP, emergencySectorCap, EMPTY_BOX, affordableUnits, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, motorNoise, shopEntryCharge, storageCap, type BoxLine, type PowerBox } from './power-box';
 import { districtWeight } from './districts';
-import { CHILD_CARERS, DRUNK_CARERS, GHOST_CONTROLLERS, KEEPSAKE_KEYS, LEGEND_DECLINE_COINS, LEGEND_DESTINATION, LEGEND_KEEPSAKE, LEGEND_POOL_DEFAULT, LEGEND_RULES, type KeepsakeKey } from './legends';
+import { CHILD_CARERS, DARK_LEGEND_RULES, DRUNK_CARERS, GHOST_CONTROLLERS, KEEPSAKE_KEYS, LEGEND_DECLINE_COINS, LEGEND_DESTINATION, LEGEND_KEEPSAKE, LEGEND_POOL_DEFAULT, LEGEND_RULES, type KeepsakeKey } from './legends';
 import { V9_AGITATION, NIGHT_UNREST, nightUnrest, crowdingThreshold, agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
 import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome, flywheelSaving, consumeFlywheel, boosted, ABILITY_LEVEL2, LEVEL2_TEXT } from './shop-effects';
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
@@ -60,6 +60,8 @@ export type RunState = {
   keepsakes?: KeepsakeKey[];
   legendOffer?: LegendKind;
   legendStatus?: 'offered' | 'boarded' | 'declined' | 'delivered' | 'dismissed';
+  /** v9.20: the dark legend offered when leaving the 60F shop. */
+  darkLegendOffer?: DarkLegendKind;
   emergencySector?: number;
   dispatchSector?: number;
   dispatchCount?: number;
@@ -91,7 +93,7 @@ export type RunState = {
 export const EMPTY_UPGRADES: Record<UpgradeKey, number> = { battery: 0, capacity: 0, calm: 0, concierge: 0, reinforced: 0, express: 0, tipjar: 0, relay: 0, crowd: 0, meter: 0, rails: 0, insulation: 0, reservation: 0, single: 0, delay:0, buffer:0, soundproof:0, retime:0, punchcard:0, finale:0, dispatch:0 };
 export const boxOf = (state: Pick<RunState,'box'>): PowerBox => state.box ?? EMPTY_BOX;
 export const hasKeepsake = (state: Pick<RunState,'keepsakes'>, key: KeepsakeKey) => Boolean(state.keepsakes?.includes(key));
-export const legendInCabin = (cabin: Array<Rider|null>, kind: LegendKind) => cabin.some(r => r?.kind === kind);
+export const legendInCabin = (cabin: Array<Rider|null>, kind: LegendKind | DarkLegendKind) => cabin.some(r => r?.kind === kind);
 const sectorOf = (floor: number) => Math.floor(floor / 10);
 // Dispatch merges Reservation and Rebooking: one use per sector, either way.
 export const DISPATCH_USES_PER_SECTOR = 2;
@@ -101,7 +103,7 @@ export const dispatchRemaining = (state: RunState) => Math.max(0, boosted(state,
 const dispatchTick = (state: RunState, sector: number) => state.upgrades.dispatch ? { dispatchSector: sector, dispatchCount: (state.dispatchSector === sector ? state.dispatchCount ?? 0 : 0) + 1 } : {};
 export function retimeRider(state:RunState,id:string,delta:number):RunState {
   const r=state.cabin.find(r=>r?.id===id),sector=Math.floor(state.floor/10);
-  if(state.status!=='playing'||!(state.upgrades.retime||state.upgrades.dispatch)||!r||r.boardedAt!==state.floor||(state.upgrades.dispatch?dispatchUsed(state,sector):state.retimeUsedSector===sector)||isLegend(r.kind)||![-1,1].includes(delta)||r.destination+delta<=state.floor)return state;
+  if(state.status!=='playing'||!(state.upgrades.retime||state.upgrades.dispatch)||!r||r.boardedAt!==state.floor||(state.upgrades.dispatch?dispatchUsed(state,sector):state.retimeUsedSector===sector)||isAnyLegend(r.kind)||![-1,1].includes(delta)||r.destination+delta<=state.floor)return state;
   return {...state,...dispatchTick(state,sector),cabin:state.cabin.map(p=>p?.id===id?{...p,destination:p.destination+delta}:p),retimeUsedSector:state.upgrades.dispatch?state.retimeUsedSector:sector,rebooked:{...state.rebooked,[id]:r.destination+delta},message:state.upgrades.dispatch?`调度完成：${delta<0?'提前':'延后'} 1 站，车费与倒计时不变，撤回不退次数。`:'改签完成：车费与倒计时不变，撤回不退次数。'};
 }
 export function settleBuffer(raw:number,cap:number,stored:number,enabled:boolean) {
@@ -124,13 +126,19 @@ export function applyCalmCharge(state:RunState):RunState {
 export function reserveOffer(state:RunState,offers:Rider[],id:string):RunState {
   const rider=offers.find(r=>r.id===id),sector=Math.floor(state.floor/10);
   // v9.16: a Courier and his parcel travel as a pair, so neither can be held on its own.
-  if(state.status!=='playing'||!(state.upgrades.reservation||state.upgrades.dispatch)||!rider||isLegend(rider.kind)||rider.kind==='parcel'||Boolean(rider.parcelId)||state.reservedRider||(state.upgrades.dispatch?dispatchUsed(state,sector):state.reservationUsedSector===sector)||state.reservedIds?.includes(id)||state.cabin.some(r=>r?.id===id))return state;
+  if(state.status!=='playing'||!(state.upgrades.reservation||state.upgrades.dispatch)||!rider||isAnyLegend(rider.kind)||rider.kind==='parcel'||Boolean(rider.parcelId)||state.reservedRider||(state.upgrades.dispatch?dispatchUsed(state,sector):state.reservationUsedSector===sector)||state.reservedIds?.includes(id)||state.cabin.some(r=>r?.id===id))return state;
   return {...state,reservedRider:{...rider,destination:state.rebooked?.[id]??rider.destination},reservationUsedSector:state.upgrades.dispatch?state.reservationUsedSector:sector,...dispatchTick(state,sector),reservedIds:[...(state.reservedIds??[]),id],message:'已留座：下一批占一个候客位，属性与剩余路程不变。'};
 }
 /** Consume a reservation at the next actual candidate batch, including shop exit.
  * Generate the ordinary packet first; the held rider replaces exactly one card. */
 export function nextOfferBatch(state:RunState,rng:()=>number=Math.random):{state:RunState;offers:Rider[]} {
   const offers=makeOffers(state.floor,state.upgrades,false,rng,state.cabin,undefined,{},{keepsakes:state.keepsakes,legendPool:[]});
+  // v9.20: leaving the 60F shop, the dark self of this shift's legend (or a random one) waits as a fourth card.
+  if(state.floor===DARK_LEGEND_RULES.from&&!state.darkLegendOffer){
+    const kind=state.legendOffer?DARK_LEGEND_OF[state.legendOffer]:DARK_LEGEND_KINDS[rand(0,DARK_LEGEND_KINDS.length-1,rng)];
+    offers.push(darkLegendRider(kind,state.floor,rng));
+    state={...state,darkLegendOffer:kind};
+  }
   if(!state.reservedRider)return {state,offers};
   const held=state.reservedRider;
   const rider={...held,destination:state.floor+held.destination-held.boardedAt,boardedAt:state.floor,calledByLover:false};
@@ -164,7 +172,7 @@ export function stealLink(cabin: Array<Rider | null>, first: number, second: num
   }
   return 0;
 }
-export const pickpocketFrom = (v: Rider | null | undefined) => (!v || v.kind === 'parcel' || ['cop', 'lawyer', 'don', 'crookedcop'].includes(v.kind) || isLegend(v.kind) ? 0 : PICKPOCKET[v.kind] ?? ECONOMY_RULES.thiefPerVictim);
+export const pickpocketFrom = (v: Rider | null | undefined) => (!v || v.kind === 'parcel' || ['cop', 'lawyer', 'don', 'crookedcop'].includes(v.kind) || isAnyLegend(v.kind) ? 0 : PICKPOCKET[v.kind] ?? ECONOMY_RULES.thiefPerVictim);
 /** Bomb timers (v9.18 study): the dealt range, and how many steps an unlocked timer drops per floor at high agitation. */
 export const BOMB_RULES = { fuseMin: 3, fuseMax: 6, highTick: 2,
   /** v9.18 real-time timer: a Bomber aboard counts down in real seconds (base + per stop of his trip) instead of floors.
@@ -437,7 +445,7 @@ export function turnRider(r: Rider, to: PassengerKind): Rider {
 }
 /** v9.19: an ordinary Bomber's bomb blows him and every adjacent rider out of the cabin (no fares) and costs coins. */
 export function blastAt(cabin: Array<Rider | null>, bomber: number, coins: number): { cabin: Array<Rider | null>; slots: number[]; coins: number } {
-  const hit = [bomber, ...neighbours(bomber).filter(i => cabin[i] && !isLegend(cabin[i]!.kind))];
+  const hit = [bomber, ...neighbours(bomber).filter(i => cabin[i] && !isAnyLegend(cabin[i]!.kind))];
   const ids = new Set(hit.map(i => cabin[i]?.id).filter(Boolean));
   const boxes = new Set(hit.map(i => cabin[i]).filter(r => r?.kind === 'parcel').map(r => boxIdOf(r!)));
   const next = cabin.map(r => r && (ids.has(r.id) || (r.kind === 'parcel' && boxes.has(boxIdOf(r)))) ? null : r);
@@ -483,6 +491,8 @@ function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
     case 'tycoon': if (neighbourCount(state.cabin, slot) > 1) add('大亨嫌挤', 1); break;
     case 'matron': add('坏人惊扰护士长', LEGEND_RULES.matronBadNeighbourAgitation * neighbours(slot).filter(i => state.cabin[i] && passengerCategory(state.cabin[i]!.kind) === 'bad').length); break;
   }
+  // v9.20: deep in the night every dark rider grows restless on his own.
+  if (dark && isDark(rider.kind) && abyssUnrest(state.floor + 1)) add('深渊躁动', abyssUnrest(state.floor + 1));
   return fixed;
 }
 
@@ -524,7 +534,9 @@ export function musicAgitation(state: RunState) {
 /** Motor cost for the coming ascent after the power box. Legends and service savings are itemized separately. */
 export const effectiveMotor = (state: Pick<RunState,'floor'|'box'>) => boxedMotorCost(motorCost(state.floor+1), boxOf(state), state.floor+1);
 export const operatorSaving = (state: RunState) => legendInCabin(state.cabin,'operator') && state.cabin.filter(Boolean).length < 6 ? Math.min(LEGEND_RULES.operatorMotorSaving, effectiveMotor(state)) : 0;
-export const serviceSaving = (state: RunState) => (state.serviceTurns ?? 0) > 0 ? Math.min(REPAIR_MOTOR_SAVING, effectiveMotor(state) - operatorSaving(state)) : 0;
+/** v9.20 Night Operator: motor −2 every floor, even with a full cabin. */
+export const nightOperatorSaving = (state: RunState) => legendInCabin(state.cabin,'nightoperator') ? Math.min(DARK_LEGEND_RULES.nightOperatorSaving, effectiveMotor(state) - operatorSaving(state)) : 0;
+export const serviceSaving = (state: RunState) => (state.serviceTurns ?? 0) > 0 ? Math.max(0, Math.min(REPAIR_MOTOR_SAVING, effectiveMotor(state) - operatorSaving(state) - nightOperatorSaving(state))) : 0;
 export const cooperationBonus = (state: RunState) => 1 + (state.upgrades.battery ? boosted(state, 'battery', ECONOMY_RULES.cooperationIncrement) : 0) + (hasKeepsake(state,'redString') ? LEGEND_RULES.redStringBond : 0);
 // One cabin-wide reward per travelled floor. Further contract levels improve
 // coins, not soothing; boarding, reseating and dismissing cannot trigger it.
@@ -569,8 +581,8 @@ export const energySavings = (state: RunState) => {
 export const inspectionExtraEnergy = (state: RunState) => Math.max(0, passengerEnergy(state) - stabilizedEnergy(state) - energySavings(state));
 /** v9.19: power the dark riders cost on the coming ascent (Scrappers strip parts, uncontrolled Wraiths drain). */
 export function darkEnergyLines(state: RunState): ChangeLine[] {
-  if (troubleFree(state)) return [];
   const lines: ChangeLine[] = [];
+  if (troubleFree(state)) return lines;
   const scrappers = state.cabin.filter(r => r?.kind === 'scrapper').length;
   if (scrappers) lines.push({ label: '拆机人拆零件', amount: scrappers * DARK_RULES.scrapperMotor });
   const wraiths = state.cabin.filter((r, i) => r?.kind === 'wraith' && !hasNeighbour(state.cabin, i, GHOST_CONTROL_KINDS) && !hasKeepsake(state, 'bell')).length;
@@ -580,7 +592,7 @@ export function darkEnergyLines(state: RunState): ChangeLine[] {
 export function energyBreakdown(state: RunState) {
   const motor=effectiveMotor(state),people=passengerEnergy(state),stabilizer=stabilizedEnergy(state),shared=energySavings(state);
   const dark=darkEnergyLines(state).reduce((n,l)=>n+l.amount,0);
-  const service=serviceSaving(state)+operatorSaving(state);
+  const service=serviceSaving(state)+operatorSaving(state)+nightOperatorSaving(state);
   const links=conflictLinks(state.cabin);
   const flat=links.filter(link=>link.effect==='energy').length;
   // Per-person multiplier costs are shared with the cabin display. Flat edge
@@ -612,7 +624,9 @@ const INTRINSIC_RISK: PassengerKind[] = ['thief','drunk','child','celebrity','in
 /** v9.19 draw weights: Commuters and Lovers thin out from 51F; a Courier is half as likely while one rides. */
 export const OFFER_WEIGHTS = { lateFrom: 51, lateCommuter: 0.5, lateLover: 0.5, courierAboard: 0.5 };
 function weightedKind(floor: number, rng: () => number, forcedRisk = false, excludeLover = false, unlocked: PassengerKind[] = unlockedAt(floor), courierAboard = false): PassengerKind {
-  const pool = unlocked.filter(kind => (!forcedRisk || INTRINSIC_RISK.includes(kind)) && (!excludeLover || kind !== 'lover'));
+  // v9.20: once every new card is a dark version (90F), riders without a dark self stop appearing.
+  const allDark = darkShare(floor) >= 1;
+  const pool = unlocked.filter(kind => (!forcedRisk || INTRINSIC_RISK.includes(kind)) && (!excludeLover || kind !== 'lover') && (!allDark || Boolean(DARK_OF[kind])));
   // District themes draw their riders at 1.5×; duplicates in the pool (Medium's ghosts) stack.
   const late = floor >= OFFER_WEIGHTS.lateFrom;
   const weight = (kind: PassengerKind) => PASSENGERS[kind].rarity * districtWeight(floor, kind)
@@ -633,6 +647,9 @@ export function availableKinds(floor: number, cabin: Array<Rider | null> = [], k
   if (keepsakes.includes('vinyl') && !kinds.includes('musician')) kinds.push('musician');
   return kinds;
 }
+export function darkLegendRider(kind: DarkLegendKind, floor: number = DARK_LEGEND_RULES.from, rng: () => number = Math.random): Rider {
+  return { id: 'dlegend-' + kind + '-' + rng().toString(36).slice(2, 7), kind, destination: DARK_LEGEND_RULES.destination, patience: 0, boardedAt: floor, fareBonus: 0, stash: 0, volatile: false };
+}
 export function legendRider(kind: LegendKind, rng: () => number = Math.random): Rider {
   return { id: 'legend-' + kind + '-' + rng().toString(36).slice(2, 7), kind, destination: LEGEND_DESTINATION, patience: 0, boardedAt: 1, fareBonus: 0, stash: 0, volatile: false };
 }
@@ -648,7 +665,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
   // two slots still introduce an interacting pair, without another Lover.
   const courierAboard = cabin.some(r => isCarrierKind(r?.kind));
   const anchor = weightedKind(floor, rng, false, called, available, courierAboard);
-  const eligible = (kind: PassengerKind) => available.includes(kind) && (!called || kind !== 'lover');
+  const eligible = (kind: PassengerKind) => available.includes(kind) && (!called || kind !== 'lover') && (darkShare(floor) < 1 || Boolean(DARK_OF[kind]));
   const tension = floor >= 21 && rng() < .3 ? BONDS[anchor].avoids.filter(eligible) : [];
   const partners = tension.length ? tension : OFFER_PARTNERS[anchor].filter(eligible);
   const partner = partners[rand(0, partners.length - 1, rng)] ?? 'tourist';
@@ -758,7 +775,24 @@ export function cabinPressureLines(state: RunState): ChangeLine[] {
   if (legendInCabin(state.cabin, 'matchmaker') && red) lines.push({ label: '月老见不得争吵', amount: red });
   if (legendInCabin(state.cabin, 'nightingale') && band === 'low') lines.push({ label: '夜莺要气氛', amount: 1 });
   if (legendInCabin(state.cabin, 'matron')) lines.push({ label: '护士长巡房', amount: -LEGEND_RULES.matronCabinCalm });
+  // v9.20 dark legends.
+  if (legendInCabin(state.cabin, 'nightoperator')) lines.push({ label: '夜班老周关了灯', amount: DARK_LEGEND_RULES.nightOperatorAgitation });
+  if (legendInCabin(state.cabin, 'severer')) { const green = greenLinks(state.cabin); if (green) lines.push({ label: '剪线婆剪断绿线', amount: green * DARK_LEGEND_RULES.severerPerGreen }); }
+  if (legendInCabin(state.cabin, 'kingpin')) lines.push({ label: '黑老大的威压', amount: DARK_LEGEND_RULES.kingpinAgitation });
+  if (legendInCabin(state.cabin, 'coldmatron')) lines.push({ label: '冷面护士长打镇静剂', amount: -DARK_LEGEND_RULES.coldMatronCalm });
+  if (legendInCabin(state.cabin, 'banshee')) lines.push({ label: '哭丧女哀嚎', amount: DARK_LEGEND_RULES.bansheeAgitation });
+  if (legendInCabin(state.cabin, 'necromancer')) lines.push({ label: '死灵师低语', amount: DARK_LEGEND_RULES.necromancerAgitation });
+  // Undocumented on purpose: a cabin of nothing but night people settles down (players find it themselves).
+  if (darkResonance(state.cabin)) lines.push({ label: '暗黑共鸣', amount: -DARK_RESONANCE.calm });
   return lines;
+}
+/** Green links (active cooperation) in the cabin, each pair counted once. */
+export const greenLinks = (cabin: Array<Rider | null>) => ADJACENT.filter(([a, b]) => cabin[a] && cabin[b] && cabin[a]!.kind !== 'parcel' && cabin[b]!.kind !== 'parcel' && (riderProfile(cabin[a]!, cabin, a).bond.likes.includes(cabin[b]!.kind) || riderProfile(cabin[b]!, cabin, b).bond.likes.includes(cabin[a]!.kind))).length;
+/** v9.20 hidden “dark resonance”: at least four riders aboard and every one of them a dark version or a dark legend.
+ * Returns the number of riders (0 when the cabin does not qualify). */
+export function darkResonance(cabin: Array<Rider | null>): number {
+  const riders = cabin.filter((r): r is Rider => Boolean(r) && r!.kind !== 'parcel');
+  return riders.length >= DARK_RESONANCE.min && riders.every(r => isDark(r.kind) || isDarkLegend(r.kind)) ? riders.length : 0;
 }
 export const partnershipAgitation = (state: RunState) => { const a = riskPartnerships(state.cabin).agitation; return hasKeepsake(state, 'pocketWatch') ? Math.min(1, a) : a; };
 export const arrivalReliefCapFor = (state: RunState) => AGITATION_RULES.arrivalReliefCap + Number(legendInCabin(state.cabin, 'matron'));
@@ -783,6 +817,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if (energySavings(state)) adjustEnergy('节能少耗', energySavings(state));
   if (serviceSaving(state)) adjustEnergy('检修运转节能', serviceSaving(state));
   if (operatorSaving(state)) adjustEnergy('老周照看电机', operatorSaving(state));
+  if (nightOperatorSaving(state)) adjustEnergy('夜班老周关灯省电', nightOperatorSaving(state));
   const redLinks=conflictLinks(state.cabin);
   const {conflict:redEnergy,conflictProtection}=energyBreakdown(state);
   if(redEnergy)adjustEnergy('红线额外耗电',-redEnergy);
@@ -822,7 +857,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const stashPerStep = RISK_STASH_PER_ASCENT + Number(agitationBand(state.stress) === 'high') + Number(watch);
   // v9.19: the longer a crew holds together, the more each member banks (3, 4, 5 … per floor); leaving the crew resets it.
   cabin.forEach((r, slot) => { if (!r) return; if (partnership.members.includes(slot)) { r.stash = (r.stash ?? 0) + stashPerStep + (r.crewFloors ?? 0); r.crewFloors = (r.crewFloors ?? 0) + 1; } else if (r.crewFloors) r.crewFloors = 0; });
-  cabin.forEach(rider => { if (rider?.kind === 'don') rider.stash = (rider.stash ?? 0) + LEGEND_RULES.donStashPerFloor; });
+  cabin.forEach(rider => { if (rider?.kind === 'don') rider.stash = (rider.stash ?? 0) + LEGEND_RULES.donStashPerFloor; if (rider?.kind === 'kingpin') rider.stash = (rider.stash ?? 0) + DARK_LEGEND_RULES.kingpinStash; });
   if (departBand === 'medium') {
     const musicians = state.cabin.filter(r => r?.kind === 'musician').length;
     if (musicians) addCoins('音乐家演出', musicians * (LEGEND_RULES.musicianMediumCoins + (hasKeepsake(state,'vinyl') ? LEGEND_RULES.vinylMusicianBonus : 0)));
@@ -844,6 +879,18 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     else if (roll === 1) adjustPressure('13号房客', -1);
     else if (roll === 2) adjustEnergy('13号房客', 1);
   }
+  // v9.20 dark legends.
+  if (legendInCabin(state.cabin,'otherthirteen')) {
+    const roll = rand(0, 3, rng);
+    if (roll === 0) addCoins('另一个13号', DARK_LEGEND_RULES.thirteenCoins);
+    else if (roll === 1) { adjustPressure('另一个13号', DARK_LEGEND_RULES.thirteenAgitation); stressReasons.push(`另一个13号：躁动 +${DARK_LEGEND_RULES.thirteenAgitation}`); }
+    else if (roll === 2) adjustEnergy('另一个13号', -DARK_LEGEND_RULES.thirteenPower);
+  }
+  if (legendInCabin(state.cabin,'severer')) { const red = conflictLinks(state.cabin).length; if (red) addCoins('剪线婆收怨', red * DARK_LEGEND_RULES.severerPerRed); }
+  if (legendInCabin(state.cabin,'banshee') && departBand === 'high') addCoins('哭丧女的哀歌', DARK_LEGEND_RULES.bansheeHighCoins);
+  if (legendInCabin(state.cabin,'necromancer')) { const night = state.cabin.filter(r => r && isDark(r.kind)).length; if (night) addCoins('死灵师收魂', night * DARK_LEGEND_RULES.necromancerPerDark); }
+  const resonance = darkResonance(state.cabin);
+  if (resonance) addCoins('暗黑共鸣', resonance * DARK_RESONANCE.coinsPerRider);
   const shopIncome = shopFloorIncome(state);
   if (shopIncome.crowd) addCoins('共乘票', shopIncome.crowd);
   if (shopIncome.meter) addCoins('长途计价器', shopIncome.meter);
@@ -1002,14 +1049,27 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     const exposed = rider.kind === 'scandal' && hasNeighbour(cabin, slot, ['inspector', 'crookedcop']);
     const stash = exposed ? 0 : (rider.stash ?? 0);
     if (exposed) notes.push('丑闻曝光：丑闻明星这一趟车费归零');
-    addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare - appetitePremium - stash);
+    // v9.20: legends pay no fare, so their arrival adds no empty “到站 0” line.
+    if (!isAnyLegend(rider.kind) || fare - appetitePremium - stash) addCoins(`${spec.name}${profile.hidden ? '揭晓车费' : '到站'}`, fare - appetitePremium - stash);
     if (stash) addCoins(stashLabel(rider.kind) + '兑现', stash);
     if (delivered && nextFloor > DARK_RULES.midnightFloor && isSurvivor(rider.kind)) addCoins('幸存者平安送达', DARK_RULES.survivorBonus);
     if (appetitePremium) addCoins('醉汉躁动加价', appetitePremium);
     let punchBonus=0;
     if(delivered&&state.upgrades.punchcard){punchCount=(punchCount+1)%5;if(punchCount===0){punchBonus=boosted(state,'punchcard',profile.fare);addCoins('第五位基价奖励',punchBonus);}}
     let extra = 0; let keepsakeLeft: KeepsakeKey | undefined;
-    if (!isLegend(rider.kind)) {
+    if (isDarkLegend(rider.kind)) {
+      // v9.20: each dark legend pays in its own way on reaching the 70F shop.
+      const pay = (label: string, amount: number) => { extra += amount; addCoins(label, amount); };
+      switch (rider.kind) {
+        case 'nightoperator': freeBoxLevels += DARK_LEGEND_RULES.nightOperatorBoxLevels; notes.push('夜班老周留下一级免费配电箱升级'); break;
+        case 'severer': pay('剪线婆的酬金', DARK_LEGEND_RULES.severerPay); break;
+        case 'coldmatron': stressCapBonus += DARK_LEGEND_RULES.coldMatronCap; notes.push(`冷面护士长留下病历：躁动上限 +${DARK_LEGEND_RULES.coldMatronCap}`); break;
+        case 'banshee': pay('哭丧女的酬金', DARK_LEGEND_RULES.bansheePay); break;
+        case 'necromancer': pay('死灵师的酬金', DARK_LEGEND_RULES.necromancerPay); break;
+        case 'highroller': if (departBand === 'low') pay('赌王赢了', DARK_LEGEND_RULES.highRollerWin); else { const loss = Math.min(Math.max(0, coins), DARK_LEGEND_RULES.highRollerLoss); if (loss) pay('赌王输了', -loss); } break;
+        case 'otherthirteen': { const gift = rand(0, DARK_LEGEND_RULES.thirteenPayMax, rng); if (gift) pay('另一个13号的馈赠', gift); break; }
+      }
+    } else if (!isLegend(rider.kind)) {
       if (delivered && departBand === 'medium') { const tip = V9_AGITATION.mediumTip + (hasKeepsake(state,'vinyl') ? 2 : 0); extra += tip; addCoins('热闹小费', tip); }
       if (delivered && departBand === 'low') { const tip = V9_AGITATION.lowTip + (legendInCabin(state.cabin,'matron') ? LEGEND_RULES.matronQuietCoins : 0); extra += tip; addCoins('安静好评', tip); }
       if (delivered && departBand === 'low' && hasKeepsake(state,'roundsLog')) { extra += 1; addCoins('查房记录', 1); }
@@ -1067,7 +1127,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if(chargeBoost)adjustEnergy('自然回充增幅',chargeBoost);
   const gapCharge=deliveryGapCharge(state,arrivalSlots.length);
   // The flywheel only saves motor power still being paid after Old Zhou and repairs.
-  const flywheel=flywheelSaving(state,arrivalSlots.length,energyCost-serviceSaving(state)-operatorSaving(state));
+  const flywheel=flywheelSaving(state,arrivalSlots.length,energyCost-serviceSaving(state)-operatorSaving(state)-nightOperatorSaving(state));
   if(flywheel)adjustEnergy('飞轮节能',flywheel);
   if(gapCharge.energy)adjustEnergy('等待到站回充',gapCharge.energy);
   const deliveredUpgrades=deliveryUpgradeIncome(state,effectCabin,arrivalSlots);
@@ -1076,7 +1136,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if(deliveredUpgrades.meter)addCoins('长途计价器',deliveredUpgrades.meter);
   const finale=finaleIncome(state,arrivalSlots.length,cabin.filter(Boolean).length);if(finale)addCoins('谢幕礼',finale);
   if (departBand === 'high' && rng() < V9_AGITATION.incidentChance) {
-    const victims = cabin.flatMap((rider, slot) => rider && !isLegend(rider.kind) && rider.kind !== 'parcel' ? [slot] : []);
+    const victims = cabin.flatMap((rider, slot) => rider && !isAnyLegend(rider.kind) && rider.kind !== 'parcel' ? [slot] : []);
     if (victims.length) {
       const slot = victims[rand(0, victims.length - 1, rng)];
       notes.unshift(`车厢事故：${PASSENGERS[cabin[slot]!.kind].name}受不了混乱，提前下车，未付车费`);
@@ -1189,6 +1249,7 @@ export function failureLesson(state: RunState): string {
     if (!positive.length) return '躁动失控 · 下一班优先处理急躁乘客与红色冲突。';
     const top = positive.filter(line => line.amount === positive[0].amount).slice(0, 3);
     const ADVICE: Array<[RegExp, string]> = [
+      [/深渊躁动/, '深渊里每位暗黑乘客每层自己加躁动（80 层起 +1，每 5 层再 +1）：少带暗黑乘客，让药贩或好心人贴着他们，或点一颗照明弹撑过最紧的一层。'],
       [/无人照顾/, '儿童要挨着护士或恋人。'], [/未安抚/, '醉汉要挨着护士。'], [/未受控/, '让警察或律师挨着小偷，被管住的小偷反而每层帮全车 −1。'],
       [/红线/, '把红线两端的人分开，或请离其中一位。'], [/找纸箱|争纸箱/, '快递员要挨着他自己的纸箱，纸箱没上车就别带他。'], [/被围/, '名人只留1位邻座，可避免围观新增躁动。'],
       [/嫌挤/, '大亨最多留1位邻座。'], [/急躁/, '急躁乘客每层 +1，路程越长越亏；后期优先带短途的。'],
@@ -1407,14 +1468,14 @@ export { consumeReserveCell as useReserveCell };
 // Compatibility for the current UI; new callers use applyCalmCharge (not a React hook).
 export { applyCalmCharge as useCalmCharge };
 export const dismissalsRemaining = (state: RunState) => Math.max(0, DISMISSALS_PER_SECTOR - (state.dismissalsUsed ?? 0));
-export const dismissalCost=(state: RunState,rider:Rider)=>isLegend(rider.kind)?0:4+Math.max(0,rider.destination-state.floor)*2;
+export const dismissalCost=(state: RunState,rider:Rider)=>rider.kind==='kingpin'?DARK_LEGEND_RULES.kingpinDismissal:isAnyLegend(rider.kind)?0:4+Math.max(0,rider.destination-state.floor)*2;
 export function dismissRider(state: RunState, id: string): RunState {
   const slot=state.cabin.findIndex(r=>r?.id===id),rider=state.cabin[slot];
   if(state.status!=='playing'||!rider||rider.boardedAt>=state.floor||rider.destination<=state.floor)return state;
   const cost=dismissalCost(state,rider);
-  if(state.coins<cost || (!isLegend(rider.kind) && dismissalsRemaining(state) <= 0))return state;
+  if(state.coins<cost || (!isAnyLegend(rider.kind) && dismissalsRemaining(state) <= 0))return state;
   const message=`已请离${PASSENGERS[rider.kind].name}，赔偿 ${cost} 金币；不结算到站收益。`;
-  return {...state,legendStatus:isLegend(rider.kind)?'dismissed':state.legendStatus,coins:state.coins-cost,dismissalsUsed:(state.dismissalsUsed ?? 0)+(isLegend(rider.kind)?0:1),cabin:unseatRider(state.cabin,rider.id,true),message,log:[`${state.floor}F · ${message}`,...state.log].slice(0,4),lastEarnings:{total:0,sources:[]},lastEnergy:{delta:0,sources:[]},lastPressure:{delta:0,sources:[]}};
+  return {...state,legendStatus:isLegend(rider.kind)?'dismissed':state.legendStatus,coins:state.coins-cost,dismissalsUsed:(state.dismissalsUsed ?? 0)+(isAnyLegend(rider.kind)?0:1),cabin:unseatRider(state.cabin,rider.id,true),message,log:[`${state.floor}F · ${message}`,...state.log].slice(0,4),lastEarnings:{total:0,sources:[]},lastEnergy:{delta:0,sources:[]},lastPressure:{delta:0,sources:[]}};
 }
 export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  const count=state.upgrades[key];
@@ -1467,7 +1528,7 @@ export function fareBreakdown(rider: Rider, cabin: Array<Rider | null>, slot: nu
   if (multiplied !== fare) add([gamble ? `赌局红线 ×${gamble}` : '', rider.kind !== 'coach' && coaches ? `教练邻座 ${coaches} 位（+${coaches * 50}%）` : '', taskmasters ? `监工邻座 ${taskmasters} 位（+${taskmasters * 100}%）` : '', rider.kind !== 'coach' && appetite ? '高躁动加价' : ''].filter(Boolean).join(' · '), multiplied - fare);
   if (rider.kind === 'coach') add(`教练：邻座 ${neighbourCount(cabin, slot)} 位`, neighbourCount(cabin, slot) * FARE_RULES.coachNeighbour);
   if (rider.kind === 'tourist') { const n = neighbourCount(cabin, slot); add(`游客：邻座 ${n} 位 × 2`, n * 2); add('夜莺相邻', Number(hasNeighbour(cabin, slot, ['nightingale'])) * 2); if (neighbours(slot).some(i => cabin[i]?.kind === 'parcel')) lines.push({ label: '纸箱不算邻座', amount: 0 }); }
-  if (!isLegend(rider.kind) && hasNeighbour(cabin, slot, ['matchmaker'])) add('月老相邻', LEGEND_RULES.matchmakerNeighbourCoins);
+  if (!isAnyLegend(rider.kind) && hasNeighbour(cabin, slot, ['matchmaker'])) add('月老相邻', LEGEND_RULES.matchmakerNeighbourCoins);
   if (rider.kind === 'commuter' && agitationBand(agitation) === 'low') add('低躁动到站', COMMUTER_QUIET_BONUS);
   if (rider.kind === 'tourist' && agitationBand(agitation) === 'medium') add('中躁动到站', TOURIST_MEDIUM_BONUS);
   if (rider.kind === 'inspector' && rider.complianceReady) add('合规印章', INSPECTION_BONUS);
@@ -1513,6 +1574,8 @@ export function drawItemStock(floor: number, rng: () => number, bought: RunState
   const draw = (from: ItemKey[]) => { const rest = from.filter(k => !picked.includes(k)); if (rest.length) picked.push(rest[Math.min(rest.length - 1, Math.floor(rng() * rest.length))]); };
   // v9.19.1: from the midnight shop on, at least two of the three are tools against the dark riders.
   const midnight = pool.filter(k => ITEMS[k].from >= DARK_RULES.midnightFloor);
+  // v9.20: in the abyss (80F on) a Flare is always on the shelf: the one tool that quiets every dark rider for a floor.
+  if (floor >= DARK_RULES.abyssUnrestFrom && pool.includes('flare')) picked.push('flare');
   if (midnight.length >= 2) { draw(midnight); draw(midnight); }
   while (picked.length < 3 && picked.length < pool.length) draw(pool);
   return picked.map(key => ({ key, price: itemPrice(key, floor, bought?.[key] ?? 0), sold: false }));
@@ -1532,7 +1595,7 @@ export function itemUsable(state: RunState, key: ItemKey, target?: Rider | null)
   if (need === 'none') return key !== 'flare' || state.flareFloor !== state.floor;
   if (!target || !state.cabin.some(r => r?.id === target.id)) return false;
   switch (need) {
-    case 'rider': return target.kind !== 'parcel' && (key !== 'dismiss' || !isLegend(target.kind));
+    case 'rider': return target.kind !== 'parcel' && (key !== 'dismiss' || !isAnyLegend(target.kind));
     case 'dark': return isDark(target.kind);
     case 'normal': return corruptible(target.kind) && !target.warded;
     case 'thief': return (target.kind === 'thief' || target.kind === 'robber') && !target.cuffed;

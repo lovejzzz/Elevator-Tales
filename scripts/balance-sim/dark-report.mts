@@ -1,12 +1,12 @@
 // v9.19.1 research: how each dark rider pays and costs in simulated runs (balanced and human-like bots).
 // Usage: tsx scripts/balance-sim/dark-report.mts [runs]
 import { runOne } from './sim.mts';
-import { DARK_KINDS, PASSENGERS, type PassengerKind } from '../../lib/game-data.ts';
+import { DARK_KINDS, DARK_LEGEND_KINDS, PASSENGERS, type PassengerKind } from '../../lib/game-data.ts';
 
 const runs = Number(process.argv[2] ?? 120);
 type Stat = { offered: number; boarded: number; delivered: number; fare: number; agitation: number; floorsAboard: number };
-const stats = new Map<PassengerKind, Stat>(DARK_KINDS.map(k => [k, { offered: 0, boarded: 0, delivered: 0, fare: 0, agitation: 0, floorsAboard: 0 }]));
-const names = new Map(DARK_KINDS.map(k => [PASSENGERS[k].name, k]));
+const stats = new Map<PassengerKind, Stat>([...DARK_KINDS, ...DARK_LEGEND_KINDS].map(k => [k, { offered: 0, boarded: 0, delivered: 0, fare: 0, agitation: 0, floorsAboard: 0 }]));
+const names = new Map([...DARK_KINDS, ...DARK_LEGEND_KINDS].map(k => [PASSENGERS[k].name, k]));
 const floors: number[] = [];
 for (const bot of ['balanced', 'human'] as const) for (let seed = 1; seed <= runs; seed++) {
   const log = runOne({ bot, seed: 50000 + seed, horizon: 200, legendMode: 'auto', onAscent: (before, after) => {

@@ -5,6 +5,7 @@ import {V837_PAIRS} from './i18n-v837';
 import {V835_PAIRS} from './i18n-v835';
 import {V9_PAIRS} from './i18n-v9';
 import {V919_PAIRS} from './i18n-v919';
+import {V920_PAIRS} from './i18n-v920';
 
 export type GameLocale = 'en' | 'zh';
 
@@ -531,8 +532,8 @@ const phrasePairs: Array<[string, string]> = [
   ['或', ' or '], ['/条', '/link'], ['/站', '/floor'], ['/ 站', '/floor'], ['金币', 'Coins'], ['耗电', 'Power'], ['躁动', 'Agitation'], ['到站', 'Arrival'], ['车费', 'fare'],
 ];
 
-const exact = new Map([...exactPairs, ...V832_PAIRS, ...V835_PAIRS, ...V837_PAIRS, ...V9_PAIRS, ...V919_PAIRS]);
-const phrases = [...V919_PAIRS, ...V9_PAIRS, ...V837_PAIRS, ...V835_PAIRS, ...V832_PAIRS, ...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
+const exact = new Map([...exactPairs, ...V832_PAIRS, ...V835_PAIRS, ...V837_PAIRS, ...V9_PAIRS, ...V919_PAIRS, ...V920_PAIRS]);
+const phrases = [...V920_PAIRS, ...V919_PAIRS, ...V9_PAIRS, ...V837_PAIRS, ...V835_PAIRS, ...V832_PAIRS, ...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
 
 export function translateGameText(value: string, locale: GameLocale): string {
   if (locale === 'zh') return value;
@@ -724,6 +725,18 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^(戴着手铐|被管住) · 到站赏金\+(\d+)币$/u, (_m, how: string, n: string) => `${how === '戴着手铐' ? 'Handcuffed' : 'Held'} · +${n} bounty on arrival`)
     .replace(/^收保护费 (\d+)币\/层 · 全车−1躁动$/u, 'Protection $1 coins/floor · cabin −1 agitation')
     .replace(/^打官司 \+(\d+)币\/层$/u, 'Suing · +$1 coins/floor')
+    // v9.20 dark legends' seat states.
+    .replace(/^运转 −(\d+)电 · 关灯 \+(\d+)躁动\/层$/u, 'Motor −$1 power · lights out +$2 agitation/floor')
+    .replace(/^收怨 \+(\d+)币\/层 · 剪绿线 \+(\d+)躁动\/层$/u, 'Grudges +$1 coins/floor · cutting green links +$2 agitation/floor')
+    .replace(/^收怨 \+(\d+)币\/层$/u, 'Grudges +$1 coins/floor')
+    .replace(/^剪绿线 \+(\d+)躁动\/层$/u, 'Cutting green links +$1 agitation/floor')
+    .replace(/^每层存 (\d+)币 · 请离赔 (\d+)币$/u, 'Banks $1 coins/floor · dismissal costs $2')
+    .replace(/^镇静全车 −(\d+)躁动\/层$/u, 'Sedating the cabin −$1 agitation/floor')
+    .replace(/^哀歌 \+(\d+)币\/层$/u, 'Lament +$1 coins/floor')
+    .replace(/^等车厢乱起来 · \+(\d+)躁动\/层$/u, 'Waiting for chaos · +$1 agitation/floor')
+    .replace(/^收魂 \+(\d+)币\/层 · \+(\d+)躁动\/层$/u, 'Collecting souls +$1 coins/floor · +$2 agitation/floor')
+    .replace(/^押注中 · 安静到站 \+(\d+)币$/u, 'Betting · calm arrival +$1 coins')
+    .replace(/^要输了 · 现在到站 −(\d+)币$/u, 'Losing · arriving now costs $1 coins')
     .replace(/^发狂 \+(\d+)躁动\/层$/u, 'Raging · +$1 agitation/floor')
     .replace(/^给 (\d+) 人下药 · 各 −(\d+)躁动\/层$/u, (_m, n: string, c: string) => `Dosing ${n} · −${c} agitation each/floor`)
     .replace(/^吓到 (\d+) 人 · \+(\d+)躁动\/层$/u, (_m, n: string, c: string) => `Scaring ${n} · +${c} agitation/floor`)

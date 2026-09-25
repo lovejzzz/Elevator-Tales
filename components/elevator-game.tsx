@@ -5,17 +5,17 @@ import { ChevronsUp, ArrowUp, Layers, Package, UserMinus, BatteryCharging, BookO
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, isLegend, riderCardGrade, passengerCategory, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
+import { ADJACENT, PASSENGER_ORDER, PASSENGERS, UPGRADES, isAnyLegend, isDarkLegend, isLegend, riderCardGrade, passengerCategory, type PassengerKind, type UpgradeKey } from '@/lib/game-data';
 import { cardSummary, displayName, riderName, type CardChip } from '@/lib/card-summary';
 import { KEEPSAKES_SEEN_KEY, LEGEND_UNLOCKS_KEY, drawLegend, LEGEND_UNLOCK_HINTS, loadKeepsakesSeen, loadUnlockedLegends, nextUnlocks, saveList } from '@/lib/legend-unlocks';
-import { KEEPSAKES, type KeepsakeKey } from '@/lib/legends';
+import { DARK_LEGEND_RULES, KEEPSAKES, type KeepsakeKey } from '@/lib/legends';
 import { districtFor } from '@/lib/districts';
 import { STORIES, STORIES_KEY } from '@/lib/stories';
 import { dailyKey, dailySeed, stream } from '@/lib/seeded';
 import { LEGEND_STARTERS } from '@/lib/legends';
-import { DARK_OF, LEGEND_KINDS, isDark, type LegendKind } from '@/lib/game-data';
+import { DARK_LEGEND_KINDS, DARK_OF, LEGEND_KINDS, isDark, type DarkLegendKind, type LegendKind } from '@/lib/game-data';
 import { availableShopCards, emergencyRepairPlan, repairEmergency, dismissalsRemaining, energyBreakdown, purchaseRepairWarning } from '@/lib/game-engine';
-import { HIGH_RISK_BONUS, travelEnergyCost, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, touristCompanionCount, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
+import { HIGH_RISK_BONUS, greenLinks, travelEnergyCost, eventPressureMultiplier, riderAgitation, shiftOutlook, cooperationRelief, chargeBattery, chargingPlan, cooperationBonus, dismissalCost, dismissRider, installedUpgradeSummary, agitationThreshold, difficultyTier, failureLesson, hasNeighbour, initialRun, installUpgrade, leaveShop, neighbourCount, nextShopFloor, previewUpgrade, readyPartner, resolveFloor, touristCompanionCount, type Rider, type RunState, type UpgradeCrisis } from '@/lib/game-engine';
 import { energyForecast, sectorForecast, stressForecast } from '@/lib/game-forecast';
 import { BOMB_RULES, bombSeconds, bombTick, tickBombs, pickpocketFrom, stealLink, isBigParcel, canReplaceWithBoxAbility, resolveBoxAbility, neighbours, parcelBeside, parcelLinks, thiefEyesParcel, unseatRider, boxIdOf, RETIRED_UPGRADES, SELL_REFUND, canSellUpgrade, sellUpgrade, calmPrice, buyCalm, overtimeCalmPrice, buyOvertimeCalm, calmAllowance, emergencyAllowance, emergencySectorLeft, emergencyCharge, boxOf, buyBoxLevel, canBuyBoxLevel, boxLevelPrice, boxTotalCap, BOX_LADDER, rerollShop, REROLL_PRICE, SHOP_PRICES } from '@/lib/game-engine';
 import { emergencyUnitPrice, BOX_LINES, BOX_LINE_LABELS, BOX_MAX_LEVEL, boxTotal, chargeCost as boxChargeCost, chargeUnitPrice, EARLY_CHARGE, affordableUnits, type BoxLine } from '@/lib/power-box';
@@ -50,7 +50,7 @@ import { PowerGauge, RegisterNumber } from '@/components/power-gauge';
 import { cooperationLabel } from '@/lib/cooperation-label';
 import { agitationBand, musicBeatForAgitation, motorAdvanceNotice, motorScheduleText, nightUnrest, nightUnrestText, REPAIR_WORK, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, RESERVE_CELL_CHARGE } from '@/lib/balance-v832';
 import { GHOST_CONTROL_KINDS, buyOvertimeCharge, overtimeChargeOffer, abilityLevel2Price, canRaiseAbility, raiseAbility, bombLocked, buyItem, itemUsable, thiefHeld, applyItem } from '@/lib/game-engine';
-import { DARK_RULES, ITEMS, ITEM_SLOTS, MYSTERY_RULES, abyssTier, corruptible, isBombKind, isCarrierKind, isSurvivor, type ItemKey } from '@/lib/dark-rules';
+import { DARK_RULES, ITEMS, ITEM_SLOTS, MYSTERY_CLUES, MYSTERY_RULES, abyssTier, abyssUnrest, mysteryClue, corruptible, isBombKind, isCarrierKind, isSurvivor, type ItemKey } from '@/lib/dark-rules';
 import { consumeReserveCell, dispatchRemaining, nextOfferBatch, retimeRider, oldMovesRemaining, reserveOffer, applyCalmCharge, startRun } from '@/lib/game-engine';
 
 type DragPayload = { type: 'offer'; id: string } | { type: 'slot'; slot: number };
@@ -134,7 +134,7 @@ function Portrait({ kind, large = false, rider }: { kind: PassengerKind; large?:
   const asset = portraitAsset(kind); const x = asset.cell % asset.columns; const y = Math.floor(asset.cell / asset.columns);
   // v9.17: box tiers and the disguised Bomber have their own art; a seated two-part box shows its upper or lower half.
   const src = rider ? riderPortraitSrc(rider) : asset.src, half = rider?.kind === 'parcel' && large ? rider.big : undefined;
-  return <span className={`portrait-window ${large ? 'portrait-large' : ''} ${isLegend(kind) ? 'portrait-legend-art' : ''} ${half ? `portrait-half portrait-half-${half}` : ''}`} aria-hidden="true"><span className="portrait-sheet" style={{ backgroundImage: `url(${src})`, backgroundSize: half ? '100% 200%' : `${asset.columns * 100}% ${asset.rows * 100}%`, backgroundPosition: half ? `50% ${half === 'top' ? 0 : 100}%` : `${asset.columns > 1 ? x * 100 / (asset.columns - 1) : 50}% ${asset.rows > 1 ? y * 100 / (asset.rows - 1) : 50}%` }} /></span>;
+  return <span className={`portrait-window ${large ? 'portrait-large' : ''} ${isLegend(kind) ? 'portrait-legend-art' : isDarkLegend(kind) ? 'portrait-legend-art portrait-dark-legend' : ''} ${half ? `portrait-half portrait-half-${half}` : ''}`} aria-hidden="true"><span className="portrait-sheet" style={{ backgroundImage: `url(${src})`, backgroundSize: half ? '100% 200%' : `${asset.columns * 100}% ${asset.rows * 100}%`, backgroundPosition: half ? `50% ${half === 'top' ? 0 : 100}%` : `${asset.columns > 1 ? x * 100 / (asset.columns - 1) : 50}% ${asset.rows > 1 ? y * 100 / (asset.rows - 1) : 50}%` }} /></span>;
 }
 
 /** v9.19.1: “2 stops” / “1 stop” as one string, so English gets the singular right. */
@@ -148,6 +148,20 @@ const KEEPSAKE_EN: Record<KeepsakeKey, [string, string]> = {
   bell: ['Spirit Bell', 'Ghosts always count as controlled and pay +5 in total on arrival.'],
   stock: ['Share Certificate', 'At each shop, unspent coins earn 15% interest, up to +12.'],
 };
+/** v9.20: set once the player has found the hidden dark resonance (the archive then lists it). */
+const RESONANCE_KEY = 'elevator-tales-resonance-v1';
+/** v9.20: what each dark legend leaves on reaching the 70F shop (the card's last line). */
+const DARK_LEGEND_REWARD: Record<DarkLegendKind, [string, string]> = {
+  nightoperator: [`一级免费配电箱升级`, `a free power-box level`],
+  severer: [`+${DARK_LEGEND_RULES.severerPay} 金币`, `+${DARK_LEGEND_RULES.severerPay} coins`],
+  kingpin: ['兑现他的暂存', 'his bank, paid out'],
+  coldmatron: [`躁动上限永久 +${DARK_LEGEND_RULES.coldMatronCap}`, `agitation cap +${DARK_LEGEND_RULES.coldMatronCap} for good`],
+  banshee: [`+${DARK_LEGEND_RULES.bansheePay} 金币`, `+${DARK_LEGEND_RULES.bansheePay} coins`],
+  necromancer: [`+${DARK_LEGEND_RULES.necromancerPay} 金币`, `+${DARK_LEGEND_RULES.necromancerPay} coins`],
+  highroller: [`低躁动 +${DARK_LEGEND_RULES.highRollerWin} 金币，否则 −${DARK_LEGEND_RULES.highRollerLoss}`, `+${DARK_LEGEND_RULES.highRollerWin} coins if calm, otherwise −${DARK_LEGEND_RULES.highRollerLoss}`],
+  otherthirteen: [`随机 0–${DARK_LEGEND_RULES.thirteenPayMax} 金币`, `0–${DARK_LEGEND_RULES.thirteenPayMax} coins at random`],
+};
+const resonanceFound = () => { try { return localStorage.getItem(RESONANCE_KEY) === '1'; } catch { return false; } };
 const legendKeepsake = (kind: LegendKind): KeepsakeKey | null => ({ operator: 'wrench', matchmaker: 'redString', don: 'pocketWatch', matron: 'roundsLog', nightingale: 'vinyl', medium: 'bell', tycoon: 'stock', stranger: null } as Record<LegendKind, KeepsakeKey | null>)[kind];
 const keepsakeLabel = (key: KeepsakeKey, locale: GameLocale) => locale === 'zh' ? KEEPSAKES[key].name : KEEPSAKE_EN[key][0];
 const keepsakeText = (key: KeepsakeKey, locale: GameLocale) => locale === 'zh' ? KEEPSAKES[key].description : KEEPSAKE_EN[key][1];
@@ -167,24 +181,25 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
   const brief=passengerBrief(rider,run.floor,run.cabin,cooperationBonus(run),cooperationRelief(run),eventPressureMultiplier(run),run.stress);
   const summary=cardSummary(rider,run,locale);
   const zh=locale==='zh';
-  const legend=isLegend(rider.kind);
+  const legend=isAnyLegend(rider.kind), darkLegend=isDarkLegend(rider.kind);
   // v9.17.2: a box's contents stay hidden until it opens, so its card shows no value estimate.
   const board=rider.kind==='parcel'?null:boardNet(rider,run); const net=board?.value ?? null; const paired=pairedNet(rider,run);
   return <span className="unified-passenger-summary compact-card" data-no-translate>
     <span className="cc-head"><Portrait kind={rider.kind} rider={rider}/><span className="cc-title"><strong>{displayName(rider,locale)}<span className={`card-gem gem-${riderCardGrade(rider)}`} title={({standard:zh?'普通':'Common',fine:zh?'精良':'Fine',rare:zh?'稀有':'Rare',legendary:zh?'传奇':'Legendary'} as Record<string,string>)[riderCardGrade(rider)]} aria-hidden="true" /></strong><span className="cc-sub">
       <span className="cc-trip">{zh?`${brief.distance} 站`:`${brief.distance} stops`}</span>
-      {legend&&<span className="cc-tag cc-tag-legend">{zh?'传奇':'Legend'}</span>}
+      {legend&&<span className={`cc-tag cc-tag-legend ${darkLegend?'cc-tag-dark-legend':''}`}>{darkLegend?(zh?'暗黑传奇':'Dark legend'):(zh?'传奇':'Legend')}</span>}
       {rider.volatile&&<span className="cc-tag cc-tag-risk" title={zh?`急躁的乘客：车费多 ${HIGH_RISK_BONUS}，但在车上每层 +1 躁动；护士相邻可以抵消`:`Impatient rider: fare +${HIGH_RISK_BONUS}, but +1 agitation per floor aboard; an adjacent Nurse offsets it`}><Flame aria-hidden="true" />{zh?`急躁：车费+${HIGH_RISK_BONUS}，躁动+1/层`:`Impatient: fare +${HIGH_RISK_BONUS}, +1/floor`}</span>}
       {rider.localFareRatio&&<span className="cc-tag">{zh?'短途':'Local'}</span>}
     </span></span></span>
-    {legend ? <span className="cc-values cc-legend-values"><span>{zh?'不付车费 · 不耗电':'No fare · no power'}{rider.kind==='medium'?'':''}</span></span> : <span className="cc-values">
+    {legend ? <span className="cc-values cc-legend-values"><span>{rider.kind==='coldmatron'?(zh?'不付车费 · 药品耗电':'No fare · her drugs use power'):(zh?'不付车费 · 不耗电':'No fare · no power')}</span></span> : <span className="cc-values">
       <b className="cc-fare" aria-label={brief.coins===null?(zh?'车费封存':'Fare sealed'):`${zh?'车费':'Fare'} ${brief.coins}`}><Coins aria-hidden="true" />{brief.coins===null?<Scramble />:brief.coins}{brief.tip>0&&<small>+{brief.tip}</small>}</b>
       {(()=>{const energy=brief.energy*(rider.kind==='parcel'&&rider.big?2:1);return <span className="cc-energy" aria-label={`${zh?'每层耗电':'Power per floor'} ${energy}`}><BatteryCharging aria-hidden="true" />{energy>0?`−${energy}`:energy}</span>;})()}
       {brief.agitation>0&&<span className="cc-agitation" aria-label={`${zh?'每层躁动':'Agitation per floor'} +${brief.agitation}`}><Flame aria-hidden="true" />+{brief.agitation}</span>}
       {net!==null&&<span className={`cc-net ${net>0?'is-pos':net<0?'is-neg':''}`} title={zh?`送到站时的净收益估算（不是上车就给钱）：到站车费，加上和已上车乘客配对、邻座的加成，减去这一路的电费${netIncludesAgitation(rider,run)||rider.kind==='nurse'?'，再算上他让车厢躁动的变化（每点每层按 3 币）':''}。按现在车厢里的人和最好的空位计算。`:`Estimated net on delivery (nothing is paid on boarding): arrival fare plus pairing / neighbour bonuses with riders aboard, minus the power for the trip${netIncludesAgitation(rider,run)||rider.kind==='nurse'?', and the change in cabin agitation (3 coins per point per floor)':''}. Based on who is aboard now and the best empty seat.`}>{(netIncludesAgitation(rider,run)||rider.kind==='nurse')&&<Flame aria-hidden="true" className="cc-net-flame" />}{brief.coins===null?<>{zh?'送达 净 ':'On arrival '}<Scramble />{zh?' 金币':' coins'}</>:zh?`送达 净${net>0?'+':net<0?'−':'±'}${Math.abs(net)} 金币`:`On arrival ${net>0?'+':net<0?'−':'±'}${Math.abs(net)} ${Math.abs(net)===1?'coin':'coins'}`}</span>}{paired&&<span className={`cc-net cc-net-paired ${paired.value>0?'is-pos':paired.value<0?'is-neg':''}`} title={paired.partner==='parcel'?(zh?'带上他的纸箱、放在他旁边时，两张卡合计送达的净收益估算（已减去纸箱的电费）。':'Estimated net on delivery for the pair with his parcel beside him (the parcel’s power included).'):zh?`如果旁边坐上一位${riderName(paired.partner,'zh')}，这位乘客送达时的净收益估算；配对的加成双方都算。`:`Estimated net on delivery if a ${riderName(paired.partner,'en')} sits beside them; the pairing bonus counts for both.`}>{(()=>{const partnerName=paired.partner==='parcel'?displayName({kind:'parcel',big:rider.parcelBig?'top':undefined},locale):riderName(paired.partner,locale);return zh?`配${partnerName} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)} 金币`:`w/ ${partnerName} ${paired.value>=0?'+':'−'}${Math.abs(paired.value)} ${Math.abs(paired.value)===1?'coin':'coins'}`;})()}</span>}
     </span>}
     <span className="cc-line">{summary.line}{summary.sealed&&<> <Scramble className="scramble-line" />{rider.kind==='mystery'?(zh?' · 揭晓身份时公开':' · shown when he is revealed'):(zh?' · 到站揭晓':' · revealed on arrival')}</>}{(()=>{const progress=rider.kind==='bomb'&&rider.bombMs!==undefined?`⏱ ${Math.ceil(rider.bombMs/1000)}s`:summary.progress;return progress&&<em>{progress}</em>;})()}</span>
-    {legend&&<span className="cc-keepsake-effect"><b>{zh?'送到 10 层得信物 · ':'Deliver to 10F for keepsake · '}{keepsakeName(rider.kind as LegendKind,locale)}{zh?'：':': '}</b>{keepsakeTitle(rider.kind as LegendKind,locale)}</span>}
+    {darkLegend&&<span className="cc-keepsake-effect cc-dark-reward"><b>{zh?'送到 70 层：':'Deliver to 70F: '}</b>{DARK_LEGEND_REWARD[rider.kind as DarkLegendKind][zh?0:1]}</span>}
+    {legend&&!darkLegend&&<span className="cc-keepsake-effect"><b>{zh?'送到 10 层得信物 · ':'Deliver to 10F for keepsake · '}{keepsakeName(rider.kind as LegendKind,locale)}{zh?'：':': '}</b>{keepsakeTitle(rider.kind as LegendKind,locale)}</span>}
     {summary.chips.length>0&&<span className="cc-chips">{summary.chips.map((chip,index)=><span key={index} className={`cc-chip chip-${chip.tone}`} title={chip.title}>{chip.tone==='green'?'+':chip.tone==='risk'?'⛓':''}<ChipIcon icon={chip.icon}/>{chip.label}</span>)}</span>}
     {action&&<span className="cc-action">{action}</span>}
   </span>;
@@ -234,11 +249,21 @@ function riderState(cabin: Array<Rider | null>, slot: number, bonus: number, agi
   if(rider.kind==='mimic')return {label:bond.copies.length?`↑ ${PASSENGERS[bond.copies[0].sourceKind].name} · ${bond.copies[0].field==='energy'?'耗电':'车费'}`:slot<3?`上排没人可复制 · 本体车费 ${bond.fare}币`:'↑ 等待正上方',tone:'neutral'};
   if (riskPartnerships(cabin).members.includes(slot)) return {label: `暂存+${agitationBand(agitation)==='high'?3:2}币/层 · 链接加躁动`, tone:'warn'};
   if (conflicts.length) return {label:conflicts.length===1?`红线 ${conflictGlyph(conflicts[0].effect)}`:`${conflicts.length} 条红线`,tone:'warn'};
-  if(rider.kind==='mystery')return rider.revealed&&rider.identity?{label:`${MYSTERY_RULES[rider.identity].name} · ${MYSTERY_RULES[rider.identity].zh}`,tone:rider.identity==='fugitive'?'warn':'active'}:{label:'身份未知 · 下一层揭晓',tone:'neutral'};
+  if(rider.kind==='mystery')return rider.revealed&&rider.identity?{label:`${MYSTERY_RULES[rider.identity].name} · ${MYSTERY_RULES[rider.identity].zh}`,tone:rider.identity==='fugitive'?'warn':'active'}:{label:mysteryClue(rider)?`线索：${MYSTERY_CLUES[mysteryClue(rider)!].zh}`:'身份未知 · 下一层揭晓',tone:'neutral'};
   if(rider.kind==='shifter')return {label:`耗电 ${bond.energy} · 躁动 +${bond.agitation}`,tone:'warn'};
   switch (rider.kind) {
     case 'tourist': { const count=touristCompanionCount(cabin,slot)+Number(hasNeighbour(cabin,slot,['nightingale'])); return count ? { label: `${count}位邻座 · 到站+${count*2}币`, tone: 'active' } : { label: '等待邻座 · 每位到站+2币', tone: 'neutral' }; }
     case 'operator': return cabin.filter(Boolean).length >= 6 ? { label: '满员 · 不省电', tone: 'warn' } : { label: '运转 −1 电', tone: 'active' };
+    // v9.20 dark legends.
+    case 'nightoperator': return { label: `运转 −${DARK_LEGEND_RULES.nightOperatorSaving}电 · 关灯 +${DARK_LEGEND_RULES.nightOperatorAgitation}躁动/层`, tone: 'warn' };
+    case 'severer': { const red = conflictLinks(cabin).length, green = greenLinks(cabin); const parts = [red ? `收怨 +${red * DARK_LEGEND_RULES.severerPerRed}币/层` : '', green ? `剪绿线 +${green * DARK_LEGEND_RULES.severerPerGreen}躁动/层` : ''].filter(Boolean); return { label: parts.length ? parts.join(' · ') : '等着有人吵架', tone: red ? 'active' : green ? 'warn' : 'neutral' }; }
+    // The banked total is already on the card's stash badge and fare; the state says what it costs.
+    case 'kingpin': return { label: `每层存 ${DARK_LEGEND_RULES.kingpinStash}币 · 请离赔 ${DARK_LEGEND_RULES.kingpinDismissal}币`, tone: 'warn' };
+    case 'coldmatron': return { label: `镇静全车 −${DARK_LEGEND_RULES.coldMatronCalm}躁动/层`, tone: 'active' };
+    case 'banshee': return agitationBand(agitation) === 'high' ? { label: `哀歌 +${DARK_LEGEND_RULES.bansheeHighCoins}币/层`, tone: 'active' } : { label: `等车厢乱起来 · +${DARK_LEGEND_RULES.bansheeAgitation}躁动/层`, tone: 'neutral' };
+    case 'necromancer': { const night = cabin.filter(r => r && isDark(r.kind)).length; return { label: `收魂 +${night * DARK_LEGEND_RULES.necromancerPerDark}币/层 · +${DARK_LEGEND_RULES.necromancerAgitation}躁动/层`, tone: night ? 'active' : 'neutral' }; }
+    case 'highroller': return agitationBand(agitation) === 'low' ? { label: `押注中 · 安静到站 +${DARK_LEGEND_RULES.highRollerWin}币`, tone: 'active' } : { label: `要输了 · 现在到站 −${DARK_LEGEND_RULES.highRollerLoss}币`, tone: 'warn' };
+    case 'otherthirteen': return { label: '每层随机一件好事或坏事', tone: 'neutral' };
     case 'courier': return { label: '到站补充2电', tone: 'active' };
     case 'lover': return hasNeighbour(cabin, slot, ['lover']) ? { label: '已配对', tone: 'active' } : { label: '正在呼唤同伴', tone: 'neutral' };
     case 'thief': {
@@ -308,7 +333,8 @@ const IMPACT_KEYS: UpgradeKey[] = ['battery', 'calm', 'capacity'];
 /** Cabin lights start to flicker when the worst case leaves this little power after the next floor. */
 const LOW_POWER_FLICKER = 6;
 function upgradeImpact(key: UpgradeKey, run: RunState): string {
-  const preview = previewUpgrade(run, key);
+  // v9.20: with every slot full the card still shows what it would do once a slot is sold (it read “2/8 → 2/8”).
+  const preview = previewUpgrade({ ...run, upgrades: Object.fromEntries(Object.keys(run.upgrades).map(k => [k, k === key ? run.upgrades[k as UpgradeKey] : 0])) as RunState['upgrades'] }, key);
   switch (key) {
     case 'battery': return `每条协作连接 +${cooperationBonus(run)} → +${cooperationBonus(preview)} 金币。`;
     case 'calm': return `躁动 ${run.stress}/${run.stressCap} → ${preview.stress}/${preview.stressCap}`;
@@ -741,6 +767,12 @@ export default function ElevatorGame() {
       const seat = document.querySelectorAll('.standing-slot')[slot] ?? null, id = MYSTERY_RULES[r.identity];
       window.setTimeout(() => { flashClass(seat, 'is-revealed', 1200); popText(seat, zh ? `原来是${id.name}！` : `A ${id.en}!`, r.identity === 'fugitive' ? 'red' : 'gold', true); playSfx(on, 'shimmer'); }, 450);
     });
+    // v9.20 hidden dark resonance: nothing on any card mentions it; the first time a player finds it, the cabin says so.
+    if (!shopping && after.lastEarnings.sources.some(l => l.label === '暗黑共鸣')) {
+      let found = false; try { found = localStorage.getItem(RESONANCE_KEY) === '1'; localStorage.setItem(RESONANCE_KEY, '1'); } catch { /* storage unavailable */ }
+      const seats = document.querySelectorAll('.standing-slot');
+      window.setTimeout(() => { seats.forEach(seat => flashClass(seat, 'is-resonant', 1400)); if (!found) { banner(stage, zh ? '暗黑共鸣' : 'Dark resonance', zh ? '全车都是黑夜里的人：躁动 −2，每人每层 +1 金币' : 'Everyone aboard belongs to the night: −2 agitation, +1 coin each per floor', 'midnight', 3400); playSfx(on, 'bell'); } }, 1250);
+    }
     // v9.18.3 incident: the rider who left without paying gets a red flash where they sat (the exit card says why).
     if (after.lastIncident) { const seat = document.querySelectorAll('.standing-slot')[after.lastIncident.slot] ?? null; window.setTimeout(() => { flashClass(seat, 'is-incident', 1400); playSfx(on, 'conflict'); }, 250); }
     if (after.status !== 'lost') { playSfx(on, 'doorOpen', { delay: .05 }); playSfx(on, 'ding', { delay: .12 }); }
@@ -756,6 +788,11 @@ export default function ElevatorGame() {
     if (after.floor > runStartBest && runStartBest > 1 && !recordAnnounced.current) {
       recordAnnounced.current = true;
       window.setTimeout(() => { banner(stage, zh ? '新纪录！' : 'New record!', zh ? `第 ${after.floor} 层` : `Floor ${after.floor}`, 'gold'); playSfx(on, 'record'); burstAt(document.querySelector('.floor-indicator'), 'gold', 22, 110); }, 260);
+    } else if (after.status === 'playing' && abyssUnrest(after.floor + 1) > abyssUnrest(after.floor)) {
+      // v9.20: one floor before the abyss unrest steps up, say so (it is the late game's main pressure); it outranks
+      // the danger banner, which repeats every floor while the cabin stays near a limit.
+      const u = abyssUnrest(after.floor + 1);
+      window.setTimeout(() => { banner(stage, zh ? '深渊' : 'The abyss', zh ? `从下一层起，每位暗黑乘客每层自己 +${u} 躁动` : `From the next floor, every dark rider adds +${u} agitation per floor`, 'midnight', 2800); playSfx(on, 'bell'); flashClass(stage, 'midnight-strike', 1600); }, 260);
     } else if (after.status === 'playing' && (after.energy <= 3 || after.stress >= after.stressCap - 1)) {
       // v9.18.3: never on arriving at a shop (the shop refills and calms; the warning flashed over the shop screen).
       window.setTimeout(() => { banner(stage, zh ? '危！' : 'Danger!', after.energy <= 3 ? (zh ? `电量只剩 ${after.energy}` : `${after.energy} power left`) : (zh ? `躁动 ${after.stress}/${after.stressCap}` : `Agitation ${after.stress}/${after.stressCap}`), 'red', 1600); playSfx(on, 'heartbeat'); flashClass(stage, 'cabin-closecall', 1400); }, 260);
@@ -1063,7 +1100,7 @@ export default function ElevatorGame() {
         {linkLabels.length>0&&<div className="standing-grid link-label-layer" data-no-translate aria-hidden="true">{linkLabels}</div>}
         {arriving.length>0&&<div className="standing-grid arrival-grid">{arriving.map(arrival=><div key={arrival.riderId} className="standing-slot-wrap" style={{gridColumn:arrival.slot%3+1,gridRow:Math.floor(arrival.slot/3)+1}}>{arrival.incident
           ? <output className={`arrival-exit arrival-incident ${fastReveal?'arrival-quick':''}`} aria-label={zhUI?`${riderName(arrival.kind,'zh')} 受不了混乱，提前下车，未付车费`:`${riderName(arrival.kind,'en')} left early in the chaos without paying`} data-no-translate><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{riderName(arrival.kind,language)}</span><span className="arrival-payout-incident"><Flame aria-hidden="true"/>{zhUI?'提前下车':'Left early'}<small>{zhUI?'受不了混乱 · 未付车费':'Chaos · no fare'}</small></span></output>
-          : <div className={`arrival-exit ${fastReveal?'arrival-quick':''}`} role="status" aria-label={`${PASSENGERS[arrival.kind].name} 到站 ${arrival.keepsake?`信物 ${KEEPSAKES[arrival.keepsake].name}`:arrival.ability?UPGRADES[arrival.ability].name:arrival.power?`+${arrival.power} 电`:`+${arrival.coins} 金币`}`}><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{PASSENGERS[arrival.kind].name}</span><span className="arrival-payout">{arrival.keepsake?<><Sparkles aria-hidden="true"/><small>{zhUI?`信物 · ${keepsakeLabel(arrival.keepsake,'zh')}`:`Keepsake · ${keepsakeLabel(arrival.keepsake,'en')}`}{arrival.coins>0?` · +${arrival.coins}`:''}</small></>:arrival.ability?<><Sparkles aria-hidden="true"/><small>{UPGRADES[arrival.ability].name}</small></>:arrival.power?<><BatteryCharging aria-hidden="true"/>+{arrival.power}<small>电</small></>:<><Coins aria-hidden="true"/>+{arrival.coins}<small>金币</small></>}</span></div>}</div>)}</div>}
+          : <div className={`arrival-exit ${fastReveal?'arrival-quick':''}`} role="status" aria-label={`${PASSENGERS[arrival.kind].name} 到站 ${arrival.keepsake?`信物 ${KEEPSAKES[arrival.keepsake].name}`:arrival.ability?UPGRADES[arrival.ability].name:arrival.power?`+${arrival.power} 电`:`${arrival.coins<0?'−'+(-arrival.coins):'+'+arrival.coins} 金币`}`}><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{PASSENGERS[arrival.kind].name}</span><span className="arrival-payout">{arrival.keepsake?<><Sparkles aria-hidden="true"/><small>{zhUI?`信物 · ${keepsakeLabel(arrival.keepsake,'zh')}`:`Keepsake · ${keepsakeLabel(arrival.keepsake,'en')}`}{arrival.coins>0?` · +${arrival.coins}`:''}</small></>:arrival.ability?<><Sparkles aria-hidden="true"/><small>{UPGRADES[arrival.ability].name}</small></>:arrival.power?<><BatteryCharging aria-hidden="true"/>+{arrival.power}<small>电</small></>:<><Coins aria-hidden="true"/>{arrival.coins<0?`−${-arrival.coins}`:`+${arrival.coins}`}<small>金币</small></>}</span></div>}</div>)}</div>}
         <div className={`cabin-message ${hoveredPlan && !hoveredPlan.ok ? 'message-error' : ''}`} aria-live="polite"><Sparkles /><span>{hoveredPlan ? hoveredPlan.ok ? hoveredPlan.next.message : hoveredPlan.label : selectedSlot !== null && run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : run.message}</span></div><div className="swap-status">{pendingOfferId ? '选择发光站位 · ESC 取消' : selectedSlot !== null ? run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : '再选一个站位完成调整 · ESC 取消' : run.swapped ? <><LockKeyhole /> 旧乘客换位已用 · 新上客仍可调整</> : '拖拽人物安排站位 · 有效组合会亮起'}</div>
       </section>
       <aside className="arrival-panel">
@@ -1083,7 +1120,7 @@ export default function ElevatorGame() {
               <span className="card-foil" aria-hidden="true" /><span className="card-glints" aria-hidden="true"><i /><i /><i /><i /></span>{(grade==='rare'||grade==='legendary')&&<CardShader legendary={grade==='legendary'} />}
               {boarded && <span className="boarded-status" aria-hidden="true"><Check />已上车</span>}
               <PassengerCardFace rider={displayedOffer} run={run} action={language==='zh'?(boarded?'已上车 · 再点撤回':pending?'已选中 · 点一个空位':full?'车厢已满':partner?`${offer.kind==='mimic'?'可复制':'可连绿线'} · ${PASSENGERS[partner].name}`:undefined):(boarded?'Aboard · click to withdraw':pending?'Selected · pick a seat':full?'Cabin full':partner?`${offer.kind==='mimic'?'Can copy':'Green link'} · ${riderName(partner,'en')}`:undefined)} locale={language}/>
-            </button>{(run.upgrades.reservation>0||run.upgrades.dispatch>0)&&!boarded&&!isLegend(offer.kind)&&<button className="reservation-button" disabled={locked||offer.kind==='parcel'||Boolean(offer.parcelId)||Boolean(run.reservedRider)||(run.upgrades.dispatch>0?dispatchRemaining(run)<1:run.reservationUsedSector===Math.floor(run.floor/10))||run.reservedIds?.includes(offer.id)} onClick={()=>{const next=reserveOffer(run,offers,offer.id);if(next!==run){setRun(next);setOffers(current=>current.filter(r=>r.id!==offer.id));setPendingOfferId(null);setDragged(null);}}}>{run.reservedIds?.includes(offer.id)?'已保留过 · 不可续订':run.upgrades.dispatch>0?`留到下一批 · 调度剩 ${dispatchRemaining(run)} 次`:'留到下一批 · 每十层一次'}</button>}<button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(displayedOffer);}} aria-label={`查看${spec.name}规则`}><BookOpen /><span>{language === 'en' ? 'Details' : '完整规则'}</span></button></motion.div>;
+            </button>{(run.upgrades.reservation>0||run.upgrades.dispatch>0)&&!boarded&&!isAnyLegend(offer.kind)&&<button className="reservation-button" disabled={locked||offer.kind==='parcel'||Boolean(offer.parcelId)||Boolean(run.reservedRider)||(run.upgrades.dispatch>0?dispatchRemaining(run)<1:run.reservationUsedSector===Math.floor(run.floor/10))||run.reservedIds?.includes(offer.id)} onClick={()=>{const next=reserveOffer(run,offers,offer.id);if(next!==run){setRun(next);setOffers(current=>current.filter(r=>r.id!==offer.id));setPendingOfferId(null);setDragged(null);}}}>{run.reservedIds?.includes(offer.id)?'已保留过 · 不可续订':run.upgrades.dispatch>0?`留到下一批 · 调度剩 ${dispatchRemaining(run)} 次`:'留到下一批 · 每十层一次'}</button>}<button className="mobile-rule-button" onClick={() => {setEjectArmed(false);setPassengerDetails(displayedOffer);}} aria-label={`查看${spec.name}规则`}><BookOpen /><span>{language === 'en' ? 'Details' : '完整规则'}</span></button></motion.div>;
           })}
         </div><div className="candidate-notes"><span className="route-note">运转 {travelEnergyCost(run.floor+1)} 电/层 · 下段 {travelEnergyCost(nextShop+1)} 电/层</span><span>每层＝上行后立即结算 · 到站＝下车时结算 · 邻座逐人叠加</span>{run.upgrades.single>0&&<span>车费不含整车奖励：单人到站+2币</span>}{run.upgrades.crowd>0&&<span>车费不含整车奖励：三类齐全且有人到站+6币</span>}{showSavingRule&&<span>{SHARED_SAVING_RULE}</span>}</div></div>
         <div className="departure-controls">
@@ -1165,6 +1202,10 @@ export default function ElevatorGame() {
     <Dialog open={archive} onOpenChange={setArchive}><DialogContent className="story-dialog archive-dialog"><p className="dialog-kicker">PASSENGER ARCHIVE</p><DialogHeader><DialogTitle>午夜乘客档案</DialogTitle><DialogDescription>{language==='zh'?`遇见过的乘客会录入档案；第一次把人送到站，就能读到他的故事。最高抵达 ${highest}F · 故事 ${storiesUnlocked.length}/${Object.keys(STORIES).length}。`:`Riders you meet join the archive; deliver someone once to read their story. Best floor ${highest}F · Stories ${storiesUnlocked.length}/${Object.keys(STORIES).length}.`}</DialogDescription></DialogHeader><div className="archive-grid">{PASSENGER_ORDER.map((kind) => { const open = discovered.includes(kind); const spec = PASSENGERS[kind]; return <div className={`archive-item ${open ? '' : 'locked'}`} key={kind}>{open ? <Portrait kind={kind} /> : <LockKeyhole />}<span><b>{open ? spec.name : '？？？'}</b>{open&&<small>{spec.short}</small>}{storiesUnlocked.includes(kind)&&<details className="archive-story" data-no-translate><summary>{language==='zh'?'读故事':'Read story'}</summary><p>{STORIES[kind][language==='zh'?0:1]}</p></details>}</span></div>; })}</div>
       <h3 className="archive-subhead" data-no-translate>{language==='zh'?`传奇乘客 · ${unlockedLegends.length}/${LEGEND_KINDS.length}`:`Legends · ${unlockedLegends.length}/${LEGEND_KINDS.length}`}</h3>
       <div className="archive-grid" data-no-translate>{LEGEND_KINDS.map(kind=>{const open=unlockedLegends.includes(kind);return <div className={`archive-item ${open?'':'locked'}`} key={kind}>{open?<Portrait kind={kind}/>:<LockKeyhole/>}<span><b>{open?riderName(kind,language):(language==='zh'?'未解锁':'Locked')}</b><small>{open?`${language==='zh'?'信物：':'Keepsake: '}${keepsakeName(kind,language)}`:(language==='zh'?LEGEND_UNLOCK_HINTS[kind][0]:LEGEND_UNLOCK_HINTS[kind][1])}</small>{storiesUnlocked.includes(kind)&&<details className="archive-story"><summary>{language==='zh'?'读故事':'Read story'}</summary><p>{STORIES[kind][language==='zh'?0:1]}</p></details>}</span></div>;})}</div>
+      {/* v9.20: the dark legends are met after midnight; the hidden resonance appears here only once found. */}
+      <h3 className="archive-subhead" data-no-translate>{language==='zh'?`暗黑传奇 · ${DARK_LEGEND_KINDS.filter(k=>discovered.includes(k)).length}/${DARK_LEGEND_KINDS.length}`:`Dark legends · ${DARK_LEGEND_KINDS.filter(k=>discovered.includes(k)).length}/${DARK_LEGEND_KINDS.length}`}</h3>
+      <div className="archive-grid" data-no-translate>{DARK_LEGEND_KINDS.map(kind=>{const open=discovered.includes(kind);return <div className={`archive-item ${open?'':'locked'}`} key={kind}>{open?<Portrait kind={kind}/>:<LockKeyhole/>}<span><b>{open?riderName(kind,language):'？？？'}</b><small>{open?translateGameText(PASSENGERS[kind].short,language):(language==='zh'?'午夜之后才会出现':'Appears only after midnight')}</small>{storiesUnlocked.includes(kind)&&<details className="archive-story"><summary>{language==='zh'?'读故事':'Read story'}</summary><p>{STORIES[kind][language==='zh'?0:1]}</p></details>}</span></div>;})}</div>
+      {resonanceFound()&&<p className="archive-secret" data-no-translate>{language==='zh'?'已发现的秘密：暗黑共鸣——车上至少 4 人、全是暗黑版或暗黑传奇时，躁动每层 −2，每人每层 +1 金币。':'Secret found: Dark resonance — with at least 4 riders aboard, all dark versions or dark legends, agitation −2 and +1 coin each per floor.'}</p>}
     </DialogContent></Dialog>
     <Dialog open={changelogOpen} onOpenChange={setChangelogOpen}><DialogContent className="story-dialog changelog-dialog"><p className="dialog-kicker">SHIFT REVISION ARCHIVE</p><DialogHeader><DialogTitle>版本 v{GAME_VERSION}</DialogTitle><DialogDescription>每次更新都记录玩法变化、数值依据、测试结论与仍需观察的问题。</DialogDescription></DialogHeader><div className="changelog-list">{(language === 'en' ? CHANGELOG_EN : CHANGELOG).map((entry,index)=><article className={index===0?'current-release':''} key={entry.version}><header><div><span>VERSION {entry.version}</span><h3>{entry.title}</h3></div><time>{entry.date}</time></header><p>{entry.summary}</p><div className="changelog-columns changelog-player"><section><b>改进</b><ul>{entry.changes.map(item=><li key={item}>{item}</li>)}</ul></section></div><details className="changelog-dev"><summary>开发记录 · 试验与观察</summary><div className="changelog-columns"><section><b>试验与结论</b><ul>{entry.experiments.map(item=><li key={item}>{item}</li>)}</ul></section><section><b>继续观察</b><ul>{entry.watch.map(item=><li key={item}>{item}</li>)}</ul></section></div></details></article>)}</div></DialogContent></Dialog>
     <Dialog open={run.status === 'upgrade' && doors === 'open'}><DialogContent className={`story-dialog upgrade-dialog ${upgradeCrisis ? 'upgrade-crisis' : ''}`} showCloseButton={false}>
@@ -1178,7 +1219,7 @@ export default function ElevatorGame() {
       </div>
       <div className="shop-scroll-body">
       <DialogHeader className="shop-head"><p className="dialog-kicker" data-no-translate>FLOOR {run.floor} · SHOP{districtFor(run.floor+1).from===run.floor+1?` · ${language==='zh'?'前方':'Ahead'}: ${districtFor(run.floor+1).name[language==='zh'?0:1]}`:''}</p><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle>{run.floor%50===0&&!upgradeCrisis&&<p className="shop-milestone" data-no-translate>{language==='zh'?`第 ${run.floor} 层！这趟夜班已经开到了第 ${run.floor} 层。`:`Floor ${run.floor}! This night shift has reached floor ${run.floor}.`}</p>}<DialogDescription className="sr-only">{language==='zh'?'选能力、升级配电箱、充电，然后继续上行。':'Pick an ability, upgrade the power box, charge, then ascend.'}</DialogDescription></DialogHeader>
-      {upgradeCrisis && <p className="shop-warning">{upgradeCrisis === 'both' ? '电量与躁动同时失控：底部最低抢救可恢复1电，并将躁动降至上限以下1点。' : upgradeCrisis === 'energy' ? '电量已耗尽：使用下方充电服务，将电量恢复到 0 以上才能继续。' : '躁动失控：底部最低抢救每点8金币，只降到上限以下1点；想再降，用下方的“安抚”（正常价格，计入本段额度）。'}{!emergencyRepairPlan(run).affordable&&upgradeCount>0&&run.coins+SELL_REFUND>=emergencyRepairPlan(run).cost?` 金币不够抢救：卖掉一项能力（退 ${SELL_REFUND} 币）就付得起。`:''} 若无力修复，本班将在这里结束。</p>}
+      {upgradeCrisis && <p className="shop-warning">{upgradeCrisis === 'both' ? '电量与躁动同时失控：底部最低抢救可恢复1电，并将躁动降至上限以下1点。' : upgradeCrisis === 'energy' ? '电量已耗尽：使用下方充电服务，将电量恢复到 0 以上才能继续。' : '躁动失控：底部最低抢救每点8金币，只降到上限以下1点；想再降，用下方的“安抚”（正常价格，计入本段额度）。'}{!emergencyRepairPlan(run).affordable&&upgradeCount>0&&run.coins+SELL_REFUND>=emergencyRepairPlan(run).cost?` 金币不够抢救：卖掉一项能力（退 ${SELL_REFUND} 币）就付得起。`:''}{upgradeCrisis!=='energy'&&!run.upgrades.calm&&run.shop.some(card=>card.key==='calm'&&!card.purchased)?(upgradeCount>=UPGRADE_SLOTS?' 也可以卖掉一项能力、换上“安全余量”：躁动上限 +2，再用它的手动调节 −3。':' 也可以免费装上“安全余量”：躁动上限 +2，再用它的手动调节 −3。'):''} 若无力修复，本班将在这里结束。</p>}
       <div className="shop-step-head" data-no-translate><h3><i>1</i>{language==='zh'?(run.shopUpgradeBought?`加购 1 项 · ${SHOP_PRICES.extraAbility} 金币（可跳过）`:'选 1 项能力 · 免费'):(run.shopUpgradeBought?`Buy 1 more · ${SHOP_PRICES.extraAbility} coins (optional)`:'Pick 1 ability · free')}</h3><span>
         {!run.shopUpgradeBought&&availableShopCards(run).length>0&&run.rerolledFloor!==run.floor&&<button className="shop-reroll" disabled={run.coins<REROLL_PRICE} onClick={()=>{const next=rerollShop(run, rngOf('shop', run.floor));if(next!==run){reportMetrics(run,next,language==='zh'?'重抽能力':'Reroll abilities');setRun(next);playTone(sound,'select');}}}><RotateCcw aria-hidden="true" />{language==='zh'?`重抽 · ${REROLL_PRICE}币`:`Reroll · ${REROLL_PRICE}c`}</button>}
 </span></div>

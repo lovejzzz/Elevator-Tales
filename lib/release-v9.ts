@@ -1577,3 +1577,65 @@ export const V9192_EN: ChangelogEntry = {
   ],
   watch: ['Power still decides most late endings; could more of the pressure after 100F come from riders?', 'Most legends only matter in the first ten floors and never meet the midnight cast.', 'A Fugitive cannot be seen on boarding; two of them add 2 agitation a floor at once.', 'An all-dark cabin is not a strategy of its own; a “dark build” would need a clear reward.'],
 };
+
+export const V920_ZH: ChangelogEntry = {
+  version: '9.20.0', date: '2026-09-25', title: '深渊与暗黑传奇：100 层前的墙、传奇的午夜版、神秘人线索、隐藏的暗黑共鸣',
+  summary: '这一版按玩家的四个要求改：争取没人能到 100 层；8 位传奇都有了暗黑版；神秘人卡上有线索可以猜；全暗黑车厢有一份不写在任何卡上的回报。先用模拟器调到熟练型几乎到不了 100 层，再在浏览器里玩了 10 局，边玩边改；完整笔记在 docs/playtests/v920-playtest-notes.md。',
+  changes: [
+    '深渊躁动：从 80 层起，每位暗黑版乘客每层自己 +1 躁动，每 5 层再 +1（85 层 +2、90 层 +3、95 层 +4）。护士、药贩、好心人贴着能抵消，照明弹和镇静剂能挡。每次加一级，前一层会弹出“深渊”横幅，排在“危！”之前。',
+    '90 层起新卡全是暗黑版；没有暗黑版的人物（神秘人、百变人、复制人）从此不再出现。80 层起商店道具里一定有一枚照明弹。',
+    '暗黑传奇：离开 60 层商店时，第四张卡是这一局传奇的暗黑版（没有传奇的局随机一位），60 层上车、70 层商店下车，不付车费。夜班老周：运转 −2 电（满员也算）、每层 +2 躁动，送达后免费配电箱升一级。剪线婆：每条红线每层 +3 币、每条绿线每层 +1 躁动，送达 +25。黑老大：每层存 8 币、+1 躁动，送达兑现，中途请离要赔 30 币。',
+    '冷面护士长：全车每层 −2 躁动，自己每层耗 2 电，送达后躁动上限永久 +2。哭丧女：每层 +1 躁动，高躁动时每层 +10 币，送达 +15。死灵师：车上每位暗黑版每层 +2 币、每层 +1 躁动，送达 +20。赌王：到站那层关门时低躁动付 80，否则拿走你 25。另一个13号：每层随机 +8 币、+2 躁动、−2 电或无事，送达随机 0–40 币。',
+    '暗黑传奇都有新画像、故事、台词、英文和档案页（档案新增“暗黑传奇 · n/8”）；卡上最后一行写“送到 70 层：……”，座位上显示各自的状态（收魂 +6币/层、押注中……）。',
+    '神秘人线索：身份揭晓前，卡上有一条线索，每条都对得上两种身份：一直盯着车门（便衣/逃犯）、手里攥着一沓现金（逃犯/富商）、衣着考究，彬彬有礼（富商/好心人）、主动帮人按住电梯门（好心人/便衣）。同一位神秘人的线索不会变。',
+    '隐藏的暗黑共鸣：车上至少 4 人、全是暗黑版或暗黑传奇时，躁动每层 −2，每人每层 +1 金币。规则和卡片上都不写；第一次触发时车厢闪紫光、弹出“暗黑共鸣”，档案里记下这个秘密。',
+    '放人提示会说出新增的整车躁动（例如“注意：夜班老周关了灯 +2躁动/层”）；下车卡的负数显示为 −25（原来是 +-25）；传奇不再出“到站 0”；危机提示会提到安全余量；能力位满时，安全余量卡显示卖出后的效果（0/8 → 0/10）；结算说明遇到深渊会给专门建议；地区名从楼层显示器后面挪到车厢左上角。',
+    '数值：劫匪车费 12→18，教练 8→7，炸弹客 30→26。',
+  ],
+  experiments: [
+    '模拟器验收 4200 局：均衡型中位 115→91 层（p10 79，p90 125→96）；所有熟练型只有 0.6% 抵达 100 层，没有一局活过 150 层；合作型、安静秩序型从中位约 139 层降到 91 层；真人型中位 63 层（p90 81），新手 49 层。',
+    '分步对照：只加 90 层起的深渊躁动，均衡型 101 层、p90 112；提前到 80 层，92 层、p90 109；改成每 5 层一级，91 层，但合作型 p90 仍有 109，因为熟练型只带神秘人、百变人、复制人躲过去；再加上 90 层起全是暗黑版，p90 94–97，抵达 100 层 0.5–0.6%。',
+    '暗黑传奇上车率（均衡型，第四张卡）：黑老大 85%→67%（暂存 10→8，请离赔 30），冷面护士长 85%→30%（−3→−2，耗电改为她自己的），剪线婆 56%，哭丧女 50%，死灵师 41%，另一个13号 63%，夜班老周 38%，赌王 38%（机器人常输）。',
+    'fuzz 测试第一次加入暗黑传奇（4000 个随机状态），抓到两个真 bug：夜班老周省电和飞轮节能重复计算；13号房客和另一个13号同车时预报少算。都已修好。',
+    '浏览器试玩 10 局（中文 6 局、英文 2 局、手机 1 局，深渊里手动用道具 2 局）：91、93、86、89、93、91、61、91、83、93 层，没有一局到 100 层。第 9 局用了 QA 钩子凑暗黑车厢来检查横幅，不算自然局。',
+    'verify：v9 检查 42 组，新增 v9.20 组（暗黑传奇的出现和回报、共鸣条件、线索、深渊躁动、照明弹货架、档案、放人提示）；三值 fuzz 4000 次，包含暗黑传奇。',
+  ],
+  watch: [
+    '死因约 91% 是躁动（旧的验收目标“躁动 20–40%”仍标为不通过）。让人物决定深夜的结局是有意的，但要看玩家会不会觉得最后十层单调。',
+    '深渊最后几层的选择偏少，主要靠照明弹、镇静剂、安全余量。',
+    '暗黑共鸣和死灵师、讼棍叠在一起很赚（第 1 局 5 层 +88 币），作为隐藏流派先保留。',
+    '85 层药贩下车（戒断）正好碰上深渊加一级，一层能跳 7 点躁动。',
+    '劫匪上车率仍低于 15%；不宽裕的两项验收仍不通过；纸箱仍算作“至少一位乘客”。',
+  ],
+};
+
+export const V920_EN: ChangelogEntry = {
+  version: '9.20.0', date: '2026-09-25', title: 'The abyss and the dark legends: a wall before 100F, legends after midnight, Mystery clues, a hidden resonance',
+  summary: 'Four requests from the player: as good as nobody should reach 100F; the eight legends get dark versions; the Mystery shows a clue you can guess from; an all-dark cabin earns a reward that no card mentions. Tuned first in the simulator until skilled bots almost never reach 100F, then ten browser playtests with fixes between runs; notes in docs/playtests/v920-playtest-notes.md.',
+  changes: [
+    'Abyss unrest: from 80F every dark rider adds +1 agitation of his own per floor, +1 more every 5 floors (+2 at 85F, +3 at 90F, +4 at 95F). A Nurse, Pusher or Good Samaritan beside him cancels it; a Flare or a Sedative blocks it. One floor before each step an “abyss” banner says so, ahead of the danger banner.',
+    'From 90F every new card is a dark version; riders with no dark self (Mystery, Shifter, Mimic) stop appearing. From 80F every shop shelf has a Flare.',
+    'Dark legends: leaving the 60F shop, the fourth card is the dark self of this shift’s legend (a random one when there was none); they board at 60F, leave at the 70F shop and pay no fare. Night Zhou: motor −2 power (even when full), +2 agitation/floor; leaves a free power-box level. Severer: +3 coins per red link/floor, +1 agitation per green link/floor; pays 25. Kingpin: banks 8 coins/floor, +1 agitation/floor, pays the bank on arrival; dismissing him costs 30.',
+    'Cold Matron: cabin −2 agitation/floor, uses 2 power/floor herself; agitation cap +2 for good. Banshee: +1 agitation/floor, +10 coins/floor at high; pays 15. Necromancer: +2 coins per dark rider/floor, +1 agitation/floor; pays 20. High Roller: +80 if the doors close at low agitation before his stop, otherwise takes 25. Other Thirteen: each floor +8 coins, +2 agitation, −2 power or nothing; pays 0–40 at random.',
+    'Every dark legend has a new portrait, story, lines, English text and an archive page (“Dark legends · n/8”); the card’s last line says “Deliver to 70F: …”, and each seat shows its state (Collecting souls +6 coins/floor, Betting …).',
+    'Mystery clues: before the reveal the card shows one clue that fits two identities: Keeps watching the doors (Undercover/Fugitive), Clutching a wad of cash (Fugitive/Magnate), Well dressed and polite (Magnate/Good Samaritan), Holds the door for others (Good Samaritan/Undercover). A Mystery’s clue never changes.',
+    'Hidden dark resonance: with at least 4 riders aboard, all dark versions or dark legends, agitation −2 and +1 coin each per floor. No rule or card mentions it; the first time, the cabin flashes violet with a “Dark resonance” banner and the archive records the secret.',
+    'Placement notes now name new cabin-wide agitation (“Heads-up: Night Zhou turned the lights off +2 agitation/floor”); negative exit coins read −25 (was +-25); legends no longer print “arrives 0”; the shop crisis mentions Safety Margin; with full slots Safety Margin previews the result after a sale (0/8 → 0/10); endings give abyss-specific advice; the district name moved from behind the floor indicator to the cabin’s top-left corner.',
+    'Values: Robber fare 12→18, Coach 8→7, Bomb Carrier 30→26.',
+  ],
+  experiments: [
+    'Acceptance, 4,200 runs: balanced median 115→91F (p10 79, p90 125→96); only 0.6% of skilled runs reach 100F and none survive to 150F; Cooperation and Quiet from about 139F to 91F; human-like 63F (p90 81), novice 49F.',
+    'Steps: abyss unrest from 90F alone gave balanced 101F (p90 112); from 80F 92F (p90 109); one step every 5 floors 91F, but Cooperation p90 stayed 109 because skilled bots dodged with Mysteries, Shifters and Mimics; adding “all dark from 90F” brought p90 to 94–97 and 100F reach to 0.5–0.6%.',
+    'Dark legend boarding (balanced, fourth card): Kingpin 85%→67% (bank 10→8, dismissal 30), Cold Matron 85%→30% (−3→−2, power now her own), Severer 56%, Banshee 50%, Necromancer 41%, Other Thirteen 63%, Night Zhou 38%, High Roller 38% (bots often lose).',
+    'The first fuzz run with dark legends (4,000 random states) caught two real bugs: Night Zhou’s saving and the flywheel counted twice; the forecast missed the Stranger and the Other Thirteen riding together. Both fixed.',
+    'Ten browser playtests (6 Chinese, 2 English, 1 phone, 2 with items by hand in the abyss): 91, 93, 86, 89, 93, 91, 61, 91, 83 and 93F; none reached 100F. Run 9 used the QA hook to build a dark cabin for the banner check and does not count as a natural run.',
+    'verify: 42 v9 check groups with a new v9.20 group (dark legend offers and rewards, resonance conditions, clues, abyss unrest, the Flare shelf, the archive, placement notes); the 4,000-state three-value fuzz now includes dark legends.',
+  ],
+  watch: [
+    'About 91% of endings are agitation (the old “agitation 20–40%” target still fails). Late endings decided by riders is intended; watch whether the last ten floors feel monotonous.',
+    'Few choices in the deepest floors beyond the Flare, Sedatives and Safety Margin.',
+    'Dark resonance stacked with the Necromancer and Shysters pays a lot (run 1: +88 coins in 5 floors); kept as a hidden strategy for now.',
+    'At 85F a Pusher leaving (withdrawal) can meet an abyss step: 7 agitation in one floor.',
+    'Robber boarding still below 15%; the two “not affluent” checks still fail; a box still counts as “at least one rider”.',
+  ],
+};
