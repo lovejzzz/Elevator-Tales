@@ -3463,6 +3463,11 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 .sym-lively { --sym:#f0a040; } .sym-quiet { --sym:#7ab4f0; } .sym-order { --sym:#e6c27a; }
 .sym-street { --sym:#b58ae6; } .sym-hearth { --sym:#8fd18f; } .sym-spirit { --sym:#7fd6d0; }
 .sym-hidden, .sym-copy { font:700 11px var(--font-mono); color:#c9c2b0; }
+.sym { color:var(--sym); }
+.sym-icon { display:block; flex:none; }
+.ll-sym { display:inline-flex; gap:3px; align-items:center; }
+.sym-ink { display:inline-flex; color:var(--sym); }
+.link-ledger-item b.sym { width:18px; height:18px; border-width:1px; }
 .seat-heading .sym-badges { margin-left:4px; }
 .seat-heading .sym { width:20px; height:20px; font-size:12px; background:color-mix(in srgb, var(--sym) 30%, #0c1310); }
 .ll-sym { font-size:12px; letter-spacing:1px; }
@@ -3475,3 +3480,9 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 .link-ledger-item.is-red { --sym:#e0655a; color:#f3b3aa; }
 .link-ledger-item.is-red em { color:#f3b3aa; }
 .link-ledger-empty { font-size:11px; color:#a9b8ae; }
+
+/* v10: the six symbol icons as a legend in the manual's “Symbols and links” section. */
+.manual-symbols { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:6px; margin:6px 0 4px; }
+.manual-symbol { display:grid; grid-template-columns:24px 1fr; align-items:center; column-gap:6px; font-weight:600; }
+.manual-symbol small { grid-column:2; font-weight:400; font-size:11px; color:#b9c7bd; }
+.manual-symbol .sym { grid-row:span 2; }

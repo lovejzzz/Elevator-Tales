@@ -1,6 +1,23 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.0.0**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.1.0**. Publication status is tracked separately from the source version.
+
+## v10.1.0 — 2026-09-25 — Hand-drawn symbol icons, Street and Spirit worth building / 自己画的符号图标，江湖和幽冥也能搭
+
+- The emoji are replaced by six line-art SVG icons (starburst, closed eye, column, mask, lit house, crescent moon), one colour per symbol. Text uses symbol names. The manual gains an icon legend.
+- Street: +2 coins (was +3 coins +1 agitation). Courier and Mechanic become Street·Spirit (were Street·Hearth). Taskmaster fare 8→9.
+- Street/Spirit own-symbol activation 36/40% → 54/55%; the other symbols are at 52–68%.
+- What didn't work:
+  - Spirit effect variants (uncapped saving, −10% outbursts) stayed at 42–43%, and the outburst cut made 100F 7–9% for the coop bot;
+  - Child→Spirit would turn the Nurse–Child pair red.
+- Street +3 left 124 coins at 70F (balanced); +2 leaves 87.
+- Acceptance, 4,200 runs:
+  - styles 87–88F;
+  - 100F reached 0.8%;
+  - skilled endings 47.0 / 51.9 / 1.0% (power / agitation / bomb);
+  - novice 31F, human-like 81F;
+  - boarding rates 15–63%.
+- Watch: more money than v10.0; the "not affluent" checks fail; normal-player run length; shapes are not yet highlighted in the cabin.
 
 ## v10.0.0 — 2026-09-25 — Symbol links: green and red links come from symbols / 符号链接：绿线红线由符号决定
 

@@ -21,7 +21,9 @@ type Pair = [SymbolKey, SymbolKey];
 /** Day riders are weighted so each symbol turns up about equally often; dark versions lean to Lively, Street and Spirit,
  * the opposites of the day's Quiet, Order and Hearth, so midnight turns many settled neighbours into red links. */
 export const RIDER_SYMBOLS: Partial<Record<PassengerKind, Pair>> = {
-  commuter: ['quiet', 'order'], tourist: ['lively', 'hearth'], courier: ['street', 'hearth'], mechanic: ['street', 'hearth'],
+  // v10.1: the Courier and the Mechanic know the building's odd corners (Street·Spirit): Spirit was the scarcest day symbol
+  // and its opposite, Hearth, sat on the most common riders.
+  commuter: ['quiet', 'order'], tourist: ['lively', 'hearth'], courier: ['street', 'spirit'], mechanic: ['street', 'spirit'],
   lover: ['hearth', 'quiet'], musician: ['lively', 'spirit'], thief: ['street', 'spirit'], cop: ['lively', 'order'],
   lawyer: ['quiet', 'street'], drunk: ['lively', 'street'], nurse: ['hearth', 'order'], child: ['lively', 'hearth'],
   ghost: ['quiet', 'spirit'], exorcist: ['order', 'spirit'], coach: ['lively', 'street'], celebrity: ['lively', 'spirit'],
@@ -43,8 +45,12 @@ export const MYSTERY_SYMBOLS: Record<MysteryIdentity, Pair> = {
  * Shapes count as extra green links of their symbol (row / square / full). */
 export const SYMBOL_RULES = { greenCoins: 1, redAgitation: 1, row: 1, square: 2, full: 4, net: true, mixed: true, active: true };
 /** What one green link of each symbol does per floor. Opposite symbols pay in different resources. */
-export const SYMBOL_EFFECTS: Record<SymbolKey, { coins?: number; agitation?: number; power?: number }> = {
-  lively: { coins: 2 }, street: { coins: 3, agitation: 1 }, order: { agitation: -1 }, hearth: { agitation: -1 }, quiet: { power: 1 }, spirit: { power: 1 },
+/** `freePower`: power saved that may also offset the motor (not capped by the riders' own use). `outburst`: abyss outburst
+ * odds removed per level (0.1 = 10 points). */
+export const SYMBOL_EFFECTS: Record<SymbolKey, { coins?: number; agitation?: number; power?: number; freePower?: number; outburst?: number }> = {
+  // v10.1: Street lost its +1 agitation (36% → 54% of floors active when built around) and pays 2 like Lively; its riders
+  // carry their own risk. At +3 it left 124 coins after the 70F shop instead of 87.
+  lively: { coins: 2 }, street: { coins: 2 }, order: { agitation: -1 }, hearth: { agitation: -1 }, quiet: { power: 1 }, spirit: { power: 1 },
 };
 
 type Seat = { id?: string; kind: PassengerKind; revealed?: boolean; identity?: MysteryIdentity; traits?: { symbols?: SymbolKey[] } } | null;
@@ -104,7 +110,7 @@ export function greenBySymbol(cabin: Seat[], rules = SYMBOL_RULES) {
 export function symbolLedger(cabin: Seat[], rules = SYMBOL_RULES, coinBonus = 0) {
   const green = greenCount(cabin), red = redCount(cabin), shapes = symbolShapes(cabin);
   const lines: Array<{ label: string; amount: number }> = [], agitationLines: Array<{ label: string; amount: number }> = [];
-  let power = 0;
+  let power = 0, freePower = 0, outburstCut = 0;
   if (!rules.mixed) {
     if (green) lines.push({ label: `绿线 ${green} 条`, amount: green * rules.greenCoins });
     for (const s of shapes) lines.push({ label: `${SYMBOLS[s.symbol].zh}${SHAPE_LABEL[s.kind]}`, amount: rules[s.kind] });
@@ -114,25 +120,28 @@ export function symbolLedger(cabin: Seat[], rules = SYMBOL_RULES, coinBonus = 0)
       if (fx.coins) lines.push({ label: name, amount: n * (fx.coins * rules.greenCoins + coinBonus) });
       if (fx.agitation) agitationLines.push({ label: name, amount: n * fx.agitation });
       if (fx.power) power += n * fx.power;
+      if (fx.freePower) freePower += n * fx.freePower;
+      if (fx.outburst) outburstCut += n * fx.outburst;
     }
   }
-  return { coins: lines.reduce((n, l) => n + l.amount, 0), lines, agitationLines, power, green, red, agitation: red * rules.redAgitation, shapes };
+  return { coins: lines.reduce((n, l) => n + l.amount, 0), lines, agitationLines, power, freePower, outburstCut, green, red, agitation: red * rules.redAgitation, shapes };
 }
 
-/** Language-neutral icons: the card, the seat and the link line show these, the name is in the tooltip. */
-export const SYMBOL_GLYPH: Record<SymbolKey, string> = { lively: '🎉', quiet: '🤫', order: '📋', street: '🎲', hearth: '🏠', spirit: '👻' };
+// The icons themselves are drawn as SVG in components/symbol-icon.tsx; text always uses the symbol's name.
 /** One symbol's green-link effect per level, e.g. “+2 币” / “+2 coins”. */
 export function symbolEffectText(symbol: SymbolKey, zh: boolean, level = 1, coinBonus = 0) {
   const fx = SYMBOL_EFFECTS[symbol], parts: string[] = [];
   if (fx.coins) parts.push(zh ? `+${level * (fx.coins + coinBonus)} 币` : `+${level * (fx.coins + coinBonus)} coins`);
   if (fx.agitation) parts.push(zh ? `${fx.agitation > 0 ? '+' : '−'}${level * Math.abs(fx.agitation)} 躁动` : `${fx.agitation > 0 ? '+' : '−'}${level * Math.abs(fx.agitation)} agitation`);
   if (fx.power) parts.push(zh ? `省 ${level * fx.power} 电` : `−${level * fx.power} power`);
+  if (fx.freePower) parts.push(zh ? `省 ${level * fx.freePower} 电（也能抵电梯运转）` : `−${level * fx.freePower} power (the motor’s too)`);
+  if (fx.outburst) parts.push(zh ? `深渊发作几率 −${Math.round(level * fx.outburst * 100)}%` : `abyss outburst odds −${Math.round(level * fx.outburst * 100)}%`);
   return parts.join(zh ? '，' : ', ');
 }
 /** Tooltip for one symbol: its name, what its green link does each floor, and its opposite. */
 export function symbolTitle(symbol: SymbolKey, zh: boolean) {
   const opp = SYMBOLS[symbol].opposite;
   return zh
-    ? `${SYMBOLS[symbol].zh}：和同样有${SYMBOLS[symbol].zh}的人挨着坐 = 绿线，每层 ${symbolEffectText(symbol, true)}；挨着${SYMBOL_GLYPH[opp]}${SYMBOLS[opp].zh} = 红线，每层 +1 躁动`
-    : `${SYMBOLS[symbol].en}: beside another ${SYMBOLS[symbol].en} = green link, ${symbolEffectText(symbol, false)} a floor; beside ${SYMBOL_GLYPH[opp]} ${SYMBOLS[opp].en} = red link, +1 agitation a floor`;
+    ? `${SYMBOLS[symbol].zh}：和同样有${SYMBOLS[symbol].zh}的人挨着坐 = 绿线，每层 ${symbolEffectText(symbol, true)}；挨着${SYMBOLS[opp].zh} = 红线，每层 +1 躁动`
+    : `${SYMBOLS[symbol].en}: beside another ${SYMBOLS[symbol].en} = green link, ${symbolEffectText(symbol, false)} a floor; beside ${SYMBOLS[opp].en} = red link, +1 agitation a floor`;
 }

@@ -1,7 +1,7 @@
 import { PASSENGERS, isDark, type PassengerKind } from './game-data';
 import { DARK_RULES, MYSTERY_CLUES, MYSTERY_RULES, mysteryClue } from './dark-rules';
 import { SYMBOL_SHAPE_RULE, bondLines, bondSummary, riderConflictRules, riderProfile, type ConflictEffect } from './rider-profile';
-import { SYMBOLS, SYMBOL_GLYPH, symbolTitle, symbolsOf } from './symbols';
+import { SYMBOLS, symbolTitle, symbolsOf } from './symbols';
 import { BOMB_RULES, arrivalFare, fareBreakdown, arrivalTip, HIGH_RISK_BONUS, riderAfterWork, riderAgitation, type Rider, type RunState } from './game-engine';
 import { CHILD_CARE_BONUS, CHILD_CARE_WORK, COMMUTER_QUIET_BONUS, INSPECTION_BONUS, INSPECTION_WORK, REPAIR_DURATION, REPAIR_WORK, TOURIST_MEDIUM_BONUS } from './balance-v832';
 import { RISK_PARTNERS, RISK_STASH_PER_ASCENT, riskPartnerships } from './shift-rules';
@@ -206,7 +206,7 @@ export function passengerCardRules(rider: Rider, cabin: Array<Rider|null>=[], bo
  };
  // v10: one block for the rider's symbols (what each green link does, what clashes); no named partners any more.
  const syms=symbolsOf(rider,cabin,cabin.findIndex(r=>r?.id===rider.id));
- const symbols:PassengerRuleBlock={tone:'good',heading:`符号：${syms.map(sy=>SYMBOL_GLYPH[sy]+SYMBOLS[sy].zh).join(' · ')}`,lines:syms.map(sy=>symbolTitle(sy,true)),note:SYMBOL_SHAPE_RULE};
+ const symbols:PassengerRuleBlock={tone:'good',heading:`符号：${syms.map(sy=>SYMBOLS[sy].zh).join(' · ')}`,lines:syms.map(sy=>symbolTitle(sy,true)),note:SYMBOL_SHAPE_RULE};
  return [ability,...(rider.kind==='tourist'?[cooperation]:[]),...(syms.length?[symbols]:[]),...(opponents?[conflict]:[])];
 }
 

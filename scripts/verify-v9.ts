@@ -176,7 +176,7 @@ console.log('PASS band tips, crowding at six, 20% high-band incident');
   const red = run(20, [rider('commuter', 20, 4), rider('drunk', 20, 4)]);
   assert.equal(E.energyBreakdown(red).conflict, 0);
   const insulated = { ...red, upgrades: { ...E.EMPTY_UPGRADES, insulation: 1 } };
-  // Commuter 🤫📋 beside Drunk 🎉🎲: both symbols clash, two red links.
+  // Commuter QuietOrder beside Drunk LivelyStreet: both symbols clash, two red links.
   assert.equal(lines(E.resolveFloor(insulated, fixed()), 'lastEarnings')['绝缘衬层：冲突小费'], 2);
   const stab = run(20, Array.from({ length: 5 }, () => rider('commuter', 20, 9)), { upgrades: { ...E.EMPTY_UPGRADES, reinforced: 1 } });
   let s = stab, saved = 0;
@@ -259,7 +259,7 @@ assert.ok(!districtFor(15).themed.includes('lover'));
 console.log('PASS lover share stays below 13% on 11-20F without a waiting Lover');
 // v9.0.3 Insulation pays 1 coin per red link per floor, capped at 3. v10: red links never cost coins.
 {
-  const cab = [rider('commuter', 12, 5), rider('celebrity', 12, 5)]; // 🤫📋 beside 🎉👻: one red link
+  const cab = [rider('commuter', 12, 5), rider('celebrity', 12, 5)]; // QuietOrder beside LivelySpirit: one red link
   const plain = E.resolveFloor(run(12, cab), fixed(0.99));
   const insulated = E.resolveFloor(run(12, cab, { upgrades: { ...E.initialRun().upgrades, insulation: 1 } }), fixed(0.99));
   assert.equal(lines(insulated, 'lastEarnings')['绝缘衬层：冲突小费'], 1);
@@ -333,7 +333,7 @@ console.log('PASS option A: flat motor, late-night unrest and calming');
 {
   const cab = [rider('child', 30, 2, { boardedAt: 30 }), rider('exorcist', 30, 4, { boardedAt: 28, volatile: true }), rider('lover', 30, 5, { boardedAt: 29, volatile: true }),
     rider('exorcist', 30, 1, { boardedAt: 27 }), rider('ghost', 30, 4, { boardedAt: 26 }), rider('exorcist', 30, 4, { boardedAt: 28 })];
-  // v10: this cabin now also carries red symbol links (🏠 vs 👻, 🎉 vs 🤫), so the same rescue holds from 4/8, not 6/8.
+  // v10: this cabin now also carries red symbol links (Hearth vs Spirit, Lively vs Quiet), so the same rescue holds from 4/8, not 6/8.
   const s = run(30, cab, { stress: 4, coins: 1 });
   const f = stressForecast(s);
   const src = Object.fromEntries((f.sources ?? []).map(x => [x.label, x.amount]));

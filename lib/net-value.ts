@@ -61,7 +61,7 @@ function cabinExtras(state: RunState, cabin: Array<Rider | null>, price: number)
  * red links (and Street links) less the calm of Order and Hearth links at NET_AGITATION_COINS a point. */
 function symbolWorth(state: RunState, cabin: Array<Rider | null>, price: number) {
   const l = symbolCoins({ ...state, cabin });
-  return l.coins + l.power * price - (redCount(cabin) * SYMBOL_RULES.redAgitation + l.agitationLines.reduce((n, x) => n + x.amount, 0)) * NET_AGITATION_COINS;
+  return l.coins + (l.power + l.freePower) * price - (redCount(cabin) * SYMBOL_RULES.redAgitation + l.agitationLines.reduce((n, x) => n + x.amount, 0)) * NET_AGITATION_COINS;
 }
 /** Expected contents of an unclaimed box in coins: half coins, half power at the shop price. */
 const boxValue = (r: Rider, price: number) => (boxCoins(r) + boxPower(r) * price) / 2;

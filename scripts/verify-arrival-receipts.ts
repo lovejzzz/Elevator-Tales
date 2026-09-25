@@ -6,7 +6,7 @@ const s={...E.initialRun(),floor:6,coins:10,energy:50,upgrades:{...E.EMPTY_UPGRA
  cabin:[r('tourist',0),r('tourist',1),r('tourist',2),null,null,null]};
 const out=E.resolveFloor(s,()=>0);
 // Tourists (v10 fare 5): 7/9/7 with neighbours; +5 fifth-ticket to seat 0, +4 tip to the middle seat, +4 meter and
-// +1 low-band tip to each (v9). Curtain Call (+8) and the symbol links (🎉 row: +4) stay cabin-wide.
+// +1 low-band tip to each (v9). Curtain Call (+8) and the symbol links (Lively row: +4) stay cabin-wide.
 assert.deepEqual(out.lastArrivals?.map(a=>[a.slot,a.coins]),[[0,17],[1,18],[2,12]]);
 assert.equal(out.lastArrivals!.reduce((n,a)=>n+a.coins,0)+8+E.symbolCoins(s).coins,out.lastEarnings.total);
 assert.equal(out.lastArrivals![0].riderId,'p0');

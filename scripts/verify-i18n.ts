@@ -23,7 +23,7 @@ assert.equal(translateGameText('照顾 2/2 · 有人照顾', 'en'), 'Care 2/2 ·
 assert.equal(translateGameText('签章 · 到站+8币', 'en'), 'Stamped · +8 on arrival');
 assert.equal(translateGameText('同层按1→6号位', 'en'), 'Same floor: seats 1→6');
 assert.equal(translateGameText('金币不足', 'en'), 'Not enough coins');
-// v10: symbol links. A Courier (🎲🏠) beside a Commuter (🤫📋) clashes on 📋/🎲; a second Commuter shares both symbols.
+// v10: symbol links. A Courier (StreetHearth) beside a Commuter (QuietOrder) clashes on Order/Street; a second Commuter shares both symbols.
 {
  const commuter:Rider={kind:'commuter',id:'label-commuter',destination:5,boardedAt:1,patience:0,fareBonus:0};
  const cabin:Array<Rider|null>=[{...commuter,id:'label-commuter-2'},commuter,null,null,null,null];
@@ -32,7 +32,7 @@ assert.equal(translateGameText('金币不足', 'en'), 'Not enough coins');
  for(const n of [1,2]) assert.equal(translateGameText(`绿线 ${n} 条`,'en'),`${n} green link${n===1?'':'s'}`);
  assert.equal(translateGameText('热闹绿线 ×2','en'),'Lively green ×2');
  for(const k of SYMBOL_KEYS) assert.equal(translateGameText(symbolTitle(k,true),'en'),symbolTitle(k,false));
- assert.equal(translateGameText('符号：🎉热闹 · 🏠人间','en'),'Symbols: 🎉 Lively · 🏠 Hearth');
+ assert.equal(translateGameText('符号：热闹 · 人间','en'),'Symbols: Lively · Hearth');
 }
 
 if(!translateGameText(PASSENGERS.bomb.detail,'en').startsWith('Use the displayed base fare;'))throw Error('Bomb detail must use the card fare, including local tickets');

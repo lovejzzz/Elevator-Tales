@@ -126,7 +126,7 @@ function linkOutlook(state: RunState, bot: Bot) {
     const cabin = state.cabin.map(r => r && r.destination > state.floor + t ? r : null);
     if (!cabin.some(Boolean)) break;
     const l = E.symbolCoins({ ...state, cabin });
-    v += Math.pow(0.9, t) * (l.coins + EP * Math.min(l.power, cabin.reduce((n, r, i) => n + (r ? riderProfile(r, cabin, i).energy : 0), 0)) - agi * (redCount(cabin) * SYMBOL_RULES.redAgitation + l.agitationLines.reduce((n, x) => n + x.amount, 0)));
+    v += Math.pow(0.9, t) * (l.coins + EP * (Math.min(l.power, cabin.reduce((n, r, i) => n + (r ? riderProfile(r, cabin, i).energy : 0), 0)) + l.freePower) - agi * (redCount(cabin) * SYMBOL_RULES.redAgitation + l.agitationLines.reduce((n, x) => n + x.amount, 0)));
   }
   return v;
 }
@@ -206,7 +206,7 @@ function chooseBoarding(state: RunState, offers: Rider[], bot: Bot, mode: Legend
       if (parcel) { for (const [a, b] of ADJACENT.flatMap(([a, b]) => [[a, b], [b, a]])) { const c = place(place(cur, o, a), parcel, b); if (c && valid(c)) { cand = c; break; } } }
       else {
         // v10: a player sees the symbol lines while dragging, so the rider goes to the seat with the best links.
-        const seatValue = (c: RunState) => { const l = E.symbolCoins(c); return l.coins + EP * l.power - 2 * (redCount(c.cabin) * SYMBOL_RULES.redAgitation + l.agitationLines.reduce((n, x) => n + x.amount, 0)); };
+        const seatValue = (c: RunState) => { const l = E.symbolCoins(c); return l.coins + EP * (l.power + l.freePower) - 2 * (redCount(c.cabin) * SYMBOL_RULES.redAgitation + l.agitationLines.reduce((n, x) => n + x.amount, 0)); };
         for (const slot of [0, 1, 2, 3, 4, 5].filter(i => !cur.cabin[i])) { const c = place(cur, o, slot); if (c && (!cand || seatValue(c) > seatValue(cand))) cand = c; }
       }
       if (!cand) continue;

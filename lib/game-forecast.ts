@@ -159,7 +159,8 @@ export function sectorForecast(state: RunState): { shop: number; projected: numb
     const riders = aboard.reduce((n, { r, slot }) => n + riderProfile(r, state.cabin, slot).energy, 0);
     const motor = boxedMotorCost(motorCost(f), boxOf(state), f) - (f === state.floor + 1 ? operatorSaving(state) + nightOperatorSaving(state) + serviceSaving(state) : 0);
     // v10: Quiet and Spirit green links among the riders still aboard save power (never more than they use).
-    const symbolSaving = aboard.length ? Math.min(riders, symbolLedger(state.cabin.map(r => r && r.destination >= f ? r : null)).power) : 0;
+    const ledger = symbolLedger(state.cabin.map(r => r && r.destination >= f ? r : null));
+    const symbolSaving = aboard.length ? Math.min(Math.max(0, motor) + riders, Math.min(riders, ledger.power) + ledger.freePower) : 0;
     energy -= Math.max(0, motor) + (aboard.length ? riders - symbolSaving : 1);
     energy += state.cabin.filter((r, slot) => r?.kind === 'courier' && r.destination === f && parcelBeside(state.cabin, slot)).length * COURIER_ARRIVAL_CHARGE;
     if (f === shop) energy = Math.min(state.energyCap, energy + shopEntryCharge(boxOf(state)));

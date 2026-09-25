@@ -85,7 +85,7 @@ export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   mystery: { kind:'mystery', name:'神秘人', title:'The Mystery', weight:2, fare:0, energy: 2, trip:[2,7], patience:4, rarity:6, sheet:'04', cell:0, tone:'occult', short: "身份未知，但卡上有一条线索；上车后下一层揭晓", detail: "卡上有一条线索（比如“一直盯着车门”），每条线索都对得上两种身份，可以靠它猜。上车后的下一层揭晓身份：便衣警察（车费 8，管住身边的小偷和劫匪，锁住炸弹客，但锁不住疯炸客）、逃犯（车费 20，每层 +1 躁动）、富商（车费 25）或好心人（车费 8，像护士一样每层为每位邻座抵消 1 躁动）。揭晓前卡上看不到车费。", risk:{label:'风险交易',guide:'揭晓后再决定座位'} },
   shifter: { kind:'shifter', name:'百变人', title:'The Shifter', weight:2, fare: 13, energy: 1, trip:[4,7], patience:5, rarity:5, sheet:'04', cell:1, tone:'risk', short: "每层换属性；基价看卡面", detail: "每到一层重新抽取自身躁动0–1、原始车费16–28与协作/冲突对象；耗电固定为1。短途再按固定比例折算基价。目的地不延长，关门前查看新状态。", risk:{label:'条件风险',guide:'每层查看新状态，留好请离赔偿'} },
   // v10: every day fare ×0.6 (rounded) — symbol links became the main income (lib/symbols.ts). Dark riders carry a drawback
-  // with every ability, so theirs are 80% of v9.22 instead (×0.6 left four of them under 15% boarding); the Robber, who robs you unless held, keeps his v9.22 fare of 14, and the Summoner gets 6. The Ghost, whose
+  // with every ability, so theirs are 80% of v9.22 instead (×0.6 left four of them under 15% boarding); the Robber, who robs you unless held, keeps his v9.22 fare of 14, the Summoner gets 6 and the Taskmaster 9 (v10.1). The Ghost, whose
   // two symbols both save power and who uses none himself, pays 1.
   // v9.19 dark versions (after 60F). rarity 0: they are never drawn directly; an ordinary draw turns dark instead.
   // v9.22 late money: most dark fares ×0.75; the least-boarded keep more (Overtimer, Brawler, Crooked Inspector, Mad Bomber unchanged; Taskmaster 8→10, Scandal 22→20).
@@ -103,7 +103,7 @@ export const PASSENGERS: Record<PassengerKind, PassengerSpec> = {
   creepychild: { kind:'creepychild', name:'怪童', title:'The Uncanny Child', weight:1, fare:5, energy:1, trip:[2,5], patience:1, rarity:0, sheet:'02', cell:0, tone:'social', short:'每位普通邻座+1躁动；到站时一个邻座都没有+10币', detail:'暗黑版儿童。不要人照顾：身边每有一位普通乘客（不是暗黑版），每层 +1 躁动。到站时身边一个人都没有，额外 +10 金币。' },
   wraith: { kind:'wraith', name:'怨灵', title:'The Wraith', weight:0, fare:3, energy:0, trip:[4,8], patience:5, rarity:0, sheet:'03', cell:0, tone:'occult', short:'没人管：每层拖延一位邻座1站并吸1电；受控：每层+4币', detail:'暗黑版幽灵。没人管时，每层都随机拖延一位邻座 1 站，并吸走 1 电。驱魔师、召魂人或灵媒挨着它时受控：每层反而 +4 金币。' },
   summoner: { kind:'summoner', name:'召魂人', title:'The Summoner', weight:1, fare:6, energy:2, trip:[3,6], patience:3, rarity:0, sheet:'03', cell:0, tone:'occult', short:'管住幽灵与怨灵；每3层召一只幽灵进空座；身边受控幽灵车费×2', detail:'暗黑版驱魔师。管住身边的幽灵和怨灵。每到 3 的倍数层，把一只幽灵召进一个空座（幽灵自带车费，路程 4 站）。挨着他的受控幽灵到站车费 ×2。' },
-  taskmaster: { kind:'taskmaster', name:'监工', title:'The Taskmaster', weight:3, fare:8, energy:2, trip:[3,6], patience:3, rarity:0, sheet:'03', cell:0, tone:'social', short:'邻座车费+100%，普通邻座每层各+1躁动', detail:'暗黑版教练。每位邻座到站基价 +100%（教练是 +50%），但每位普通邻座（不是暗黑版）每层 +1 躁动。' },
+  taskmaster: { kind:'taskmaster', name:'监工', title:'The Taskmaster', weight:3, fare:9, energy:2, trip:[3,6], patience:3, rarity:0, sheet:'03', cell:0, tone:'social', short:'邻座车费+100%，普通邻座每层各+1躁动', detail:'暗黑版教练。每位邻座到站基价 +100%（教练是 +50%），但每位普通邻座（不是暗黑版）每层 +1 躁动。' },
   scandal: { kind:'scandal', name:'丑闻明星', title:'The Scandal', weight:1, fare:16, energy:2, trip:[4,7], patience:2, rarity:0, sheet:'03', cell:0, tone:'risk', short:'每位邻座每层+1币；偷拍客在旁再+3；检查员或黑警在旁：到站曝光，车费归零', detail:'暗黑版名人。邻座越多越好：每位邻座每层 +1 金币；挨着偷拍客每层再 +3。到站时如果挨着检查员或黑警，丑闻曝光：这一趟的车费和暂存全部归零。' },
   grafter: { kind:'grafter', name:'贪腐检查员', title:'The Grafter', weight:2, fare:13, energy:2, trip:[3,6], patience:4, rarity:0, sheet:'03', cell:0, tone:'support', short:'每层向每位邻座收2币检查费（车厢+1躁动）；放行黑箱、帮拆机人销赃', detail:'暗黑版检查员。每层向每位邻座收 2 金币检查费给你，敲诈让车厢每层 +1 躁动。挨着黑箱时放行（走私客送达再 +8）；挨着拆机人时销赃每层 +2。' },
   madbomber: { kind:'madbomber', name:'疯炸客', title:'The Mad Bomber', weight:1, fare:40, energy:3, trip:[3,5], patience:1, rarity:0, sheet:'03', cell:0, tone:'risk', short:'弗兰肯斯坦炸弹：倒计时更短，普通警察锁不住；归零时本班结束', detail:'暗黑版炸弹客，抱着一颗弗兰肯斯坦式的怪炸弹。实时倒计时比炸弹客短，普通警察锁不住，只有黑警挨着才能锁住，或用引线剪当场拆掉。归零时本班结束。车费 50。', risk: { label: '致命风险', guide: '与黑警相邻：锁住倒计时' } },
@@ -168,7 +168,7 @@ export const UNLOCK_TIERS: { floor: number; kinds: PassengerKind[] }[] = [
 
 export type UpgradeKey = 'battery' | 'capacity' | 'calm' | 'concierge' | 'reinforced' | 'express' | 'tipjar' | 'relay' | 'crowd' | 'meter' | 'rails' | 'insulation' | 'reservation' | 'single' | 'delay' | 'buffer' | 'soundproof' | 'retime' | 'punchcard' | 'finale' | 'dispatch';
 export const UPGRADES: Record<UpgradeKey, { name: string; label: string; description: string; strategy: string; tone: 'sustain' | 'control' | 'score' | 'capacity' | 'tempo' }> = {
-  battery: { name: '默契契约', label: 'COOPERATION', description: '赚钱的符号（🎉热闹、🎲江湖）每级绿线每层多 +2 金币。本局限装一次。', strategy: '协作收益', tone: 'score' },
+  battery: { name: '默契契约', label: 'COOPERATION', description: '赚钱的符号（热闹、江湖）每级绿线每层多 +2 金币。本局限装一次。', strategy: '协作收益', tone: 'score' },
   capacity: { name: '扩容电池', label: 'BATTERY CAPACITY', description: '已并入配电箱蓄电线路，不再出售。', strategy: '预先准备', tone: 'capacity' },
   calm: { name: '安全余量', label: 'SAFETY MARGIN', description: '躁动上限+2，不自动降低躁动。附带一次手动调节：降低3躁动，每次进商店补满。本局限装一次。', strategy: '控场缓冲', tone: 'control' },
   concierge: { name: '礼宾服务', label: 'CONCIERGE', description: '此后新出现的乘客到站小费 +1，不参与车费倍率。本局限装一次。', strategy: '收入投资', tone: 'score' },

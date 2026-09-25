@@ -445,7 +445,7 @@ export const flareCovers = (state: Pick<RunState, 'flareFloor' | 'flareUntil' | 
 export const troubleFree = (state: Pick<RunState, 'flareFloor' | 'flareUntil' | 'floor' | 'abyssEvents'>) => flareCovers(state) || abyssEventAt(state, state.floor) === 'hush';
 /** Outburst odds for the ascent from this floor: the abyss step, doubled on a Surge floor (never above the cap); none
  * on a Hush floor or after a Flare, so the cards and seats stop printing odds that cannot happen. */
-export const outburstChanceAt = (state: Pick<RunState, 'floor' | 'abyssEvents' | 'flareFloor' | 'flareUntil'>) => troubleFree(state) ? 0 : Math.min(DARK_RULES.outburstMax, outburstChance(state.floor + 1) * (abyssEventAt(state, state.floor) === 'surge' ? ABYSS_EVENTS.surgeMultiplier : 1));
+export const outburstChanceAt = (state: Pick<RunState, 'floor' | 'abyssEvents' | 'flareFloor' | 'flareUntil' | 'cabin'>) => troubleFree(state) ? 0 : Math.max(0, Math.min(DARK_RULES.outburstMax, outburstChance(state.floor + 1) * (abyssEventAt(state, state.floor) === 'surge' ? ABYSS_EVENTS.surgeMultiplier : 1)) - symbolLedger(state.cabin).outburstCut);
 /** Four of floors 81–89, one of each event, drawn on the shop's stream as the 80F shop opens. */
 export function drawAbyssEvents(rng: () => number): Array<{ floor: number; kind: AbyssEventKind }> {
   const floors = Array.from({ length: ABYSS_EVENTS.to - ABYSS_EVENTS.from + 1 }, (_, i) => ABYSS_EVENTS.from + i);
@@ -636,7 +636,7 @@ export function energyBreakdown(state: RunState) {
   const conflict=flat+multiplied;
   const conflictProtection=state.upgrades.insulation ? conflict : 0;
   // v10: Quiet and Spirit green links save power, never more than the riders themselves use.
-  const symbol=Math.min(people,symbolLedger(state.cabin).power);
+  const ledger=symbolLedger(state.cabin),symbol=Math.min(motor+people,Math.min(people,ledger.power)+ledger.freePower);
   return {motor,people,stabilizer,shared,service,conflict,conflictProtection,symbol,riderCosts,dark,saved:stabilizer+shared+service+conflictProtection+symbol,total:motor+people+conflict+dark-stabilizer-shared-service-conflictProtection-symbol};
 }
 export const totalEnergyCost = (state: RunState) => energyBreakdown(state).total;
@@ -1546,7 +1546,7 @@ export function installedUpgradeSummary(state: RunState,key:UpgradeKey) {
  switch(key){
   // v9.17.2: live values only where they change; otherwise the ability's own (translated, current) description.
   // The old Stabilizer line said "at least 3 riders" after the rule became 5.
-  case 'battery':return `🎉🎲 每级绿线每层 +${cooperationBonus(state) - 1} 金币`;
+  case 'battery':return `热闹和江湖每级绿线每层 +${cooperationBonus(state) - 1} 金币`;
   case 'calm':return `躁动上限 ${state.stressCap} · ${state.calmCharge?'手动调节可用（−3 躁动）':'手动调节已用，下个商店补满'}`;
   default:return count>=2&&LEVEL2_TEXT[key]?`2级：${LEVEL2_TEXT[key]![0]}`:UPGRADES[key].description;
  }

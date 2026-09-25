@@ -36,11 +36,11 @@ const pairResult=resolveFloor(state(pair),()=>.9);
 assert.equal(pairResult.lastEarnings.sources.find(line=>line.label==='游客旅伴')?.amount??0,0,'a Tourist pair has no income before delivery');
 assert.equal(pairResult.lastEarnings.sources.some(line=>line.label==='游客到站'),false,'companion links do not invent an arrival reward before arrival');
 const arrivingPair=resolveFloor(state(pair.map(r=>r?{...r,destination:2}:null),{floor:1}),()=>.9);
-assert.equal(arrivingPair.lastEarnings.total,2*PASSENGERS.tourist.fare+4+2+2,'v10: two base fares, 4 companion coins, two 1-coin low-band tips and one 🎉 green link (+2)');
+assert.equal(arrivingPair.lastEarnings.total,2*PASSENGERS.tourist.fare+4+2+2,'v10: two base fares, 4 companion coins, two 1-coin low-band tips and one Lively green link (+2)');
 
 const full=Array.from({length:6},(_,slot)=>rider('tourist',`full-${slot}`));
 assert.equal(income(state(full),'游客旅伴'),0,'a full Tourist cabin has no travel income');
-assert.equal(resolveFloor(state(full.map(r=>({...r,destination:2}))),()=>.9).lastEarnings.total,6*PASSENGERS.tourist.fare+28+6+10,'v10: six base fares, 28 neighbour coins, six low-band tips and a full 🎉 cabin (level 5: +10)');
+assert.equal(resolveFloor(state(full.map(r=>({...r,destination:2}))),()=>.9).lastEarnings.total,6*PASSENGERS.tourist.fare+28+6+10,'v10: six base fares, 28 neighbour coins, six low-band tips and a full Lively cabin (level 5: +10)');
 
 let cases=0,totalBonus=0;
 const kinds:PassengerKind[]=['commuter','tourist','courier','mechanic','lover','musician'];

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { bondStatus, conflictLinks, riderProfile } from '../lib/rider-profile';
 import { RIDER_SYMBOLS, SYMBOLS } from '../lib/symbols';
 import { PASSENGERS, PASSENGER_ORDER, type PassengerKind } from '../lib/game-data';
-import { initialRun, resolveFloor, riderAgitation, energySavings, type Rider, type RunState } from '../lib/game-engine';
+import { energyBreakdown, initialRun, resolveFloor, riderAgitation, energySavings, type Rider, type RunState } from '../lib/game-engine';
 
 const rider=(kind:PassengerKind,id:string,extra:Partial<Rider>={}):Rider=>({kind,id,destination:20,patience:0,boardedAt:1,fareBonus:0,copySeed:id.length,...extra});
 const state=(extra:Partial<RunState>={}):RunState=>({...initialRun(),...extra});
@@ -25,7 +25,7 @@ for(const kind of PASSENGER_ORDER){
 
 const mechanics=state({cabin:[rider('mechanic','m1'),rider('mechanic','m2'),rider('coach','c'),null,null,null]});
 assert.equal(energySavings(mechanics),0,'unfinished Mechanics no longer provide passive passenger savings');
-assert.equal(resolveFloor(mechanics,()=>.9).lastEnergy.delta,-5,'three riders (the Coach uses 2 since v9.20.2) plus the motor are paid while the first work step is earned');
+assert.equal(resolveFloor(mechanics,()=>.9).lastEnergy.delta,-5+energyBreakdown(mechanics).symbol,'three riders (the Coach uses 2 since v9.20.2) plus the motor are paid while the first work step is earned');
 
 const occult=state({cabin:[rider('ghost','g1'),rider('exorcist','e'),rider('ghost','g2'),rider('coach','load1'),rider('tourist','t'),rider('coach','load2')]});
 assert.equal(energySavings(occult),1,'v9: one Exorcist offsets at most one controlled ghost');
