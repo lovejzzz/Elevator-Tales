@@ -1493,3 +1493,55 @@ export const V919_EN: ChangelogEntry = {
     'Items and Mystery identities are not in the simulator yet; the art is AI-generated and needs a human look.',
   ],
 };
+
+export const V9191_ZH: ChangelogEntry = {
+  version: '9.19.1', date: '2026-09-24', title: '午夜试玩前六局：同化提示、手机上的午夜、暗黑版平衡、商店自救',
+  summary: '在浏览器里以玩家身份试玩了 6 局“午夜之后”（桌面中文、英文、手机竖屏），每局玩完就改。这一版修掉了其中发现的问题：放人时会提示同化，手机上看得到午夜钟声和同化进度，劫匪和黑警收钱有动画，失控时商店先保住抢救费。另外按模拟器研究调整了几位暗黑版。',
+  changes: [
+    '同化：放人时，如果某位普通人会因此被两位以上暗黑版夹住，提示“X 会被同化成 Y（2层后）”；戴护身符的人写“护身符护着 · 不会被同化”；手机座位上加紫色小标“同化 1/2 / 2/2”。',
+    '午夜钟声：推迟到商店关闭之后再响；手机上先把车厢滚到屏幕中间。所有横幅都限制在可见区域内。',
+    '钱的动画：劫匪抢钱、黑警收保护费时，金币从钱包飞向他，并弹出红字；贪腐检查员、拆机人、讼棍、受控怨灵、噪音乐手的每层收入，从座位飞进钱包。',
+    '商店危机：躁动失控时，默认充电会先留出最低抢救费；钱不够时，充电按钮写“先付最低抢救（N 币），再充电”。如果卖一项能力就付得起抢救，会提示“卖掉一项能力（退 15 币）就付得起”。',
+    '结束说明：途中补电额度用完、钱还够买加急补电时，提示“断电警告里的加急补电能救这一层”。',
+    '怨偶：车上只有一位怨偶时，每层有 15% 概率把另一位叫来（卡上一直这么写，之前没有实现）。',
+    '狂徒、噪音乐手正常下车时，躁动额外 −2（“闹事的人下车了”），高躁动路线有了退出口；预测同步计入。',
+    '电机第 3 级：原来的“静音：夜深人躁 −1”在删掉夜深人躁后没有作用，改为“每 3 层有 2 层运转 −1”。',
+    '暗黑版数值：丑闻明星每位邻座每层 +2 → +1；讼棍去掉自身每层 +1 躁动，车费 10 → 12；拆机人每层 +3 → +4；偷拍客给丑闻明星的加成 +5 → +3；疯炸客路程 2–4 → 3–5 站，由炸弹客转变来的疯炸客也至少 3 站。',
+    '文字：便衣警察写明“锁住炸弹客（锁不住疯炸客）”（v9.19.0 更新日志写成“黑警或便衣警察能锁住疯炸客”，是错的，以代码为准：只有黑警能锁）。炸弹说明写出是谁锁的（警察 / 黑警 / 便衣警察）。黑箱在候客和座位上叫“黑箱”，说明写走私客；走私客缺箱子时写“走私客在找黑箱”。80 层后黑警保护费、怨灵吸电、狂徒发狂按当前深渊等级显示。神秘人的车费写“揭晓身份时公开”。60 层前的普通卡片不再提到暗黑版。楼层消息不再重复人名（“教练急躁，躁动 +1”）。',
+    '英文：“1 stop / 2 stops”单复数；楼层消息改为“Coach impatient, agitation +1”这样的格式；英文商店配电箱的名字和说明不再重叠。',
+    '换座：每层 2 次老乘客换座，第一次换座后界面仍允许第二次（之前第一次后就不让拖了），剩余次数的两处显示统一。',
+  ],
+  experiments: [
+    '浏览器试玩 6 局（每局笔记在 docs/playtests/midnight-playtest-notes.md）：117 层电量、98 层电量、109 层电量（英文）、129 层电量（手机）、117 层电量、130 层躁动。中段多由自动推进代打，60 层前后和午夜段主要逐层手动。',
+    '暗黑版专项研究（新脚本 scripts/balance-sim/dark-report.mts，平衡型和真人型各 60 局）：调整前丑闻明星上车率 48%、平均到站 41.8 币；讼棍上车率 8%、每层自带 0.94 躁动；拆机人上车率 16%、每趟 8.6 币。调整后上车率分布在 15%–49%：丑闻明星 35% / 29.5 币，讼棍 32%，拆机人 25%。',
+    '模拟器验收 4,200 局（种子 999001）：均衡型中位 111 → 115 层（p10 91，p90 124），主要来自电机第 3 级恢复作用；死因 电量/躁动/炸弹 67.9 / 29.9 / 2.2%；真人型 64 层（p90 83）；新手型 49 层；离店剩余金币中位 38。',
+    'verify 41 项（新增 1 项：两次换座、同化提示、黑箱名称、60 层前不提暗黑版、怨偶呼唤、闹事的人下车及其预测）。',
+  ],
+  watch: ['稳健打法能走到 130 层以上，后期仍然是电量决定终点。', '劫匪上车率只有 11–15%（设计上是“坏”人物，但可能太不受欢迎）。', '传说人物大多只在前 10 层起作用，和午夜内容没有交集。'],
+};
+
+export const V9191_EN: ChangelogEntry = {
+  version: '9.19.1', date: '2026-09-24', title: 'First six midnight playtests: corruption warnings, midnight on phones, dark-rider balance, shop rescue',
+  summary: 'Six “After midnight” runs played in the browser as a player (desktop Chinese, English, a phone-sized screen), fixing what each one found before the next: placements now warn about corruption, phones see the midnight bell and corruption progress, the Robber and Crooked Cop visibly take coins, and a shop in crisis keeps the rescue fee safe. A simulator study also rebalanced several dark riders.',
+  changes: [
+    'Corruption: a placement that leaves a normal rider beside two or more dark riders warns “X turns into Y in 2 floors”; an Amulet wearer reads “Amulet · cannot be corrupted”; phone seats show a violet “Turning 1/2 / 2/2” pill.',
+    'Midnight bell: it rings after the shop has closed; on phones the cabin scrolls into view first. All banners stay inside the visible screen.',
+    'Coin animations: the Robber’s take and the Crooked Cop’s protection money fly from the wallet to them with a red pop; the per-floor earnings of the Grafter, Scrapper, Shyster, a controlled Wraith and the Noisemaker fly from their seat to the wallet.',
+    'Shop crisis: in an agitation crisis the default charge leaves the minimum-rescue fee; when coins fall short the charge button reads “Pay the minimum rescue (Nc) first”. If selling an ability would cover the rescue, the warning says so.',
+    'Ending: when the in-transit allowance ran out but overtime charging was affordable, the ending names the power alert’s overtime charging.',
+    'Ex: a lone Ex now calls the other one in, 15% a floor (the card always promised it; it never happened).',
+    'A Brawler or Noisemaker getting off lowers agitation by 2 more (“the troublemaker got off”), so high-agitation play has a way down; the forecast includes it.',
+    'Motor level 3: its “quiet: late-night unrest −1” did nothing once the unrest was removed; it now saves 1 on 2 floors in 3.',
+    'Dark riders: Scandal +2 → +1 per neighbor a floor; Shyster no longer adds 1 agitation himself, fare 10 → 12; Scrapper +3 → +4 a floor; the Voyeur’s bonus to the Scandal +5 → +3; Mad Bomber trip 2–4 → 3–5 stops, and a Mad Bomber turned from a Bomber rides at least 3.',
+    'Text: the Undercover Officer “locks Bomb Carriers (not the Mad Bomber)” (the v9.19.0 notes said a Crooked Cop or an Undercover Officer could lock the Mad Bomber; that was wrong, only a Crooked Cop can). Bomb captions name who locked the timer. A black box is called a black box in the queue and on its seat, and a Smuggler without one is “looking for his black box”. Past 80F the Crooked Cop’s fee, the Wraith’s drain and the Brawler’s rage show their current abyss values. The Mystery’s fare is “shown when he is revealed”. Before midnight ordinary cards no longer name dark riders. Floor summaries no longer repeat the rider’s name.',
+    'English: “1 stop / 2 stops”; floor summaries read like “Coach impatient, agitation +1”; the power-box names in the English shop no longer overlap their descriptions.',
+    'Seat moves: two old-rider moves per floor; the second is no longer blocked after the first, and both counters agree.',
+  ],
+  experiments: [
+    'Six browser playtests (notes in docs/playtests/midnight-playtest-notes.md): 117F power, 98F power, 109F power (English), 129F power (phone), 117F power, 130F agitation. Mid-run floors were mostly auto-played; the floors around 60F and the midnight stretches were mostly played by hand.',
+    'Dark-rider study (new script scripts/balance-sim/dark-report.mts, 60 balanced + 60 human-like runs): before tuning the Scandal boarded 48% and paid 41.8 on average; the Shyster boarded 8% and added 0.94 agitation a floor; the Scrapper boarded 16% for 8.6 a trip. After tuning boarding spans 15–49%: Scandal 35% / 29.5, Shyster 32%, Scrapper 25%.',
+    'Simulator acceptance, 4,200 runs (seed 999001): balanced median 111 → 115F (p10 91, p90 124), mostly the restored motor level 3; deaths power/agitation/bomb 67.9 / 29.9 / 2.2%; human-like 64F (p90 83); novice 49F; median coins leaving a shop 38.',
+    'verify: 41 checks (1 new: two seat moves, the corruption warning, black-box names, no dark names before midnight, the Ex’s call, the troublemaker relief and its forecast).',
+  ],
+  watch: ['Steady play still passes 130F; power still decides the end.', 'The Robber boards only 11–15% (a “bad” rider by design, but maybe too unwelcome).', 'Most legends only matter in the first ten floors and never meet the midnight cast.'],
+};

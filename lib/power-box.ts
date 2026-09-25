@@ -19,7 +19,7 @@ export const EMERGENCY_SECTOR_CAP = 20;
 export const BOX_LINE_LABELS: Record<BoxLine, { name: string; levels: string[] }> = {
   storage: { name: '蓄电', levels: ['电量上限75；进商店免费补10电', '电量上限90；进商店免费补15电', '电量上限110；进商店免费补20电；途中补电上限降为每十层10电'] },
   transformer: { name: '变压', levels: ['充电1.75金币/电', '充电1.5金币/电', '充电1.25金币/电；途中补电3金币/电'] },
-  motor: { name: '电机', levels: ['每三层运转−1', '偶数层运转−1', '静音：夜深人躁−1'] },
+  motor: { name: '电机', levels: ['每三层运转−1', '偶数层运转−1', '每3层有2层运转−1'] },
 };
 
 export const boxTotal = (box: PowerBox) => box.storage + box.transformer + box.motor;
@@ -40,6 +40,8 @@ export const MOTOR_BOX = { l1Every: 3, l2Every: 2 };
 /** v9.7 motor for the flat motor schedule: level 1 saves 1 every third floor, level 2 on every even floor
  * (never below 1). Level 3 adds a quiet motor that cancels 1 late-night unrest (see cabinPressureLines). */
 export function motorReduction(level: number, destination: number) {
+  // v9.19.1: late-night unrest is gone, so level 3 (it used to quiet the unrest) now saves 1 on two floors in three.
+  if (level >= 3) return destination % 3 !== 0 ? 1 : 0;
   if (level >= 2) return destination % MOTOR_BOX.l2Every === 0 ? 1 : 0;
   if (level >= 1) return destination % MOTOR_BOX.l1Every === 0 ? 1 : 0;
   return 0;

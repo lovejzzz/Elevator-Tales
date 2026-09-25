@@ -1,7 +1,8 @@
 import { riskPartnerships } from './shift-rules';
 import { bondStatus, conflictLinks, riderProfile, type ConflictEffect } from './rider-profile';
-import { ADJACENT, PASSENGERS, type PassengerKind } from './game-data';
-import { hasNeighbour, isBigParcel, seatRider, parcelLayoutOk, parcelLinks, isFreeReseat, neighbourCount, oldMovesRemaining, riderAgitation, type Rider, type RunState } from './game-engine';
+import { ADJACENT, DARK_OF, PASSENGERS, isDark, type PassengerKind } from './game-data';
+import { DARK_RULES, corruptible } from './dark-rules';
+import { hasNeighbour, neighbours, isBigParcel, seatRider, parcelLayoutOk, parcelLinks, isFreeReseat, neighbourCount, oldMovesRemaining, riderAgitation, type Rider, type RunState } from './game-engine';
 import { agitationBand, crowdingThreshold, V9_AGITATION } from './balance-v832';
 
 const RED_SHORT: Record<ConflictEffect,string> = { agitation:'+1躁动/层', energy:'+1耗电/层', coins:'−2金币/层', overload:'两人耗电×2', gamble:'两人耗电×2' };
@@ -60,7 +61,7 @@ function situationalAgitation(state: RunState, cabin: Array<Rider | null>) {
   const next = { ...state, cabin };
   return cabin.flatMap((r, i) => r ? riderAgitation(next, i).fixed.filter(line => !/自身躁动$|急躁$/.test(line.label))
     // A Courier whose box is still waiting in the queue is announced by the departure alert instead.
-    .filter(line => !(line.label === '快递员在找纸箱' && !cabin.some(p => p?.ownerId === r.id)))
+    .filter(line => !((line.label === '快递员在找纸箱' || line.label === '走私客在找黑箱') && !cabin.some(p => p?.ownerId === r.id)))
     .map(line => ({ key: `${r.id}|${line.label}`, text: `${line.label} +${line.amount}躁动/层` })) : []);
 }
 
@@ -89,7 +90,8 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
     if (!oldMovesRemaining(state) && !free) return reject('本层旧乘客换位已用');
     [cabin[source], cabin[target]] = [cabin[target], cabin[source]];
     if(!free)oldMovesUsed++;
-    swapped=oldMovesUsed>=1+Number(Boolean(state.upgrades.rails));
+    // v9.19.1: two old-rider moves per floor (oldMovesRemaining); the flag used to trip after the first.
+    swapped=oldMovesRemaining({...state,oldMovesUsed})<=0;
   } else {
     if (cabin[target]) return reject('这里已经有人 · 请选空位');
     cabin[target] = rider;
@@ -132,6 +134,10 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
   // Includes neighbours this placement newly upsets (e.g. a Celebrity now crowded).
   const sitBefore=new Set(situationalAgitation(state,state.cabin).map(x=>x.key));
   situationalAgitation(state,cabin).filter(x=>!sitBefore.has(x.key)).forEach(x=>warnings.push(x.text));
+  // v9.19.1 corruption: a normal rider this placement leaves beside two or more dark riders turns dark in two floors.
+  const turning=(c:Array<Rider|null>)=>new Set(c.flatMap((r,i)=>r&&corruptible(r.kind)&&!r.warded&&neighbours(i).filter(j=>c[j]&&isDark(c[j]!.kind)).length>=DARK_RULES.corruptionNeighbours?[r.id]:[]));
+  const turningBefore=turning(state.cabin);
+  cabin.forEach(r=>{if(r&&turning(cabin).has(r.id)&&!turningBefore.has(r.id))warnings.push(`${PASSENGERS[r.kind].name}会被同化成${PASSENGERS[DARK_OF[r.kind]!].name}（${DARK_RULES.corruptionFloors}层后）`);});
   // Filling the cabin to the crowding line adds cabin-wide agitation every floor.
   const crowdLine=crowdingThreshold(state.floor+1);
   if(source<0&&cabin.filter(Boolean).length>=crowdLine&&state.cabin.filter(Boolean).length<crowdLine)warnings.push(`车厢坐满 +${V9_AGITATION.crowding}躁动/层`);
@@ -140,7 +146,7 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
   if(merged.length&&!newlyEyed){message+=` 注意：${merged.join('；')}。`;celebrate=false;}
   const slots = new Set(source >= 0 ? [source, target] : [target]);
   // Only the moved rider reacts; a new link announces itself by drawing in, so seated partners do not flash.
-  if(source>=0&&oldMovesUsed>(state.oldMovesUsed??Number(state.swapped)))message+=` 旧乘客换位剩余${Math.max(0,1+Number(Boolean(state.upgrades.rails))-oldMovesUsed)}次。`;
+  if(source>=0&&oldMovesUsed>(state.oldMovesUsed??Number(state.swapped)))message+=` 旧乘客换位剩余${oldMovesRemaining({...state,oldMovesUsed})}次。`;
   return { ok: true, changed: true, next: { ...state, cabin, swapped, oldMovesUsed, message }, tone: celebrate ? 'combo' : 'place', label, slots: [...slots] };
 }
 

@@ -1,6 +1,16 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.19.0**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.19.1**. Publication status is tracked separately from the source version.
+
+## v9.19.1 — 2026-09-24 — First six midnight playtests / 午夜试玩前六局：同化提示、手机上的午夜、暗黑版平衡、商店自救
+
+- Six browser playtests (117F, 98F, 109F EN, 129F phone, 117F, 130F); notes in `docs/playtests/midnight-playtest-notes.md`.
+- Corruption warning on placement, “Amulet · cannot be corrupted” seat line, phone “Turning N/2” pill. Midnight bell after the shop closes; phones scroll the cabin into view; banners stay on screen.
+- Coin animations for the Robber, Crooked Cop and the dark riders’ per-floor earnings. Shop crisis keeps the rescue fee and suggests selling an ability; endings name overtime charging.
+- Ex now calls the other Ex (15%/floor). Brawler/Noisemaker arrival: agitation −2 more. Motor level 3: −1 on 2 floors in 3 (was a dead “late-night unrest −1”).
+- Tuning: Scandal +1/neighbor (was +2), Voyeur bonus +3 (was +5); Shyster no self-agitation, fare 12; Scrapper +4; Mad Bomber trips 3–5, converted ones at least 3.
+- Text fixes (Undercover Officer cannot lock the Mad Bomber — corrects v9.19.0; lock captions; black box names; abyss values; Mystery fare; no dark names before 60F; no repeated names); English “1 stop”, summaries, shop overlap; second old-rider move unblocked.
+- Study (dark-report, 120 runs): boarding now 15–49% (Scandal 48→35%, Shyster 8→32%, Scrapper 16→25%). Acceptance 4,200 runs: balanced 115F (p10 91, p90 124), deaths 67.9/29.9/2.2%, human-like 64F. verify 41.
 
 ## v9.19.0 — 2026-09-24 — After midnight: 18 dark riders, corruption, items, two bombs / 午夜之后：18 位暗黑版人物、同化、道具、两种炸弹
 

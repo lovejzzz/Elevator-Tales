@@ -554,7 +554,8 @@ export function translateGameText(value: string, locale: GameLocale): string {
     // v9.18.4 placement warnings appended after the main message.
     .replace(/^(.+?) 注意：(.+)。$/u, (_m, head: string, body: string) => `${translateGameText(head, 'en')} Heads-up: ${body.split('；').map(part => part
       .replace(/^与(.+?)红线 (.+)$/u, (_p, who: string, effect: string) => `red link with the ${translateGameText(who, 'en')} (${({ '+1躁动/层': '+1 agitation/floor', '+1耗电/层': '+1 power/floor', '−2金币/层': '−2 coins/floor', '两人耗电×2': 'both use ×2 power' } as Record<string, string>)[effect] ?? effect})`)
-      .replace(/^(.+?) \+(\d+)躁动\/层( ×\d+)?$/u, (_p, why: string, n: string, times?: string) => `${translateGameText(why, 'en')} +${n} agitation/floor${times ?? ''}`)).join('; ')}.`)
+      .replace(/^(.+?) \+(\d+)躁动\/层( ×\d+)?$/u, (_p, why: string, n: string, times?: string) => `${translateGameText(why, 'en')} +${n} agitation/floor${times ?? ''}`)
+      .replace(/^(.+?)会被同化成(.+?)（(\d+)层后）$/u, (_p, who: string, to: string, n: string) => `the ${translateGameText(who, 'en')} turns into the ${translateGameText(to, 'en')} in ${n} floors`)).join('; ')}.`)
     .replace(/^(.+?)已站到 (\d+) 号位。$/u, (_m, who: string, n: string) => `${translateGameText(who, 'en')} takes seat ${n}.`)
     .replace(/^安抚 (\d+) 人 · 各 −1躁动\/层$/u, (_m, n: string) => `Soothing ${n} · −1 agitation each/floor`)
     .replace(/^加急安抚 −1 躁动，支付 (\d+) 金币；下一点更贵。$/u, 'Overtime calming −1 agitation for $1 coins; the next point costs more.')
@@ -684,6 +685,11 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^(\d+)秒$/u, '$1s')
     .replace(/^倒计时 (\d+) 秒 · 未到站归零失败$/u, 'Timer $1 s · zero before arrival fails')
     .replace(/^倒计时 (\d+) 秒 · 未到站归零爆炸$/u, 'Timer $1 s · blows up at zero before arrival')
+    // v9.19.1 floor summary: “教练急躁，躁动 +1 · 神秘人：逃犯心虚，躁动 +1”, one segment at a time.
+    .replace(/(^| · )([^·]+?)，躁动 \+(\d+)/gu, (_m, sep: string, what: string, n: string) => `${sep}${what.split('：').map(part => translateGameText(part, 'en')).join(': ')}, agitation +${n}`)
+    .replace(/(^| · )([^·：，]+?)：躁动 \+(\d+)/gu, (_m, sep: string, what: string, n: string) => `${sep}${translateGameText(what, 'en')}, agitation +${n}`)
+    .replace(/^(.+?)急躁$/u, (_m, who: string) => `${translateGameText(who, 'en')} impatient`)
+    .replace(/^(.+?)自身躁动$/u, (_m, who: string) => `${translateGameText(who, 'en')}’s own agitation`)
     // v9.19 midnight notes and item messages.
     .replace(/^神秘人身份揭晓：(.+)$/u, (_m, who: string) => `The Mystery is revealed: ${translateGameText(who, 'en')}`)
     .replace(/^(.+?)被同化成了(.+)$/u, (_m, a: string, b: string) => `The ${translateGameText(a, 'en')} was corrupted into the ${translateGameText(b, 'en')}`)
@@ -704,6 +710,8 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^给(纸箱|黑箱)贴上封条。$/u, (_m, box: string) => `Sealed the ${box === '黑箱' ? 'black box' : 'box'}.`)
     .replace(/^用引线剪拆掉了炸弹：(.+?)下车，付了 (\d+) 金币。$/u, (_m, who: string, n: string) => `Cut the wires: the ${translateGameText(who, 'en')} got off and paid ${n} coins.`)
     .replace(/^正在被同化 (\d+)\/(\d+)$/u, 'Being corrupted $1/$2')
+    .replace(/^金币不够抢救：卖掉一项能力（退 (\d+) 币）就付得起。$/u, 'Not enough coins for the rescue: selling an ability (+$1 coins) covers it.')
+    .replace(/本段途中补电已用满，但你还有 (\d+) 金币：断电警告里的“加急补电”（这一包 (\d+) 币 \/ (\d+) 电）能救这一层，下次看到它就买。/u, 'This sector’s in-transit charging was used up, but you still had $1 coins: the power alert’s overtime charging ($2 coins for $3 power) would have saved this floor; buy it next time.')
     .replace(/^镇静剂 · 还剩 (\d+) 层不躁动$/u, 'Sedated · no agitation for $1 more floors')
     .replace(/^戒断中 · 还剩 (\d+) 层 · \+(\d+)躁动\/层$/u, 'Withdrawal · $1 floors left · +$2 agitation/floor')
     .replace(/^加班费 \+(\d+)币\/层 · 要跟邻座一起下$/u, 'Overtime +$1 coins/floor · leaves only with a neighbor')
@@ -724,7 +732,7 @@ export function translateGameText(value: string, locale: GameLocale): string {
     .replace(/^催逼 (\d+) 人 · 车费\+100%$/u, 'Driving $1 · fares +100%')
     .replace(/^热度 \+(\d+)币\/层$/u, 'Heat +$1 coins/floor')
     .replace(/^收检查费 \+(\d+)币\/层 · 车厢\+1躁动$/u, 'Inspection fees +$1 coins/floor · cabin +1 agitation')
-    .replace(/^(便衣警察|逃犯|富商|好心人) · (.+)$/u, (_m, who: string) => ({ 便衣警察: 'Undercover Officer · holds Thieves and Robbers, locks bombs', 逃犯: 'Fugitive · +1 agitation/floor · fare 20', 富商: 'Magnate · fare 25', 好心人: 'Good Samaritan · calms each neighbor 1/floor' } as Record<string, string>)[who])
+    .replace(/^(便衣警察|逃犯|富商|好心人) · (.+)$/u, (_m, who: string) => ({ 便衣警察: 'Undercover Officer · holds Thieves and Robbers, locks Bomb Carriers (not the Mad Bomber)', 逃犯: 'Fugitive · +1 agitation/floor · fare 20', 富商: 'Magnate · fare 25', 好心人: 'Good Samaritan · calms each neighbor 1/floor' } as Record<string, string>)[who])
     .replace(/^加急补电 \+(\d+)，支付 (\d+) 金币；下一包更贵。$/u, 'Overtime charging +$1 for $2 coins; the next pack costs more.')
     .replace(/^「(.+?)」升到 2 级，支付 (\d+) 金币。$/u, (_m, a: string, n: string) => `“${translateGameText(a, 'en')}” raised to level 2 for ${n} coins.`)
     .replace(/^(\d+)F · 「(.+?)」2级 −(\d+) 金币$/u, (_m, f: string, a: string, n: string) => `${f}F · “${translateGameText(a, 'en')}” Lv2 −${n} coins`)

@@ -473,7 +473,7 @@ function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
     case 'smuggler':
     case 'courier': {
       const links = parcelLinks(state.cabin);
-      if (!parcelBeside(state.cabin, slot, links)) add('快递员在找纸箱', PARCEL_RULES.lostAgitation);
+      if (!parcelBeside(state.cabin, slot, links)) add(rider.kind === 'smuggler' ? '走私客在找黑箱' : '快递员在找纸箱', PARCEL_RULES.lostAgitation);
       if (links.contested.has(slot)) add('快递员争纸箱', 1);
       break;
     }
@@ -642,6 +642,8 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
   loverCallChance ??= legendInCabin(cabin, 'matchmaker') ? LEGEND_RULES.matchmakerLoverCall : context.keepsakes?.includes('redString') ? LEGEND_RULES.redStringLoverCall : LOVER_CALL_CHANCE;
   const waiting = cabin.some((rider, slot) => rider?.kind === 'lover' && !hasNeighbour(cabin, slot, ['lover']));
   const called = !tutorial && waiting && rng() < loverCallChance;
+  // v9.19.1: a lone Ex calls the other one in, as a Lover calls a partner (the card promised it; it never happened).
+  const exCalled = !tutorial && !called && cabin.filter(r => r?.kind === 'exlover').length === 1 && rng() < LOVER_CALL_CHANCE;
   // A call fills one slot, not the anchor's whole encounter packet. The other
   // two slots still introduce an interacting pair, without another Lover.
   const courierAboard = cabin.some(r => isCarrierKind(r?.kind));
@@ -650,7 +652,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
   const tension = floor >= 21 && rng() < .3 ? BONDS[anchor].avoids.filter(eligible) : [];
   const partners = tension.length ? tension : OFFER_PARTNERS[anchor].filter(eligible);
   const partner = partners[rand(0, partners.length - 1, rng)] ?? 'tourist';
-  const kinds: PassengerKind[] = guided ? ['lover', 'lover', 'courier'] : [anchor, partner, called ? 'lover' : weightedKind(floor, rng, false, false, available, courierAboard)];
+  const kinds: PassengerKind[] = guided ? ['lover', 'lover', 'courier'] : [anchor, partner, called ? 'lover' : exCalled ? 'exlover' : weightedKind(floor, rng, false, false, available, courierAboard)];
   // v9.16: a Courier brings his parcel as an extra card, so one Courier per floor keeps the row at five cards or fewer.
   if (!guided && PARCEL_RULES.enabled) kinds.forEach((kind, i) => { if (kind === 'courier' && kinds.indexOf('courier') !== i) kinds[i] = 'commuter'; });
   // At least one non-high-risk card survives every packet, even after 60F.
@@ -676,7 +678,7 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
       boardedAt: floor, fareBonus: upgrades.concierge ? boosted({ upgrades }, 'concierge', ECONOMY_RULES.conciergeTip) : 0, stash: 0,
       fuse: kind === 'bomb' ? rand(BOMB_RULES.fuseMin, BOMB_RULES.fuseMax, rng)+Number(Boolean(upgrades.delay)) : undefined,
       bombMs: kind === 'bomb' && BOMB_RULES.realtime ? bombSeconds(expressTrip(baseTrip, upgrades.express)) * 1000 : undefined,
-      bombMsTotal: kind === 'bomb' && BOMB_RULES.realtime ? bombSeconds(expressTrip(baseTrip, upgrades.express)) * 1000 : undefined, calledByLover: called && index === 2,
+      bombMsTotal: kind === 'bomb' && BOMB_RULES.realtime ? bombSeconds(expressTrip(baseTrip, upgrades.express)) * 1000 : undefined, calledByLover: (called || exCalled) && index === 2,
     };
   });
   // Variable riders bring one matching visible relation in their own packet.
@@ -699,6 +701,12 @@ export function makeOffers(floor: number, upgrades: Record<UpgradeKey, number>, 
   const darken = (i: number) => {
     const r = shuffled[i], to = DARK_OF[r.kind]!;
     shuffled[i] = turnRider(r, to);
+    // v9.19.1: a Mad Bomber keeps the Bomber's trip, but never under his own minimum (a 2-stop dash paid 50 for nothing).
+    const minTrip = PASSENGERS.madbomber.trip[0], trip = r.destination - floor;
+    if (to === 'madbomber' && trip < minTrip) {
+      const ms = bombSeconds(minTrip) * 1000 * DARK_RULES.madbomberSeconds;
+      shuffled[i] = { ...shuffled[i], destination: floor + minTrip, bombMs: shuffled[i].bombMs !== undefined ? ms : undefined, bombMsTotal: shuffled[i].bombMsTotal !== undefined ? ms : undefined, bonusMs: shuffled[i].bombMs !== undefined ? ms : shuffled[i].bonusMs, fuse: shuffled[i].fuse !== undefined ? shuffled[i].fuse! + minTrip - trip : undefined };
+    }
     if (to === 'smuggler') shuffled.forEach((b, j) => { if (b.kind === 'parcel' && b.ownerId === r.id) shuffled[j] = { ...b, contraband: true }; });
   };
   if (share > 0) shuffled.forEach((r, i) => { if (DARK_OF[r.kind] && rng() < share) darken(i); });
@@ -795,7 +803,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   adjustPressure('音乐家节拍',musicAgitation(state));
   state.cabin.forEach((rider, slot) => { if (rider) riderAgitation(state, slot).fixed.forEach(line => {
     adjustPressure(line.label, line.amount);
-    if (line.amount > 0) stressReasons.push(`${PASSENGERS[rider.kind].name}：${line.label}，躁动 +${line.amount}`);
+    // v9.19.1: “教练急躁” already names the rider; only labels without the name get a “谁：” prefix.
+    if (line.amount > 0) stressReasons.push(`${line.label.startsWith(PASSENGERS[rider.kind].name) ? line.label : `${PASSENGERS[rider.kind].name}：${line.label}`}，躁动 +${line.amount}`);
   }); });
   const redAgitation=redLinks.filter(link=>link.effect==='agitation').length;
   if(redAgitation){
@@ -979,7 +988,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     const appetitePremium = rider.kind === 'drunk' ? fare - arrivalFare(rider, cabin, slot, cooperationBonus(state), state.stress, { ...fareTuning, appetiteBonus: 0 }, hasKeepsake(state,'bell')) : 0;
     if (profile.hidden) notes.push(`${spec.name}封存车费揭晓：${profile.fare} 金币`);
     const delivered = parcelBeside(cabin, slot, links);
-    if (!delivered) notes.push('快递员没带着纸箱到站，没有付钱');
+    if (!delivered) notes.push(rider.kind === 'smuggler' ? '走私客没带着黑箱到站，没有付钱' : '快递员没带着纸箱到站，没有付钱');
     if (rider.kind === 'courier' && delivered) adjustEnergy('快递员电池包', COURIER_ARRIVAL_CHARGE);
     if (thiefTips.get(slot)) addCoins('小偷带走纸箱的小费', thiefTips.get(slot)!);
     // v9.18: a Bomber delivered in real time pays a bonus for the seconds still left on his timer.
@@ -1089,6 +1098,9 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   if (!BOMB_RULES.realtime) { const b = cabin.findIndex(r => r?.kind === 'bomb' && (r.fuse ?? 0) <= 0); if (b >= 0) { const blast = blastAt(cabin, b, coins); cabin = blast.cabin; if (blast.coins) addCoins('炸弹客的炸弹炸了', -blast.coins); lastBlast = { bomber: b, slots: blast.slots, coins: blast.coins }; notes.unshift('炸弹客的炸弹炸了：邻座被炸下车，没付车费'); } }
   const relieved = Math.min(Math.max(0, stress), Math.min(arrivals, arrivalReliefCapFor(state)));
   if (relieved) adjustPressure('乘客到站舒缓', -relieved);
+  // v9.19.1: when a Brawler or Noisemaker gets off, the cabin breathes out; high-agitation play needs a way down.
+  const calmedDown = Math.min(Math.max(0, stress), DARK_RULES.troublemakerRelief * lastArrivals.filter(a => a.kind === 'brawler' || a.kind === 'noisemaker').length);
+  if (calmedDown) adjustPressure('闹事的人下车了', -calmedDown);
   if (checkpoint && hasKeepsake({keepsakes},'roundsLog') && stress > 0) adjustPressure('查房记录：进店舒缓', -Math.min(ROUNDS_LOG_SHOP_RELIEF, stress));
   const entryCharge = shopEntryCharge(boxOf(state));
   if(checkpoint&&entryCharge&&energy<state.energyCap)adjustEnergy('抵达商店补电',Math.min(entryCharge,state.energyCap-energy));
@@ -1164,6 +1176,9 @@ export function failureLesson(state: RunState): string {
     if (state.reserveCell) return ledger+'还有一份未使用的应急电池。关门前可用它补电。';
     // v9.18.4: name the real in-transit cap (10 with full Storage) and say when it was already used up.
     const cap = emergencySectorCap(boxOf(state)), usedUp = emergencySectorLeft(state) <= 0;
+    // v9.19.1: past the allowance, overtime charging still sells power; name it when the wallet could have paid.
+    const overtime = overtimeChargeOffer({ ...state, status: 'playing', energy: 0 });
+    if (usedUp && overtime && state.coins >= overtime.price) return ledger+`本段途中补电已用满，但你还有 ${state.coins} 金币：断电警告里的“加急补电”（这一包 ${overtime.price} 币 / ${overtime.units} 电）能救这一层，下次看到它就买。`;
     if (usedUp) return ledger+`本段途中补电已用满（每十层 ${cap} 电）：离店前要充够到下个商店的电量，配电箱升级别挤掉充电的钱。`;
     if (state.coins >= 8) return ledger+`你带着 ${state.coins} 金币离场：电量告急时可在电量栏“途中补电”，每十层最多 ${cap} 电。`;
     return ledger+'离店时要预留到下个商店的电量；电量栏会显示到店约剩多少。';

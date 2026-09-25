@@ -1,5 +1,6 @@
 import { GHOST_CONTROL_KINDS, overtimerLingers, troubleFree, COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
 import { riderProfile } from './rider-profile';
+import { DARK_RULES } from './dark-rules';
 import { motorCost } from './balance-v832';
 import { boxedMotorCost, shopEntryCharge } from './power-box';
 import { conflictLinks } from './rider-profile';
@@ -53,7 +54,7 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
   const redRise = redOnly + crimeLinks + cabinRise;
   const variants = projectedDestinationVariants(state).map((destinations) => {
     const arriving = state.cabin.flatMap((rider, slot) => rider && rider.kind !== 'parcel' && destinations[slot] !== null && nextFloor >= destinations[slot]! && !overtimerLingers(state, slot, destinations) ? [slot] : []);
-    return { arrivals: arriving.length };
+    return { arrivals: arriving.length, troublemakers: arriving.filter(slot => state.cabin[slot]?.kind === 'brawler' || state.cabin[slot]?.kind === 'noisemaker').length };
   });
   const cap = arrivalReliefCapFor(state);
   const reliefFor = (value: number, arrivals: number) => Math.min(Math.max(0, value), Math.min(arrivals, cap));
@@ -68,7 +69,8 @@ export function stressForecast(state: RunState, _legacyWeight?: number, riskTuni
   const maybeShopRelief = !shopRelief && nextFloor % 10 === 0 && state.cabin.some(r => r?.kind === 'stranger' && r.destination <= nextFloor);
   const outcomes = variants.flatMap((variant) => strangerOptions.map((calm) => {
     const before = state.stress + passengerRise + redRise + calm;
-    const after = Math.max(0, before - reliefFor(before, variant.arrivals));
+    const arrived = Math.max(0, before - reliefFor(before, variant.arrivals));
+    const after = arrived - Math.min(arrived, DARK_RULES.troublemakerRelief * variant.troublemakers);
     const relieved = after - Math.min(ROUNDS_LOG_SHOP_RELIEF, after);
     return shopRelief ? [relieved] : maybeShopRelief ? [after, relieved] : [after];
   }).flat());

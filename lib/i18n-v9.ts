@@ -114,5 +114,5 @@ export const V9_PAIRS: Array<[string, string]> = [
   ['连续不高躁动 ', 'Below high in a row '], ['达标后保留签章；未达标时升至高躁动会中断连续计数', 'The stamp stays once earned; high agitation before then resets the count'], ['卖出能力', 'Sold ability'],
   ['坏人链接', 'Criminal links'],
   ['急躁乘客', 'Impatient riders'], ['急躁', 'Impatient'], ['急躁 +1', 'Impatient +1'],
-  ['每三层运转−1', 'Motor −1 every third floor'], ['偶数层运转−1', 'Motor −1 on even floors'], ['静音：夜深人躁−1', 'Quiet: late-night unrest −1'],
+  ['每三层运转−1', 'Motor −1 every third floor'], ['偶数层运转−1', 'Motor −1 on even floors'], ['静音：夜深人躁−1', 'Quiet: late-night unrest −1'], ['每层运转−1', 'Motor −1 every floor'], ['每3层有2层运转−1', 'Motor −1 on 2 floors in 3'],
 ];

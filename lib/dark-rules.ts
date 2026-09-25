@@ -10,19 +10,21 @@ export const DARK_RULES = {
   overtimePay: 2, overstayAgitation: 1, overstayMax: 3,
   voyeurAgitation: 1, voyeurPhoto: 3,
   smugglerBoxMultiplier: 2, seizeReward: 15, bribe: 8,
-  scrapperCoins: 3, scrapperMotor: 1, fenceCoins: 2,
+  scrapperCoins: 4, scrapperMotor: 1, fenceCoins: 2,
   exFareBonus: 1,
   noiseAgitation: 1, noiseHighCoins: 4,
+  /** A Brawler or Noisemaker getting off lowers agitation this much (after ordinary arrival relief). */
+  troublemakerRelief: 2,
   robberBase: 2, robberRate: 0.03, robberCap: 10, robberAgitation: 1, robberBounty: 15,
   crookedFee: 3, crookedCalm: 1,
-  shysterPerRed: 3, shysterCap: 9, shysterAgitation: 1,
+  shysterPerRed: 3, shysterCap: 9, shysterAgitation: 0,
   brawlerSelf: 1, brawlerPerNormal: 1, brawlerHighBonus: 2,
   pusherCalm: 2, withdrawal: 1, withdrawalFloors: 2,
   creepyPerNeighbour: 1, creepyAloneBonus: 10,
   wraithDrain: 1, wraithControlledCoins: 4,
   summonEvery: 3, summonTrip: 4, summonFareBonus: 1,
   taskmasterFareBonus: 1, taskmasterAgitation: 1,
-  scandalPerNeighbour: 2, scandalVoyeur: 5,
+  scandalPerNeighbour: 1, scandalVoyeur: 3,
   grafterFee: 2, grafterAgitation: 1,
   /** The Mad Bomber's real-time timer is this share of an ordinary Bomber's. */
   madbomberSeconds: 0.6,
@@ -54,7 +56,7 @@ export const isCarrierKind = (kind: PassengerKind | undefined) => kind === 'cour
 export type MysteryIdentity = 'undercover' | 'fugitive' | 'magnate' | 'saint';
 export const MYSTERY_IDENTITIES: MysteryIdentity[] = ['undercover', 'fugitive', 'magnate', 'saint'];
 export const MYSTERY_RULES: Record<MysteryIdentity, { fare: number; name: string; en: string; zh: string; enLine: string }> = {
-  undercover: { fare: 8, name: '便衣警察', en: 'Undercover Officer', zh: '管住身边的小偷、劫匪，锁住炸弹', enLine: 'Controls adjacent Thieves and Robbers; locks Bombs' },
+  undercover: { fare: 8, name: '便衣警察', en: 'Undercover Officer', zh: '管住身边的小偷、劫匪，锁住炸弹客（锁不住疯炸客）', enLine: 'Controls adjacent Thieves and Robbers; locks Bomb Carriers (not the Mad Bomber)' },
   fugitive: { fare: 20, name: '逃犯', en: 'Fugitive', zh: '每层 +1 躁动 · 车费 20', enLine: '+1 agitation/floor · fare 20' },
   magnate: { fare: 25, name: '富商', en: 'Magnate', zh: '车费 25', enLine: 'Fare 25' },
   saint: { fare: 8, name: '好心人', en: 'Good Samaritan', zh: '抵消每位邻座自身躁动 1/层', enLine: 'Cancels 1 of each neighbor’s own agitation/floor' },

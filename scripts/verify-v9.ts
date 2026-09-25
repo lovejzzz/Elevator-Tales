@@ -22,6 +22,7 @@ import { readFileSync } from 'node:fs';
 import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
 import { planPlacement } from '../lib/game-interaction';
+import { cardSummary, displayName } from '../lib/card-summary';
 import { DARK_RULES as DARK, itemPrice } from '../lib/dark-rules';
 
 // Most checks here predate the v9.18 real-time Bomber timer and verify floor timers; the real-time block switches it on.
@@ -801,4 +802,27 @@ console.log('PASS crowding warning, merged notes, English coverage of engine mes
   assert.ok(Math.abs(itemPrice('holywater', 60, 1) - 90) < 1 && itemPrice('holywater', 100) > 60, 'repeat and depth raise item prices');
 }
 console.log('PASS v9.19 dark share, corruption, Mystery identity, survivors, dark riders, flare, items');
-console.log(JSON.stringify({ version: 'v9', checks: 40, passed: true }));
+// v9.19.1 playtest fixes: two old-rider moves, corruption warning, black-box names, no dark names before midnight.
+{
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 60, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  let st = run(62, [R('commuter', 'a', 70), R('tourist', 'b', 70), R('nurse', 'c', 70)]);
+  const m1 = planPlacement(st, st.cabin[0]!, 3); assert.ok(m1.ok && !m1.next.swapped && /剩余1次/.test(m1.next.message), 'the first old-rider move leaves one');
+  const m2 = planPlacement(m1.next, m1.next.cabin[1]!, 4); assert.ok(m2.ok && m2.next.swapped && E.oldMovesRemaining(m2.next) === 0, 'the second old-rider move is allowed');
+  st = run(62, [R('robber', 'x', 70), R('commuter', 'c', 70)]);
+  const warn = planPlacement(st, R('brawler', 'y', 70), 2);
+  assert.ok(warn.ok && /通勤者会被同化成加班魂（2层后）/.test(warn.next.message), 'placing a second dark neighbour warns about corruption');
+  assert.equal(displayName({ kind: 'parcel', contraband: true }, 'zh'), '黑箱');
+  const early = cardSummary(R('lover', 'l', 5), run(1, []), 'zh');
+  assert.ok(!early.chips.some(c => c.kinds.some(k => isDark(k))), 'ordinary cards name no dark rider before midnight');
+  assert.ok(cardSummary(R('lover', 'l', 70), run(62, []), 'zh').chips.some(c => c.kinds.includes('exlover')), 'after midnight they do');
+  // A lone Ex calls the other in; a Brawler getting off lowers agitation by 2 more, and the forecast knows.
+  const ex = [R('exlover', 'e', 70), null, null, null, null, null];
+  assert.ok(Array.from({ length: 40 }, (_, i) => E.makeOffers(64, E.initialRun().upgrades, false, seq(((i * 37) % 97) / 97, .01, ((i * 13) % 89) / 89), ex)).some(o => o[2]?.kind === 'exlover' && o[2].calledByLover), 'a lone Ex calls the other one');
+  const calmed = run(64, [R('brawler', 'b', 65), R('crookedcop', 'k', 70)], { stress: 6, stressCap: 12 });
+  const settledCalm = E.resolveFloor(calmed, fixed(.9));
+  assert.equal(lines(settledCalm, 'lastPressure')['闹事的人下车了'], -DARK.troublemakerRelief);
+  const fc = stressForecast(calmed);
+  assert.ok(settledCalm.lastPressure.delta >= fc.lowDelta && settledCalm.lastPressure.delta <= fc.highDelta, 'the forecast counts the troublemaker relief');
+}
+console.log('PASS v9.19.1 playtest fixes');
+console.log(JSON.stringify({ version: 'v9', checks: 41, passed: true }));

@@ -72,7 +72,10 @@ export function banner(anchor: Element | null, title: string, sub: string, tone:
   el.innerHTML = '';
   const h = document.createElement('strong'); h.textContent = title; el.appendChild(h);
   if (sub) { const s = document.createElement('span'); s.textContent = sub; el.appendChild(s); }
-  el.style.left = `${c.x}px`; el.style.top = `${c.y - c.h * .12}px`; el.style.width = `${Math.min(c.w * .92, 620)}px`;
+  // v9.19.1: on phones the cabin can be scrolled out of view (the midnight bell rang below the fold); keep the banner
+  // on screen by clamping it into the viewport.
+  const y = Math.min(Math.max(c.y - c.h * .12, 90), window.innerHeight - 90);
+  el.style.left = `${Math.min(Math.max(c.x, 60), window.innerWidth - 60)}px`; el.style.top = `${y}px`; el.style.width = `${Math.min(c.w * .92, 620, window.innerWidth - 24)}px`;
   const frames = reduced() ? [{ opacity: 1 }, { opacity: 1, offset: .85 }, { opacity: 0 }] : [
     { transform: 'translate(-50%,-50%) scaleX(.2)', opacity: 0, letterSpacing: '.4em' },
     { transform: 'translate(-50%,-50%) scaleX(1.04)', opacity: 1, offset: .14 },
