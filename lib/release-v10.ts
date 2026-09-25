@@ -330,3 +330,47 @@ export const V102_EN: ChangelogEntry = {
     'Other legends’ keepsakes could become upgrades too (e.g. the Wrench turning Mechanics into Master Mechanics).',
   ],
 };
+
+export const V1021_ZH: ChangelogEntry = {
+  version: '10.2.1', date: '2026-09-25', title: '乘客卡改成竖版卡牌',
+  summary: '候车乘客的卡片原来是横向的一条，画像很小，信息挤在右边。现在改成竖版卡牌（像宝可梦卡、炉石卡）：大画像在上，数值压在画像的角上，下面是符号和能力。',
+  changes: [
+    '卡片从上到下：名字栏 → 大画像 → 符号效果 → 能力说明框（信物、搭档、操作按钮在最下面）。',
+    '数值放在画像上：左上金色圆币是车费，右上是路程（几站），左下青色圆章是耗电，右下红色圆章是躁动；传奇、易燃、悬赏等标签贴在画像左侧。传奇卡不付车费、不耗电，画像底部改为一行说明。',
+    '排列：宽屏时右侧一列两张，四位乘客正好 2×2；超过四位时这一列可以上下滚动，卡片不再被压扁。中等宽度（701–1100 像素）时卡片在车厢上方排成一行，多了可以左右滑动。手机上两列。',
+    '只改卡片的排版，卡上的信息和原来一样，没有增加或删掉内容。',
+  ],
+  experiments: [
+    '只改界面，规则和数值不变，沿用 v10.2.0 的验收（4200 局）。',
+    '浏览器检查了三种宽度，4 位和 6 位乘客：手机 375（两列）、800（一行，可左右滑动）、1440×900（右侧 2×2，6 位时整列滚动）；每种情况下所有卡片的内容都没有被截掉，页面没有横向滚动。verify 全部通过。',
+  ],
+  watch: [
+    '宽屏上超过四位乘客时要往下滚才能看到后面的人，需要真人试玩看会不会漏看。',
+  ],
+};
+
+export const V1021_EN: ChangelogEntry = {
+  version: '10.2.1', date: '2026-09-25', title: 'Rider cards become upright trading cards',
+  summary: 'Waiting riders used to be wide strips with a small portrait and the details squeezed to the right. They are now upright trading cards, in the manner of Pokémon or Hearthstone cards: a large portrait on top with the numbers set on its corners, and the symbols and ability below.',
+  changes: [
+    'Top to bottom, a card reads: name bar, large portrait, symbol effects, ability box (keepsake, partners and action buttons at the foot).',
+    'The numbers sit on the portrait:',
+    '• fare in the gold coin at top left;',
+    '• trip length (stops) at top right;',
+    '• power in the cyan badge at bottom left;',
+    '• agitation in the red badge at bottom right.',
+    'Tags such as Legend, Volatile and Bounty sit on the portrait’s left edge. Legends pay no fare and use no power, so their portrait ends in a one-line note instead.',
+    'Layout:',
+    '• On wide screens the right column holds two cards a row, so four riders form a 2×2 grid; with more than four the column scrolls instead of squashing the cards.',
+    '• At medium width (701–1100 px) the cards form one row above the cabin and scroll sideways when there are more.',
+    '• Phones show two columns.',
+    'Only the layout changed: the cards carry exactly the information they did before.',
+  ],
+  experiments: [
+    'Interface only; rules and numbers unchanged, so the v10.2.0 acceptance (4,200 runs) stands.',
+    'Checked in the browser at three widths with 4 and 6 riders: phone 375 (two columns), 800 (one row, sideways scroll) and 1440×900 (2×2 on the right, the column scrolls with 6). No card had clipped content and the page never scrolled sideways. verify passes.',
+  ],
+  watch: [
+    'With more than four riders on a wide screen, the rest are below the fold; playtests should show whether players miss them.',
+  ],
+};

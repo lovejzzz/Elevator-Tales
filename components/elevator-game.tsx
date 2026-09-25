@@ -223,21 +223,24 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
   const zh=locale==='zh';
   const legend=isAnyLegend(rider.kind), darkLegend=isDarkLegend(rider.kind);
   // v9.17.2: a box's contents stay hidden until it opens, so its card shows no value estimate.
-  return <span className="unified-passenger-summary compact-card" data-no-translate>
-    <span className="cc-head"><Portrait kind={rider.kind} rider={rider}/><span className="cc-title"><strong>{displayName(rider,locale)}<span className={`card-gem gem-${riderCardGrade(rider)}`} title={({standard:zh?'普通':'Common',fine:zh?'精良':'Fine',rare:zh?'稀有':'Rare',legendary:zh?'传奇':'Legendary'} as Record<string,string>)[riderCardGrade(rider)]} aria-hidden="true" /></strong><span className="cc-sub">
-      <span className="cc-trip">{zh?`${brief.distance} 站`:`${brief.distance} ${brief.distance===1?'stop':'stops'}`}</span>
-      {legend&&<span className={`cc-tag cc-tag-legend ${darkLegend?'cc-tag-dark-legend':''}`}>{darkLegend?(zh?'暗黑传奇':'Dark legend'):(zh?'传奇':'Legend')}</span>}
+  // v10.2.1: a portrait trading card (name bar · big art with the fare in the corner and power / agitation below · symbols · text).
+  return <span className="unified-passenger-summary compact-card tcg-face" data-no-translate>
+    <span className="tcg-name"><strong>{displayName(rider,locale)}<span className={`card-gem gem-${riderCardGrade(rider)}`} title={({standard:zh?'普通':'Common',fine:zh?'精良':'Fine',rare:zh?'稀有':'Rare',legendary:zh?'传奇':'Legendary'} as Record<string,string>)[riderCardGrade(rider)]} aria-hidden="true" /></strong></span>
+    <span className="tcg-art"><Portrait kind={rider.kind} rider={rider} large/>
+      {!legend&&<b className="cc-fare tcg-cost" aria-label={brief.coins===null?(zh?'车费封存':'Fare sealed'):`${zh?'车费':'Fare'} ${brief.coins}`}><Coins aria-hidden="true" />{brief.coins===null?<Scramble />:brief.coins}{brief.tip>0&&<small>+{brief.tip}</small>}</b>}
+      <span className="cc-trip tcg-trip">{zh?`${brief.distance} 站`:`${brief.distance} ${brief.distance===1?'stop':'stops'}`}</span>
+      <span className="tcg-tags">
+            {legend&&<span className={`cc-tag cc-tag-legend ${darkLegend?'cc-tag-dark-legend':''}`}>{darkLegend?(zh?'暗黑传奇':'Dark legend'):(zh?'传奇':'Legend')}</span>}
       {isDark(rider.kind)&&outburstChanceAt(run)>0&&<span className="cc-tag cc-tag-outburst" title={zh?`深渊里的暗黑版越来越极端：每层有 ${Math.round(outburstChanceAt(run)*100)}% 的机会发作（${outburstIsPower(rider.kind)?`吸走 ${DARK_RULES.outburstPower} 电`:`+${DARK_RULES.outburstAgitation} 躁动`}）；深渊里上车的暗黑版车费更高。照明弹、镇静剂能压住。`:`Deep in the abyss dark riders grow extreme: each floor a ${Math.round(outburstChanceAt(run)*100)}% chance to lash out (${outburstIsPower(rider.kind)?`draining ${DARK_RULES.outburstPower} power`:`+${DARK_RULES.outburstAgitation} agitation`}); dark cards drawn in the abyss pay more. A Flare or a Sedative holds it off.`}>{zh?`发作 ${Math.round(outburstChanceAt(run)*100)}% · ${outburstIsPower(rider.kind)?`−${DARK_RULES.outburstPower}电`:`+${DARK_RULES.outburstAgitation}躁`}`:`Lashes out ${Math.round(outburstChanceAt(run)*100)}% · ${outburstIsPower(rider.kind)?`−${DARK_RULES.outburstPower} power`:`+${DARK_RULES.outburstAgitation} agit.`}`}</span>}
       {Boolean(rider.bounty)&&<span className="cc-tag cc-tag-bounty" title={abyssEventRule('bounty',locale)}>{zh?`悬赏 +${rider.bounty}`:`Bounty +${rider.bounty}`}</span>}
       {rider.volatile&&<span className="cc-tag cc-tag-risk" title={zh?`急躁的乘客：车费多 ${HIGH_RISK_BONUS}，但在车上每层 +1 躁动；护士相邻可以抵消`:`Impatient rider: fare +${HIGH_RISK_BONUS}, but +1 agitation per floor aboard; an adjacent Nurse offsets it`}><Flame aria-hidden="true" />{zh?`急躁：车费+${HIGH_RISK_BONUS}，躁动+1/层`:`Impatient: fare +${HIGH_RISK_BONUS}, +1/floor`}</span>}
       {rider.localFareRatio&&<span className="cc-tag">{zh?'短途':'Local'}</span>}
-    </span></span></span>
-    {legend ? <span className="cc-values cc-legend-values"><span>{rider.kind==='coldmatron'?(zh?'不付车费':'No fare'):(zh?'不付车费 · 不耗电':'No fare · no power')}</span></span> : <span className="cc-values">
-      <b className="cc-fare" aria-label={brief.coins===null?(zh?'车费封存':'Fare sealed'):`${zh?'车费':'Fare'} ${brief.coins}`}><Coins aria-hidden="true" />{brief.coins===null?<Scramble />:brief.coins}{brief.tip>0&&<small>+{brief.tip}</small>}</b>
-      {(()=>{const energy=brief.energy*(rider.kind==='parcel'&&rider.big?2:1);return <span className="cc-energy" aria-label={`${zh?'每层耗电':'Power per floor'} ${energy}`}><BatteryCharging aria-hidden="true" />{energy>0?`−${energy}`:energy}</span>;})()}
-      {brief.agitation>0&&<span className="cc-agitation" aria-label={`${zh?'每层躁动':'Agitation per floor'} +${brief.agitation}`}><Flame aria-hidden="true" />+{brief.agitation}</span>}
-      {/* v10.1: no net-value chips — the fare, power and agitation numbers and the links panel say it (players read −2 as “don’t board”). */}
-    </span>}
+      </span>
+      {legend ? <span className="tcg-legend-note"><span>{rider.kind==='coldmatron'?(zh?'不付车费':'No fare'):(zh?'不付车费 · 不耗电':'No fare · no power')}</span></span> : <span className="tcg-stats">
+        {(()=>{const energy=brief.energy*(rider.kind==='parcel'&&rider.big?2:1);return <span className="cc-energy" aria-label={`${zh?'每层耗电':'Power per floor'} ${energy}`}><BatteryCharging aria-hidden="true" />{energy>0?`−${energy}`:energy}</span>;})()}
+        {brief.agitation>0&&<span className="cc-agitation" aria-label={`${zh?'每层躁动':'Agitation per floor'} +${brief.agitation}`}><Flame aria-hidden="true" />+{brief.agitation}</span>}
+      </span>}
+    </span>
     <SymbolBadges rider={rider} cabin={run.cabin} slot={run.cabin.findIndex(r=>r?.id===rider.id)} locale={locale} withEffects />
     <span className="cc-line">{summary.line}{summary.sealed&&<> <Scramble className="scramble-line" />{rider.kind==='mystery'?(zh?' · 揭晓身份时公开':' · shown when he is revealed'):(zh?' · 到站揭晓':' · revealed on arrival')}</>}{(()=>{const progress=isBombKind(rider.kind)&&rider.bombMs!==undefined?`⏱ ${Math.ceil(rider.bombMs/1000)}s`:summary.progress;/* v9.20.3: the Mad Bomber too (his card said “⏱ 5”, floors, while his seat counts seconds) */return progress&&<em>{progress}</em>;})()}</span>
     {darkLegend&&<span className="cc-keepsake-effect cc-dark-reward"><b>{zh?'送到 70 层：':'Deliver to 70F: '}</b>{DARK_LEGEND_REWARD[rider.kind as DarkLegendKind][zh?0:1]}</span>}

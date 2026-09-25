@@ -1,6 +1,18 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.0**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.1**. Publication status is tracked separately from the source version.
+
+## v10.2.1 — 2026-09-25 — Rider cards become upright trading cards / 乘客卡改成竖版卡牌
+
+- Cards read top to bottom: name bar, large portrait, symbol effects, ability box.
+- Numbers on the portrait: fare (gold coin, top left), trip (top right), power (cyan, bottom left), agitation (red, bottom right). Tags sit on the portrait's left edge; Legends end in a one-line note.
+- Layout:
+  - wide screens: two cards a row in the right column (4 riders = 2×2); more than four scroll the column instead of squashing cards;
+  - 701–1100 px: one row above the cabin, sideways scroll;
+  - phones: two columns.
+- Layout only; the cards carry the same information. Rules and numbers unchanged (v10.2.0 acceptance stands).
+- Browser check: 375 / 800 / 1440×900 with 4 and 6 riders; no clipped card content, no page sideways scroll.
+- Watch: on wide screens riders beyond four are below the fold.
 
 ## v10.2.0 — 2026-09-25 — Playtest feedback: hover explanations, symbol codex, keepsake icons, new Ghost, Master Musician / 试玩反馈
 
