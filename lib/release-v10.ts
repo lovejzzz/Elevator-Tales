@@ -191,3 +191,39 @@ export const V101_EN: ChangelogEntry = {
     'Shapes (row, square, full cabin) are named in the panel but not yet highlighted in the cabin.',
   ],
 };
+
+export const V1011_ZH: ChangelogEntry = {
+  version: '10.1.1', date: '2026-09-25', title: '卡片不再显示“送达 净 ±N 金币”',
+  summary: '车费降了四成以后，很多乘客单独坐时卡上显示“净 −2、−3”，看起来像“别带他”。其实他们的价值在链接里。卡片上的净收益估算和“配某人 +N”两个标签都去掉了。',
+  changes: [
+    '候客卡和已上车的卡都不再显示“送达 净 ±N 金币”和“配某人 +N”的虚线标签。卡片只留车费、耗电、躁动三个数字和一句能力说明，链接的收益看“这一层的链接”面板。',
+    '只隐藏负数会让“没有标签”本身变成“亏钱”的意思，所以正负都去掉。',
+    '两条提示改写，不再引用被删掉的标签：“X 单看不划算，和 Y 挨着坐就赚：一起带上。”“空着的座位也在耗运转电：多带几位，让相同符号的人挨着坐，常常能赚回来。”',
+  ],
+  experiments: [
+    '只改界面，规则和数值不变，沿用 v10.1.0 的验收（4200 局：熟练型 断电 47.0% / 躁动 51.9% / 炸弹 1.0%，抵达 100 层 0.8%）。净收益的计算还在，模拟器里的真人型机器人和测试仍在用。verify 全部通过；浏览器检查了中英文卡片。',
+  ],
+  watch: [
+    '没有净收益标签后，新玩家要靠三个数字和链接面板自己判断值不值得带，需要真人试玩看是否更难上手。',
+  ],
+};
+
+export const V1011_EN: ChangelogEntry = {
+  version: '10.1.1', date: '2026-09-25', title: 'Cards no longer show “On arrival ±N coins”',
+  summary: 'After fares dropped by 40%, many riders showed “−2” or “−3” on their own, which read as “don’t board him”, while their value was really in the links. The net-value estimate and the “w/ someone +N” tag are gone from cards.',
+  changes: [
+    'Waiting and seated cards no longer show “On arrival ±N coins” or the dashed “w/ someone +N” tag. A card keeps its fare, power and agitation numbers and one ability line; what links earn is in the “Links this floor” panel.',
+    'Hiding only negative values would make “no tag” mean “loses money”, so both are gone.',
+    'Two hints no longer quote the removed tags:',
+    '• “X does little on its own but earns beside Y: take them together.”',
+    '• “Empty seats still cost motor power: take a few more riders and seat those who share a symbol together; it often pays back.”',
+  ],
+  experiments: [
+    'Interface only; rules and numbers unchanged, so the v10.1.0 acceptance stands (4,200 runs: skilled 47.0% power / 51.9% agitation / 1.0% bomb; 100F reached in 0.8% of runs).',
+    'The net-value calculation remains; the human-like simulation bot and the tests still use it.',
+    'verify passes; cards were checked in the browser in Chinese and English.',
+  ],
+  watch: [
+    'Without the net tag, new players judge a rider from the three numbers and the links panel; human playtests should show whether that is harder to learn.',
+  ],
+};

@@ -8,6 +8,7 @@ export const V10_PAIRS: Array<[string, string]> = [
   ['赚钱的符号（热闹、江湖）每级绿线每层多 +2 金币。本局限装一次。', 'Coin symbols (Lively, Street) pay 2 more coins per green-link level per floor. One per run.'],
   ['赚钱的符号（热闹、江湖）每级绿线每层 +2 金币；此后未配对恋人呼唤同伴的概率为35%。', 'Coin symbols (Lively, Street) pay 2 more coins per green-link level per floor; an unpaired Lover now calls a partner 35% of the time.'],
   ['符号绿线省电', 'Symbol links save power'],
+  ['空着的座位也在耗运转电：多带几位，让相同符号的人挨着坐，常常能赚回来。', 'Empty seats still cost motor power: take a few more riders and seat those who share a symbol together; it often pays back.'],
   ['新手示例 · 让两位恋人成为邻座：两人都有人间和安静，会连出绿线', 'Tutorial · seat the two Lovers side by side: both carry Hearth and Quiet, so a green line appears'],
   ['绿线：相同符号 · 红线：相反符号 · 紫箭头复制', 'Green: shared symbol · Red: opposite symbols · Purple arrow: copy'],
   ['卡面基价 + 每位邻座2金币；中躁动再加3金币。', 'Card base fare + 2 coins per neighbour; +3 more at medium agitation.'],

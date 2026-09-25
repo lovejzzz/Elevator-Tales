@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.1.0**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.1.1**. Publication status is tracked separately from the source version.
+
+## v10.1.1 — 2026-09-25 — Cards no longer show “On arrival ±N coins” / 卡片不再显示净收益
+
+- Removed the net-value chip and the "w/ someone +N" tag from all cards. Riders alone often showed −2/−3 after the fare cut, which read as "don't board" while their value is in the links.
+- Hiding only negatives would make "no tag" mean "loses money", so both are gone.
+- Two hints were rewritten so they no longer quote the tags.
+- Interface only; the v10.1.0 acceptance stands. verify passes.
 
 ## v10.1.0 — 2026-09-25 — Hand-drawn symbol icons, Street and Spirit worth building / 自己画的符号图标，江湖和幽冥也能搭
 
