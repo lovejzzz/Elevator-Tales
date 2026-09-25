@@ -106,10 +106,11 @@ export function mysteryClue(rider: { id: string; identity?: MysteryIdentity }): 
 }
 
 /** v9.19 items: one-use tools kept in a four-slot bag, bought in shops at rising prices. */
-export type ItemKey = 'cell' | 'swap' | 'dismiss' | 'candy' | 'fuse' | 'aroma' | 'holywater' | 'cuffs' | 'amulet' | 'alarm' | 'sedative' | 'seal' | 'cutter' | 'flare';
+export type ItemKey = 'cell' | 'swap' | 'dismiss' | 'candy' | 'fuse' | 'aroma' | 'holywater' | 'cuffs' | 'amulet' | 'alarm' | 'sedative' | 'seal' | 'cutter' | 'flare'
+  | 'longflare' | 'sandalwood' | 'strongsedative' | 'greatamulet';
 export type ItemTarget = 'none' | 'rider' | 'dark' | 'normal' | 'thief' | 'overtimer' | 'child' | 'bomb' | 'parcel';
 export const ITEM_SLOTS = 4;
-export const ITEMS: Record<ItemKey, { name: string; en: string; zh: string; enText: string; from: number; price: number; target: ItemTarget }> = {
+export const ITEMS: Record<ItemKey, { name: string; en: string; zh: string; enText: string; from: number; price: number; target: ItemTarget; market?: true; art?: ItemKey }> = {
   cell: { name: '应急电池', en: 'Spare Cell', zh: '立即 +15 电（不超过上限）', enText: '+15 power now (up to the cap)', from: 1, price: 20, target: 'none' },
   swap: { name: '换位券', en: 'Swap Ticket', zh: '本层多一次老乘客换位', enText: 'One more old-rider move this floor', from: 1, price: 10, target: 'none' },
   dismiss: { name: '请离券', en: 'Exit Pass', zh: '免费请离一位乘客（不占请离次数）', enText: 'Dismiss one rider for free (no dismissal used)', from: 1, price: 15, target: 'rider' },
@@ -124,7 +125,16 @@ export const ITEMS: Record<ItemKey, { name: string; en: string; zh: string; enTe
   seal: { name: '封条', en: 'Seal', zh: '一个纸箱或黑箱不会被没收、偷走或拆开', enText: 'A box cannot be seized, stolen or opened', from: 60, price: 20, target: 'parcel' },
   cutter: { name: '引线剪', en: 'Wire Cutter', zh: '当场拆掉一颗炸弹：炸弹客下车并付车费', enText: 'Defuse one bomb now: the bomber gets off and pays', from: 60, price: 45, target: 'bomb' },
   flare: { name: '照明弹', en: 'Flare', zh: '本层所有暗黑版的麻烦都不发生', enText: 'No dark rider causes trouble this floor', from: 80, price: 120, target: 'none' },
+  // v9.21.1 night-market goods: sold only at the Night market (never in shops), stronger and dearer versions of shop items.
+  longflare: { name: '长明照明弹', en: 'Long Flare', zh: '本层和下一层所有暗黑版的麻烦都不发生', enText: 'No dark rider causes trouble this floor or the next', from: 81, price: 190, target: 'none', market: true, art: 'flare' },
+  sandalwood: { name: '檀香', en: 'Sandalwood', zh: '立即 −5 躁动', enText: '−5 agitation now', from: 81, price: 120, target: 'none', market: true, art: 'aroma' },
+  strongsedative: { name: '强效镇静剂', en: 'Strong Sedative', zh: '一位乘客直到下车都不产生躁动、不会深渊发作，也不会戒断', enText: 'A rider adds no agitation of their own until they get off: no abyss outbursts, no withdrawal', from: 81, price: 80, target: 'rider', market: true, art: 'sedative' },
+  greatamulet: { name: '大护身符', en: 'Great Amulet', zh: '车里所有普通人本次路程都不会被同化', enText: 'Every normal rider aboard is safe from corruption this trip', from: 81, price: 90, target: 'none', market: true, art: 'amulet' },
 };
 export const ITEM_KEYS = Object.keys(ITEMS) as ItemKey[];
+/** Shop items (the Night market also sells one of these) and the night-market goods sold nowhere else. */
+export const SHOP_ITEM_KEYS = ITEM_KEYS.filter(k => !ITEMS[k].market);
+export const MARKET_ITEM_KEYS = ITEM_KEYS.filter(k => ITEMS[k].market);
+export const MARKET_STOCK = { goods: 2, shopItems: 1 } as const;
 /** Price rises half the base each time the same item is bought, and a little with depth. */
 export const itemPrice = (key: ItemKey, floor: number, bought = 0) => Math.round(ITEMS[key].price * (1 + 0.5 * bought) * (1 + Math.max(0, floor - 60) / 200));

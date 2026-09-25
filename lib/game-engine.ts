@@ -1,7 +1,7 @@
 import { BONDS, bondStatus, conflictLinks, profileWeight, randomTraits, riderProfile, type VariableTraits } from './rider-profile';
 import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
 import { ADJACENT, BASE_OF, DARK_LEGEND_KINDS, DARK_LEGEND_OF, DARK_OF, PASSENGERS, UNLOCK_TIERS, UPGRADES, isAnyLegend, isDark, isDarkLegend, isLegend, passengerCategory, type DarkLegendKind, type LegendKind, type PassengerKind, type UpgradeKey } from './game-data';
-import { ABYSS_EVENTS, ABYSS_EVENT_KINDS, type AbyssEventKind, DARK_RESONANCE, DARK_RULES, ITEMS, ITEM_KEYS, ITEM_SLOTS, MYSTERY_IDENTITIES, MYSTERY_RULES, abyssStep, abyssTier, outburstChance, outburstIsPower, corruptible, darkShare, isBombKind, isCarrierKind, isSurvivor, itemPrice, type ItemKey, type MysteryIdentity } from './dark-rules';
+import { ABYSS_EVENTS, ABYSS_EVENT_KINDS, type AbyssEventKind, DARK_RESONANCE, DARK_RULES, ITEMS, ITEM_SLOTS, MARKET_ITEM_KEYS, MARKET_STOCK, SHOP_ITEM_KEYS, MYSTERY_IDENTITIES, MYSTERY_RULES, abyssStep, abyssTier, outburstChance, outburstIsPower, corruptible, darkShare, isBombKind, isCarrierKind, isSurvivor, itemPrice, type ItemKey, type MysteryIdentity } from './dark-rules';
 import { BOX_MAX_LEVEL, BOX_PRICES, BOX_TOTAL_CAP, emergencySectorCap, EMPTY_BOX, affordableUnits, boxTotal, boxedMotorCost, chargeCost, emergencyUnitPrice, motorNoise, shopEntryCharge, storageCap, type BoxLine, type PowerBox } from './power-box';
 import { districtWeight } from './districts';
 import { CHILD_CARERS, DARK_LEGEND_RULES, DRUNK_CARERS, GHOST_CONTROLLERS, KEEPSAKE_KEYS, LEGEND_DECLINE_COINS, LEGEND_DESTINATION, LEGEND_KEEPSAKE, LEGEND_POOL_DEFAULT, LEGEND_RULES, type KeepsakeKey } from './legends';
@@ -83,6 +83,8 @@ export type RunState = {
   itemBought?: Partial<Record<ItemKey, number>>;
   /** A flare lit on this floor: no dark rider causes trouble on the ascent from it. */
   flareFloor?: number;
+  /** v9.21.1 Long Flare: the last floor its quiet covers (flareFloor through flareUntil). */
+  flareUntil?: number;
   /** v9.19: the shop floor where an ability was last raised to level 2 (one per shop). */
   abilityRaisedFloor?: number;
   /** v9.19: an ordinary Bomber blew up (neighbours thrown out unpaid), for the explosion effect. */
@@ -438,10 +440,11 @@ export const GHOST_CONTROL_KINDS: PassengerKind[] = [...GHOST_CONTROLLERS, 'summ
 /** v9.21 the eve of the abyss: the event announced for this floor, if any. */
 export const abyssEventAt = (state: Pick<RunState, 'abyssEvents'>, floor: number): AbyssEventKind | undefined => state.abyssEvents?.find(e => e.floor === floor)?.kind;
 /** A Flare, or a Hush floor: no dark rider causes trouble on the ascent from this floor. */
-export const troubleFree = (state: Pick<RunState, 'flareFloor' | 'floor' | 'abyssEvents'>) => state.flareFloor === state.floor || abyssEventAt(state, state.floor) === 'hush';
+export const flareCovers = (state: Pick<RunState, 'flareFloor' | 'flareUntil' | 'floor'>) => state.flareFloor !== undefined && state.floor >= state.flareFloor && state.floor <= Math.max(state.flareFloor, state.flareUntil ?? state.flareFloor);
+export const troubleFree = (state: Pick<RunState, 'flareFloor' | 'flareUntil' | 'floor' | 'abyssEvents'>) => flareCovers(state) || abyssEventAt(state, state.floor) === 'hush';
 /** Outburst odds for the ascent from this floor: the abyss step, doubled on a Surge floor (never above the cap); none
  * on a Hush floor or after a Flare, so the cards and seats stop printing odds that cannot happen. */
-export const outburstChanceAt = (state: Pick<RunState, 'floor' | 'abyssEvents' | 'flareFloor'>) => troubleFree(state) ? 0 : Math.min(DARK_RULES.outburstMax, outburstChance(state.floor + 1) * (abyssEventAt(state, state.floor) === 'surge' ? ABYSS_EVENTS.surgeMultiplier : 1));
+export const outburstChanceAt = (state: Pick<RunState, 'floor' | 'abyssEvents' | 'flareFloor' | 'flareUntil'>) => troubleFree(state) ? 0 : Math.min(DARK_RULES.outburstMax, outburstChance(state.floor + 1) * (abyssEventAt(state, state.floor) === 'surge' ? ABYSS_EVENTS.surgeMultiplier : 1));
 /** Four of floors 81–89, one of each event, drawn on the shop's stream as the 80F shop opens. */
 export function drawAbyssEvents(rng: () => number): Array<{ floor: number; kind: AbyssEventKind }> {
   const floors = Array.from({ length: ABYSS_EVENTS.to - ABYSS_EVENTS.from + 1 }, (_, i) => ABYSS_EVENTS.from + i);
@@ -455,7 +458,7 @@ export const MYSTERY_NAMES = Object.fromEntries(MYSTERY_IDENTITIES.map(k => [k, 
 /** v9.19: an Overtimer at (or past) his stop stays aboard unless a neighbour is getting off on the same floor, his
  * alarm rings or a flare burns; past `overstayMax` he walks off unpaid. Either way he does not arrive as a paying rider.
  * `destinations` lets the forecast test delayed destinations. */
-export function overtimerLingers(state: Pick<RunState, 'cabin' | 'floor' | 'flareFloor'>, slot: number, destinations?: Array<number | null>): boolean {
+export function overtimerLingers(state: Pick<RunState, 'cabin' | 'floor' | 'flareFloor' | 'flareUntil'>, slot: number, destinations?: Array<number | null>): boolean {
   const rider = state.cabin[slot], nextFloor = state.floor + 1;
   if (rider?.kind !== 'overtimer' || rider.alarm || troubleFree(state)) return false;
   return !neighbours(slot).some(i => { const n = state.cabin[i]; return Boolean(n && n.kind !== 'parcel' && n.kind !== 'overtimer' && nextFloor >= (destinations?.[i] ?? n.destination)); });
@@ -816,7 +819,7 @@ export function cabinPressureLines(state: RunState): ChangeLine[] {
   return lines;
 }
 /** v9.20.1: seats whose dark rider may lash out on the next ascent (none under a Flare, none while sedated). */
-export const outburstSlots = (state: Pick<RunState, 'cabin' | 'floor' | 'flareFloor'>) => troubleFree(state) || !outburstChance(state.floor + 1) ? [] : state.cabin.flatMap((r, slot) => r && isDark(r.kind) && !((r.sedated ?? 0) > 0) ? [slot] : []);
+export const outburstSlots = (state: Pick<RunState, 'cabin' | 'floor' | 'flareFloor' | 'flareUntil'>) => troubleFree(state) || !outburstChance(state.floor + 1) ? [] : state.cabin.flatMap((r, slot) => r && isDark(r.kind) && !((r.sedated ?? 0) > 0) ? [slot] : []);
 /** Green links (active cooperation) in the cabin, each pair counted once. */
 export const greenLinks = (cabin: Array<Rider | null>) => ADJACENT.filter(([a, b]) => cabin[a] && cabin[b] && cabin[a]!.kind !== 'parcel' && cabin[b]!.kind !== 'parcel' && (riderProfile(cabin[a]!, cabin, a).bond.likes.includes(cabin[b]!.kind) || riderProfile(cabin[b]!, cabin, b).bond.likes.includes(cabin[a]!.kind))).length;
 /** v9.20 hidden “dark resonance”: at least four riders aboard and every one of them a dark version or a dark legend.
@@ -1233,7 +1236,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   // v9.21 the eve of the abyss: announced as the 80F shop opens; the night market's stall stands only on its own floor.
   const abyssEvents = status === 'upgrade' && nextFloor === ABYSS_EVENTS.shopFloor ? drawAbyssEvents(shopRng) : state.abyssEvents;
   const marketHere = status === 'playing' && abyssEvents?.some(e => e.floor === nextFloor && e.kind === 'market');
-  const marketStock = marketHere ? drawItemStock(nextFloor, shopRng, state.itemBought) : undefined, marketFloor = marketHere ? nextFloor : undefined;
+  const marketStock = marketHere ? drawMarketStock(nextFloor, shopRng, state.itemBought) : undefined, marketFloor = marketHere ? nextFloor : undefined;
   const settled: RunState = { ...state, abyssEvents, marketStock, marketFloor, lastOutbursts, lastThefts, lastHaunts, lastBoxEvents, lastIncident, lastBlast, lastCorruption, lastSummons, itemStock, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
   // Abilities found in boxes install like a shop pick (effects such as Safety Margin apply at once).
   return wonAbilities.reduce((run, key) => previewUpgrade(run, key), settled);
@@ -1616,7 +1619,7 @@ export function repairEmergency(state: RunState): RunState {
 // v9.19 items: a four-slot bag of one-use tools. Shops stock three at a time; each purchase of the same item costs more.
 /** Three different items available from this floor, drawn on the shop's stream. */
 export function drawItemStock(floor: number, rng: () => number, bought: RunState['itemBought'] = {}): NonNullable<RunState['itemStock']> {
-  const pool = ITEM_KEYS.filter(k => ITEMS[k].from <= floor);
+  const pool = SHOP_ITEM_KEYS.filter(k => ITEMS[k].from <= floor);
   const picked: ItemKey[] = [];
   const draw = (from: ItemKey[]) => { const rest = from.filter(k => !picked.includes(k)); if (rest.length) picked.push(rest[Math.min(rest.length - 1, Math.floor(rng() * rest.length))]); };
   // v9.19.1: from the midnight shop on, at least two of the three are tools against the dark riders.
@@ -1625,6 +1628,14 @@ export function drawItemStock(floor: number, rng: () => number, bought: RunState
   if (floor >= DARK_RULES.extremeFrom && pool.includes('flare')) picked.push('flare');
   if (midnight.length >= 2) { draw(midnight); draw(midnight); }
   while (picked.length < 3 && picked.length < pool.length) draw(pool);
+  return picked.map(key => ({ key, price: itemPrice(key, floor, bought?.[key] ?? 0), sold: false }));
+}
+/** v9.21.1 the Night market's shelf: two of the four night-market goods (sold nowhere else, dearer) and one shop item. */
+export function drawMarketStock(floor: number, rng: () => number, bought: RunState['itemBought'] = {}): NonNullable<RunState['marketStock']> {
+  const goods = [...MARKET_ITEM_KEYS], picked: ItemKey[] = [];
+  for (let i = 0; i < MARKET_STOCK.goods && goods.length; i++) picked.push(goods.splice(Math.min(goods.length - 1, Math.floor(rng() * goods.length)), 1)[0]);
+  const shelf = SHOP_ITEM_KEYS.filter(k => ITEMS[k].from >= DARK_RULES.midnightFloor && ITEMS[k].from <= floor);
+  for (let i = 0; i < MARKET_STOCK.shopItems && shelf.length; i++) picked.push(shelf.splice(Math.min(shelf.length - 1, Math.floor(rng() * shelf.length)), 1)[0]);
   return picked.map(key => ({ key, price: itemPrice(key, floor, bought?.[key] ?? 0), sold: false }));
 }
 export function buyItem(state: RunState, index: number): RunState {
@@ -1648,7 +1659,11 @@ export function buyMarketItem(state: RunState, index: number): RunState {
 export function itemUsable(state: RunState, key: ItemKey, target?: Rider | null): boolean {
   if (state.status !== 'playing' || !state.items?.includes(key)) return false;
   const need = ITEMS[key].target;
-  if (need === 'none') return key !== 'flare' || state.flareFloor !== state.floor;
+  if (need === 'none') {
+    if (key === 'flare' || key === 'longflare') return !flareCovers(state);
+    if (key === 'greatamulet') return state.cabin.some(r => r && corruptible(r.kind) && !r.warded);
+    return true;
+  }
   if (!target || !state.cabin.some(r => r?.id === target.id)) return false;
   switch (need) {
     case 'rider': return target.kind !== 'parcel' && (key !== 'dismiss' || !isAnyLegend(target.kind));
@@ -1673,7 +1688,11 @@ export function applyItem(state: RunState, key: ItemKey, targetId?: string): Run
     case 'cell': return done({ energy: Math.min(state.energyCap, state.energy + 15) }, `用了${spec.name}：+${Math.min(15, state.energyCap - state.energy)} 电。`);
     case 'swap': return done({ oldMovesUsed: Math.max(0, (state.oldMovesUsed ?? Number(state.swapped)) - 1), swapped: false }, `用了${spec.name}：本层多一次老乘客换位。`);
     case 'aroma': return done({ stress: Math.max(0, state.stress - 2) }, `用了${spec.name}：躁动 −${Math.min(2, state.stress)}。`);
-    case 'flare': return done({ flareFloor: state.floor }, `点燃${spec.name}：这一层所有暗黑版都不会惹麻烦。`);
+    case 'flare': return done({ flareFloor: state.floor, flareUntil: state.floor }, `点燃${spec.name}：这一层所有暗黑版都不会惹麻烦。`);
+    case 'longflare': return done({ flareFloor: state.floor, flareUntil: state.floor + 1 }, `点燃${spec.name}：这一层和下一层所有暗黑版都不会惹麻烦。`);
+    case 'sandalwood': return done({ stress: Math.max(0, state.stress - 5) }, `用了${spec.name}：躁动 −${Math.min(5, state.stress)}。`);
+    case 'greatamulet': { const cabin = state.cabin.map(r => r && corruptible(r.kind) && !r.warded ? { ...r, warded: true, corruption: 0 } : r); return done({ cabin }, `挂上${spec.name}：车里 ${cabin.filter((r, i) => r?.warded && !state.cabin[i]?.warded).length} 位普通人这一趟不会被同化。`); }
+    case 'strongsedative': return done({ cabin: patch(r => ({ ...r, sedated: Math.max(1, r.destination - state.floor), withdrawal: 0 })) }, `给${name}用了${spec.name}：直到下车都不产生躁动。`);
     case 'dismiss': return done({ cabin: unseatRider(state.cabin, target!.id, true), legendStatus: isLegend(target!.kind) ? 'dismissed' : state.legendStatus }, `用了${spec.name}：${name}免费下车。`);
     case 'candy': return done({ cabin: patch(r => ({ ...r, careProgress: CHILD_CARE_WORK })) }, `给了儿童${spec.name}：算作照顾满。`);
     case 'fuse': return done({ cabin: patch(r => ({ ...r, bombMs: (r.bombMs ?? 0) + 20000, bombMsTotal: (r.bombMsTotal ?? r.bombMs ?? 0) + 20000, bonusMs: (r.bonusMs ?? r.bombMs ?? 0) + 20000, fuse: (r.fuse ?? 0) + 2 })) }, `用了${spec.name}：${name}的炸弹 +20 秒。`);

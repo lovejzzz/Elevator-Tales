@@ -416,11 +416,14 @@ export function runOne(opt: RunOptions): RunLog {
     // v9.21 the night market: skilled and human-like bots buy a Flare (else a Sedative) when coins allow; held tools
     // are used on a real gamble (a 20%+ chance this ascent ends the run). Bots still buy nothing at ordinary shops.
     if (state.marketFloor === state.floor && state.marketStock && bot.id !== 'novice') {
-      for (const want of ['flare', 'sedative'] as const) { const i = state.marketStock.findIndex(c => c.key === want && !c.sold); if (i >= 0 && state.coins - state.marketStock[i].price >= 40) { state = E.buyMarketItem(state, i); log.marketBuys = (log.marketBuys ?? 0) + 1; break; } }
+      // v9.21.1: the dearer night-market goods come first when the bot can afford them and keep 40 coins.
+      for (const want of ['longflare', 'flare', 'strongsedative', 'sedative', 'sandalwood'] as const) { const i = state.marketStock.findIndex(c => c.key === want && !c.sold); if (i >= 0 && state.coins - state.marketStock[i].price >= 40) { state = E.buyMarketItem(state, i); log.marketBuys = (log.marketBuys ?? 0) + 1; break; } }
     }
+    if (state.items?.includes('sandalwood') && state.stress >= state.stressCap - 4) { state = E.applyItem(state, 'sandalwood'); log.itemsUsed = (log.itemsUsed ?? 0) + 1; }
     if (state.items?.length && abyssLossChance(state) >= 0.2) {
-      if (E.itemUsable(state, 'flare')) { state = E.applyItem(state, 'flare'); log.itemsUsed = (log.itemsUsed ?? 0) + 1; }
-      else if (state.items.includes('sedative')) { const slot = E.outburstSlots(state).find(i => !outburstIsPower(state.cabin[i]!.kind)); const target = slot === undefined ? null : state.cabin[slot]; if (target && E.itemUsable(state, 'sedative', target)) { state = E.applyItem(state, 'sedative', target.id); log.itemsUsed = (log.itemsUsed ?? 0) + 1; } }
+      const flare = (['longflare', 'flare'] as const).find(k => E.itemUsable(state, k));
+      if (flare) { state = E.applyItem(state, flare); log.itemsUsed = (log.itemsUsed ?? 0) + 1; }
+      else for (const key of ['strongsedative', 'sedative'] as const) { if (!state.items.includes(key)) continue; const slot = E.outburstSlots(state).find(i => !outburstIsPower(state.cabin[i]!.kind)); const target = slot === undefined ? null : state.cabin[slot]; if (target && E.itemUsable(state, key, target)) { state = E.applyItem(state, key, target.id); log.itemsUsed = (log.itemsUsed ?? 0) + 1; } break; }
     }
     log.stressFloors[agitationBand(state.stress)]++;
     { const aboard = state.cabin.filter(r => r && !isLegend(r.kind)); log.riderFloors = (log.riderFloors ?? 0) + aboard.length; log.links = (log.links ?? 0) + ADJACENT.filter(([a, b]) => activeConnection(state.cabin, a, b)).length; }

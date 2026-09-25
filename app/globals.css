@@ -3440,11 +3440,17 @@ body.is-dragging, body.is-dragging * { cursor:grabbing!important; user-select:no
 .abyss-event.is-past { opacity:.45; text-decoration:line-through; }
 .abyss-event-now { margin:0; font-size:12px; line-height:1.4; color:#e2d0ff; }
 .night-market { display:grid; gap:5px; padding:8px 10px; border:1px solid #7fbf8f88; border-radius:8px; background:#10261ad9; }
-.night-market-stall { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }
-.night-market-stall button { display:grid; justify-items:center; gap:2px; padding:5px 4px; border:1px solid #7fbf8f66; border-radius:6px; background:#0b1a12; color:#d8f0df; font-size:11px; line-height:1.2; cursor:pointer; }
+.night-market-stall { display:grid; gap:4px; }
+.night-market-stall button { display:grid; grid-template-columns:30px minmax(0,1fr) auto; align-items:center; gap:3px 8px; padding:5px 8px 5px 5px; border:1px solid #7fbf8f66; border-radius:6px; background:#0b1a12; color:#d8f0df; font-size:12px; line-height:1.25; text-align:left; cursor:pointer; }
+.night-market-stall button.is-night { border-color:#e6c27a88; background:linear-gradient(90deg,#241a0bcc,#0b1a12 70%); }
 .night-market-stall button:disabled { opacity:.45; cursor:not-allowed; }
-.night-market-stall .item-icon { width:26px; height:26px; background-size:cover; border-radius:4px; }
-.night-market-stall b { font:600 11px var(--font-mono); color:#f6d98c; }
+.night-market-stall .item-icon { width:30px; height:30px; background-size:cover; border-radius:5px; }
+.night-market-text { display:contents; }
+.night-market-text .item-name { grid-column:2; grid-row:1; min-width:0; font-weight:700; }
+.night-market-text em { margin-left:6px; padding:0 4px; border:1px solid #e6c27a88; border-radius:3px; color:#f6d98c; font:600 9px/14px var(--font-mono); font-style:normal; letter-spacing:.04em; vertical-align:1px; }
+.night-market-text small { grid-column:1 / -1; grid-row:2; color:#b9d4c0; font-size:11px; }
+.night-market-stall b { grid-column:3; grid-row:1; font:600 12px var(--font-mono); color:#f6d98c; white-space:nowrap; }
+.item-icon.is-night { position:relative; filter:hue-rotate(200deg) saturate(1.3) brightness(1.05); box-shadow:inset 0 0 0 1px #f6d98caa, 0 0 6px #f6d98c55; }
 .game-shell .compact-card .cc-tag-bounty { border-color:#e3bb62; color:#f6d98c; background:#3a2c1255; }
 .shop-abyss-schedule { padding:8px 10px; border:1px solid #6b4f9a88; border-radius:8px; background:#1a1226d9; color:#e2d0ff; font-size:12px; line-height:1.45; }
 .shop-abyss-schedule ul { margin:4px 0 0; padding:0; list-style:none; display:grid; gap:2px; }

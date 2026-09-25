@@ -26,7 +26,7 @@ export const V920_PAIRS: Array<[string, string]> = [
   ['暗黑共鸣：全车都是黑夜里的人。', 'Dark resonance: everyone aboard belongs to the night.'],
   // v9.20.6 (English playtest 23): the Smuggler's seat labels had only the Courier's “纸箱” versions.
   ['没有黑箱 · 每层+1躁动 · 不付钱', 'No black box · +1 agitation per floor · pays nothing'], ['争黑箱 · +1躁动', 'Fighting over a black box · +1 agitation'], ['黑箱在旁', 'Black box beside him'],
-  ['悬赏', 'Bounty'], ['夜市', 'Night market'],
+  ['悬赏', 'Bounty'], ['长明照明弹', 'Long Flare'], ['檀香', 'Sandalwood'], ['强效镇静剂', 'Strong Sedative'], ['大护身符', 'Great Amulet'], ['夜市货', 'Night goods'], ['点燃长明照明弹：这一层和下一层所有暗黑版都不会惹麻烦。', 'Lit a Long Flare: no dark rider causes trouble this floor or the next.'], ['夜市', 'Night market'],
   ['深渊躁动', 'Abyss unrest'], ['深渊加价', 'Abyss premium'], ['每十层有一家商店；关门前先看电量和躁动的预报。', 'There is a shop every ten floors; check the power and agitation forecast before the doors close.'], ['车厢挤满：风扇耗电', 'Full cabin: fans'], ['车厢坐满：风扇 +', 'Full cabin: fans +'], ['电/层', ' power/floor'], ['发作', ' lashes out'], ['暗黑版可能发作', 'Dark riders may lash out'], ['（每位 ', ' ('], ['%）', '% each)'],
   ['深渊里的暗黑版越来越极端：车费更高，但每层都可能发作 +3 躁动（卡上写着几率）。关门前看“失控几率”，赚够了就少带几位；照明弹和镇静剂能压住发作。', 'Deep in the abyss dark riders grow extreme: they pay more, but each floor they may lash out for +3 agitation (the odds are on their cards). Check the boil-over chance before closing the doors, carry fewer once you have earned enough; a Flare or a Sedative holds them off.'], ['每层随机一件好事或坏事', 'Something good or bad every floor'], ['等着有人吵架', 'Waiting for a quarrel'],
   [' 也可以卖掉一项能力、换上“安全余量”：躁动上限 +2，再用它的手动调节 −3。', ' Or sell an ability and take Safety Margin: agitation cap +2, then use its manual −3.'],

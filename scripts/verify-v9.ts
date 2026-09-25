@@ -26,7 +26,7 @@ import { OFFER_PARTNERS } from '../lib/shift-rules';
 import { districtFor } from '../lib/districts';
 import { planPlacement } from '../lib/game-interaction';
 import { cardSummary, displayName } from '../lib/card-summary';
-import { ABYSS_EVENTS, DARK_RESONANCE, DARK_RULES as DARK, ITEMS as ITEMS_V, MYSTERY_CLUES, MYSTERY_IDENTITIES, abyssStep, itemPrice, mysteryClue, outburstChance } from '../lib/dark-rules';
+import { ABYSS_EVENTS, DARK_RESONANCE, DARK_RULES as DARK, ITEMS as ITEMS_V, MARKET_ITEM_KEYS, MYSTERY_CLUES, MYSTERY_IDENTITIES, abyssStep, itemPrice, mysteryClue, outburstChance } from '../lib/dark-rules';
 
 // Most checks here predate the v9.18 real-time Bomber timer and verify floor timers; the real-time block switches it on.
 E.BOMB_RULES.realtime = false;
@@ -953,4 +953,31 @@ console.log('PASS v9.20 dark legends, resonance, Mystery clues, the abyss gamble
   assert.equal(translateGameText('在夜市买下照明弹，支付 132 金币。', 'en'), 'Bought Flare at the night market for 132 coins.');
 }
 console.log('PASS v9.21 the eve of the abyss');
-console.log(JSON.stringify({ version: 'v9', checks: 43, passed: true }));
+// v9.21.1 night-market goods: two of four pricier goods sold nowhere else, plus one shop item.
+{
+  const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 84, fareBonus: 0, stash: 0, volatile: false, ...extra });
+  let seed = 7; const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const seen = new Set<string>();
+  for (let i = 0; i < 200; i++) {
+    const stock = E.drawMarketStock(85, rng);
+    assert.equal(stock.length, 3); assert.equal(new Set(stock.map(c => c.key)).size, 3, 'three different items');
+    assert.equal(stock.filter(c => MARKET_ITEM_KEYS.includes(c.key)).length, 2, 'two night-market goods and one shop item');
+    stock.forEach(c => seen.add(c.key));
+    assert.ok(stock.every(c => MARKET_ITEM_KEYS.includes(c.key) ? c.price >= 90 : true), 'night goods are pricey');
+    assert.ok(E.drawItemStock(90 + (i % 60), rng).every(c => !MARKET_ITEM_KEYS.includes(c.key)), 'shops never sell night goods');
+  }
+  assert.ok(MARKET_ITEM_KEYS.every(k => seen.has(k)), 'every night good turns up');
+  const base = run(85, [R('crookedcop', 'a', 95), R('commuter', 'b', 90), R('scrapper', 'c', 89)], { stress: 7, stressCap: 12, energy: 80, coins: 500 });
+  const lit = E.applyItem({ ...base, items: ['longflare'] }, 'longflare');
+  assert.ok(E.troubleFree(lit) && E.troubleFree({ ...lit, floor: 86 }) && !E.troubleFree({ ...lit, floor: 87 }), 'a Long Flare covers this floor and the next');
+  assert.ok(!E.itemUsable({ ...lit, items: ['flare'] }, 'flare'), 'no Flare wasted under a Long Flare');
+  assert.equal(E.applyItem({ ...base, items: ['sandalwood'] }, 'sandalwood').stress, 2, 'Sandalwood −5 agitation');
+  const sed = E.applyItem({ ...base, items: ['strongsedative'] }, 'strongsedative', 'a');
+  assert.equal(sed.cabin[0]!.sedated, 10, 'sedated until they get off'); assert.ok(!E.outburstSlots(sed).includes(0));
+  const warded = E.applyItem({ ...base, items: ['greatamulet'] }, 'greatamulet');
+  assert.ok(warded.cabin[1]!.warded && !warded.cabin[0]!.warded, 'every normal rider is warded');
+  assert.equal(translateGameText('用了檀香：躁动 −5。', 'en'), 'Burned Sandalwood: agitation −5.');
+  assert.equal(translateGameText('长明照明弹', 'en'), 'Long Flare');
+}
+console.log('PASS v9.21.1 night-market goods');
+console.log(JSON.stringify({ version: 'v9', checks: 44, passed: true }));

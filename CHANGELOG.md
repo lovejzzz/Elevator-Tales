@@ -1,6 +1,25 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.21.0**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v9.21.1**. Publication status is tracked separately from the source version.
+
+## v9.21.1 — 2026-09-25 — Night goods: pricey things found only at the Night market / 夜市货：只在夜市有的贵东西
+
+- The Night market stall holds two random night goods plus one random shop item from 60F on. Night goods are never sold in shops. Their prices at 81–89F, ×(1 + (floor − 60) / 200) as for shop items:
+  - Long Flare 210–218: quiet this floor and the next.
+  - Sandalwood 133–137: −5 agitation.
+  - Strong Sedative 88–92: until the rider gets off.
+  - Great Amulet 99–103: every normal rider protected.
+- Stall rows now show the effect text (phones have no hover). Night goods reuse the shop art, tinted, with a gold edge. A Flare cannot be wasted under a Long Flare.
+- 80–88F sim, 200 × 3 bots:
+  - balanced median 88F; 100F in 1.0% (2 runs);
+  - bots mostly buy the Strong Sedative and can rarely afford the Long Flare.
+- Acceptance, 4,200 runs:
+  - skilled endings 52.8 / 46.3 / 0.9% (power / agitation / bomb);
+  - 100F reached 0.4%;
+  - balanced 87F, human-like 78F, novice 34F;
+  - boarding rates 16–61%.
+- Browser (Chinese narrow window, English phone) confirmed purchases, the two-floor Long Flare, the Strong Sedative until drop-off, Sandalwood −5 and the Great Amulet's greyed state. verify now runs 44 v9 checks.
+- Watch: the Great Amulet may rarely be bought; whether players save the Long Flare for the 90s; the night goods have no art of their own.
 
 ## v9.21.0 — 2026-09-25 — The eve of the abyss: four special floors between 80 and 89 / 深渊前夜：80–89 层有了四个特殊楼层
 
