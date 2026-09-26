@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import * as E from '../lib/game-engine';
 import { DARK_LEGEND_KINDS, LEGEND_KINDS, PASSENGERS, isDark, isDarkLegend, isLegend, type PassengerKind } from '../lib/game-data';
 import { DARK_LEGEND_RULES as DLR } from '../lib/legends';
-import { conflictLinks } from '../lib/rider-profile';
+import { LATE_FARE, conflictLinks } from '../lib/rider-profile';
 import { motorCost, AGITATION_HIGH_MIN, ECONOMY_RULES } from '../lib/balance-v832';
 import { BOX_PRICES, chargeCost, storageCap } from '../lib/power-box';
 import { riderProfile } from '../lib/rider-profile';
@@ -656,7 +656,8 @@ console.log('PASS visible rules: pickpocket links, fare lines, haunts, held Thie
 {
   const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 63, fareBonus: 0, stash: 0, volatile: false, ...extra });
   const mim = [R('bomb', 'b', 67, { fuse: 5 }), null, null, R('mimic', 'm', 66, { localFareRatio: 0.8 }), null, null];
-  assert.equal(riderProfile(mim[3]!, mim, 3).fare, PASSENGERS.bomb.fare, 'a short-trip Mimic under a Bomber copies the full Bomber fare');
+  // v10.2.5: both boarded at 63F, so the Bomber's own fare is already at the late 75%; the Mimic copies it exactly.
+  assert.equal(riderProfile(mim[3]!, mim, 3).fare, riderProfile(mim[0]!, mim, 0).fare, 'a short-trip Mimic under a Bomber copies the Bomber fare exactly');
   let st = 918273; const rng = () => { st = (st + 0x6d2b79f5) | 0; let t = Math.imul(st ^ (st >>> 15), 1 | st); t ^= t + Math.imul(t ^ (t >>> 7), 61 | t); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; const trips: Record<string, number[]> = { common: [], rare: [], legendary: [] };
   for (let i = 0; i < 6000; i++) for (const o of E.makeOffers(12, E.EMPTY_UPGRADES, false, rng)) if (o.kind === 'courier') trips[o.tier ?? 'common'].push(o.destination - 12 - (o.parcelBig ? E.PARCEL_RULES.crateExtraStop : 0));
   for (const tier of ['common', 'rare', 'legendary'] as const) { const [lo, hi] = E.PARCEL_RULES.trips[tier]; assert.ok(trips[tier].length && trips[tier].every(t => t >= lo && t <= hi), `${tier} Courier trips stay in ${lo}–${hi}`); }
@@ -745,7 +746,8 @@ console.log('PASS crowding warning, merged notes, English coverage of engine mes
   // The Mystery is revealed one floor after boarding and pays his identity's fare.
   const mystery = E.resolveFloor(run(40, [R('mystery', 'm', 45, { identity: 'magnate' })]), fixed(.9));
   assert.ok(mystery.cabin[0]?.revealed && mystery.log[0].includes('富商'));
-  assert.equal(E.arrivalFare(mystery.cabin[0]!, mystery.cabin, 0, 0), MYSTERY_RULES.magnate.fare);
+  // v10.2.5: he boarded at 40F, so the late 75% applies to his identity's fare.
+  assert.equal(E.arrivalFare(mystery.cabin[0]!, mystery.cabin, 0, 0), Math.ceil(MYSTERY_RULES.magnate.fare * (mystery.cabin[0]!.boardedAt >= LATE_FARE.from ? LATE_FARE.factor : 1)));
 
   // v9.22: the survivor bonus is gone; a normal rider delivered after midnight pays only his fare.
   assert.equal(lines(E.resolveFloor(run(62, [R('commuter', 'a', 63)]), fixed(.9)), 'lastEarnings')['幸存者平安送达'], undefined);

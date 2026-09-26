@@ -1,6 +1,26 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.4**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.5**. Publication status is tracked separately from the source version.
+
+## v10.2.5 — 2026-09-26 — Less money mid-to-late / 中后期少一点钱
+
+- Riders boarding from 31F pay 75% of base fare (`LATE_FARE`, shown on the card; tips, links and stashes unscaled).
+- Shop power +25% from 61F (`LATE_CHARGE`: 2 → 2.5 c/power; the shop says so).
+- Taskmaster fare 9 → 12, Mad Bomber 40 → 52 (after the discount 9 and 39, as before; otherwise boarding fell to 13–14%).
+- Manual: "The numbers on a card" (fare, trip, power, agitation; late fare discount); Power line mentions 40% off to 40F and +25% from 61F.
+- Money study: new per-source / per-band income tracking (`money-report.mts`). Early shops are tight (0–25 coins after the 10F charge); skilled surplus builds from 20F (income per ten floors 95 → 200).
+- Options (1,120 runs each; affluent % / exit coins, baseline 73 / 48):
+  - half shapes 72 / 42; no low tip 70 / 39;
+  - Lively and Street halved 68 / 36 (novice 61 → 54F);
+  - half Battery 72 / 43;
+  - 75% fares from 31F 71 / 42; power +25% from 61F 71 / 47; both 69 / 41.
+- Income cuts barely change skilled length; they mostly hurt novices, so the mild pair was chosen.
+- Acceptance, 4,200 runs:
+  - endings 49.8 / 49.3 / 0.8% (was 44.7 / 54.8); 100F 0.3%;
+  - balanced 88F (77–94); novice 57F, human-like 84F;
+  - boarding all 15–65%; styles 87–88F.
+- "Not affluent" still fails: 69.3%, 42 coins (was 73.3%, 50).
+- Watch: the "not affluent" target may need to measure normal play only, or the middle game needs things worth buying.
 
 ## v10.2.4 — 2026-09-25 — Fixes from ten browser runs / 浏览器试玩十局后的修正
 

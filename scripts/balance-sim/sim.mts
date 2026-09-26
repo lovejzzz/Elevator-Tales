@@ -356,7 +356,7 @@ export type RunLog = {
   closeCalls: number; escapes: number; powerCalls: number; stressCalls: number; bombCalls: number;
   emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; calmUnits?: number; inspectors?: number; stamped?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
   bombDismissals?: number; marketBuys?: number; itemsUsed?: number; overtimeCharge?: number; boxAbilities?: number; boxAbilityFinds?: number; parcel?: Record<'offered' | 'paired' | 'courierOnly' | 'parcelOnly' | 'opened' | 'adopted' | 'unpaid' | 'delivered' | 'thefts' | 'bigOffered' | 'bigBoarded' | 'childOpens' | 'parts' | 'inspected' | 'contested' | 'bombCarry' | 'mimicCopy' | 'rareBoarded' | 'rareOffered', number>; legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
-  shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
+  shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; income?: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
 };
 
 function causeOf(state: RunState): RunLog['cause'] {
@@ -484,6 +484,8 @@ export function runOne(opt: RunOptions): RunLog {
     for (const a of next.lastArrivals ?? []) if (a.kind === 'inspector') { log.inspectors = (log.inspectors ?? 0) + 1; if (a.coins >= PASSENGERS.inspector.fare + 12) log.stamped = (log.stamped ?? 0) + 1; }
     if (next.message.includes('车厢事故') || next.log[0]?.includes('车厢事故')) log.incidents++;
     for (const line of next.lastPressure.sources) if (line.amount > 0) log.pressure[line.label] = (log.pressure[line.label] ?? 0) + line.amount;
+    // v10.2.5: income by source and by ten-floor band, for the money study.
+    { const band = `${Math.floor((next.floor - 1) / 10) * 10 + 1}`; const income = (log.income ??= {}); for (const line of next.lastEarnings.sources) if (line.amount > 0) { income[line.label] = (income[line.label] ?? 0) + line.amount; income[`@${band}`] = (income[`@${band}`] ?? 0) + line.amount; income[`${band}|${line.label.replace(/ ×\d+$/, '')}`] = (income[`${band}|${line.label.replace(/ ×\d+$/, '')}`] ?? 0) + line.amount; } }
     if (next.status === 'lost') log.deathSources = next.lastPressure.sources.map(l => `${l.label}${l.amount > 0 ? '+' : ''}${l.amount}`).join(' ') + ` | stress ${next.stress}/${next.stressCap} riders ${state.cabin.filter(Boolean).map(r => r!.kind).join(',')}`;
     state = next;
     log.peakCoins = Math.max(log.peakCoins, state.coins);

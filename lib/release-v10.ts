@@ -558,3 +558,68 @@ export const V1024_EN: ChangelogEntry = {
     'Playtests should show whether the “±0” labels clutter the cabin.',
   ],
 };
+
+export const V1025_ZH: ChangelogEntry = {
+  version: '10.2.5', date: '2026-09-26', title: '中后期少一点钱：31 层起车费 75 折，61 层起充电贵 25%',
+  summary: '按实验决定参数。先查清钱从哪来、在哪多出来：前 10 层普通和熟练玩法都“刚好够用”（10 层商店充满电后只剩 0–25 币），多出来的钱从 20 层起在熟练玩法里越攒越多（每十层收入从约 95 涨到约 200，离店常剩 50–110 币）。这一版只动中后期，前期不变。',
+  changes: [
+    '31 层起上车的乘客，基础车费打 75 折（向上取整）。卡片上显示的就是折后价；邻座奖励、小费、符号绿线和暂存收益不打折。',
+    '61 层起（午夜后）商店充电贵 25%：2 币/电 → 2.5 币/电（变压器等级照常降低）。商店里写着“午夜后贵 25%”。',
+    '监工车费 9 → 12、疯炸客 40 → 52：它们只在午夜后出现，打折后分别是 9 和 39，和以前差不多；不补的话机器人几乎不载他们（上车率 13–14%）。',
+    '说明书更新：“三个数字”改为“卡片上的数字”（画像下面一排：车费、路程、耗电、躁动），并写明 31 层起车费打折；“电量”一条写明 40 层前 6 折、61 层起贵 25%。',
+  ],
+  experiments: [
+    '收入分析（新加的按来源、按十层统计，均衡型 / 真人型 / 新手型各 120 局）：收入很分散，最大一项（通勤者到站）只占 7–10%；中后期涨得最多的是热闹和江湖的绿线金币，以及检查员、教练、游客等每次到站 11–16 币的人物。',
+    '试过的改法（每种 1120 局，看“进店宽裕”和离店中位金币；原来 73% / 48 币）：形状加级减半 72% / 42；取消安静好评 70% / 39；热闹、江湖每级减半 68% / 36，但新手从 61 层掉到 54 层，链接也更不值钱；电池加成减半 72% / 43；31 层起车费 75 折 71% / 42；61 层起充电贵 25% 71% / 47；后两项一起 69% / 41。',
+    '一个关键发现：减少收入几乎不影响熟练玩家能走多远（都在 87–88 层，死于深渊发作），钱只是攒着用不上；而大幅减收会先伤到新手。所以这次选了温和、看得见的两项（车费打折写在卡上，电价写在商店），不去大砍链接收入。',
+    '最终验收 4200 局：死因 电量 49.8% / 躁动 49.3% / 炸弹 0.8%（原来 44.7 / 54.8，更接近一半一半）；抵达 100 层 0.3%；均衡型中位 88 层（p10–p90 77–94）；新手 57 层、真人型 84 层；均衡型上车率全部在 15–65%；五种流派 87–88 层。“不宽裕”仍不通过：进店宽裕 69.3%（原来 73.3%）、离店中位 42 币（原来 50）。',
+    'verify 全部通过（复制人、神秘人的车费检查按新规则更新）。',
+  ],
+  watch: [
+    '“不宽裕”的验收目标（≤15%、离店 ≤15 币）按现在的收入结构只能靠大幅减收达到，而那会先伤新手；真人型和新手型本来就不宽裕（0–3%）。可能要改成只衡量普通玩法，或者给中期加值得花钱的东西。',
+  ],
+};
+
+export const V1025_EN: ChangelogEntry = {
+  version: '10.2.5', date: '2026-09-26', title: 'A little less money mid-to-late: 75% fares from 31F, 25% dearer power from 61F',
+  summary: 'The parameters were chosen by experiment. The first step was finding where the money comes from and where it piles up. In the first 10 floors both normal and skilled play have just enough: after charging at the 10F shop, 0–25 coins are left. The surplus builds from 20F in skilled play: income per ten floors rises from about 95 to about 200, and 50–110 coins are often left after a shop. This release only touches the middle and late game; the early game is unchanged.',
+  changes: [
+    'Riders who board from 31F on pay 75% of their base fare (rounded up).',
+    '• The card shows the reduced price.',
+    '• Neighbour rewards, tips, symbol green links and stashes are not reduced.',
+    'From the 61F shop on (after midnight), shop power costs 25% more: 2 coins a power becomes 2.5, and Transformer levels still lower it. The shop says “+25% after midnight”.',
+    'Fare rises for the two riders who only appear after midnight, where the discount always applies:',
+    '• Taskmaster 9 → 12, which pays 9 after the discount, about as before;',
+    '• Mad Bomber 40 → 52, which pays 39 after the discount.',
+    'Without the rise, the bots hardly took them (13–14% boarding).',
+    'Manual updates:',
+    '• “Three numbers” becomes “The numbers on a card”: the row under the portrait with fare, trip, power and agitation, plus the late fare discount.',
+    '• “Power” mentions 40% off until 40F and 25% more from 61F.',
+  ],
+  experiments: [
+    'Income analysis: a new per-source, per-ten-floors breakdown over 120 runs each of the balanced, human-like and novice bots.',
+    '• Income is spread thin: the largest single source, Commuter arrivals, is only 7–10%.',
+    '• What grows most mid-to-late is Lively and Street green-link coins, plus riders who pay 11–16 per arrival: Inspector, Coach and Tourist.',
+    'Options tried, 1,120 runs each. Figures are the share of shop visits where the player was affluent on arrival, then median coins left on exit; the baseline was 73% / 48.',
+    '• Half shape levels: 72% / 42.',
+    '• No low-agitation tip: 70% / 39.',
+    '• Lively and Street halved: 68% / 36, but the novice fell from 61F to 54F and links would matter even less.',
+    '• Half Battery bonus: 72% / 43.',
+    '• 75% fares from 31F: 71% / 42.',
+    '• 25% dearer power from 61F: 71% / 47.',
+    '• The last two together: 69% / 41.',
+    'A key finding: cutting income barely changes how far skilled play goes (87–88F, ending in abyss outbursts), because the money simply sits unused, while deep cuts hurt novices first. So this release takes two mild, visible measures (the discount is on the card, the price in the shop) rather than cutting link income hard.',
+    'Final acceptance, 4,200 runs:',
+    '• endings power 49.8% / agitation 49.3% / bomb 0.8% (was 44.7 / 54.8, now closer to half and half);',
+    '• 100F reached in 0.3% of runs;',
+    '• balanced median 88F (p10–p90 77–94);',
+    '• novice 57F, human-like 84F;',
+    '• balanced-bot boarding all within 15–65%;',
+    '• all five styles 87–88F.',
+    '“Not affluent” still fails: affluent on arrival 69.3% (was 73.3%), median coins on exit 42 (was 50).',
+    'verify passes; the Mimic and Mystery fare checks were updated for the new rule.',
+  ],
+  watch: [
+    'The “not affluent” target (≤15%, ≤15 coins on exit) could only be met by deep income cuts, which hurt novices first. The human-like and novice bots are already not affluent (0–3%). The target may need to measure normal play only, or the middle game needs things worth buying.',
+  ],
+};

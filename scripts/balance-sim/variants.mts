@@ -1,16 +1,31 @@
 // Process-local rule variants for side-by-side comparison. Production defaults live in lib/.
 // A shard applies exactly one variant before running; nothing here changes the shipped game.
 import { ECONOMY_RULES, AGITATION_RULES, FARE_RULES, MOTOR_RULES, NIGHT_UNREST, V9_AGITATION } from '../../lib/balance-v832.ts';
-import { BOX_PRICES, CHARGE_PRICES, EMERGENCY_PRICES } from '../../lib/power-box.ts';
+import { BOX_PRICES, CHARGE_PRICES, EMERGENCY_PRICES, LATE_CHARGE } from '../../lib/power-box.ts';
+import { LATE_FARE } from '../../lib/rider-profile.ts';
 import { CALM_PURCHASE, CALM_RULES, INSULATION_RULES, RISK_RULES, SHOP_PRICES, SOUNDPROOF_RULES, START_RULES } from '../../lib/game-engine.ts';
 import { LEGEND_RULES } from '../../lib/legends.ts';
 import { PARCEL_RULES, BOMB_RULES, THIEF_RULES } from '../../lib/game-engine.ts';
 import { PASSENGERS } from '../../lib/game-data.ts';
+import { SYMBOL_EFFECTS, SYMBOL_RULES } from '../../lib/symbols.ts';
 const scaleBoxes = (k: number) => { for (const size of ['small', 'big'] as const) for (const tier of ['common', 'rare', 'legendary'] as const) PARCEL_RULES.values[size][tier] = Math.round(PARCEL_RULES.values[size][tier] * k); };
 const parcel = (fare: number, coins: number, power: number) => () => { PASSENGERS.courier.fare = fare; PARCEL_RULES.payoutCoins = coins; PARCEL_RULES.payoutPower = power; };
 
 export const VARIANTS: Record<string, () => void> = {
   baseline: () => {},
+  // v10.2.5 money / early-power study: shape levels (row / square / full), the low-agitation arrival tip.
+  shape1: () => { SYMBOL_RULES.row = 1; SYMBOL_RULES.square = 1; SYMBOL_RULES.full = 2; },
+  shape0: () => { SYMBOL_RULES.row = 0; SYMBOL_RULES.square = 0; SYMBOL_RULES.full = 0; },
+  tip0: () => { V9_AGITATION.lowTip = 0; },
+  shape1tip0: () => { VARIANTS.shape1(); VARIANTS.tip0(); },
+  coin1: () => { SYMBOL_EFFECTS.lively.coins = 1; SYMBOL_EFFECTS.street.coins = 1; },
+  batt1: () => { ECONOMY_RULES.cooperationIncrement = 1; },
+  coin1batt1: () => { VARIANTS.coin1(); VARIANTS.batt1(); },
+  fare31: () => { LATE_FARE.from = 31; LATE_FARE.factor = 0.75; },
+  fare21: () => { LATE_FARE.from = 21; LATE_FARE.factor = 0.8; },
+  charge61: () => { LATE_CHARGE.from = 61; LATE_CHARGE.factor = 1.25; },
+  fare31charge61: () => { VARIANTS.fare31(); VARIANTS.charge61(); },
+  darkfix: () => { PASSENGERS.taskmaster.fare = 12; PASSENGERS.madbomber.fare = 52; },
   // v9.18.3 Courier routes by box tier: trip ranges (common / rare / legendary) and a per-stop delivery fee.
   tripOld: () => { PARCEL_RULES.trips = { common: [1, 3], rare: [1, 3], legendary: [1, 3] }; PARCEL_RULES.crateExtraStop = 0; },
   tripMild: () => { PARCEL_RULES.trips = { common: [1, 3], rare: [2, 4], legendary: [3, 5] }; },

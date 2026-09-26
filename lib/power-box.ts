@@ -29,7 +29,9 @@ export const emergencySectorCap = (box: PowerBox) => (box.storage >= BOX_MAX_LEV
 /** v9.19: early shops sell power at a discount, so a careful early run is not starved (cautious-player aid).
  * v10.1.2: up to 40F at 40% off — a first real playtest ran dry at 26F; the novice bot goes 31→54F, skilled play unchanged. */
 export const EARLY_CHARGE = { until: 40, factor: 0.6 };
-export const chargeUnitPrice = (box: PowerBox, floor = Infinity) => CHARGE_PRICES[box.transformer] * (floor <= EARLY_CHARGE.until ? EARLY_CHARGE.factor : 1);
+/** v10.2.5: shop power costs 25% more from the 61F shop on (after midnight), where skilled runs held 250–300 coins. */
+export const LATE_CHARGE = { from: 61, factor: 1.25 };
+export const chargeUnitPrice = (box: PowerBox, floor = Infinity) => CHARGE_PRICES[box.transformer] * (floor <= EARLY_CHARGE.until ? EARLY_CHARGE.factor : floor >= LATE_CHARGE.from && floor !== Infinity ? LATE_CHARGE.factor : 1);
 /** Whole coins, rounded up, for a batch of shop charge. */
 export const chargeCost = (box: PowerBox, units: number, floor = Infinity) => Math.ceil(units * chargeUnitPrice(box, floor) - 1e-9);
 /** Most units a wallet can buy at the box's shop price. */

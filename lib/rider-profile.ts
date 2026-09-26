@@ -89,7 +89,10 @@ function ownProfile(rider:Rider){
 }
 // A ticket adjustment applies only to the base fare, never to earned stashes,
 // tips or adjacency payouts. Express retains its full purchased benefit.
-const ticketFare=(rider:Rider,fare:number)=>Math.ceil(fare*(rider.localFareRatio??1));
+/** v10.2.5: riders who board from 31F on pay 75% of their base fare (rounded up; tips, link coins and stashes are not scaled).
+ * A 1,120-run study cut mid-to-late surplus by about 15% (with LATE_CHARGE) while the novice bot stayed at 60F. */
+export const LATE_FARE = { from: 31, factor: 0.75 };
+const ticketFare=(rider:Rider,fare:number)=>Math.ceil(fare*(rider.localFareRatio??1)*(rider.boardedAt>=LATE_FARE.from?LATE_FARE.factor:1));
 export function riderProfile(rider:Rider,cabin:Array<Rider|null>=[],slot=cabin.findIndex(r=>r?.id===rider.id)) {
  const result={...ownProfile(rider),copies:[] as CopiedTrait[]};
  if(rider.kind!=='mimic'||slot<0){result.fare=ticketFare(rider,result.fare);return result;}
