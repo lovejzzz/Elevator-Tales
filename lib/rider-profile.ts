@@ -128,8 +128,8 @@ export function conflictLinks(cabin:Array<Rider|null>):ConflictLink[]{
  return symbolEdges(cabin).flatMap(e=>e.clashes.map(()=>({first:e.first,second:e.second,effect:'agitation' as ConflictEffect})));
 }
 export const conflictEffectText=(effect:ConflictEffect)=>({
- agitation:'🔥 每层 +1 躁动',energy:'⚡ 每层额外耗 1 电',coins:'🪙 每层损失 2 金币',
- overload:'⚡ 两人耗电 ×2',gamble:'⚡ 两人耗电 ×2；🪙 双方到站：基价额外 +100%',
+ agitation:'每层 +1 躁动',energy:'每层额外耗 1 电',coins:'每层损失 2 金币',
+ overload:'两人耗电 ×2',gamble:'两人耗电 ×2；双方到站：基价额外 +100%',
 }[effect]);
 /** v10: red links come from opposite symbols (shown on the card), so there are no named opponents any more. */
 export function riderConflictRules(_rider:Rider,_cabin:Array<Rider|null>=[]):Array<{target:PassengerKind;effect:ConflictEffect;text:string}>{

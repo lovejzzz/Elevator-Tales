@@ -1,6 +1,21 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.3**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.4**. Publication status is tracked separately from the source version.
+
+## v10.2.4 — 2026-09-25 — Fixes from ten browser runs / 浏览器试玩十局后的修正
+
+- Ten runs (Chinese and English; phone, tablet, laptop, large screen; hand-played openings plus skilled and novice autopilots). No numbers change.
+- Cards keep symbol names on narrow widths (no more "+2 coins · +2 coins").
+- Neighbours who cancel out (one shared symbol, one opposing pair) get a faint dashed "±0" label; hover explains which symbols cancel (`cancelledEdges`).
+- Emoji removed: seat red-link status, red-link texts, manual heading; crew chip and bomb timer use line-art icons.
+- Agitation sources use "−".
+- Warnings say "will" vs "can" (agitation and power); the second press on a certain loss says it ends the shift.
+- Both-resource failures name the agitation source and add that power ran out too.
+- Touch screens: tap hint instead of drag hint; no "ENTER" key hint.
+- Master Musician named in placement messages; Shifter note separated with " · ".
+- Results: skilled autopilot 95, 95, 86, 95, 93, 78, 94F; novice autopilot 18, 8, 13F (warnings were shown and ignored).
+- Hand-played openings: Quiet stacking keeps early power at −1 to −2 a floor. Skilled play holds 170+ coins at 55F and 220+ at 78F. "Not affluent" still open.
+- New check `verify-playtest-v1024`. Daily shift not tested (hidden pane, first-frame deal).
 
 ## v10.2.3 — 2026-09-25 — Fixes: shop rescue money, drag stutter / 修复：商店抢救钱、拖拽卡顿
 

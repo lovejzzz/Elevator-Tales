@@ -1253,7 +1253,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   else if (notes.length && status === 'playing') message = [...new Set(notes)].map(n => { const k = notes.filter(x => x === n).length; return k > 1 ? `${n} ×${k}` : n; }).slice(0, 2).join(' · ');
   const lastEarnings = { total: coins - state.coins, sources: earningSources }; const lastPressure = { delta: stress - state.stress, sources: pressureSources }; const lastEnergy = { delta: energy - state.energy, sources: energySources }; const incomeNote = lastEarnings.total ? `${lastEarnings.total>0?'+':''}${lastEarnings.total} 金币 · ` : '';
   cabin = cabin.map(rider => rider?.kind === 'shifter' ? { ...rider, traits: randomTraits('shifter', unlockedAt(nextFloor), rng, (rider.traits?.revision ?? 0) + 1) } : rider);
-  if (cabin.some(rider => rider?.kind === 'shifter') && status === 'playing') message += ' 百变人已变化，关门前查看新属性。';
+  if (cabin.some(rider => rider?.kind === 'shifter') && status === 'playing') message = message ? `${message} · 百变人已变化，关门前查看新属性。` : '百变人已变化，关门前查看新属性。';
   const drawn=status==='upgrade'?drawUpgradeOffer(state.upgrades,state.shopSeen??[],shopRng,nextFloor):{keys:[],seen:state.shopSeen};
   const shop = drawn.keys.map(key=>({key,price:upgradePrice(key,nextFloor,state.upgrades[key]),purchased:false}));
   if(SHOP_TUNING.bufferGap)state={...state,bufferGapTurns:gapCharge.progress};
@@ -1302,7 +1302,8 @@ export const availableShopCards = (state: RunState) => state.shopExtraBought ? [
 export function failureLesson(state: RunState): string {
   if (state.status !== 'lost') return '';
   if (state.message.includes('炸弹倒计时')) return '疯炸客的怪炸弹归零 · 普通警察锁不住它：让黑警挨着他，或带一把引线剪；来不及送达就拒载。';
-  if (state.energy <= 0 && state.stress >= state.stressCap) return '双重失控 · 下一班提前留好维修预算，关门前先处理更接近上限的一项。';
+  // v10.2.4 (novice playtest, 18F: five red links a floor): when both fail, name the agitation source like the single case does.
+  if (state.energy <= 0 && state.stress >= state.stressCap) return `${failureLesson({ ...state, energy: 1, message: '躁动' })}电量也在这一层用完：离店前要留够到下个商店的电。`;
   if (state.message.includes('电量')) {
     const motor = Math.abs(state.lastEnergy.sources.find(s=>s.label==='电梯运转')?.amount ?? 0);
     const people = state.lastEnergy.sources.filter(s=>s.label.endsWith('耗电')).reduce((n,s)=>n+Math.max(0,-s.amount),0);

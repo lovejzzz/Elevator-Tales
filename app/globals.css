@@ -3595,12 +3595,8 @@ button.keepsake-chip { border:1px solid #c99d52; border-radius:999px; background
   .game-shell .candidate-panel .tcg-face .cc-line { font-size:clamp(10.5px, 5.4cqw, 14px) !important; }
   .game-shell .candidate-panel .tcg-face .sym-chip { font-size:clamp(10px, 5cqw, 13px); line-height:clamp(17px, 9cqw, 22px); }
   .game-shell .candidate-panel .tcg-face .sym-chip .sym { width:clamp(17px, 9cqw, 22px); height:clamp(17px, 9cqw, 22px); }
-  /* Narrow cards: symbols show icon + effect on one line; the name is in the icon's tooltip and the codex. */
-  @container tcg (max-width: 250px) {
-    .game-shell .candidate-panel .tcg-face .sym-chip-text b { display:none; }
-    .game-shell .candidate-panel .tcg-face .sym-row { flex-wrap:nowrap; }
-    .game-shell .candidate-panel .tcg-face .sym-chip { padding-right:5px; white-space:nowrap; }
-  }
+  /* v10.2.4: narrow cards keep the symbol names. Without them “+2 coins | −1 power” read like the rider's own numbers (and the
+     Drifter showed “+2 coins | +2 coins”); the chips stack instead and the card grows to fit. */
 }
 /* Partner and keepsake chips wrap inside the card instead of running past its edge. */
 .tcg-face .cc-chips > *, .tcg-face .cc-keepsake-effect, .tcg-face .cc-keepsake-effect > * { max-width:100%; white-space:normal !important; overflow-wrap:anywhere; text-align:center; }
@@ -3621,3 +3617,11 @@ button.keepsake-chip { border:1px solid #c99d52; border-radius:999px; background
 .tcg-tags { display:flex; flex-wrap:wrap; justify-content:center; gap:3px; }
 .tcg-tags:empty { display:none; }
 .tcg-tags .cc-tag { font-size:10.5px !important; padding:1px 6px !important; }
+/* v10.2.4: a pair whose green and red cancel out: a faint “±0” on the seam, explained on hover. */
+.link-label.is-cancelled { opacity:.72; border-style:dashed !important; }
+.link-label.is-cancelled .ll-part { color:#c9bfa6; font-weight:600; }
+.cc-chip .chip-crew-icon { width:11px; height:11px; margin-right:2px; vertical-align:-1px; }
+.cc-timer { display:inline-flex; align-items:center; gap:2px; }
+.cc-timer svg { width:12px; height:12px; }
+/* v10.2.4: the ENTER key hint means nothing on a touch screen (a tablet playtest showed it). */
+@media (hover: none) { .game-shell .depart-button > b { display:none !important; } }

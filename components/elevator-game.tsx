@@ -1,7 +1,7 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
-import { AlarmClock, ChevronsUp, ArrowUp, Layers, Package, PackageCheck, Pill, ShieldCheck, UserMinus, BatteryCharging, BookOpen, Check, Coins, Flame, HelpCircle, History, Info, LockKeyhole, Music2, RotateCcw, Route, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { AlarmClock, ChevronsUp, ArrowUp, Layers, Package, PackageCheck, Pill, ShieldCheck, UserMinus, BatteryCharging, BookOpen, Check, Coins, Flame, HelpCircle, History, Info, LockKeyhole, Music2, RotateCcw, Route, Link2, Timer, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -24,7 +24,7 @@ import * as QA_ENGINE from '@/lib/game-engine';
 import { symbolCoins, type ChangeLine } from '@/lib/game-engine';
 import { SymbolIcon } from '@/components/symbol-icon';
 import { KeepsakeIcon } from '@/components/keepsake-icon';
-import { RIDER_SYMBOLS, SYMBOLS, SYMBOL_KEYS, greenBySymbol, symbolEdges, symbolEffectText, symbolShapes, symbolTitle, symbolsOf, type SymbolKey } from '@/lib/symbols';
+import { RIDER_SYMBOLS, cancelledEdges, SYMBOLS, SYMBOL_KEYS, greenBySymbol, symbolEdges, symbolEffectText, symbolShapes, symbolTitle, symbolsOf, type SymbolKey } from '@/lib/symbols';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
 import { disposeGameMusic, musicSceneForView, setGameMusic, unlockGameMusic } from '@/lib/game-music';
 import { bondStatus, conflictLinks, type ConflictEffect } from '@/lib/rider-profile';
@@ -119,7 +119,8 @@ function PassengerRuleBlocks({ rules, locale }: { rules: PassengerRuleBlock[]; l
 // Language-neutral: a bare '不变' leaked into English in composed labels.
 const signedDelta = (value: number) => value > 0 ? `+${value}` : value < 0 ? `−${Math.abs(value)}` : '±0';
 const compactDelta = (value: number) => value > 0 ? `+${value}` : value < 0 ? `−${Math.abs(value)}` : '0';
-const conflictGlyph=(effect:ConflictEffect)=>({agitation:'🔥 +1',energy:'⚡ +1',coins:'−2金币',overload:'⚡ ×2',gamble:'⚡×2 · 基价+100%'}[effect]);
+// v10.2.4: words, not emoji (the player finds emoji childish).
+const conflictGlyph=(effect:ConflictEffect)=>({agitation:'+1躁动',energy:'+1耗电',coins:'−2金币',overload:'耗电×2',gamble:'耗电×2 · 基价+100%'}[effect]);
 type MetricEvent = { id: number; label: string; changes: MetricChange[] };
 
 function MetricResponse({ metric, event, locale }: { metric: MetricKey; event: MetricEvent | null; locale: GameLocale }) {
@@ -242,10 +243,10 @@ export function PassengerCardFace({ rider, run, action, locale }: { rider: Rider
       {rider.localFareRatio&&<span className="cc-tag">{zh?'短途':'Local'}</span>}
     </span>
     <SymbolBadges rider={rider} cabin={run.cabin} slot={run.cabin.findIndex(r=>r?.id===rider.id)} locale={locale} withEffects />
-    <span className="cc-line">{summary.line}{summary.sealed&&<> <Scramble className="scramble-line" />{rider.kind==='mystery'?(zh?' · 揭晓身份时公开':' · shown when he is revealed'):(zh?' · 到站揭晓':' · revealed on arrival')}</>}{(()=>{const progress=isBombKind(rider.kind)&&rider.bombMs!==undefined?`⏱ ${Math.ceil(rider.bombMs/1000)}s`:summary.progress;/* v9.20.3: the Mad Bomber too (his card said “⏱ 5”, floors, while his seat counts seconds) */return progress&&<em>{progress}</em>;})()}</span>
+    <span className="cc-line">{summary.line}{summary.sealed&&<> <Scramble className="scramble-line" />{rider.kind==='mystery'?(zh?' · 揭晓身份时公开':' · shown when he is revealed'):(zh?' · 到站揭晓':' · revealed on arrival')}</>}{(()=>{const progress=isBombKind(rider.kind)&&rider.bombMs!==undefined?`⏱ ${Math.ceil(rider.bombMs/1000)}s`:summary.progress;/* v9.20.3: the Mad Bomber too (his card said “⏱ 5”, floors, while his seat counts seconds) */if(!progress)return null;/* v10.2.4: a drawn timer icon instead of the ⏱ emoji */return progress.startsWith('⏱ ')?<em className="cc-timer"><Timer aria-hidden="true" />{progress.slice(2)}</em>:<em>{progress}</em>;})()}</span>
     {darkLegend&&<span className="cc-keepsake-effect cc-dark-reward"><b>{zh?'送到 70 层：':'Deliver to 70F: '}</b>{DARK_LEGEND_REWARD[rider.kind as DarkLegendKind][zh?0:1]}</span>}
     {legend&&!darkLegend&&<span className="cc-keepsake-effect"><b>{zh?'送到 10 层得信物 ':'Deliver to 10F for '}</b>{legendKeepsake(rider.kind as LegendKind)?<KeepsakeChip keepsake={legendKeepsake(rider.kind as LegendKind)!} locale={locale} inCard/>:<>{keepsakeName(rider.kind as LegendKind,locale)}{zh?'：':': '}{keepsakeTitle(rider.kind as LegendKind,locale)}</>}</span>}
-    {summary.chips.length>0&&<span className="cc-chips">{summary.chips.map((chip,index)=><span key={index} className={`cc-chip chip-${chip.tone}`} title={chip.title}>{chip.tone==='green'?'+':chip.tone==='risk'?'⛓':''}<ChipIcon icon={chip.icon}/>{chip.label}</span>)}</span>}
+    {summary.chips.length>0&&<span className="cc-chips">{summary.chips.map((chip,index)=><span key={index} className={`cc-chip chip-${chip.tone}`} title={chip.title}>{chip.tone==='green'?'+':chip.tone==='risk'?<Link2 className="chip-crew-icon" aria-hidden="true" />:''}<ChipIcon icon={chip.icon}/>{chip.label}</span>)}</span>}
     {action&&<span className="cc-action">{action}</span>}
   </span>;
 }
@@ -412,7 +413,7 @@ const MANUAL: Array<[string, string, string, string]> = [
 ];
 const PRESSURE_RISE: Array<[string, string, string, string]> = [
   ['乘客自身', '卡面上的躁动数字；急躁的乘客再 +1。没人管的小偷、没人照顾的儿童、未安抚的醉汉、被围住的名人也会加躁动。', 'Riders', 'The agitation number on the card; high-risk riders add 1 more. Unguarded Thieves, uncared-for Children, unsoothed Drifters and crowded Celebrities add agitation too.'],
-  ['🔥 红线', '相反符号的邻座（热闹↔安静、秩序↔江湖、人间↔幽冥）每条红线每层 +1 躁动。', '🔥 Red links', 'Neighbours with opposite symbols (Lively↔Quiet, Order↔Street, Hearth↔Spirit): +1 agitation per red link per floor.'],
+  ['红线', '相反符号的邻座（热闹↔安静、秩序↔江湖、人间↔幽冥）每条红线每层 +1 躁动。', 'Red links', 'Neighbours with opposite symbols (Lively↔Quiet, Order↔Street, Hearth↔Spirit): +1 agitation per red link per floor.'],
   ['深渊发作', '80 层起，暗黑版每层可能发作：一部分 +3 躁动，一部分吸电。照明弹和镇静剂能压住，护士挡不住。', 'Abyss outbursts', 'From 80F dark riders may lash out each floor: some add 3 agitation, some drain power. A Flare or a Sedative holds them off; a Nurse cannot.'],
 ];
 const PRESSURE_RELIEF: Array<[string, string, string, string]> = [
@@ -440,6 +441,9 @@ function WhenOpen({ open, language, render }: { open: boolean; language: GameLoc
   return shown ? <>{localizeTree(render(), language)}</> : null;
 }
 
+const DRAG_HINT = '门已开启。把候选人物直接拖进指定站位。', TAP_HINT = '门已开启。先点一位候客人物，再点一个空位。';
+const subscribeTouch = (onChange: () => void) => { const query = window.matchMedia('(hover: none)'); query.addEventListener('change', onChange); return () => query.removeEventListener('change', onChange); };
+
 export default function ElevatorGame() {
   const reduceMotion = useReducedMotion() ?? false;
   const [language, setLanguage] = useState<GameLocale>('en');
@@ -455,6 +459,8 @@ export default function ElevatorGame() {
     setOfferDebuts(offerReveal(next, known).debutIds); setOffers(next);
   }, []);
   const [pendingOfferId, setPendingOfferId] = useState<string | null>(null);
+  // v10.2.4: phones place riders by tapping, so the opening “drag” hint is replaced there (false in the prerender).
+  const touchUI = useSyncExternalStore(subscribeTouch, () => window.matchMedia('(hover: none)').matches, () => false);
   const [dragged, setDragged] = useState<DragPayload | null>(null); const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [guidedShift, setGuidedShift] = useState(false);
   const [passengerDetails, setPassengerDetails] = useState<Rider | null>(null);
@@ -614,6 +620,9 @@ export default function ElevatorGame() {
   // v9.20.3: before a shop, arriving at the cap is survivable when the shop's relief and repair can bring it back under.
   const shopRoom = shopAgitationRoom(run), stressLimit = run.stressCap + shopRoom;
   const stressFatal = run.stress + (pressurePreview.certainHighDelta ?? pressurePreview.highDelta) >= stressLimit;
+  // v10.2.4 (novice playtest, 8F: 5/8 with +4 certain): say “will”, not “can”, when even the best case passes the limit.
+  const powerCertain = risk.fatal && run.energy + energyPreview.highDelta < ((run.floor + 1) % 10 === 0 ? 0 : 1);
+  const stressCertain = stressFatal && run.stress + pressurePreview.lowDelta >= stressLimit;
   const shopFixNeeded = !stressFatal && shopRoom > 0 && run.stress + pressurePreview.highDelta >= run.stressCap;
   const gambleChance = stressFatal ? 0 : pressurePreview.lossChance ?? 0;
   const gamble = run.status === 'playing' && gambleChance >= GAMBLE_WARN;
@@ -1109,7 +1118,7 @@ export default function ElevatorGame() {
     overload:<span className="ll-part ll-energy"><BatteryCharging aria-hidden="true"/>×2</span>,
     gamble:<span className="ll-part ll-energy"><BatteryCharging aria-hidden="true"/>×2 · {zhUI?'基价+100%':'base +100%'}</span>,
   }[effect]);
-  const linkLabels=edgeView.flatMap(e=>{
+  const edgeLabels=edgeView.flatMap(e=>{
     const parts=[e.greenSyms.length>0&&<span key="g" className="ll-part ll-sym" title={e.greenSyms.map(s=>symbolTitle(s,zhUI)).join('\n')}>{e.greenSyms.map(s=><span key={s} className={`sym-ink sym-${s}`}><SymbolIcon symbol={s} size={13} /></span>)}</span>, e.partnership&&<span key="p" className="ll-part ll-agitation"><Flame aria-hidden="true"/>+1</span>, e.shownConflict&&<span key="c">{conflictLabel(e.shownConflict.effect)}</span>, e.steal==='box'?<span key="s" className="ll-part ll-steal"><Package aria-hidden="true"/>{zhUI?'偷纸箱':'takes box'}</span>:e.steal?<span key="s" className="ll-part ll-steal"><Coins aria-hidden="true"/>+{e.steal} {coinWord}</span>:null].filter(Boolean);
     if(!parts.length)return [];
     const [x1,y1]=CONNECTION_POINTS[e.first],[x2,y2]=CONNECTION_POINTS[e.second];
@@ -1125,6 +1134,16 @@ export default function ElevatorGame() {
     ];
     return [<button type="button" key={`${e.first}-${e.second}`} className={`link-label ${e.steal?'is-steal':''} ${x1===x2?'is-vertical':''}`} style={{left:`${(x1+x2)/6}%`,top:`${(y1+y2)/4}%`}}>{parts}{tip.length>0&&<span className="link-tip" role="tooltip">{tip.map((t,i)=><span key={i}>{t}</span>)}</span>}</button>];
   });
+  // v10.2.4: a pair whose shared symbols and clashes cancel out gets a faint “±0” label that explains it on hover.
+  const labelled=new Set(edgeLabels.map(l=>String(l.key)));
+  const cancelLabels=cancelledEdges(linkCabin).filter(c=>!labelled.has(`${c.first}-${c.second}`)).map(c=>{
+    const [x1,y1]=CONNECTION_POINTS[c.first],[x2,y2]=CONNECTION_POINTS[c.second];
+    const A=linkCabin[c.first]!,B=linkCabin[c.second]!,nameA=displayName(A,language),nameB=displayName(B,language),sn=(k:SymbolKey)=>zhUI?SYMBOLS[k].zh:SYMBOLS[k].en;
+    const same=c.shared.map(sn).join(zhUI?'、':', '),clash=c.clashes.map(([p,q])=>zhUI?`「${sn(p)}」和「${sn(q)}」`:`${sn(p)} and ${sn(q)}`).join(zhUI?'、':', ');
+    const tip=zhUI?`${nameA}和${nameB}都有「${same}」，但${clash}相反：一绿一红相互抵消，两人之间没有符号链接。`:`${nameA} and ${nameB} share ${same}, but ${clash} oppose: the green and the red cancel out, so there is no symbol link between them.`;
+    return <button type="button" key={`${c.first}-${c.second}`} className={`link-label is-cancelled ${x1===x2?'is-vertical':''}`} style={{left:`${(x1+x2)/6}%`,top:`${(y1+y2)/4}%`}} data-no-translate><span className="ll-part">±0</span><span className="link-tip" role="tooltip"><span>{tip}</span></span></button>;
+  });
+  const linkLabels=[...edgeLabels,...cancelLabels];
   const content = <main className={`game-shell ${cooperationRelief(run) ? 'has-contract' : ''} ${difficultyTier(run.floor) % 2 ? 'phase-dawn' : ''}`}>
     <div className="ambient-grain" />
     <div className="rotate-notice"><RotateCcw/><h2>请竖屏游玩</h2><p>这个横屏尺寸太矮，转回竖屏即可继续；本班进度保留。</p></div>
@@ -1142,7 +1161,7 @@ export default function ElevatorGame() {
           <MetricResponse metric="stress" event={metricEvent} locale={language} />
           <AgitationGauge value={run.stress} cap={run.stressCap} nextLow={run.stress+pressurePreview.lowDelta} nextHigh={run.stress+pressurePreview.highDelta} locale={language}/>
           <small className="rail-forecast"><span>下一站 <b className={stressFatal ? 'forecast-fatal' : ''}>{pressurePreview.range}</b></span>{Math.round(gambleChance*100)>0&&<span className="rail-gamble" data-no-translate>{language==='zh'?`失控 ${Math.round(gambleChance*100)}%`:`Boil-over ${Math.round(gambleChance*100)}%`}</span>}{run.status==='playing'&&agitationBand(run.stress)==='high'&&run.cabin.some(r=>r&&!isAnyLegend(r.kind)&&r.kind!=='parcel')&&<span className="rail-incident" data-no-translate title={language==='zh'?`高躁动出发：这一层有 ${Math.round(V9_AGITATION.incidentChance*100)}% 会有一位乘客受不了、提前下车，不付车费。`:`Leaving at high agitation: a ${Math.round(V9_AGITATION.incidentChance*100)}% chance this floor that one rider has had enough and leaves early without paying.`}>{language==='zh'?`事故 ${Math.round(V9_AGITATION.incidentChance*100)}%`:`Incident ${Math.round(V9_AGITATION.incidentChance*100)}%`}</span>}{shopFixNeeded&&<span className="rail-shop-fix" data-no-translate title={language==='zh'?`到商店时躁动可能到上限：商店里先用手动调节，再用紧急维修（${SOOTHE_PRICE}币/点）降到上限以下，才能继续上行。`:`You may reach the shop at the agitation cap: use the manual relief there, then the emergency repair (${SOOTHE_PRICE}c a point) to get back under it before leaving.`}>{language==='zh'?'到店要降躁动':'Calm it at the shop'}</span>}</small>
-          {(pressurePreview.sources?.length??0)>0&&<div className="agitation-sources" data-no-translate>{pressurePreview.sources!.slice(0,5).map(src=><span key={src.label} className={src.amount>0?'is-up':'is-down'}>{translateGameText(src.label,language)}{src.count>1?` ×${src.count}`:''} {src.amount>0?'+':''}{src.amount}</span>)}</div>}
+          {(pressurePreview.sources?.length??0)>0&&<div className="agitation-sources" data-no-translate>{pressurePreview.sources!.slice(0,5).map(src=><span key={src.label} className={src.amount>0?'is-up':'is-down'}>{translateGameText(src.label,language)}{src.count>1?` ×${src.count}`:''} {signedDelta(src.amount)}</span>)}</div>}
           {run.status==='playing'&&calmLeft>0&&(stressFatal||agitationBand(run.stress)!=='low')&&(()=>{const units=Math.min(calmLeft,Math.max(1,calmNeed));return <div className="emergency-charge calm-charge" data-no-translate title={language==='zh'?`本段还可安抚 ${calmLeft} 点 · ${calmPrice(run.floor)} 币/点`:`${calmLeft} left this sector · ${calmPrice(run.floor)} coins each`}><button className={stressFatal?'is-urgent':''} disabled={locked} onClick={()=>calm(units)}>{language==='zh'?`安抚 −${units} · ${units*calmPrice(run.floor)}币`:`Calm −${units} · ${units*calmPrice(run.floor)}c`}</button></div>;})()}
           {run.status==='playing'&&calmLeft<1&&overtimePrice!==null&&(stressFatal||agitationBand(run.stress)!=='low')&&<div className="emergency-charge calm-charge" data-no-translate title={language==='zh'?'本段安抚额度已用完 · 加急安抚每点更贵':'Calming allowance spent · each overtime point costs more'}><button className={stressFatal?'is-urgent':''} disabled={locked||!overtimeOk} onClick={overtimeCalm}>{language==='zh'?`加急安抚 −1 · ${overtimePrice}币`:`Overtime calm −1 · ${overtimePrice}c`}</button></div>}
         </div>
@@ -1215,7 +1234,7 @@ export default function ElevatorGame() {
         {arriving.length>0&&<div className="standing-grid arrival-grid">{arriving.map(arrival=><div key={arrival.riderId} className="standing-slot-wrap" style={{gridColumn:arrival.slot%3+1,gridRow:Math.floor(arrival.slot/3)+1}}>{arrival.incident
           ? <output className={`arrival-exit arrival-incident ${fastReveal?'arrival-quick':''}`} aria-label={zhUI?`${riderName(arrival.kind,'zh')} 受不了混乱，提前下车，未付车费`:`${riderName(arrival.kind,'en')} left early in the chaos without paying`} data-no-translate><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{riderName(arrival.kind,language)}</span><span className="arrival-payout-incident"><Flame aria-hidden="true"/>{zhUI?'提前下车':'Left early'}<small>{zhUI?'受不了混乱 · 未付车费':'Chaos · no fare'}</small></span></output>
           : <div className={`arrival-exit ${fastReveal?'arrival-quick':''}`} role="status" aria-label={`${PASSENGERS[arrival.kind].name} 到站 ${arrival.keepsake?`信物 ${KEEPSAKES[arrival.keepsake].name}`:arrival.ability?UPGRADES[arrival.ability].name:arrival.power?`+${arrival.power} 电`:`${arrival.coins<0?'−'+(-arrival.coins):'+'+arrival.coins} 金币`}`}><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{PASSENGERS[arrival.kind].name}</span><span className="arrival-payout">{arrival.keepsake?<><Sparkles aria-hidden="true"/><small>{zhUI?`信物 · ${keepsakeLabel(arrival.keepsake,'zh')}`:`Keepsake · ${keepsakeLabel(arrival.keepsake,'en')}`}{arrival.coins>0?` · +${arrival.coins}`:''}</small></>:arrival.ability?<><Sparkles aria-hidden="true"/><small>{UPGRADES[arrival.ability].name}</small></>:arrival.power?<><BatteryCharging aria-hidden="true"/>+{arrival.power}<small>电</small></>:<><Coins aria-hidden="true"/>{arrival.coins<0?`−${-arrival.coins}`:`+${arrival.coins}`}<small>金币</small></>}</span></div>}</div>)}</div>}
-        <div className={`cabin-message ${hoveredPlan && !hoveredPlan.ok ? 'message-error' : ''}`} aria-live="polite"><Sparkles /><span>{hoveredPlan ? hoveredPlan.ok ? hoveredPlan.next.message : hoveredPlan.label : selectedSlot !== null && run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : run.message}</span></div><div className="swap-status">{pendingOfferId ? '选择发光站位 · ESC 取消' : selectedSlot !== null ? run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : '再选一个站位完成调整 · ESC 取消' : run.swapped ? <><LockKeyhole /> 旧乘客换位已用 · 新上客仍可调整</> : '拖拽人物安排站位 · 有效组合会亮起'}</div>
+        <div className={`cabin-message ${hoveredPlan && !hoveredPlan.ok ? 'message-error' : ''}`} aria-live="polite"><Sparkles /><span>{hoveredPlan ? hoveredPlan.ok ? hoveredPlan.next.message : hoveredPlan.label : selectedSlot !== null && run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : touchUI && run.message === DRAG_HINT ? TAP_HINT : run.message}</span></div><div className="swap-status">{pendingOfferId ? '选择发光站位 · ESC 取消' : selectedSlot !== null ? run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : '再选一个站位完成调整 · ESC 取消' : run.swapped ? <><LockKeyhole /> 旧乘客换位已用 · 新上客仍可调整</> : '拖拽人物安排站位 · 有效组合会亮起'}</div>
       </section>
       <aside className="arrival-panel">
         <div className={`arrival-heading ${loverResponse || firstPairLesson ? 'lover-response' : ''}`}><div><span data-no-translate>{language==='zh'?(loverResponse ? '恋人信号 · 回应' : firstPairLesson ? '第一条连线 · 引导班次' : doors === 'open' ? '门已开' : '运行中'):(loverResponse ? 'LOVER SIGNAL · RESPONSE' : firstPairLesson ? 'FIRST LINK · GUIDED SHIFT' : doors === 'open' ? 'DOORS OPEN' : 'IN TRANSIT')}</span><h2>{loverResponse ? '有人回应了呼唤' : firstPairLesson ? firstPairActive ? '绿色协作已生效' : '试着连出一条绿线' : '谁要上楼？'}</h2></div><div className="arrival-count">{offers.length} 位</div></div>
@@ -1250,13 +1269,13 @@ export default function ElevatorGame() {
             {departArmed&&<small>{language==='zh'?'再按一次上行＝赌这一把。':'Press ascend again to take the bet.'}</small>}
           </div>}
           {run.status==='playing'&&doors==='open'&&occupied>0&&stressFatal&&!risk.fatal&&<div className={`power-alert is-fatal ${departArmed?'is-armed':''}`} role="alert" data-no-translate>
-            <p><Flame aria-hidden="true"/>{language==='zh'?`这一层躁动可能失控：现在 ${run.stress}/${run.stressCap}，下一站 ${pressurePreview.range}`:`Agitation can boil over this floor: ${run.stress}/${run.stressCap} now, next ${translateGameText(pressurePreview.range,'en')}`}</p>
+            <p><Flame aria-hidden="true"/>{language==='zh'?`这一层躁动${stressCertain?'必定':'可能'}失控：现在 ${run.stress}/${run.stressCap}，下一站 ${pressurePreview.range}`:`Agitation ${stressCertain?'will':'can'} boil over this floor: ${run.stress}/${run.stressCap} now, next ${translateGameText(pressurePreview.range,'en')}`}</p>
             <div className="power-alert-actions">{calmLeft>=calmNeed&&<button disabled={locked} onClick={()=>calm(calmNeed)}>{language==='zh'?`安抚 −${calmNeed} · ${calmNeed*calmPrice(run.floor)}币`:`Calm −${calmNeed} · ${calmNeed*calmPrice(run.floor)}c`}</button>}{calmLeft<1&&overtimeOk&&<button disabled={locked} onClick={overtimeCalm}>{language==='zh'?`加急安抚 −1 · ${overtimePrice}币`:`Overtime calm −1 · ${overtimePrice}c`}</button>}</div>
             {calmLeft<calmNeed&&(calmRescue?<div className="power-alert-rescue"><small>{language==='zh'?`能撑过：${calmRescue.remove.map(r=>`${riderName(r.kind,'zh')}${r.paid?`（请离 ${r.paid} 币）`:'（撤回上车）'}`).join('、')}${calmRescue.calm?`，再安抚 −${calmRescue.calm}`:''}。`:`You can make it: ${calmRescue.remove.map(r=>`${riderName(r.kind,'en')} ${r.paid?`(dismiss, ${r.paid}c)`:'(withdraw)'}`).join(', ')}${calmRescue.calm?`, then calm −${calmRescue.calm}`:''}.`}</small>{calmRescue.remove.every(r=>r.paid>0)&&<button disabled={locked} onClick={()=>{let next=run;for(const r of calmRescue.remove)next=dismissRider(next,r.id);if(calmRescue.calm)next=buyCalm(next,calmRescue.calm);if(next!==run){reportMetrics(run,next,language==='zh'?'请离并安抚':'Dismiss and calm');setRun(next);playTone(sound,'upgrade');}}}>{language==='zh'?`照此安排 · ${calmRescue.cost}币`:`Do it · ${calmRescue.cost}c`}</button>}</div>:<small className="power-alert-doomed">{stressAdvice}</small>)}
-            {departArmed&&<small>{language==='zh'?'再按一次上行＝冒险出发。':'Press ascend again to risk it.'}</small>}
+            {departArmed&&<small>{stressCertain?(language==='zh'?'再按一次上行＝结束本班。':'Press ascend again to end the shift.'):(language==='zh'?'再按一次上行＝冒险出发。':'Press ascend again to risk it.')}</small>}
           </div>}
           {run.status==='playing'&&doors==='open'&&occupied>0&&(risk.fatal||(sector.failFloor!==null&&sector.failFloor-run.floor<=2))&&<div className={`power-alert ${risk.fatal?'is-fatal':''} ${risk.fatal&&risk.affordable<risk.need&&!rescue?'is-hopeless':''} ${departArmed?'is-armed':''}`} role="alert" data-no-translate>
-            <p><BatteryCharging aria-hidden="true"/>{risk.fatal?(language==='zh'?`这一层可能断电：电量 ${run.energy}，下一站 ${energyPreview.range}`:`This floor can run you out of power: ${run.energy} now, next ${translateGameText(energyPreview.range,'en')}`):(language==='zh'?`照现在 ${sector.failFloor} 层断电`:`At this rate: out of power at ${sector.failFloor}F`)}</p>
+            <p><BatteryCharging aria-hidden="true"/>{risk.fatal?(language==='zh'?`这一层${powerCertain?'必定':'可能'}断电：电量 ${run.energy}，下一站 ${energyPreview.range}`:`This floor ${powerCertain?'will':'can'} run you out of power: ${run.energy} now, next ${translateGameText(energyPreview.range,'en')}`):(language==='zh'?`照现在 ${sector.failFloor} 层断电`:`At this rate: out of power at ${sector.failFloor}F`)}</p>
             <div className="power-alert-actions">
               {risk.fatal&&risk.need>0&&<button disabled={locked||risk.affordable<risk.need} onClick={()=>emergency(risk.need)}>{language==='zh'?`补电 +${risk.need} · ${risk.need*risk.unitPrice}币`:`Charge +${risk.need} · ${risk.need*risk.unitPrice}c`}</button>}
               {emergencySectorLeft(run)<=0&&overtimeCharge&&<button className="is-overtime" disabled={locked||run.coins<overtimeCharge.price} onClick={()=>{const next=buyOvertimeCharge(run);if(next!==run){reportMetrics(run,next,language==='zh'?'加急补电':'Overtime charging');setRun(next);playTone(sound,'upgrade');}}} title={language==='zh'?'本段途中补电已用完：加急补电每包更贵':'This sector’s in-transit charging is spent: each overtime pack costs more'}>{language==='zh'?`加急补电 +${overtimeCharge.units} · ${overtimeCharge.price}币`:`Overtime charge +${overtimeCharge.units} · ${overtimeCharge.price}c`}</button>}

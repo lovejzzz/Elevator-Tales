@@ -103,8 +103,10 @@ export function planPlacement(state: RunState, candidate: Rider, target: number)
   const before = linkIds(state.cabin); const after = linkIds(cabin);
   const combo = [...after].some((id) => !before.has(id));
   const loverPair = rider.kind === 'lover' && hasNeighbour(cabin, target, ['lover']);
+  // v10.2.4: a promoted Musician is named “大师音乐家” in these messages too.
+  const riderLabel = rider.kind === 'musician' && rider.master ? '大师音乐家' : PASSENGERS[rider.kind].name;
   let label = combo ? loverPair ? '恋人配对' : '联动成立' : source >= 0 ? '站位已调整' : '乘客已就位';
-  let message = combo && loverPair ? '恋人已配对：每位恋人邻座让本人到站基价 +100%；途中不产币。' : combo ? `${PASSENGERS[rider.kind].name}与邻座联动已生效。` : source >= 0 ? oldMovesUsed > (state.oldMovesUsed??Number(state.swapped)) ? '站位已调整。' : '站位已调整 · 不消耗旧乘客换位。' : `${PASSENGERS[rider.kind].name}已站到 ${target + 1} 号位。`;
+  let message = combo && loverPair ? '恋人已配对：每位恋人邻座让本人到站基价 +100%；途中不产币。' : combo ? `${riderLabel}与邻座联动已生效。` : source >= 0 ? oldMovesUsed > (state.oldMovesUsed??Number(state.swapped)) ? '站位已调整。' : '站位已调整 · 不消耗旧乘客换位。' : `${riderLabel}已站到 ${target + 1} 号位。`;
   let celebrate=combo;
   const riskIds=(seats:Array<Rider|null>)=>riskPartnerships(seats).edges.map(([a,b])=>[seats[a]!.id,seats[b]!.id].sort().join(':'));
   const previousRisk=new Set(riskIds(state.cabin));

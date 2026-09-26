@@ -77,6 +77,17 @@ export function symbolEdges(cabin: Seat[]): SymbolEdge[] {
     return link.shared.length || link.clashes.length ? [{ first, second, ...link }] : [];
   });
 }
+/** v10.2.4 (playtest: an Officer beside a Commuter shares Order yet shows no link): neighbours whose shared symbols and
+ * clashes cancel out completely under the net rule. They have no link, but the cabin marks the pair so the player sees why. */
+export function cancelledEdges(cabin: Seat[]): SymbolEdge[] {
+  if (!SYMBOL_RULES.net) return [];
+  return ADJACENT.flatMap(([first, second]) => {
+    if (!cabin[first] || !cabin[second]) return [];
+    const a = symbolsOf(cabin[first], cabin, first), b = symbolsOf(cabin[second], cabin, second);
+    const shared = a.filter(s => b.includes(s)), clashes = a.flatMap(x => b.filter(y => opposes(x, y)).map(y => [x, y] as Pair));
+    return shared.length && shared.length === clashes.length ? [{ first, second, shared, clashes }] : [];
+  });
+}
 export const greenCount = (cabin: Seat[]) => symbolEdges(cabin).reduce((n, e) => n + e.shared.length, 0);
 export const redCount = (cabin: Seat[]) => symbolEdges(cabin).reduce((n, e) => n + e.clashes.length, 0);
 

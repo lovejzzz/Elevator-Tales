@@ -488,3 +488,73 @@ export const V1023_EN: ChangelogEntry = {
     'Slower computers may still stutter slightly; the next step would be splitting seats and cards into their own components so only what changed is redrawn.',
   ],
 };
+
+export const V1024_ZH: ChangelogEntry = {
+  version: '10.2.4', date: '2026-09-25', title: '浏览器试玩十局后的修正：卡面、抵消的邻座、提示用词、手机操作',
+  summary: '在浏览器里玩了十局（中英文，手机、平板、笔记本和大屏各种尺寸；有自己手动玩的开局，也有熟练型和“新手型”自动玩），边玩边改。这一版修掉玩的时候看不懂、看错或不准确的地方，数值没有改。',
+  changes: [
+    '窄卡片不再省略符号名称：以前只剩“+2币 · 省1电”，看起来像人物自己的数值，醉汉更是显示成“+2币 · +2币”。现在永远写“江湖 +2币 · 幽冥 省1电”，放不下就分两行。',
+    '互相抵消的邻座会显示出来：两人有一个相同符号、又有一对相反符号时，按规则一绿一红抵消、没有链接（比如警察挨着通勤者：都有秩序，但热闹和安静相反）。以前什么都不显示，现在接缝处有一个淡色虚线“±0”，悬停（手机点一下）说明是哪两个符号抵消了。',
+    '去掉剩下的表情符号：座位上的“红线 🔥 +1”改成“红线 +1躁动”；红线说明、说明书标题里的 🔥⚡🪙 改成文字；团伙标签的锁链、炸弹倒计时的秒表换成和符号同风格的线稿图标。',
+    '躁动来源里的减号统一成“−1”（以前有些写成 “-1”）。',
+    '失控提示分清“必定”和“可能”：最好的情况也会超过上限时，写“这一层躁动必定失控”“这一层必定断电”，再按一次上行的提示改成“＝结束本班”；只是有风险时仍写“可能”“冒险出发”。',
+    '电量和躁动同时耗尽时，结束页也会点名这一层躁动的主要来源和对应办法（以前只说“双重失控，下一班留好维修预算”），再补一句电量也在这一层用完。',
+    '手机和平板：开局提示从“把候选人物拖进站位”改成“先点一位候客人物，再点一个空位”；上行按钮上的键盘提示“ENTER”在触屏上不再显示。',
+    '大师音乐家上车时，提示写“大师音乐家已站到…”，不再是“音乐家”。',
+    '百变人变化的提示和前一句之间加了分隔“ · ”，不再连在一起。',
+  ],
+  experiments: [
+    '十局结果：熟练型自动玩 95、95、86、95、93、78、94 层（死因多是深渊里几位暗黑版同时发作，或午夜后电量掉得快）；新手型（按顺序坐满、不看链接、无视警告）18、8、13 层，都是没人管的小偷、没带纸箱的快递员和随便坐出来的红线把躁动推满。',
+    '新手型那两局里游戏已经提前警告了（“这一层躁动可能失控：5/8，下一站 +4 · 安抚 −2 · 12币”），是脚本没理会；所以改的是用词（这种情况其实是“必定”），不是规则。',
+    '手动玩的开局看到：安静符号（通勤者、恋人）叠成方块或满车后，前 10 层电量几乎不掉（一层只 −1～−2），躁动一直是 0；熟练玩法到 55 层有 170 多币、78 层有 220 多币。“钱不宽裕”仍没达标，这次没有改数值，留给之后单独处理。',
+    '新增检查 verify-playtest-v1024：警察和通勤者、游客和恋人会被识别为抵消的邻座，两个通勤者不会；双重失控的结束提示含躁动来源且英文里没有中文；红线说明里没有表情符号。verify 全部通过，lint 没有新增问题。',
+    '每日班次这次没测到：它在页面第一次绘制时发牌，而测试用的浏览器面板是隐藏的；这对真人玩家没有影响。',
+  ],
+  watch: [
+    '安静叠满后前期太省电、熟练玩家中后期太有钱，需要一起看。',
+    '“±0”标签会不会让车厢太杂，需要真人看看。',
+  ],
+};
+
+export const V1024_EN: ChangelogEntry = {
+  version: '10.2.4', date: '2026-09-25', title: 'Fixes from ten browser runs: card faces, cancelled neighbours, warning wording, touch controls',
+  summary: 'Ten runs were played in the browser, in Chinese and English, at phone, tablet, laptop and large-screen sizes. Some openings were played by hand, and the rest by the skilled and “novice” autopilots. Fixes were made along the way. This release clears up what was hard to read, easy to misread or inaccurate. No numbers change.',
+  changes: [
+    'Narrow cards keep the symbol names.',
+    '• Before, a card showed only “+2 coins · −1 power”, which read like the rider’s own numbers; the Drifter even showed “+2 coins · +2 coins”.',
+    '• Cards now always say “Street +2 coins · Spirit −1 power”, on two lines if needed.',
+    'Neighbours who cancel out are shown. When two riders share one symbol but also carry an opposing pair, the green and the red cancel under the rules and there is no link (an Officer beside a Commuter shares Order, but Lively opposes Quiet). Nothing used to appear; now a faint dashed “±0” sits on the seam, and hovering (or tapping on phones) names the symbols that cancel.',
+    'The last emoji are gone.',
+    '• Seats read “Red link +1 agitation” instead of “Red link 🔥 +1”.',
+    '• Red-link descriptions and the manual heading use words instead of 🔥, ⚡ and 🪙.',
+    '• The crew chain and the bomb stopwatch are line-art icons in the style of the symbols.',
+    'Agitation sources use a proper minus sign, “−1” (some showed “-1”).',
+    'Warnings now tell “will” from “can”.',
+    '• When even the best case passes the limit, they read “Agitation will boil over this floor” or “This floor will run you out of power”, and the second-press note reads “ends the shift”.',
+    '• A merely risky floor still says “can” and “risk it”.',
+    'When power and agitation both run out, the ending names the main agitation source and its fix, as a single failure does (it used to say only “budget for both repairs next shift”), and adds that power ran out on the same floor.',
+    'Phones and tablets: the opening hint says “Tap a waiting rider, then tap a seat” instead of “Drag a candidate into a position”, and the ascend button no longer shows the keyboard hint “ENTER”.',
+    'A boarding Master Musician is named “Master Musician” in the placement message, not “Musician”.',
+    'The Shifter’s change note is separated from the sentence before it by “ · ” instead of running on.',
+  ],
+  experiments: [
+    'The ten runs:',
+    '• the skilled autopilot reached 95, 95, 86, 95, 93, 78 and 94F, usually ending when several dark riders lashed out at once in the abyss, or when power fell fast after midnight;',
+    '• the novice autopilot (fills seats in order, ignores links and warnings) reached 18, 8 and 13F, pushed over by unguarded Thieves, Couriers without their box and red links from random seating.',
+    'In both novice deaths the game had warned beforehand (“Agitation can boil over this floor: 5/8 now, next +4 · Calm −2 · 12c”) and the script ignored it. So the fix is the wording (that floor was a certain loss), not the rules.',
+    'Hand-played openings showed:',
+    '• once Quiet riders (Commuters, Lovers) form a square or a full cabin, power barely drops for the first 10 floors (−1 to −2 a floor) and agitation stays at 0;',
+    '• skilled play held 170+ coins at 55F and 220+ at 78F.',
+    '“Not affluent” is still unmet. No numbers changed this time; it is left for a separate pass.',
+    'A new check, verify-playtest-v1024:',
+    '• an Officer with a Commuter and a Tourist with a Lover are reported as cancelled pairs; two Commuters are not;',
+    '• the both-failure ending names the agitation source and has no Chinese left in English;',
+    '• red-link descriptions contain no emoji.',
+    'verify passes; lint adds nothing.',
+    'The daily shift was not tested: it deals on the page’s first frame and the test browser pane was hidden. Real players are unaffected.',
+  ],
+  watch: [
+    'Quiet stacking makes early power too cheap and skilled play too rich mid-to-late; the two should be looked at together.',
+    'Playtests should show whether the “±0” labels clutter the cabin.',
+  ],
+};

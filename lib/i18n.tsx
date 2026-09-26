@@ -353,6 +353,7 @@ const exactPairs: Array<[string, string]> = [
   ['绿线发奖励；红线图标直接显示每层代价。两者分别结算，多条都可叠加。', 'Green links pay rewards; red-link icons show their per-floor cost. They resolve independently, and multiple links stack.'],
   ['卡牌稀有度', 'Card rarity'], ['常规', 'Standard'], ['精良', 'Fine'], ['稀有', 'Rare'], ['传奇', 'Legendary'],
   ['门已开启。把候选人物直接拖进指定站位。', 'Doors open. Drag a candidate directly into a position.'],
+  ['门已开启。先点一位候客人物，再点一个空位。', 'Doors open. Tap a waiting rider, then tap a seat.'],
   ['拖拽人物安排站位 · 有效组合会亮起', 'Drag riders into position · valid links will glow'],
   ['谁要上楼？', 'Who is going up?'], ['送达后领取基础奖励 · 途中收益与人物联动另算', 'Collect the base fare on arrival · floor income and links resolve separately'],
   ['关门上行', 'Ascend'], ['正在上行', 'Ascending'], ['人物/请离', 'Rider / Dismiss'],
@@ -586,6 +587,7 @@ function translateUncached(value: string): string {
     .replace(/^红线 −2金币$/u, 'Red link −2 coins')
     .replace(/^长途送货 (\d+) 站$/u, 'Long route: $1 stops')
     .replace(/^红线 (🔥|⚡) \+1$/u, 'Red link $1 +1')
+    .replace(/^红线 \+1躁动$/u, 'Red link +1 agitation').replace(/^红线 \+1耗电$/u, 'Red link +1 power')
     .replace(/^顺手牵羊 \+(\d+)金币\/层$/u, 'Picking pockets +$1 coins/floor')
     .replace(/^暂存\+(\d+)币\/层 · 链接加躁动$/u, 'Bank +$1 coins/floor · links add agitation')
     .replace(/^暂存 (\d+) 币$/u, 'Banked $1 coins')
@@ -686,14 +688,14 @@ function translateUncached(value: string): string {
     .replace(/2\+邻座：偶数层 \+(\d+)/gu, '2+ neighbors: +$1 agitation on even floors')
     .replace(/总耗电>(\d+)：偶数层 \+(\d+)/gu, 'Total power >$1: +$2 agitation on even floors')
     .replace(/每站25%概率 \+(\d+)/gu, '25% chance/floor: +$1 agitation')
-    .replace(/邻(.+?)：🔥 每层 \+1 躁动/gu, 'Adjacent $1: 🔥 +1 agitation/floor')
-    .replace(/邻(.+?)：⚡ 每层额外耗 1 电/gu, 'Adjacent $1: ⚡ +1 extra power/floor')
-    .replace(/邻(.+?)：🪙 每层损失 2 金币/gu, 'Adjacent $1: 🪙 lose 2 coins/floor')
+    .replace(/邻(.+?)：(?:🔥 )?每层 \+1 躁动/gu, 'Adjacent $1: +1 agitation/floor')
+    .replace(/邻(.+?)：(?:⚡ )?每层额外耗 1 电/gu, 'Adjacent $1: +1 extra power/floor')
+    .replace(/邻(.+?)：(?:🪙 )?每层损失 2 金币/gu, 'Adjacent $1: lose 2 coins/floor')
     .replace(/邻(.+?)：⚡ 两人耗电 ×2；🪙 两人到站车费 ×2/gu, 'Adjacent $1: ⚡ both riders power x2; 🪙 both arrival fares x2')
     .replace(/邻(.+?)：⚡ 两人耗电 ×2/gu, 'Adjacent $1: ⚡ both riders power x2')
-    .replace(/旁边有(.+?)：🔥 每层 \+1 躁动/gu, 'Adjacent $1: 🔥 +1 agitation/floor')
-    .replace(/旁边有(.+?)：⚡ 每层额外耗 1 电/gu, 'Adjacent $1: ⚡ +1 extra power/floor')
-    .replace(/旁边有(.+?)：🪙 每层损失 2 金币/gu, 'Adjacent $1: 🪙 lose 2 coins/floor')
+    .replace(/旁边有(.+?)：(?:🔥 )?每层 \+1 躁动/gu, 'Adjacent $1: +1 agitation/floor')
+    .replace(/旁边有(.+?)：⚡ 每层额外耗 1 电/gu, 'Adjacent $1: +1 extra power/floor')
+    .replace(/旁边有(.+?)：🪙 每层损失 2 金币/gu, 'Adjacent $1: lose 2 coins/floor')
     .replace(/旁边有(.+?)：⚡ 两人耗电 ×2；🪙 两人到站车费 ×2/gu, 'Adjacent $1: ⚡ both riders power x2; 🪙 both arrival fares x2')
     .replace(/旁边有(.+?)：⚡ 两人耗电 ×2/gu, 'Adjacent $1: ⚡ both riders power x2')
     .replace(/偶数层 \+(\d+)/gu, 'Even floors: +$1 agitation')
