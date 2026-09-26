@@ -127,7 +127,7 @@ export function symbolLedger(cabin: Seat[], rules = SYMBOL_RULES, coinBonus = 0)
     for (const s of shapes) lines.push({ label: `${SYMBOLS[s.symbol].zh}${SHAPE_LABEL[s.kind]}`, amount: rules[s.kind] });
   } else {
     for (const [symbol, n] of Object.entries(greenBySymbol(cabin, rules)) as Array<[SymbolKey, number]>) {
-      const fx = SYMBOL_EFFECTS[symbol], name = `${SYMBOLS[symbol].zh}绿线 ×${n}`;
+      const fx = SYMBOL_EFFECTS[symbol], name = n > 1 ? `${SYMBOLS[symbol].zh}绿线 ${n}级` : `${SYMBOLS[symbol].zh}绿线`;
       if (fx.coins) lines.push({ label: name, amount: n * (fx.coins * rules.greenCoins + coinBonus) });
       if (fx.agitation) agitationLines.push({ label: name, amount: n * fx.agitation });
       if (fx.power) power += n * fx.power;

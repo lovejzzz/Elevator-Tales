@@ -1,6 +1,14 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.9**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.10**. Publication status is tracked separately from the source version.
+
+## v10.2.10 — 2026-09-26 — The rail lists what moves power, agitation and coins / 左栏逐条列出影响来源
+
+- Power, agitation and coin boxes list their next-floor sources (`floorPreview`: the next floor settled once with every chance roll failing), adding up to "Next"; chance gets its own line; a changed line glows. The coin box gains "Next +N".
+- Link hover shows only the framed explanation (native titles removed); repeated symbols say they count once a floor, with the symbol's level.
+- Labels: "人间绿线" / "安静绿线 2级" instead of "×1"/"×2"; relief unused at 0 agitation is a note, not a "+1" line.
+- The rail scrolls on short screens; phones hide the lists for now.
+- Checks: the screenshot's 2F cabin and the 66F cabin add up exactly; verify passes; browser-checked at 1728×1117, 1280×720, tablet and phone, Chinese and English.
 
 ## v10.2.9 — 2026-09-26 — The agitation alert suggests the cheapest way out / 躁动告急时先推荐最省的办法
 

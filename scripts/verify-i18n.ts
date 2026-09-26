@@ -31,6 +31,8 @@ assert.equal(translateGameText('金币不足', 'en'), 'Not enough coins');
  assert.equal(arrivalFare(commuter,cabin,1,3),arrivalFare(commuter,cabin,1,0),'links pay every floor, never on arrival');
  for(const n of [1,2]) assert.equal(translateGameText(`绿线 ${n} 条`,'en'),`${n} green link${n===1?'':'s'}`);
  assert.equal(translateGameText('热闹绿线 ×2','en'),'Lively green ×2');
+ assert.equal(translateGameText('人间绿线','en'),'Hearth green link'); assert.equal(translateGameText('安静绿线 2级','en'),'Quiet green link level 2');
+ assert.equal(translateGameText('安静、幽冥绿线省电','en'),'Quiet, Spirit links save power'); assert.equal(translateGameText('乘客耗电','en'),'Riders’ power use');
  for(const k of SYMBOL_KEYS) assert.equal(translateGameText(symbolTitle(k,true),'en'),symbolTitle(k,false));
  assert.equal(translateGameText('符号：热闹 · 人间','en'),'Symbols: Lively · Hearth');
 }

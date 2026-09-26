@@ -802,3 +802,47 @@ export const V1029_EN: ChangelogEntry = {
     'The power rescue still prefers fewer dismissals; this run showed no problem there, so it stays for now.',
   ],
 };
+
+export const V10210_ZH: ChangelogEntry = {
+  version: '10.2.10', date: '2026-09-26', title: '左栏逐条列出影响电量、躁动和余额的来源',
+  summary: '试玩截图里有三个问题：鼠标移到连线上会同时弹出两个说明；“人间绿线 ×1 −1”看不懂；第二位通勤者上车后连出了一条安静线，左边的状态却没有任何变化，看不出这条线起什么作用。',
+  changes: [
+    '电量、躁动、余额三个框里，各自逐条列出下一站会让这个数字变化的来源，例如“电梯运转 −1、乘客耗电 −4、安静绿线省电 +2”。每一条都来自引擎对下一站的实际结算，加起来就是“下一站”的数；随机的部分另起一行写“随机因素”。数值刚变的那一行会亮一下，放上新乘客就能看到它改了哪一项。',
+    '余额框新增“下一站 +N”和收入来源（谁到站、链接收入）；没人到站时会直接写明。',
+    '连线的说明只保留带框的那一个。同一种符号有多条绿线时，说明会写“车里共有 3 条「安静」绿线，但同一种符号每层只算一次”，并给出这个符号现在的等级和效果。',
+    '绿线的写法从“人间绿线 ×1 −1”改为“人间绿线 −1”，2 级起才写“安静绿线 2级”；链接栏里的“×2”也改为“2级”。躁动已经是 0 时，不再显示一行“+1”，改为说明“其中 1 点降不下去”。',
+    '列表让后期车厢的左栏变长；屏幕较矮时左栏可以上下滚动。手机上左栏是紧凑的一行，列表暂时不显示。',
+  ],
+  experiments: [
+    '按截图复原 2 层车厢（恋人、恋人、通勤者、月老，再放上第二位通勤者）：电量一栏 −1、−3、+2 变成 −1、−4、+2，只有乘客耗电那一行变化，合计和预测的 −3 一致。这个局面已写进 verify。',
+    '按上一局 66 层车厢检查后期：电量 −5、−6、−1、+2 合计 −10，躁动 +1、+1、+1、+1、+5、−2 合计 +7，余额 +22、+3，都和“下一站”一致。',
+    '浏览器检查：1728×1117 一屏放得下；1280×720 和平板上左栏可以滚动；手机布局不变；中英文都没有残留的另一种语言，连线上只剩一个说明。',
+    '只改界面和说明，规则和数值不变。verify 全部通过。',
+  ],
+  watch: [
+    '看玩家是否觉得左栏太长；如果是，改成只显示前几条，其余折叠起来。',
+    '手机上的来源列表还没有做，需要一个点开查看的方式。',
+  ],
+};
+
+export const V10210_EN: ChangelogEntry = {
+  version: '10.2.10', date: '2026-09-26', title: 'The rail lists what moves power, agitation and coins',
+  summary: 'Playtest screenshots showed three problems: hovering a link opened two explanations at once; “Hearth green ×1 −1” was hard to read; and when a second Commuter boarded and drew a Quiet link, nothing on the left changed, so the link’s effect was a mystery.',
+  changes: [
+    'The power, agitation and coin boxes each list, line by line, what changes their number on the next ascent, for example “Elevator motor −1, Riders’ power use −4, Quiet links save power +2”. Every line comes from the engine’s own settlement of the next floor and they add up to the “Next” figure; anything left to chance gets its own “Chance” line. A line whose value just changed glows briefly, so placing a rider shows what it moved.',
+    'The coin box gains “Next +N” and its sources (who gets off, link income); when nobody gets off, it says so.',
+    'Only the framed explanation opens on a link now. When a symbol has several green links, the note says “There are 3 Quiet links aboard, but a symbol counts once a floor”, with the symbol’s current level and effect.',
+    'Green links read “Hearth green link −1” instead of “×1 −1”, with “level 2” only from level 2; the links panel says “level 2” instead of “×2”. At 0 agitation the rail no longer shows a “+1” line; it says “1 of the relief goes unused”.',
+    'The lists make the rail longer in late cabins; on short screens the rail scrolls. On phones the rail is one compact row and the lists are not shown yet.',
+  ],
+  experiments: [
+    'The 2F cabin from the screenshots was rebuilt (Lover, Lover, Commuter, Matchmaker, then a second Commuter). The power lines went from −1, −3, +2 to −1, −4, +2: only the riders’ line moved, and the total matches the −3 forecast. This case is now in verify.',
+    'Late game, using the last run’s 66F cabin: power −5, −6, −1, +2 totals −10; agitation +1, +1, +1, +1, +5, −2 totals +7; coins +22, +3. All match “Next”.',
+    'Browser: at 1728×1117 everything fits; at 1280×720 and on a tablet the rail scrolls; the phone layout is unchanged; neither language shows the other, and a link opens one explanation.',
+    'Interface and wording only; rules and numbers are unchanged. verify passes.',
+  ],
+  watch: [
+    'Whether players find the rail too long; if so, show the first few lines and fold the rest.',
+    'Phones do not show the source lists yet; they need a tap-to-open view.',
+  ],
+};

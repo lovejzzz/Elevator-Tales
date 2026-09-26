@@ -63,3 +63,21 @@ console.log('playtest v10.2.4: cancelled pairs, both-failure lesson and emoji-fr
   assert.ok(noManual.cost + noManual.forfeit < 4 * E.calmPrice(66), 'dismissing the Taskmaster beats 72 coins of calming even counting his fare');
   console.log('playtest v10.2.9: the agitation rescue picks the free relief or a dismissal over costly calming');
 }
+
+// v10.2.10 (screenshots, 2F): a second Commuter drew a Quiet link but nothing moved on the rail. Each rail box now lists its
+// sources from one settled preview of the next floor; the lines add up to the change, and the new rider moves only his own line.
+{
+  const { floorPreview, energyForecast } = await import('../lib/game-forecast');
+  const R = (kind: Rider['kind'], id: string, dest: number, boardedAt: number) => ({ id, kind, destination: dest, patience: 0, boardedAt, fareBonus: 0, stash: 0, volatile: false }) as Rider;
+  const cab = [R('lover', 'a', 7, 1), R('lover', 'b', 5, 1), R('commuter', 'c', 4, 1), null, null, R('matchmaker', 'm', 10, 1)];
+  const st = { ...initialRun(), floor: 2, status: 'playing', energy: 48, coins: 0, stress: 0, cabin: cab } as RunState;
+  const before = floorPreview(st)!, after = floorPreview({ ...st, cabin: [...cab.slice(0, 4), R('commuter', 'd', 7, 2), cab[5]] })!;
+  const sum = (l: Array<{ amount: number }>) => l.reduce((n, x) => n + x.amount, 0);
+  assert.equal(sum(after.energy), after.energyDelta, 'the power lines add up'); assert.equal(after.energyDelta, energyForecast({ ...st, cabin: [...cab.slice(0, 4), R('commuter', 'd', 7, 2), cab[5]] }).lowDelta);
+  assert.deepEqual(after.energy, [{ label: '电梯运转', amount: -1 }, { label: '乘客耗电', amount: -4 }, { label: '安静绿线省电', amount: 2 }]);
+  assert.deepEqual(before.energy.find(l => l.label === '乘客耗电'), { label: '乘客耗电', amount: -3 }, 'only the riders’ line moves');
+  assert.deepEqual([after.stress, after.stressUnused], [[{ label: '人间绿线', amount: -1 }], 1], 'Hearth relief at 0 is shown as unused, not as +1');
+  assert.equal(after.coinDelta, 0);
+  assert.equal(floorPreview({ ...st, status: 'upgrade' }), null);
+  console.log('playtest v10.2.10: rail source lists add up and show what a new rider moves');
+}

@@ -3634,3 +3634,32 @@ button.keepsake-chip { border:1px solid #c99d52; border-radius:999px; background
 .tcg-face .cc-keepsake-effect { position:relative; }
 .tcg-face .keepsake-chip { position:static; }
 .tcg-face .keepsake-tip { left:0; right:0; width:auto; max-width:none; transform:none; white-space:normal; text-align:left; z-index:6; }
+
+/* v10.2.10: each rail box lists what moves its number on the next ascent (one line per source). */
+.game-shell .metric-sources { list-style:none; margin:6px 0 0; padding:6px 0 0; border-top:1px solid #c99d5226; display:grid; gap:1px; font:500 11px/1.45 var(--font-sans); text-align:left; }
+.game-shell .metric-sources li { display:flex; align-items:baseline; justify-content:space-between; gap:8px; color:#c9c2ae; min-width:0; }
+.game-shell .metric-sources li span { min-width:0; overflow-wrap:anywhere; }
+.game-shell .metric-sources li span::before { content:'·'; margin-right:5px; color:#8c8a78; }
+.game-shell .metric-sources li b { font:600 11px/1.45 var(--font-mono); white-space:nowrap; }
+.game-shell .metric-sources li.is-good b { color:#9ee3b5; }
+.game-shell .metric-sources li.is-bad b { color:#ffb09a; }
+.game-shell .metric-sources li.is-note { color:#8a938a; font-size:10px; }
+.game-shell .status-rail .wallet-card>.wallet-forecast,
+.game-shell .status-rail .wallet-card>.metric-sources { grid-column:1/-1; }
+.game-shell .status-rail .wallet-card>.wallet-forecast { display:flex; margin:0; }
+@media (max-width:700px) {
+  .game-shell .status-rail .metric-sources, .game-shell .status-rail .wallet-forecast { display:none; }
+}
+/* A line whose value just changed (it re-mounts) glows briefly, so placing a rider shows what it moved. */
+.game-shell .metric-sources li { animation:metric-line-in .9s ease-out; border-radius:4px; }
+@keyframes metric-line-in { from { background:#e9c97a2e; } to { background:transparent; } }
+@media (prefers-reduced-motion:reduce) { .game-shell .metric-sources li { animation:none; } }
+/* With the source lists a late cabin can outgrow a short screen: the rail scrolls instead of spilling off the page. */
+@media (min-width:701px) {
+  .game-shell .status-rail { overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:#c99d5244 transparent; }
+  .game-shell .status-rail > * { flex-shrink:0; }
+}
+@media (min-width:701px) and (max-height:850px) {
+  .game-shell .metric-sources { margin-top:4px; padding-top:4px; font-size:10px; line-height:1.35; }
+  .game-shell .metric-sources li b { font-size:10px; line-height:1.35; }
+}

@@ -43,11 +43,11 @@ assert.deepEqual(symbolShapes(full).map(s => s.kind), ['full', 'full']);
 // The six effects, per level and per floor.
 const ledger = (kinds: Array<PassengerKind | null>) => symbolLedger(seat(...kinds));
 assert.equal(ledger(['tourist', 'child']).coins, 2, 'Lively +2 coins');
-assert.deepEqual(ledger(['tourist', 'child']).agitationLines, [{ label: '人间绿线 ×1', amount: -1 }], 'Hearth −1 agitation');
+assert.deepEqual(ledger(['tourist', 'child']).agitationLines, [{ label: '人间绿线', amount: -1 }], 'Hearth −1 agitation');
 const street = ledger(['drunk', 'coach']);
 assert.equal(street.lines.find(l => l.label.startsWith('江湖'))?.amount, 2, 'Street +2 coins');
 assert.ok(!street.agitationLines.some(l => l.label.startsWith('江湖')), 'v10.1: Street green links add no agitation');
-assert.deepEqual(ledger(['commuter', 'inspector']).agitationLines, [{ label: '秩序绿线 ×1', amount: -1 }], 'Order −1 agitation');
+assert.deepEqual(ledger(['commuter', 'inspector']).agitationLines, [{ label: '秩序绿线', amount: -1 }], 'Order −1 agitation');
 assert.equal(ledger(['commuter', 'inspector']).power, 1, 'Quiet saves 1 power');
 assert.equal(ledger(['ghost', 'thief']).power, 1, 'Spirit saves 1 power');
 // Power saved never exceeds what the riders themselves use (two Ghosts use no power).
@@ -55,7 +55,7 @@ assert.equal(energyBreakdown(state(seat('ghost', 'ghost'))).symbol, 0);
 const quietPair = state(seat('commuter', 'inspector'));
 assert.equal(energyBreakdown(quietPair).symbol, 1);
 assert.equal(amount(resolveFloor(quietPair, () => .9).lastEnergy.sources, '符号绿线省电'), 1, 'settlement saves what the forecast shows');
-assert.ok((stressForecast(quietPair).sources ?? []).some(s => s.label === '秩序绿线 ×1'), 'the agitation forecast lists the Order calm');
+assert.ok((stressForecast(quietPair).sources ?? []).some(s => s.label === '秩序绿线'), 'the agitation forecast lists the Order calm');
 
 // The Battery and the Red String add 2 per level of a coin symbol.
 assert.equal(symbolCoins({ cabin: seat('tourist', 'child'), upgrades: { ...EMPTY_UPGRADES, battery: 1 }, keepsakes: [] } as unknown as RunState).coins, 4);

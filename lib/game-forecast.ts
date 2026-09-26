@@ -1,5 +1,6 @@
-import { symbolLedger } from './symbols';
-import { CALM_RULES, SOOTHE_PRICE, outburstChanceAt, GHOST_CONTROL_KINDS, overtimerLingers, troubleFree, COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, nightOperatorSaving, outburstSlots, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, type Rider, type RunState } from './game-engine';
+import { greenBySymbol, SYMBOL_EFFECTS, SYMBOL_KEYS, SYMBOLS, symbolLedger } from './symbols';
+import { PASSENGERS } from './game-data';
+import { CALM_RULES, SOOTHE_PRICE, outburstChanceAt, GHOST_CONTROL_KINDS, overtimerLingers, troubleFree, COURIER_ARRIVAL_CHARGE, parcelBeside, possibleBoxPower, settleBuffer, redAgitationProtection, musicAgitation, energyBreakdown, riderAgitation, hasNeighbour, neighbours, nextShopFloor, boxOf, operatorSaving, nightOperatorSaving, outburstSlots, serviceSaving, cabinPressureLines, partnershipAgitation, arrivalReliefCapFor, hasKeepsake, legendInCabin, ROUNDS_LOG_SHOP_RELIEF, resolveFloor, type Rider, type RunState } from './game-engine';
 import { riderProfile } from './rider-profile';
 import { DARK_RULES, outburstIsPower } from './dark-rules';
 
@@ -196,4 +197,23 @@ export function abyssLossChance(state: RunState, stressWith?: (extra: number) =>
     if (boils || dark) chance += pm;
   }
   return chance;
+}
+
+export type PreviewLine = { label: string; amount: number };
+/** `stressUnused`: calming that would take agitation below 0 and so does nothing. */
+export type FloorPreview = { energy: PreviewLine[]; stress: PreviewLine[]; coins: PreviewLine[]; energyDelta: number; stressDelta: number; coinDelta: number; stressUnused: number };
+const RIDER_POWER_LABELS = new Set(Object.values(PASSENGERS).map(p => `${p.name}耗电`));
+/** v10.2.10 (playtest: a new green link changed nothing on the rail, so its effect was a mystery): each rail box lists what
+ * moves its number on the next ascent. The next floor is settled once with every chance roll failing, so the lines are the
+ * engine's own settlement lines; random extras (boxes, outbursts, haunts) are left to the forecast range. */
+export function floorPreview(state: RunState): FloorPreview | null {
+  if (state.status !== 'playing' || !state.cabin.some(Boolean)) return null;
+  const next = resolveFloor(state, () => 0.999999);
+  const merge = (lines: PreviewLine[]) => { const out: PreviewLine[] = []; for (const l of lines) { const hit = out.find(o => o.label === l.label); if (hit) hit.amount += l.amount; else out.push({ ...l }); } return out.filter(l => l.amount); };
+  // Riders' own power use is one line; which Quiet/Spirit links save power is named.
+  const savers = SYMBOL_KEYS.filter(k => greenBySymbol(state.cabin)[k] && (SYMBOL_EFFECTS[k].power || SYMBOL_EFFECTS[k].freePower)).map(k => SYMBOLS[k].zh).join('、');
+  const energy = merge(next.lastEnergy.sources.map(l => RIDER_POWER_LABELS.has(l.label) ? { label: '乘客耗电', amount: l.amount } : l.label === '符号绿线省电' && savers ? { label: `${savers}绿线省电`, amount: l.amount } : l));
+  const stress = merge(next.lastPressure.sources);
+  const shown = stress.reduce((n, l) => n + l.amount, 0);
+  return { energy, stress, coins: merge(next.lastEarnings.sources), energyDelta: next.energy - state.energy, stressDelta: next.stress - state.stress, coinDelta: next.coins - state.coins, stressUnused: Math.max(0, next.lastPressure.delta - shown) };
 }

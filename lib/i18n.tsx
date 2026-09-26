@@ -727,6 +727,9 @@ function translateUncached(value: string): string {
     .replace(/^用了香薰：躁动 −(\d+)。$/u, 'Used Incense: agitation −$1.')
     .replace(/^用了檀香：躁动 −(\d+)。$/u, 'Burned Sandalwood: agitation −$1.')
     // v10 symbol links.
+    // v10.2.10: “人间绿线 ×1 −1” read as a sum; the level shows only from 2 (“人间绿线 2级”).
+    .replace(/^(热闹|安静|秩序|江湖|人间|幽冥)绿线(?: (\d+)级)?$/u, (_m, sym: string, n?: string) => `${translateGameText(sym, 'en')} green link${n ? ` level ${n}` : ''}`)
+    .replace(/^((?:热闹|安静|秩序|江湖|人间|幽冥)(?:、(?:热闹|安静|秩序|江湖|人间|幽冥))*)绿线省电$/u, (_m, syms: string) => `${syms.split('、').map(x => translateGameText(x, 'en')).join(', ')} links save power`)
     .replace(/^(热闹|安静|秩序|江湖|人间|幽冥)绿线 ×(\d+)$/u, (_m, sym: string, n: string) => `${translateGameText(sym, 'en')} green ×${n}`)
     .replace(/^绿线 (\d+) 条$/u, (_m, n: string) => `${n} green link${n === '1' ? '' : 's'}`)
     .replace(/^例：两位基价(\d+)的游客相邻且同时下车，无其他加成，各得(\d+)金币；中躁动各得(\d+)。$/u, 'Example: two Tourists with base fare $1 sit together and leave on the same floor with nothing else: $2 coins each; $3 each at medium agitation.')

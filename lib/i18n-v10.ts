@@ -7,7 +7,7 @@ export const V10_PAIRS: Array<[string, string]> = [
   [SYMBOL_SHAPE_RULE, 'Matching and opposite symbols cancel one for one. A row of one symbol adds a level (+1), a 2×2 square two (+2), a full cabin four (+4).'],
   ['赚钱的符号（热闹、江湖）每级绿线每层多 +2 金币。本局限装一次。', 'Coin symbols (Lively, Street) pay 2 more coins per green-link level per floor. One per run.'],
   ['赚钱的符号（热闹、江湖）每级绿线每层 +2 金币；此后未配对恋人呼唤同伴的概率为35%。', 'Coin symbols (Lively, Street) pay 2 more coins per green-link level per floor; an unpaired Lover now calls a partner 35% of the time.'],
-  ['符号绿线省电', 'Symbol links save power'],
+  ['符号绿线省电', 'Symbol links save power'], ['乘客耗电', 'Riders’ power use'],
   ["车费按路程：每坐一层 1 币 · 0 耗电 · 没人管：+1 躁动/层、每 3 层延误一位邻座", "Fare by distance: 1 coin a floor · no power · unheld: +1 agitation a floor, delays a neighbour every 3rd floor"],
   ["不耗电，车费按路程算：每坐一层 1 金币（路程 5–10 层）。相邻驱魔师、召魂人或灵媒时受控：不作祟、不延误邻座，每层抵消 1 点人物耗电，到站再多 2 金币。没人管时每层 +1 躁动，到 3 的倍数层随机延误一位邻座 1 站。", "Uses no power; his fare is by distance: 1 coin a floor (rides 5–10 floors). Beside a Warden, Summoner or the Medium he is held: no haunting, no delays, he offsets 1 rider power a floor and pays 2 more on arrival. Unheld, he adds 1 agitation a floor and on every floor that is a multiple of 3 delays a random neighbour by 1 stop."],
   ['幽灵作祟', 'Ghost haunting'],
