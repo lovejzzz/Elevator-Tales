@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.5**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.6**. Publication status is tracked separately from the source version.
+
+## v10.2.6 — 2026-09-26 — The Ghost keeps his fare after 31F / 幽灵不吃车费折扣
+
+- The Ghost's distance fare (1 coin a floor) is exempt from `LATE_FARE`; his card promised 1 a floor but showed 7 for 9 stops.
+- Checks: Ghost at 35F for 9 stops pays 9; Commuter at 35F pays 3, at 20F pays 4.
+- 300 balanced runs: Ghost boarding 54%, all riders 15–65%. verify passes.
+- Browser: four more runs (81, 96, 86F; one reset at 1F by a hot reload); late card fares and the "+25% after midnight" shop label display correctly; coins visibly tighter late.
 
 ## v10.2.5 — 2026-09-26 — Less money mid-to-late / 中后期少一点钱
 

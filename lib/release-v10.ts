@@ -623,3 +623,44 @@ export const V1025_EN: ChangelogEntry = {
     'The “not affluent” target (≤15%, ≤15 coins on exit) could only be met by deep income cuts, which hurt novices first. The human-like and novice bots are already not affluent (0–3%). The target may need to measure normal play only, or the middle game needs things worth buying.',
   ],
 };
+
+export const V1026_ZH: ChangelogEntry = {
+  version: '10.2.6', date: '2026-09-26', title: '幽灵不吃 31 层后的车费折扣',
+  summary: '上一版试玩时发现：31 层后上车的幽灵，卡上写“每坐一层 1 币”、路程 9 站，车费却显示 7（9 × 75% 向上取整），规则和数字对不上。幽灵的车费本来就是按路程算的，所以不再打折。',
+  changes: [
+    '幽灵的车费始终等于要坐的层数（每层 1 币），31 层后上车也一样；其他乘客照旧打 75 折。',
+  ],
+  experiments: [
+    '检查：35 层上车坐 9 站的幽灵车费 9；同层上车的通勤者 3（原价 4）；20 层上车的通勤者 4。',
+    '均衡型 300 局：幽灵上车率 54%（v10.2.5 为 53%），全部人物在 15–65%；死因 电量 62.3% / 躁动 36.7%（只看均衡型一种机器人）。verify 全部通过。',
+    '浏览器又玩了 4 局（81、96、86 层；一局在 1 层被热更新重置）：31 层后卡片车费显示正确（监工 9、军警 3），61 层起商店写“2.5 币/电 · 午夜后贵 25%”，中后期金币明显更紧（86 层断电时剩 0–5 币）。',
+  ],
+  watch: [
+    '中后期更紧之后，新手和普通玩家在 60–80 层会不会觉得太难，需要真人记录。',
+  ],
+};
+
+export const V1026_EN: ChangelogEntry = {
+  version: '10.2.6', date: '2026-09-26', title: 'The Ghost keeps his fare after 31F',
+  summary: 'A playtest of the last release showed a Ghost boarding after 31F whose card promised 1 coin a floor for a 9-stop trip, yet showed a fare of 7 (9 × 75%, rounded up). The rule and the number disagreed. His fare already follows the distance, so it is no longer reduced.',
+  changes: [
+    'The Ghost always pays 1 coin per floor ridden, also when he boards from 31F on; every other rider still pays 75% there.',
+  ],
+  experiments: [
+    'Checks:',
+    '• a Ghost boarding at 35F for 9 stops pays 9;',
+    '• a Commuter boarding there pays 3 (base 4);',
+    '• a Commuter boarding at 20F pays 4.',
+    '300 balanced-bot runs:',
+    '• Ghost boarding 54% (53% in v10.2.5), every rider within 15–65%;',
+    '• endings power 62.3% / agitation 36.7% (balanced bot only).',
+    'verify passes.',
+    'Four more browser runs (81, 96 and 86F; one was reset at 1F by a hot reload):',
+    '• card fares after 31F show correctly (Taskmaster 9, Officer 3);',
+    '• from 61F the shop reads “2.5 c/power · +25% after midnight”;',
+    '• coins are visibly tighter mid-to-late: 0–5 left at an 86F power-out.',
+  ],
+  watch: [
+    'With tighter money mid-to-late, human playtests should show whether 60–80F now feels too hard for normal players.',
+  ],
+};
