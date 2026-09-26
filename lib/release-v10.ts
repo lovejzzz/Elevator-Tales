@@ -374,3 +374,58 @@ export const V1021_EN: ChangelogEntry = {
     'With more than four riders on a wide screen, the rest are below the fold; playtests should show whether players miss them.',
   ],
 };
+
+export const V1022_ZH: ChangelogEntry = {
+  version: '10.2.2', date: '2026-09-25', title: '乘客卡：画像不再被遮挡，卡片按屏幕大小排版',
+  summary: 'v10.2.1 的竖版卡在大屏上排成了三列，卡片又窄又挤，下面却空着；车费、耗电等数字压在画像上。现在画像在上面、完整露出，数值放在画像下方单独的属性栏，卡片大小按右栏的实际宽高来定。',
+  changes: [
+    '卡面从上到下：名字栏 → 画像（不压任何东西）→ 属性栏（金币车费、路程站数、耗电、躁动，四格一排，图标和座位上的一致）→ 标签（传奇、急躁、悬赏等）→ 符号效果 → 能力说明。',
+    '画像按比例裁切填满画框，不再被拉伸变形。规则按钮挪进名字栏右端。',
+    '宽屏：1–4 位乘客排成两列（2×2），5–6 位在右栏够宽（≥600 像素）时排成三列；卡片宽度会收一点，让两排尽量完整放下，最窄 190 像素；右栏矮而宽时，一排能放下三张。实在放不下时右栏上下滚动，下一排会露出一截提示还有人。',
+    '宽屏卡片的画像固定为宽 : 高 = 1 : 0.8，文字多的卡片整张变高，不再挤小画像。卡片较窄时（250 像素以下）符号只显示图标和效果，名字在图标的悬停提示和图鉴里。',
+    '中等宽度（701–1100 像素）：卡片那一排从 340 像素加高到 400 像素，放得下属性栏；卡片宽 200–240 像素、居中，一行里的画像同样高。',
+    '搭档、信物标签过长时在卡内换行，不再伸出卡边。',
+  ],
+  experiments: [
+    '只改界面，规则和数值不变，沿用 v10.2.0 的验收（4200 局）。',
+    '浏览器批量检查：从各楼层生成 41 种普通乘客加 8 位传奇，按 3/4/5/6 人一组逐组上架（每个尺寸 196–200 张卡），检查卡片内容有没有被截掉、有没有伸出卡边。1101×700、1280×720、1440×900、1536×864、1728×960、1728×1117、1920×1080、800×900 全部 0 处。',
+    '一屏能完整看到几张：1920×1080 时 3–6 人全部可见；1728×960 和 1728×1117 时 3–4 人全部可见，5–6 人先看到 4 张；1101×700 和 1280×720 时先看到 3 张；1440×900 和 1536×864 时文字多的卡片最少只能完整看到 2 张；看不到的往下滚。手机两列、中等宽度一行都检查过。verify 全部通过。',
+  ],
+  watch: [
+    '1440×900 这类较矮的屏幕上，第二排常要滚动才能看全；如果试玩觉得不方便，可以再压缩文字区（例如把能力说明缩短）。',
+  ],
+};
+
+export const V1022_EN: ChangelogEntry = {
+  version: '10.2.2', date: '2026-09-25', title: 'Rider cards: the portrait is never covered, and cards size to the screen',
+  summary: 'On large screens the v10.2.1 upright cards fell into three narrow, crowded columns with empty space below, and the fare, power and agitation numbers sat on top of the portrait. The portrait now sits uncovered at the top, the numbers have their own stat bar beneath it, and card size follows the real width and height of the right-hand column.',
+  changes: [
+    'Top to bottom, a card reads: name bar, portrait (nothing on it), stat bar, tags (Legend, Impatient, Bounty and so on), symbol effects, ability text.',
+    '• The stat bar is one row of four cells: fare in coins, trip in stops, power and agitation, with the same icons as the seats.',
+    'Portraits are cropped to fill their frame instead of being stretched. The rules button moves into the right end of the name bar.',
+    'Wide screens:',
+    '• 1–4 riders form two columns (2×2); 5–6 form three columns when the column is at least 600px wide.',
+    '• Cards narrow a little so that two rows fit where possible, down to 190px wide; a short, wide column then fits three across.',
+    '• When everyone still can’t fit, the column scrolls and the next row peeks out.',
+    'On wide screens the portrait keeps a fixed 1 : 0.8 frame; a card with more text grows taller instead of shrinking its portrait. On cards narrower than 250px, symbols show only their icon and effect; the name is in the icon’s tooltip and the codex.',
+    'Medium width (701–1100px): the card row grows from 340px to 400px to hold the stat bar; cards are 200–240px wide and centred, and portraits in a row share one height.',
+    'Long partner and keepsake tags wrap inside the card instead of running past its edge.',
+  ],
+  experiments: [
+    'Interface only; rules and numbers unchanged, so the v10.2.0 acceptance (4,200 runs) stands.',
+    'Batch browser check:',
+    '• 41 ordinary riders drawn from floors across the run, plus 8 Legends, shown in groups of 3, 4, 5 and 6 (196–200 cards per size).',
+    '• Each card was checked for clipped content and for anything running past its edge.',
+    '• Zero at 1101×700, 1280×720, 1440×900, 1536×864, 1728×960, 1728×1117, 1920×1080 and 800×900.',
+    'How many cards are fully in view:',
+    '• 1920×1080: all of 3–6;',
+    '• 1728×960 and 1728×1117: all of 3–4, and 4 of 5–6;',
+    '• 1101×700 and 1280×720: 3;',
+    '• 1440×900 and 1536×864: as few as 2 when cards carry a lot of text.',
+    'The rest are a scroll away.',
+    'Phone (two columns) and medium width (one row) were checked too. verify passes.',
+  ],
+  watch: [
+    'On shorter screens such as 1440×900 the second row often needs a scroll; if that gets in the way in playtests, the text area can be tightened (for example with shorter ability lines).',
+  ],
+};

@@ -1,6 +1,20 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.1**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.2**. Publication status is tracked separately from the source version.
+
+## v10.2.2 — 2026-09-25 — Rider cards: portrait never covered, cards size to the screen / 画像不再被遮挡
+
+- Card order: name bar → portrait (uncovered) → stat bar (fare, trip, power, agitation; seat icons) → tags → symbols → ability text. Rules button inside the name bar; portraits cropped, not stretched.
+- Wide screens:
+  - 1–4 riders in 2 columns; 5–6 in 3 columns when the column is at least 600px;
+  - cards narrow (down to 190px) so two rows fit where possible, three across in a short wide column; otherwise the column scrolls with the next row peeking;
+  - portrait fixed at 1 : 0.8, and the card grows with its text;
+  - cards under 250px show symbol icon + effect only.
+- Medium width: card row 340 → 400px; cards 200–240px, centred, equal portrait height. Long chips wrap inside the card.
+- Interface only; v10.2.0 acceptance stands.
+- Browser sweep: 49 riders in groups of 3–6, 196–200 cards per size; zero clipped or overflowing cards at 1101×700, 1280×720, 1440×900, 1536×864, 1728×960, 1728×1117, 1920×1080 and 800×900.
+- Cards fully in view: all of 3–6 at 1920×1080; all of 3–4 (4 of 5–6) at 1728×960 and 1728×1117; 3 at 1101×700 and 1280×720; as few as 2 at 1440×900 and 1536×864.
+- Watch: shorter screens (1440×900) often need a scroll for the second row.
 
 ## v10.2.1 — 2026-09-25 — Rider cards become upright trading cards / 乘客卡改成竖版卡牌
 

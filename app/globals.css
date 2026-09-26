@@ -3545,19 +3545,6 @@ button.keepsake-chip { border:1px solid #c99d52; border-radius:999px; background
 .tcg-name strong { display:inline-flex; align-items:center; gap:5px; font-size:15px; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .tcg-art { position:relative; display:block; width:100%; aspect-ratio:1 / .92; border:1px solid #c99d5299; border-radius:9px; overflow:hidden; background:#07100c; box-shadow:inset 0 0 0 2px #0008; }
 .game-shell .tcg-art .portrait-window { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; margin:0 !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; }
-.tcg-cost { position:absolute !important; left:5px; top:5px; z-index:2; display:inline-grid !important; grid-auto-flow:column; place-items:center; gap:2px; min-width:36px; height:36px; padding:0 6px !important; border-radius:999px; background:radial-gradient(circle at 35% 30%,#ffe8a3,#d9a441 55%,#8a5c16); color:#2a1a02 !important; font:800 17px/1 var(--font-mono) !important; box-shadow:0 2px 8px #000a, inset 0 0 0 2px #fff4c455; }
-.tcg-cost svg { width:14px !important; height:14px !important; color:#5a3a08 !important; }
-.tcg-cost small { font-size:10px; }
-.tcg-trip { position:absolute; right:5px; top:5px; z-index:2; padding:2px 8px; border-radius:999px; background:#000c; color:#e8dcc0; font:600 11px/1.3 var(--font-mono); }
-.tcg-tags { position:absolute; left:5px; right:5px; top:46px; z-index:2; display:flex; flex-wrap:wrap; justify-content:flex-start; gap:3px; pointer-events:auto; }
-.tcg-tags .cc-tag { font-size:10px !important; padding:1px 6px !important; background:#000c; }
-.tcg-tags:empty { display:none; }
-.tcg-stats { position:absolute; left:5px; right:5px; bottom:5px; z-index:2; display:flex; justify-content:space-between; align-items:flex-end; pointer-events:none; }
-.tcg-stats .cc-energy, .tcg-stats .cc-agitation { display:inline-grid !important; grid-auto-flow:column; place-items:center; gap:1px; min-width:34px; height:34px; padding:0 5px; border-radius:999px; font:800 15px/1 var(--font-mono) !important; box-shadow:0 2px 8px #000a; }
-.tcg-stats .cc-energy { background:radial-gradient(circle at 35% 30%,#bff0ff,#3aa7c9 60%,#135468); color:#062430 !important; }
-.tcg-stats .cc-agitation { margin-left:auto; background:radial-gradient(circle at 35% 30%,#ffd0b8,#e0654a 60%,#7a2414); color:#2d0800 !important; }
-.tcg-stats svg { width:13px !important; height:13px !important; }
-.tcg-legend-note { position:absolute; left:5px; right:5px; bottom:5px; z-index:2; padding:3px 6px; border-radius:6px; background:#000c; color:#e8dcc0; font-size:11px; }
 .tcg-face .sym-row { justify-content:center; gap:4px !important; margin:0 !important; }
 .tcg-face .sym-chip { font-size:11px; line-height:18px; padding-right:6px; }
 .tcg-face .sym-chip .sym { width:18px; height:18px; }
@@ -3566,12 +3553,71 @@ button.keepsake-chip { border:1px solid #c99d52; border-radius:999px; background
 .tcg-face .cc-chips { display:flex; flex-wrap:wrap; gap:3px; }
 .tcg-face .cc-action { font-size:11px; text-align:center; }
 .game-shell .candidate-panel .passenger-card .tcg-name { margin-right:30px; }
-/* Wide desktop: the card column keeps its height and scrolls when more than four riders wait, instead of squashing the cards. */
-@media (min-width:1101px) {
-  .game-shell .candidate-panel .passenger-list { flex:none !important; align-content:start !important; grid-auto-rows:max-content !important; }
-  .game-shell .candidate-panel { overflow-y:auto !important; scrollbar-width:thin; scrollbar-color:#77633d transparent; }
-}
 /* Medium width: the cards sit in one row above the cabin; the row itself scrolls sideways when more riders wait. */
 @media (min-width:701px) and (max-width:1100px) {
-  .game-shell .candidate-panel .passenger-list { grid-template-columns:none !important; grid-auto-flow:column !important; grid-auto-columns:minmax(172px,1fr) !important; min-width:0 !important; width:100% !important; overflow-x:auto !important; overflow-y:hidden !important; scroll-snap-type:x proximity !important; scrollbar-width:thin; scrollbar-color:#77633d transparent; }
+  /* v10.2.2: the stat bar under the portrait needs a taller card row (was 340px). */
+  .game-shell .game-grid { grid-template-rows:400px minmax(0,1fr) 72px; }
+  .game-shell .candidate-panel .passenger-card { overflow:hidden !important; }
+  .game-shell .candidate-panel .tcg-art { flex:0 1 auto; height:62cqw; min-height:24%; aspect-ratio:auto; }
+  .game-shell .candidate-panel .tcg-face .cc-line { flex:1 0 auto; }
+  .game-shell .candidate-panel .passenger-list { grid-template-columns:none !important; grid-auto-flow:column !important; grid-auto-columns:minmax(200px,240px) !important; justify-content:center !important; min-width:0 !important; width:100% !important; overflow-x:auto !important; overflow-y:hidden !important; scroll-snap-type:x proximity !important; scrollbar-width:thin; scrollbar-color:#77633d transparent; }
 }
+/* v10.2.2 card sizing. Portraits are square images: crop them to fill the art window instead of stretching. */
+.game-shell .tcg-art .portrait-sheet { inset:0 !important; width:100% !important; height:100% !important; transform:none !important; background-size:cover !important; background-position:50% 22% !important; }
+.game-shell .candidate-panel .passenger-item { position:relative; container:tcg / inline-size; }
+/* The rules button sits inside the name bar's right end instead of beside it. */
+.game-shell .candidate-panel .passenger-card .tcg-name { --bar:clamp(26px, 12cqw, 32px); min-height:var(--bar); margin-right:0 !important; padding-inline:30px !important; }
+.game-shell .candidate-panel .passenger-item > .mobile-rule-button { position:absolute !important; top:calc(7px + (clamp(26px, 12cqw, 32px) - 22px) / 2) !important; right:11px !important; z-index:4; width:22px !important; height:22px !important; border:0 !important; background:transparent !important; }
+.game-shell .candidate-panel .passenger-item > .mobile-rule-button svg { width:15px !important; height:15px !important; }
+/* Wide desktop. The portrait keeps a fixed 1 : 0.8 window at the top of the card and is never squeezed; the stat bar, symbols and text sit below it and the card grows to fit them.
+   Card width fills the column (2 across for 1–4 riders, 3 across for 5–6 when the column is wide enough) but is held back when that would push two rows past the column's height, down to 190px; a short, wide column then fits a third card across.
+   Anything that still doesn't fit scrolls, with the next row peeking out. */
+@media (min-width:1101px) {
+  .game-shell .candidate-panel { container:offers / size; overflow:hidden !important; }
+  .game-shell .candidate-panel .passenger-list {
+    --cols:2; --rows:2; --gap:12px; --text:275px;
+    --wcol:calc((100cqw - 6px - (var(--cols) - 1) * var(--gap)) / var(--cols));
+    --rowfit:calc((100cqh - 12px - (var(--rows) - 1) * var(--gap)) / var(--rows));
+    --cw:min(var(--wcol), max(190px, calc((var(--rowfit) - var(--text)) / .8)));
+    grid-template-columns:repeat(auto-fit, var(--cw)) !important; grid-template-rows:none !important; grid-auto-rows:max-content !important; align-items:stretch !important;
+    justify-content:center !important; align-content:start !important; gap:var(--gap) !important; height:100% !important; padding:4px 0 8px !important; flex:none !important;
+    overflow-x:hidden !important; overflow-y:auto !important; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:#77633d transparent;
+  }
+  .game-shell .candidate-panel .passenger-list:has(> .passenger-item:nth-child(5)) { --cols:3; --gap:10px; }
+  @container offers (max-width:599px) {
+    .game-shell .candidate-panel .passenger-list:has(> .passenger-item:nth-child(5)) { --cols:2; --gap:12px; }
+  }
+  .game-shell .candidate-panel .passenger-card { height:100% !important; overflow:hidden !important; }
+  .game-shell .candidate-panel .tcg-art { flex:none; aspect-ratio:1 / .8; min-height:0; }
+  .game-shell .candidate-panel .tcg-face .cc-line { flex:1 0 auto; }
+  /* Type and badges scale with the card, so a large card reads large and a small one stays tidy. */
+  .game-shell .candidate-panel .tcg-name strong { font-size:clamp(12px, 7cqw, 18px); }
+  .game-shell .candidate-panel .tcg-face .cc-line { font-size:clamp(10.5px, 5.4cqw, 14px) !important; }
+  .game-shell .candidate-panel .tcg-face .sym-chip { font-size:clamp(10px, 5cqw, 13px); line-height:clamp(17px, 9cqw, 22px); }
+  .game-shell .candidate-panel .tcg-face .sym-chip .sym { width:clamp(17px, 9cqw, 22px); height:clamp(17px, 9cqw, 22px); }
+  /* Narrow cards: symbols show icon + effect on one line; the name is in the icon's tooltip and the codex. */
+  @container tcg (max-width: 250px) {
+    .game-shell .candidate-panel .tcg-face .sym-chip-text b { display:none; }
+    .game-shell .candidate-panel .tcg-face .sym-row { flex-wrap:nowrap; }
+    .game-shell .candidate-panel .tcg-face .sym-chip { padding-right:5px; white-space:nowrap; }
+  }
+}
+/* Partner and keepsake chips wrap inside the card instead of running past its edge. */
+.tcg-face .cc-chips > *, .tcg-face .cc-keepsake-effect, .tcg-face .cc-keepsake-effect > * { max-width:100%; white-space:normal !important; overflow-wrap:anywhere; text-align:center; }
+.tcg-face .cc-chips > * { height:auto !important; line-height:1.3 !important; }
+
+/* v10.2.2: the portrait is never covered. Fare, trip, power and agitation sit in a stat bar under it, like the attack and HP line of a trading card. */
+.tcg-stats { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:3px; padding:3px; border:1px solid #c99d5244; border-radius:7px; background:#0a120ecc; }
+.tcg-stats.tcg-stats-legend { grid-template-columns:auto minmax(0,1fr) auto; }
+.game-shell .tcg-stat { display:inline-flex !important; align-items:center; justify-content:center; gap:3px; min-width:0; margin:0 !important; padding:4px 2px !important; border:0 !important; border-radius:5px; background:#ffffff0a !important; box-shadow:none !important; font:700 clamp(12px, 6.2cqw, 16px)/1 var(--font-mono) !important; white-space:nowrap; }
+.game-shell .tcg-stat svg { flex:none; width:clamp(11px, 5.6cqw, 14px) !important; height:clamp(11px, 5.6cqw, 14px) !important; }
+.game-shell .tcg-stat.tcg-cost { color:#f3c86a !important; }
+.game-shell .tcg-stat.tcg-cost small { font-size:.7em; }
+.game-shell .tcg-stat.tcg-trip { color:#e8dcc0 !important; }
+.game-shell .tcg-stat.cc-energy { color:#7fd3ee !important; }
+.game-shell .tcg-stat.cc-agitation { color:#f08a6d !important; }
+.game-shell .tcg-stat.cc-agitation.is-zero { color:#8f8a7c !important; }
+.game-shell .tcg-stat.tcg-legend-note { font:600 clamp(10px, 5cqw, 12px)/1.2 var(--font-sans, inherit) !important; color:#e8dcc0 !important; white-space:normal; }
+.tcg-tags { display:flex; flex-wrap:wrap; justify-content:center; gap:3px; }
+.tcg-tags:empty { display:none; }
+.tcg-tags .cc-tag { font-size:10.5px !important; padding:1px 6px !important; }
