@@ -1374,7 +1374,7 @@ export function resolveBoxAbility(state: RunState, replace: UpgradeKey | null): 
   return { ...next, pendingAbility: undefined, pendingSales: [...(state.pendingSales ?? []), replace],
     message: `装上「${UPGRADES[found].name}」，换下的「${UPGRADES[replace].name}」会在下次进商店时卖掉（退 ${SELL_REFUND} 金币）。` };
 }
-export function rerollShop(current: RunState, rng: () => number = Math.random): RunState {
+function rerollShopUnguarded(current: RunState, rng: () => number = Math.random): RunState {
   if (current.status !== 'upgrade' || current.shopUpgradeBought || current.rerolledFloor === current.floor || current.coins < REROLL_PRICE || !current.shop.length) return current;
   const drawn = drawUpgradeOffer(current.upgrades, current.shopSeen ?? [], rng, current.floor);
   return { ...current, coins: current.coins - REROLL_PRICE, rerolledFloor: current.floor, shopSeen: drawn.seen, shop: drawn.keys.map(key => ({ key, price: 0, purchased: false })), message: `重抽能力，支付 ${REROLL_PRICE} 金币。` };
@@ -1390,7 +1390,7 @@ export function canBuyBoxLevel(state: RunState, line: BoxLine) {
   const box = boxOf(state), free = (state.freeBoxLevels ?? 0) > 0;
   return state.status === 'upgrade' && box[line] < BOX_MAX_LEVEL && boxTotal(box) < boxTotalCap(state.floor) && (free || state.boxBoughtFloor !== state.floor) && state.coins >= boxLevelPrice(state, line);
 }
-export function buyBoxLevel(current: RunState, line: BoxLine): RunState {
+function buyBoxLevelUnguarded(current: RunState, line: BoxLine): RunState {
   if (!canBuyBoxLevel(current, line)) return current;
   const free = (current.freeBoxLevels ?? 0) > 0, price = boxLevelPrice(current, line);
   const box = { ...boxOf(current), [line]: boxOf(current)[line] + 1 };
@@ -1418,7 +1418,7 @@ export function calmAllowance(state: RunState) {
   const used = state.calmSector === sectorOf(state.floor) ? state.calmUsed ?? 0 : 0;
   return Math.max(0, Math.min(CALM_PURCHASE.perSector - used, state.stress, Math.floor(state.coins / calmPrice(state.floor))));
 }
-export function buyCalm(state: RunState, units: number): RunState {
+function buyCalmUnguarded(state: RunState, units: number): RunState {
   if (!Number.isSafeInteger(units) || units <= 0 || units > calmAllowance(state)) return state;
   const sector = sectorOf(state.floor), used = state.calmSector === sector ? state.calmUsed ?? 0 : 0, cost = units * calmPrice(state.floor);
   return { ...state, stress: state.stress - units, coins: state.coins - cost, calmSector: sector, calmUsed: used + units, message: `途中安抚 −${units} 躁动，支付 ${cost} 金币。`,
@@ -1472,13 +1472,13 @@ export function canRaiseAbility(state: RunState, key: UpgradeKey): boolean {
   return state.status === 'upgrade' && state.upgrades[key] === 1 && ABILITY_LEVEL2.keys.includes(key) && Object.values(state.upgrades).filter(Boolean).length >= UPGRADE_SLOTS
     && state.abilityRaisedFloor !== state.floor && state.coins >= abilityLevel2Price(state);
 }
-export function raiseAbility(state: RunState, key: UpgradeKey): RunState {
+function raiseAbilityUnguarded(state: RunState, key: UpgradeKey): RunState {
   if (!canRaiseAbility(state, key)) return state;
   const price = abilityLevel2Price(state);
   return { ...state, upgrades: { ...state.upgrades, [key]: 2 }, coins: state.coins - price, abilityRaisedFloor: state.floor,
     message: `「${UPGRADES[key].name}」升到 2 级，支付 ${price} 金币。`, log: [`${state.floor}F · 「${UPGRADES[key].name}」2级 −${price} 金币`, ...state.log].slice(0, 4) };
 }
-export function installUpgrade(current: RunState, key: UpgradeKey): RunState {
+function installUpgradeUnguarded(current: RunState, key: UpgradeKey): RunState {
   const card = current.shop.find((item) => item.key === key);
   const price = current.shopUpgradeBought ? SHOP_PRICES.extraAbility : 0;
   if (current.status !== 'upgrade' || current.shopExtraBought || !card || card.purchased || current.coins < price || current.upgrades[key] > 0 || Object.values(current.upgrades).filter(Boolean).length >= UPGRADE_SLOTS) return current;
@@ -1525,12 +1525,12 @@ export function purchaseRepairWarning(state: RunState, key: UpgradeKey, price: n
   if (remaining < chargingPlan(after).cost) return 'reference';
   return null;
 }
-export function chargeBattery(state: RunState, units: number): RunState {
+function chargeBatteryUnguarded(state: RunState, units: number): RunState {
   const cost=chargeCost(boxOf(state),units,state.floor);
   if(state.status!=='upgrade'||!Number.isSafeInteger(units)||units<=0||state.energy+units>state.energyCap||state.coins<cost)return state;
   return {...state,energy:state.energy+units,coins:state.coins-cost,message:`充电 +${units}，支付 ${cost} 金币。`,lastEarnings:{total:0,sources:[]},lastEnergy:{delta:units,sources:[{label:'商店充电',amount:units}]},log:[`${state.floor}F · 充电 −${cost} 金币`,...state.log].slice(0,4)};
 }
-export function buyReserveCell(state: RunState): RunState {
+function buyReserveCellUnguarded(state: RunState): RunState {
   if (state.status !== 'upgrade' || state.reserveCell || state.coins < RESERVE_CELL_PRICE) return state;
   return {...state,reserveCell:true,coins:state.coins-RESERVE_CELL_PRICE,message:`应急电池已备好，支付${RESERVE_CELL_PRICE}金币；关门前可补${RESERVE_CELL_CHARGE}电。`,lastEarnings:{total:0,sources:[]},lastEnergy:{delta:0,sources:[]},lastPressure:{delta:0,sources:[]}};
 }
@@ -1667,7 +1667,7 @@ export function drawMarketStock(floor: number, rng: () => number, bought: RunSta
   for (let i = 0; i < MARKET_STOCK.shopItems && shelf.length; i++) picked.push(shelf.splice(Math.min(shelf.length - 1, Math.floor(rng() * shelf.length)), 1)[0]);
   return picked.map(key => ({ key, price: itemPrice(key, floor, bought?.[key] ?? 0), sold: false }));
 }
-export function buyItem(state: RunState, index: number): RunState {
+function buyItemUnguarded(state: RunState, index: number): RunState {
   const card = state.itemStock?.[index];
   if (state.status !== 'upgrade' || !card || card.sold || state.coins < card.price || (state.items?.length ?? 0) >= ITEM_SLOTS) return state;
   const bought = { ...state.itemBought, [card.key]: (state.itemBought?.[card.key] ?? 0) + 1 };
@@ -1676,7 +1676,7 @@ export function buyItem(state: RunState, index: number): RunState {
     message: `买下${ITEMS[card.key].name}，支付 ${card.price} 金币。`, log: [`${state.floor}F · 买下${ITEMS[card.key].name} −${card.price} 金币`, ...state.log].slice(0, 4) };
 }
 /** v9.21 the night market: buy one of its items on its floor, at shop prices (each repeat still costs more). */
-export function buyMarketItem(state: RunState, index: number): RunState {
+function buyMarketItemUnguarded(state: RunState, index: number): RunState {
   const card = state.marketStock?.[index];
   if (state.status !== 'playing' || state.marketFloor !== state.floor || !card || card.sold || state.coins < card.price || (state.items?.length ?? 0) >= ITEM_SLOTS) return state;
   const bought = { ...state.itemBought, [card.key]: (state.itemBought?.[card.key] ?? 0) + 1 };
@@ -1743,3 +1743,26 @@ export function applyItem(state: RunState, key: ItemKey, targetId?: string): Run
     }
   }
 }
+
+/** v10.2.3 (playtest: “I left the shop and lost at once”): while the shop is in a crisis (agitation at the cap or power at 0),
+ * no purchase may spend the coins the minimum rescue needs. A spend that would leave the rescue unaffordable is refused;
+ * spends that shrink the crisis itself (charging, calming, Safety Margin) pass as long as the rescue still fits afterwards. */
+export function shopRescueShortfall(state: RunState): number {
+  if (state.status !== 'upgrade') return 0;
+  const plan = emergencyRepairPlan(state);
+  return plan.cost > 0 ? Math.max(0, plan.cost - state.coins) : 0;
+}
+export function keepsShopRescue(before: RunState, after: RunState): RunState {
+  if (before.status !== 'upgrade' || after.status !== 'upgrade' || after.coins >= before.coins) return after;
+  return shopRescueShortfall(after) > 0 ? before : after;
+}
+const guardRescue = <A extends unknown[]>(fn: (state: RunState, ...args: A) => RunState) => (state: RunState, ...args: A): RunState => keepsShopRescue(state, fn(state, ...args));
+export const rerollShop = guardRescue(rerollShopUnguarded);
+export const buyBoxLevel = guardRescue(buyBoxLevelUnguarded);
+export const buyCalm = guardRescue(buyCalmUnguarded);
+export const raiseAbility = guardRescue(raiseAbilityUnguarded);
+export const installUpgrade = guardRescue(installUpgradeUnguarded);
+export const chargeBattery = guardRescue(chargeBatteryUnguarded);
+export const buyReserveCell = guardRescue(buyReserveCellUnguarded);
+export const buyItem = guardRescue(buyItemUnguarded);
+export const buyMarketItem = guardRescue(buyMarketItemUnguarded);

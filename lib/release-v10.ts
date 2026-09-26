@@ -429,3 +429,62 @@ export const V1022_EN: ChangelogEntry = {
     'On shorter screens such as 1440×900 the second row often needs a scroll; if that gets in the way in playtests, the text area can be tightened (for example with shorter ability lines).',
   ],
 };
+
+export const V1023_ZH: ChangelogEntry = {
+  version: '10.2.3', date: '2026-09-25', title: '修复：商店里花掉抢救钱后离店直接失败；拖拽卡顿',
+  summary: '一局试玩在 29 层带着躁动 13/8 进了 30 层商店（金币 101，最低抢救要 48）。先免费选了电池、再花 40 加购惯性飞轮、又升了一级配电箱，剩 33 币，付不起抢救，一离店就输了。另一个反馈是拖动乘客卡时一卡一卡的。',
+  changes: [
+    '商店里躁动或电量失控时，最低抢救的钱会先留出来：能力加购、重抽、能力升 2 级、配电箱、道具和夜市，凡是会让剩下的钱不够抢救的，都不能买，按钮上写“先留 N 币抢救”。免费选取、充电、安抚这类本身能缓解失控的，只要买完仍付得起抢救就照常可买。',
+    '失控提示多一句：“抢救要 N 币，这笔钱先留着：能力、配电箱、道具都不能花掉它。”离店按钮在付得起时仍是“最低抢救 · N 金币”。',
+    '本局记录：在商店里结束的局，最后一次商店（买了什么、进店时的躁动和上限）也会记下来，并标明在这里结束。以前只有成功离店才记录。',
+    '拖拽更顺：拖动时每换一个目标座位，整个游戏界面都要重新生成一次，其中一大半花在两件没打开的东西上：一是更新日志和乘客档案的全部内容（关着也在生成），二是英文界面把每段文字重新翻译一遍。现在这两个弹窗只在打开时才生成内容，翻译结果也会缓存。',
+  ],
+  experiments: [
+    '复盘这局记录：29 层结算后躁动 13、上限 8，最低抢救 6 点 × 8 = 48 币。新增检查 verify-shop-rescue 用同样的数重放：电池免费可选、飞轮加购（剩 61）可买、配电箱一级（15，会剩 46）被拒绝、抢救后躁动 7 能继续上行；不抢救离店仍然失败。',
+    '拖拽计时（同一台机器，正式版，英文，1728×1117，拖动时依次经过 5 个座位，重复 4 次）：线上 v10.2.2 换目标座位中位 26 毫秒、最慢 40 毫秒，开始拖动 33–48 毫秒；修复后中位 8 毫秒、最慢 15 毫秒，开始拖动 11–21 毫秒，都在一帧（16 毫秒）左右。开发版里同样的操作从每次约 650–700 毫秒降到约 100 毫秒。',
+    '数值没有改。验收 4200 局与 v10.2.0 完全相同：熟练型死因 电量 44.7% / 躁动 54.8% / 炸弹 0.5%，抵达 100 层 1.2%，新手 58 层、真人型 81 层，均衡型上车率 18–53%（机器人从不在失控时乱花抢救钱，所以不受影响）。模拟器里商店安抚的循环加了“买不了就停”，避免新规则下空转。verify 全部通过。',
+  ],
+  watch: [
+    '失控时被锁住的按钮会不会让人困惑，需要真人试玩看；如果需要，可以把“先抢救”做成进店时的一步。',
+    '更慢的电脑上拖拽还可能有轻微卡顿；下一步可以把座位和卡片拆成独立组件，只重画变化的部分。',
+  ],
+};
+
+export const V1023_EN: ChangelogEntry = {
+  version: '10.2.3', date: '2026-09-25', title: 'Fixes: spending the rescue money in the shop ended the run on leaving; dragging stuttered',
+  summary: 'A playtest reached the 30F shop at agitation 13/8 with 101 coins, when the minimum rescue cost 48. The player took Battery free, bought Inertia Flywheel for 40 and a power-box level, and was left with 33 coins, too few for the rescue, so leaving the shop ended the run. Separately, dragging rider cards stuttered.',
+  changes: [
+    'When agitation or power is critical in the shop, the minimum rescue’s coins are held back first.',
+    '• An extra ability, a reroll, a level-2 raise, a power-box level, an item or a night-market item cannot be bought if it would leave too little for the rescue; its button says “Keep N coins for the rescue”.',
+    '• The free pick, charging and calming, which ease the crisis themselves, stay available as long as the rescue still fits afterwards.',
+    'The crisis note adds: “The rescue costs N coins and that money is held back: abilities, the power box and items cannot spend it.” While affordable, the leave button still reads “Minimum rescue · N coins”.',
+    'Run record: a run that ends in a shop now records that last shop too (what was bought, agitation and its cap on arrival), marked as where the run ended. Before, a shop was recorded only when you left it and carried on.',
+    'Smoother dragging. Each time a drag crossed onto a new seat, the whole game screen was rebuilt, and most of that time went on two things that were not even visible:',
+    '• the full changelog and passenger archive, built even while their dialogs were closed;',
+    '• the English interface translating every line again.',
+    'Those two dialogs now build their contents only while open, and translations are cached.',
+  ],
+  experiments: [
+    'Replaying the record: after 29F agitation was 13 with a cap of 8, so the minimum rescue was 6 points × 8 = 48 coins.',
+    'A new check, verify-shop-rescue, replays those numbers:',
+    '• the free Battery pick is allowed;',
+    '• the Flywheel extra (leaving 61) is allowed;',
+    '• a power-box level (15, which would leave 46) is refused;',
+    '• after the rescue agitation is 7 and the shift continues;',
+    '• leaving without the rescue still ends the shift.',
+    'Drag timing: same machine, production builds, English, 1728×1117, a drag crossing 5 seats, repeated 4 times.',
+    '• Live v10.2.2: a seat change took 26 ms (median, max 40); starting a drag took 33–48 ms.',
+    '• Fixed: a seat change takes 8 ms (median, max 15); starting a drag takes 11–21 ms, about one frame (16 ms).',
+    '• In the development build the same step fell from about 650–700 ms to about 100 ms.',
+    'Numbers unchanged. The 4,200-run acceptance matches v10.2.0 exactly:',
+    '• skilled endings: power 44.7% / agitation 54.8% / bomb 0.5%;',
+    '• 100F reached in 1.2% of runs;',
+    '• novice 58F, human-like 81F;',
+    '• balanced-bot boarding 18–53%.',
+    'The bots never spend rescue money in a crisis, so they are unaffected. The simulator’s shop-calming loop now stops when a purchase is refused, so the new rule cannot stall it. verify passes.',
+  ],
+  watch: [
+    'Playtests should show whether the locked buttons in a crisis confuse anyone; if so, the rescue could become a step on entering the shop.',
+    'Slower computers may still stutter slightly; the next step would be splitting seats and cards into their own components so only what changed is redrawn.',
+  ],
+};

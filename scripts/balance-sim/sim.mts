@@ -334,7 +334,7 @@ function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog): RunSta
   }
   // (The Reserve Cell left the shop in v9.0.2; bots no longer buy what players cannot.)
   // v9.7 shop calming: bring high agitation down with coins beyond the power plan.
-  while (s.stress >= s.stressCap - 3 && E.calmAllowance(s) > 0 && s.coins - E.calmPrice(s.floor) >= chargeFor(Math.max(0, target - s.energy))) s = E.buyCalm(s, 1);
+  while (s.stress >= s.stressCap - 3 && E.calmAllowance(s) > 0 && s.coins - E.calmPrice(s.floor) >= chargeFor(Math.max(0, target - s.energy))) { const next = E.buyCalm(s, 1); if (next === s) break; s = next; }
   // top up with anything left if still under target (scarcity check reads what remains)
   units = Math.min(Math.max(0, target - s.energy), E.affordableChargingPlan(s).units);
   if (units > 0) s = E.chargeBattery(s, units);

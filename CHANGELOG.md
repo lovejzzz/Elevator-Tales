@@ -1,6 +1,16 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.2**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.3**. Publication status is tracked separately from the source version.
+
+## v10.2.3 — 2026-09-25 — Fixes: shop rescue money, drag stutter / 修复：商店抢救钱、拖拽卡顿
+
+- Playtest record: reached the 30F shop at agitation 13/8 with 101 coins (rescue 48); Battery free, Flywheel 40, a power-box level → 33 coins; leaving ended the run.
+- Shop crisis: purchases that would leave too little for the minimum rescue are refused (engine `keepsShopRescue`) and their buttons say "Keep N coins for the rescue": extra ability, reroll, level-2 raise, power box, items, night market. Free pick, charging and calming stay available while the rescue still fits. The crisis note says the money is held back.
+- Run record: a run that ends in a shop records that shop too (`ended: true`, with agitation and cap).
+- Drag stutter: the closed changelog and archive were rebuilt on every render, and English retranslated every line. Those dialogs now build only while open (`WhenOpen`), and translations are cached.
+- Drag timing (production builds, English, 1728×1117): seat change median 26 → 8 ms (max 40 → 15); drag start 33–48 → 11–21 ms. Development build ~650–700 → ~100 ms.
+- New check `verify-shop-rescue` replays the record's numbers. Acceptance (4,200 runs) identical to v10.2.0: 44.7 / 54.8 / 0.5%, 100F 1.2%, novice 58F, human-like 81F, boarding 18–53%. The sim's shop-calming loop stops on a refused purchase.
+- Watch: whether locked buttons confuse players; slower machines may still stutter slightly (next: split seats and cards into memoized components).
 
 ## v10.2.2 — 2026-09-25 — Rider cards: portrait never covered, cards size to the screen / 画像不再被遮挡
 

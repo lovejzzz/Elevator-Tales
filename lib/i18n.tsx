@@ -536,8 +536,20 @@ const phrasePairs: Array<[string, string]> = [
 const exact = new Map([...exactPairs, ...V832_PAIRS, ...V835_PAIRS, ...V837_PAIRS, ...V9_PAIRS, ...V919_PAIRS, ...V920_PAIRS, ...V10_PAIRS]);
 const phrases = [...V10_PAIRS, ...V920_PAIRS, ...V919_PAIRS, ...V9_PAIRS, ...V837_PAIRS, ...V835_PAIRS, ...V832_PAIRS, ...phrasePairs, ...exactPairs].sort((a, b) => b[0].length - a[0].length);
 
+// v10.2.3: translation runs the phrase tables and regex fallbacks (up to ~2ms a string in development), and every render
+// retranslates the same few hundred strings. Results are cached; the cache is dropped when it grows past its cap.
+const translationCache = new Map<string, string>();
+const TRANSLATION_CACHE_CAP = 20000;
 export function translateGameText(value: string, locale: GameLocale): string {
   if (locale === 'zh') return value;
+  const cached = translationCache.get(value);
+  if (cached !== undefined) return cached;
+  const result = translateUncached(value);
+  if (translationCache.size >= TRANSLATION_CACHE_CAP) translationCache.clear();
+  translationCache.set(value, result);
+  return result;
+}
+function translateUncached(value: string): string {
   const normalizePunctuation = (text: string) => text.replaceAll('。', '.').replaceAll('；', ';').replaceAll('，', ',').replaceAll('：', ':').replaceAll('、', ', ');
   // v9.18.4: older phrase tables used Drunk / Lawyer / Exorcist; the cards call them Drifter / Counsel / Warden.
   const canon = (text: string) => text.replace(/([Nn])eighbour/g, '$1eighbor').replace(/\bDrunk(s?)\b/g, 'Drifter$1').replace(/\bLawyers?\b/g, 'Counsel').replace(/\bExorcist(s?)\b/g, 'Warden$1');
