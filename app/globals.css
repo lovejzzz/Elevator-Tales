@@ -3629,3 +3629,8 @@ button.keepsake-chip { border:1px solid #c99d52; border-radius:999px; background
 .ll-severer svg, .link-ledger-item.is-severer b svg { width:12px; height:12px; }
 .ll-part.ll-severer { color:#f0a58a; }
 .link-ledger-item.is-severer { color:#f0a58a; }
+/* v10.2.8: on a rider card the keepsake tip spans the width of its line (the card's inner width) instead of hanging off the chip, so the card's clipping
+   no longer cuts it off (the Nightingale's Vinyl text was cut at the right edge). */
+.tcg-face .cc-keepsake-effect { position:relative; }
+.tcg-face .keepsake-chip { position:static; }
+.tcg-face .keepsake-tip { left:0; right:0; width:auto; max-width:none; transform:none; white-space:normal; text-align:left; z-index:6; }

@@ -1,6 +1,11 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.7**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.8**. Publication status is tracked separately from the source version.
+
+## v10.2.8 — 2026-09-26 — Keepsake notes on cards no longer cut off / 卡片信物说明不再被裁掉
+
+- On rider cards the keepsake note spans the card's width above the chip and wraps (it hung off the chip and was clipped by the card edge, 33 px over at 1728 wide).
+- Measured inside the card at 1728×1117, 1280×720 and phone width, Chinese and English, Wrench and Vinyl Record. Interface only; verify passes.
 
 ## v10.2.7 — 2026-09-26 — Fixes after an 82F human playtest / 真人试玩后的修正
 

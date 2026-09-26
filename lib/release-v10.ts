@@ -727,3 +727,32 @@ export const V1027_EN: ChangelogEntry = {
     'Whether the high-agitation threshold should rise with the cap is a design question and is left as is.',
   ],
 };
+
+export const V1028_ZH: ChangelogEntry = {
+  version: '10.2.8', date: '2026-09-26', title: '卡片上的信物说明不再被裁掉',
+  summary: '传奇卡片上，鼠标移到信物（比如夜莺的黑胶唱片）弹出的说明，右半边被卡片边缘裁掉了。原因是说明挂在信物按钮上往右展开，而竖版卡片会隐藏超出边缘的部分。',
+  changes: [
+    '卡片上的信物说明改为横跨整张卡片的宽度，在信物上方展开，文字自动换行，不会再伸出卡片。商店和装备栏里的信物说明不受影响。',
+  ],
+  experiments: [
+    '浏览器测量（把说明强制显示出来，比较它和卡片的边界）：1728×1117、1280×720、手机 375 宽，中英文，老周的扳手和最长的夜莺黑胶唱片，全部在卡片内（最窄时说明宽 149 像素、英文高 184 像素）。修改前在 1728 宽下右边超出 33 像素。',
+    '只改界面，规则和数值不变。verify 全部通过。',
+  ],
+  watch: [],
+};
+
+export const V1028_EN: ChangelogEntry = {
+  version: '10.2.8', date: '2026-09-26', title: 'Keepsake notes on cards are no longer cut off',
+  summary: 'On a legend’s card, the note that appears when hovering the keepsake (the Nightingale’s Vinyl Record, for one) had its right half cut off by the card’s edge. The note hung off the keepsake chip and opened to the right, and the upright cards hide whatever passes their edge.',
+  changes: [
+    'On a card, the keepsake note now spans the card’s width above the keepsake and wraps its text, so it never passes the edge. Keepsake notes in the shop and the kit list are unchanged.',
+  ],
+  experiments: [
+    'Browser measurement: the note was forced visible and compared with the card’s edges.',
+    '• Checked at 1728×1117, 1280×720 and a 375-wide phone, in Chinese and English, for Old Zhou’s Wrench and the longest note, the Nightingale’s Vinyl Record.',
+    '• Every note stays inside the card; at the narrowest the note is 149 px wide and, in English, 184 px tall.',
+    '• Before the fix it passed the right edge by 33 px at 1728 wide.',
+    'Interface only; rules and numbers unchanged. verify passes.',
+  ],
+  watch: [],
+};
