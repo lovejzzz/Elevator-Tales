@@ -738,7 +738,9 @@ export const V1028_ZH: ChangelogEntry = {
     '浏览器测量（把说明强制显示出来，比较它和卡片的边界）：1728×1117、1280×720、手机 375 宽，中英文，老周的扳手和最长的夜莺黑胶唱片，全部在卡片内（最窄时说明宽 149 像素、英文高 184 像素）。修改前在 1728 宽下右边超出 33 像素。',
     '只改界面，规则和数值不变。verify 全部通过。',
   ],
-  watch: [],
+  watch: [
+    '说明很长时会盖住卡片上方的文字，悬停移开就消失；如果手机上点开后不好关，再改成点击切换。',
+  ],
 };
 
 export const V1028_EN: ChangelogEntry = {
@@ -754,5 +756,7 @@ export const V1028_EN: ChangelogEntry = {
     '• Before the fix it passed the right edge by 33 px at 1728 wide.',
     'Interface only; rules and numbers unchanged. verify passes.',
   ],
-  watch: [],
+  watch: [
+    'A long note covers the card text above it until the pointer moves away; if it proves hard to dismiss on phones, it should become a tap toggle.',
+  ],
 };
