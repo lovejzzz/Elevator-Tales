@@ -664,3 +664,66 @@ export const V1026_EN: ChangelogEntry = {
     'With tighter money mid-to-late, human playtests should show whether 60–80F now feels too hard for normal players.',
   ],
 };
+
+export const V1027_ZH: ChangelogEntry = {
+  version: '10.2.7', date: '2026-09-26', title: '真人试玩（82 层）后的修正：剪线婆看得见、请离券说清楚、车费下限',
+  summary: '一位真人玩家玩到 82 层（躁动失控）。逐条核对了记录里的疑点：剪线婆的规则没显示在连线上（确认是界面问题，已改）；请离券不能请离剪线婆（确认是故意的，但没有任何提示，已补）；高躁动门槛不随上限变化（仪表盘本来就画对了，只补说明）；短途加后期折扣后恋人只付 1 币（已加下限）；80 层商店买不起保命道具（查了数据，是这局的取舍，不改）。',
+  changes: [
+    '剪线婆在车上时，连线标签直接显示她的效果：绿线上多一个“剪刀 · 火焰 +1”（每条绿线每层 +1 躁动，绿线原本的效果照旧），红线上多一个“剪刀 +3 币”；悬停说明也写明。“这一层的链接”面板多一行“剪线婆：绿线 +N 躁动，红线 +N 币”。以前只在躁动明细里看得到“剪线婆剪断绿线 +3”，玩家一直在凑绿线。',
+    '请离券：点到传奇（包括剪线婆）时不再默默取消，而是提示“传奇不用请离券：点开他的人物详情，「请离」就能免费让他下车”；黑老大会提示要付赔偿。道具说明也加上“传奇本来就能免费请离，不用券”。',
+    '安全余量的说明加上“高躁动仍从5起算”。',
+    '车费下限：基础车费 2 币以上的乘客，短途和 31 层后的折扣叠加后，至少仍付 2 币（这局 65 层一位短途恋人只付了 1 币）。',
+  ],
+  experiments: [
+    '请离核对：剪线婆（和其他传奇）在人物详情里请离免费，而且不占每十层 2 次的请离次数，即使次数用完也可以；请离券对传奇无效是原本的设计（券的作用是省下普通乘客的请离次数），问题只是没有提示。',
+    '80 层商店：这位玩家进店 68 币、离店 0，没钱买照明弹。同规则下机器人 80 层商店进店 211–353 币、离店 45–93。差别来自这局的选择：配电箱累计 140 币、安抚和道具 100 多币。这正是“钱刚好够用”的效果，不改。',
+    '这局各商店离店金币 24、27、11、14、0、3、0、0，整局没有宽裕过；81 层死于一次约 10% 的赌博（狂徒发作 +3）。',
+    '验证：均衡型 / 新手各 300 局，88 层 / 57 层，上车率全部在 15–65%，和上一版一致。新增回归检查：请离券对剪线婆无效、剪线婆可免费请离、短途恋人 31 层后付 2、幽灵照旧按层数付费。verify 全部通过；浏览器里核对了剪线婆的连线标签、链接面板和请离券提示。',
+  ],
+  watch: [
+    '剪线婆的规则现在看得见了，还需要真人看看会不会主动去凑红线。',
+    '高躁动门槛是否该跟着上限一起涨，是设计问题，暂不改。',
+  ],
+};
+
+export const V1027_EN: ChangelogEntry = {
+  version: '10.2.7', date: '2026-09-26', title: 'Fixes after an 82F human playtest: the Severer is visible, the Exit Pass explains itself, a fare floor',
+  summary: 'A human player reached 82F and lost to agitation. Each suspected problem in the record was checked. Two were real and are fixed, one was working as designed but silent and now explains itself, one needed only a note, and one was not a problem.',
+  changes: [
+    'With the Severer aboard, link labels show her effect.',
+    '• Green links get a “scissors · flame +1”: +1 agitation per green link a floor, on top of the link’s usual effect.',
+    '• Red links get a “scissors +3 coins”.',
+    '• The hover text says so, and the “Links this floor” panel adds a line: “Severer: green +N agitation, red +N coins”.',
+    'Before, only the agitation breakdown showed “Severer cuts green links +3”, and the player kept building green links.',
+    'Exit Pass: tapping a legend (the Severer included) no longer silently cancels.',
+    '• It says: “Legends need no Exit Pass: open their rider details and Dismiss lets them off for free.”',
+    '• The Kingpin’s note says dismissing him costs compensation.',
+    '• The item text adds that legends already leave free without a pass.',
+    'The Safety Margin text adds that high agitation still starts at 5.',
+    'Fare floor: a rider whose base fare is 2 or more still pays at least 2 after the short-trip and after-31F discounts combine. In this run, a short-trip Lover at 65F paid 1.',
+  ],
+  experiments: [
+    'Checked and fixed:',
+    '• the Severer’s rule was invisible on the links (an interface problem);',
+    '• a short-trip Lover paid 1 coin after both discounts (now at least 2).',
+    'Working as designed, now explained:',
+    '• the Exit Pass never takes a legend.',
+    '• Any legend, the Severer included, leaves free through Dismiss in the rider details, without using one of the 2 dismissals per ten floors, even when those are spent.',
+    '• The pass exists to save a normal rider’s dismissal; the only problem was the silence.',
+    'Only a note needed: high agitation starts at 5 whatever the cap. The gauge already drew it that way.',
+    'Not a problem: the 80F shop.',
+    '• The player arrived with 68 coins and left with 0, unable to buy a Flare.',
+    '• Under the same rules the bots arrive with 211–353 and leave with 45–93.',
+    '• The difference is this run’s choices: 140 coins on the power box, over 100 on calming and items. That is “just enough money” working, so it stays.',
+    'This run left shops with 24, 27, 11, 14, 0, 3, 0 and 0 coins: never affluent. It ended at 81F on a roughly 10% gamble (a Brawler outburst, +3).',
+    'Verification:',
+    '• balanced and novice bots, 300 runs each: 88F and 57F, boarding all within 15–65%, as in the last release;',
+    '• new regression checks: the Exit Pass refuses the Severer, the Severer leaves free, a short-trip Lover after 31F pays 2, and the Ghost still pays by floors;',
+    '• verify passes;',
+    '• the Severer’s link labels, links panel and Exit Pass note were checked in the browser.',
+  ],
+  watch: [
+    'Now that the Severer’s rule is visible, playtests should show whether players start building red links on purpose.',
+    'Whether the high-agitation threshold should rise with the cap is a design question and is left as is.',
+  ],
+};

@@ -1,6 +1,15 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.6**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.7**. Publication status is tracked separately from the source version.
+
+## v10.2.7 — 2026-09-26 — Fixes after an 82F human playtest / 真人试玩后的修正
+
+- Severer aboard: green link labels show scissors + flame +1 agitation, red ones scissors +3 coins; hover text and a "Severer" line in the links panel.
+- Exit Pass on a legend now explains that legends leave free via Dismiss in rider details (Kingpin: costs compensation); the item text says so. Not a bug: legends were never pass targets, but the tap silently cancelled.
+- Safety Margin text: high agitation still starts at 5.
+- Fare floor: base fares of 2+ never drop below 2 after short-trip and after-31F discounts.
+- 80F shop checked: this player's 68 → 0 came from 140 on the power box and 100+ on calming/items; bots arrive with 211–353. Kept.
+- Checks: balanced / novice 300 runs each 88F / 57F, boarding 15–65%; new regression checks; verify passes; browser-checked.
 
 ## v10.2.6 — 2026-09-26 — The Ghost keeps his fare after 31F / 幽灵不吃车费折扣
 

@@ -3625,3 +3625,7 @@ button.keepsake-chip { border:1px solid #c99d52; border-radius:999px; background
 .cc-timer svg { width:12px; height:12px; }
 /* v10.2.4: the ENTER key hint means nothing on a touch screen (a tablet playtest showed it). */
 @media (hover: none) { .game-shell .depart-button > b { display:none !important; } }
+/* v10.2.7: Severer effects on link labels and in the links panel. */
+.ll-severer svg, .link-ledger-item.is-severer b svg { width:12px; height:12px; }
+.ll-part.ll-severer { color:#f0a58a; }
+.link-ledger-item.is-severer { color:#f0a58a; }

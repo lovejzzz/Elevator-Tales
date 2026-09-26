@@ -12,6 +12,8 @@ export const V10_PAIRS: Array<[string, string]> = [
   ["不耗电，车费按路程算：每坐一层 1 金币（路程 5–10 层）。相邻驱魔师、召魂人或灵媒时受控：不作祟、不延误邻座，每层抵消 1 点人物耗电，到站再多 2 金币。没人管时每层 +1 躁动，到 3 的倍数层随机延误一位邻座 1 站。", "Uses no power; his fare is by distance: 1 coin a floor (rides 5–10 floors). Beside a Warden, Summoner or the Medium he is held: no haunting, no delays, he offsets 1 rider power a floor and pays 2 more on arrival. Unheld, he adds 1 agitation a floor and on every floor that is a multiple of 3 delays a random neighbour by 1 stop."],
   ['幽灵作祟', 'Ghost haunting'],
   ['电量也在这一层用完：离店前要留够到下个商店的电。', 'Power ran out on the same floor: leave each shop with enough power to reach the next.'],
+  ['传奇不用请离券：点开他的人物详情，「请离」就能免费让他下车。', 'Legends need no Exit Pass: open their rider details and Dismiss lets them off for free.'],
+  ['黑老大不能用请离券：在人物详情里请离他，要付一笔赔偿。', 'The Kingpin cannot take an Exit Pass: dismissing him from his rider details costs compensation.'],
   ['大师音乐家演出', 'Master Musician performance'], ['大师音乐家', 'Master Musician'],
   ['所有音乐家升级为大师音乐家：车费翻倍，中躁动时每位演出 +6 金币/层（普通 +2），把躁动往中档拉最多 3 点（普通 2 点）；而且从第 1 层起就出现，出现次数翻倍。', 'Every Musician becomes a Master Musician: fare doubled, +6 coins a floor each at medium agitation (a Musician +2), pulls agitation up to 3 toward medium (2); they appear from floor 1, twice as often.'],
   ['怨偶吵架', 'Exes fighting'],

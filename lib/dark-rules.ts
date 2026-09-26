@@ -116,7 +116,7 @@ export const ITEM_SLOTS = 4;
 export const ITEMS: Record<ItemKey, { name: string; en: string; zh: string; enText: string; from: number; price: number; target: ItemTarget; market?: true; art?: ItemKey }> = {
   cell: { name: '应急电池', en: 'Spare Cell', zh: '立即 +15 电（不超过上限）', enText: '+15 power now (up to the cap)', from: 1, price: 20, target: 'none' },
   swap: { name: '换位券', en: 'Swap Ticket', zh: '本层多一次老乘客换位', enText: 'One more old-rider move this floor', from: 1, price: 10, target: 'none' },
-  dismiss: { name: '请离券', en: 'Exit Pass', zh: '免费请离一位乘客（不占请离次数）', enText: 'Dismiss one rider for free (no dismissal used)', from: 1, price: 15, target: 'rider' },
+  dismiss: { name: '请离券', en: 'Exit Pass', zh: '免费请离一位乘客（不占请离次数；传奇本来就能免费请离，不用券）', enText: 'Dismiss one rider for free (no dismissal used; legends already leave free without a pass)', from: 1, price: 15, target: 'rider' },
   candy: { name: '糖果', en: 'Candy', zh: '一位儿童直接算照顾满', enText: 'A Child counts as fully cared for', from: 11, price: 12, target: 'child' },
   fuse: { name: '延时引信', en: 'Longer Fuse', zh: '一颗炸弹 +20 秒', enText: 'One bomb +20 seconds', from: 31, price: 18, target: 'bomb' },
   aroma: { name: '香薰', en: 'Incense', zh: '立即 −2 躁动', enText: '−2 agitation now', from: 21, price: 25, target: 'none' },

@@ -93,7 +93,8 @@ function ownProfile(rider:Rider){
  * A 1,120-run study cut mid-to-late surplus by about 15% (with LATE_CHARGE) while the novice bot stayed at 60F. */
 export const LATE_FARE = { from: 31, factor: 0.75 };
 // The Ghost's card promises 1 coin a floor ridden, so his distance fare is never scaled.
-const ticketFare=(rider:Rider,fare:number)=>Math.ceil(fare*(rider.localFareRatio??1)*(rider.boardedAt>=LATE_FARE.from&&rider.kind!=='ghost'?LATE_FARE.factor:1));
+// v10.2.7 (human playtest, 65F: a short-trip Lover paid 1 coin after both discounts): a fare of 2 or more never drops below 2.
+const ticketFare=(rider:Rider,fare:number)=>{const scaled=Math.ceil(fare*(rider.localFareRatio??1)*(rider.boardedAt>=LATE_FARE.from&&rider.kind!=='ghost'?LATE_FARE.factor:1));return fare>=2?Math.max(2,scaled):scaled;};
 export function riderProfile(rider:Rider,cabin:Array<Rider|null>=[],slot=cabin.findIndex(r=>r?.id===rider.id)) {
  const result={...ownProfile(rider),copies:[] as CopiedTrait[]};
  if(rider.kind!=='mimic'||slot<0){result.fare=ticketFare(rider,result.fare);return result;}

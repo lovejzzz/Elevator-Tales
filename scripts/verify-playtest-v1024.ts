@@ -27,3 +27,20 @@ assert.doesNotMatch(translateGameText(lesson, 'en'), /[㐀-鿿]/, 'the English l
 // Red-link texts carry words, not emoji.
 for (const effect of ['agitation', 'energy', 'coins', 'overload', 'gamble'] as const) assert.doesNotMatch(conflictEffectText(effect), /[\u{1F300}-\u{1FAFF}☀-➿]/u, effect);
 console.log('playtest v10.2.4: cancelled pairs, both-failure lesson and emoji-free red links verified');
+
+// v10.2.7 human playtest (82F): the Exit Pass never takes a legend, because an ordinary dismissal lets any legend off for
+// free (the Kingpin excepted); short trips after 31F never pay under 2; the Ghost keeps 1 coin a floor.
+{
+  const E = await import('../lib/game-engine');
+  const { riderProfile } = await import('../lib/rider-profile');
+  const R = (kind: Rider['kind'], id: string, dest: number, extra: Partial<Rider> = {}) => ({ id, kind, destination: dest, patience: 0, boardedAt: 61, fareBonus: 0, stash: 0, volatile: false, ...extra }) as Rider;
+  const st = { ...initialRun(), floor: 63, status: 'playing', coins: 40, dismissalsUsed: 2, items: ['dismiss'], cabin: [R('drunk', 'a', 66), R('severer', 's', 70), null, null, null, null] } as RunState;
+  assert.equal(E.itemUsable(st, 'dismiss', st.cabin[1]), false, 'the Exit Pass does not take the Severer');
+  const off = E.dismissRider(st, 's');
+  assert.ok(!off.cabin.some(r => r?.kind === 'severer') && off.coins === 40, 'the Severer leaves free by ordinary dismissal, even with no dismissals left');
+  const lover = R('lover', 'l', 66, { boardedAt: 63, localFareRatio: 1 / 3 });
+  assert.equal(riderProfile(lover, [lover], 0).fare, 2, 'a short-trip Lover after 31F still pays 2');
+  const ghost = R('ghost', 'g', 44, { boardedAt: 35 });
+  assert.equal(riderProfile(ghost, [ghost], 0).fare, 9, 'a Ghost riding 9 floors pays 9 after 31F');
+  console.log('playtest v10.2.7: Exit Pass and legends, 2-coin fare floor, Ghost fare verified');
+}

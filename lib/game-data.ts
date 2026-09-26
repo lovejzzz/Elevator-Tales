@@ -170,7 +170,7 @@ export type UpgradeKey = 'battery' | 'capacity' | 'calm' | 'concierge' | 'reinfo
 export const UPGRADES: Record<UpgradeKey, { name: string; label: string; description: string; strategy: string; tone: 'sustain' | 'control' | 'score' | 'capacity' | 'tempo' }> = {
   battery: { name: '默契契约', label: 'COOPERATION', description: '赚钱的符号（热闹、江湖）每级绿线每层多 +2 金币。本局限装一次。', strategy: '协作收益', tone: 'score' },
   capacity: { name: '扩容电池', label: 'BATTERY CAPACITY', description: '已并入配电箱蓄电线路，不再出售。', strategy: '预先准备', tone: 'capacity' },
-  calm: { name: '安全余量', label: 'SAFETY MARGIN', description: '躁动上限+2，不自动降低躁动。附带一次手动调节：降低3躁动，每次进商店补满。本局限装一次。', strategy: '控场缓冲', tone: 'control' },
+  calm: { name: '安全余量', label: 'SAFETY MARGIN', description: '躁动上限+2，不自动降低躁动；高躁动仍从5起算。附带一次手动调节：降低3躁动，每次进商店补满。本局限装一次。', strategy: '控场缓冲', tone: 'control' },
   concierge: { name: '礼宾服务', label: 'CONCIERGE', description: '此后新出现的乘客到站小费 +1，不参与车费倍率。本局限装一次。', strategy: '收入投资', tone: 'score' },
   reinforced: { name: '稳压模块', label: 'STABILIZER', description: '每十层最多5次：关门时至少5人，每站抵消1点人物耗电；不影响电梯运转耗电。本局限装一次。', strategy: '抵消耗电', tone: 'sustain' },
   express: { name: '快速电梯', label: 'EXPRESS', description: '此后新乘客原定路程至少 5 层时，目的地提前 1 层；每局限装一次。', strategy: '长途周转', tone: 'tempo' },

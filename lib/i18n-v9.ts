@@ -73,7 +73,7 @@ export const V9_PAIRS: Array<[string, string]> = [
   ['调度印章', 'Dispatch Stamp'],
   ['每十层两次，每次二选一：保留1位未上车候客到下一批（占一个候客位），或让1位本层新上客路程缩短或延长1站（最短1站）。', 'Twice per ten floors, choose one: hold 1 unboarded candidate for the next batch (using one candidate slot), or shorten or extend 1 newly boarded rider’s trip by 1 stop (minimum 1).'],
   ['已并入配电箱蓄电线路，不再出售。', 'Merged into the power box Storage line; no longer sold.'],
-  ['躁动上限+2，不自动降低躁动。附带一次手动调节：降低3躁动，每次进商店补满。本局限装一次。', 'Agitation cap +2 with no automatic reduction. Includes one manual relief of 3 agitation, refilled at every shop. One installation per run.'],
+  ['躁动上限+2，不自动降低躁动；高躁动仍从5起算。附带一次手动调节：降低3躁动，每次进商店补满。本局限装一次。', 'Agitation cap +2 with no automatic reduction; high agitation still starts at 5. Includes one manual relief of 3 agitation, refilled at every shop. One installation per run.'],
   ['此后新出现的乘客到站小费 +1，不参与车费倍率。本局限装一次。', 'Riders appearing after installation tip 1 extra coin on arrival, excluded from multipliers. One installation per run.'],
   ['每十层最多5次：关门时至少5人，每站抵消1点人物耗电；不影响电梯运转耗电。本局限装一次。', 'Up to 5 times per ten floors: depart with at least 5 riders to offset 1 passenger power that floor. Does not affect motor power. One installation per run.'],
   ['每位正常到站且有至少2位邻座的乘客，独立有35%概率额外支付4金币。同层下车者仍互算邻座；额外金币不参与倍率。本局限装一次。', 'Each normal arrival with at least 2 neighbors independently has a 35% chance to pay 4 extra coins. Riders leaving together still count as neighbors; the extra coins are excluded from multipliers. One installation per run.'],
