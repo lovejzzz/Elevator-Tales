@@ -44,3 +44,22 @@ console.log('playtest v10.2.4: cancelled pairs, both-failure lesson and emoji-fr
   assert.equal(riderProfile(ghost, [ghost], 0).fare, 9, 'a Ghost riding 9 floors pays 9 after 31F');
   console.log('playtest v10.2.7: Exit Pass and legends, 2-coin fare floor, Ghost fare verified');
 }
+
+// v10.2.9 (76F playtest, 66F): +7 agitation from 8/12. Calming alone cost 72 coins; the free manual relief was unused and
+// dismissing the Taskmaster cost 10. The rescue plan now picks the cheapest way, counting the fares removed riders forgo.
+{
+  const E = await import('../lib/game-engine');
+  const { calmRescuePlan } = await import('../lib/departure-guard');
+  const R = (kind: Rider['kind'], id: string, stops: number, boardedAt: number, extra: Partial<Rider> = {}) => ({ id, kind, destination: 66 + stops, patience: 0, boardedAt, fareBonus: 0, stash: 0, volatile: false, ...extra }) as Rider;
+  const shifterTraits = { weight: 0, energy: 1, agitation: 1, fare: 14, bond: { likes: ['commuter'], avoids: ['drunk'] }, conflictEffect: 'agitation', revision: 3, symbols: ['quiet', 'street'] } as unknown as Rider['traits'];
+  const base = initialRun();
+  const st = { ...base, floor: 66, status: 'playing', energy: 40, coins: 94, stress: 8, stressCap: 12, calmCharge: true, keepsakes: ['roundsLog'],
+    upgrades: { ...base.upgrades, calm: 1, express: 1, tipjar: 1, meter: 1, punchcard: 1, finale: 1 },
+    cabin: [R('parcel', 'p', 4, 66), R('taskmaster', 't', 3, 65, { volatile: true }), R('shifter', 's', 1, 63, { traits: shifterTraits }), R('ghost', 'g', 6, 63), R('creepychild', 'c', 3, 64), R('nurse', 'n', 1, 63)] } as RunState;
+  const withManual = calmRescuePlan(st)!;
+  assert.deepEqual([withManual.manual, withManual.remove.length, withManual.calm, withManual.cost], [true, 0, 1, 18], JSON.stringify(withManual));
+  const noManual = calmRescuePlan({ ...st, calmCharge: false })!;
+  assert.deepEqual(noManual.remove.map(r => [r.kind, r.paid]), [['taskmaster', 10]], JSON.stringify(noManual));
+  assert.ok(noManual.cost + noManual.forfeit < 4 * E.calmPrice(66), 'dismissing the Taskmaster beats 72 coins of calming even counting his fare');
+  console.log('playtest v10.2.9: the agitation rescue picks the free relief or a dismissal over costly calming');
+}

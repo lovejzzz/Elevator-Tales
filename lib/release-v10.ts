@@ -760,3 +760,45 @@ export const V1028_EN: ChangelogEntry = {
     'A long note covers the card text above it until the pointer moves away; if it proves hard to dismiss on phones, it should become a tap toggle.',
   ],
 };
+
+export const V1029_ZH: ChangelogEntry = {
+  version: '10.2.9', date: '2026-09-26', title: '躁动告急时先推荐最省的办法',
+  summary: '一局 76 层的真人试玩里，66 层躁动 8/12、下一站 +7，警告只给了“安抚 −4 · 72 币”一个按钮。玩家照做，只剩 22 币；到 70 层商店只剩 15 币，只买到 8 电，75 层断电。其实从 60 层商店补满的免费手动调节 −3 一直没用，请离监工也只要 10 币。',
+  changes: [
+    '躁动必定或可能失控时，警告改为给出最省的办法：把免费的手动调节、请离（算上少收的车费）和花钱安抚放在一起比较，可以一键照办。只安抚更贵时，警告里不再放它的按钮，并写明只安抚要多少币。',
+    '像 66 层那样的局面：有手动调节时推荐“手动调节 −3（免费）、安抚 −1 · 18 币”，没有时推荐“请离监工（10 币，少收 13 币车费）”。原来两种情况都是 72 币。',
+    '手动调节按钮从道具栏下方挪到躁动表里、花钱安抚的上面，并写明“免费”。',
+    '实在撑不过时的建议里，也会先提手动调节。',
+  ],
+  experiments: [
+    '按记录复原 66 层车厢（纸箱、监工、百变人、幽灵、怪童、护士）：预测 +7，和记录一致。原方案 72 币，新方案 18 币（有手动调节）或 10 币（没有）。这个局面已写进 verify。',
+    '浏览器里中英文都看过警告和躁动表；两种方案点下去都生效，警告随即消失。',
+    '只改提示和按钮位置，规则和数值不变；模拟机器人不用这个提示，平衡数据不受影响。verify 全部通过。',
+    '其他发现，没有改：百变人在 65→66 层换成安静·江湖，一层多出 3 条红线，这是它的设计；70 到 75 层躁动在 6 到 8 之间，属于高躁动，每层 20% 的事故带走了幽灵、怪童和怨偶，也符合规则；这局到 76 层，接近“熟练玩家 80 层左右”的目标。',
+  ],
+  watch: [
+    '看玩家会不会用“照此安排”；如果推荐请离时玩家觉得亏，再调整少收车费的算法。',
+    '断电时的救援方案仍然优先少请离，这局没暴露问题，暂时不改。',
+  ],
+};
+
+export const V1029_EN: ChangelogEntry = {
+  version: '10.2.9', date: '2026-09-26', title: 'The agitation alert suggests the cheapest way out',
+  summary: 'In a 76F human playtest, at 66F with agitation 8/12 and +7 ahead, the alert offered one button: “Calm −4 · 72 coins”. The player took it and kept 22 coins; at the 70F shop only 15 were left, which bought 8 power, and the run ran out of power at 75F. The free manual relief −3, refilled at the 60F shop, was never used, and dismissing the Taskmaster cost only 10.',
+  changes: [
+    'When agitation will or can boil over, the alert now gives the cheapest way out. It weighs the free manual relief, dismissals (counting the fares they lose) and paid calming together, and one press carries it out. When calming alone costs more, the alert no longer shows that button and says what calming alone would cost.',
+    'In a spot like 66F, with the manual relief it suggests “manual relief −3 (free), calm −1 · 18 coins”; without it, “dismiss the Taskmaster (10 coins, loses a 13-coin fare)”. Both used to cost 72 coins.',
+    'The manual relief button moved from below the item bag into the agitation meter, above paid calming, and says it is free.',
+    'When nothing can save the floor, the advice also names the manual relief first.',
+  ],
+  experiments: [
+    'The 66F cabin was rebuilt from the record (Parcel, Taskmaster, Shifter, Ghost, Uncanny Child, Nurse). The forecast is +7, as in the record. The old plan cost 72 coins; the new one costs 18 (with the manual relief) or 10 (without). This case is now in verify.',
+    'Browser: the alert and the agitation meter were checked in Chinese and English; both plans work when pressed, and the alert then disappears.',
+    'Hints and button placement only; rules and numbers are unchanged. The simulation bots do not use this hint, so the balance data is unaffected. verify passes.',
+    'Other findings, left unchanged: the Shifter turned Quiet·Street at 65→66 and added 3 red links in one floor, which is how it works; from 70 to 75 agitation sat between 6 and 8, the high band, and the 20% incidents a floor took the Ghost, the Uncanny Child and the Ex, as the rules say; this run reached 76, close to the “skilled players around 80” target.',
+  ],
+  watch: [
+    'Whether players use “Do it”; if suggested dismissals feel like a loss, revise how the lost fare is counted.',
+    'The power rescue still prefers fewer dismissals; this run showed no problem there, so it stays for now.',
+  ],
+};

@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.8**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.9**. Publication status is tracked separately from the source version.
+
+## v10.2.9 — 2026-09-26 — The agitation alert suggests the cheapest way out / 躁动告急时先推荐最省的办法
+
+- 76F human playtest: at 66F (8/12, +7) the alert offered only "Calm −4 · 72 coins"; the player took it, reached the 70F shop with 15 coins and ran out of power at 75F. The free manual relief −3 was unused from 60F on, and dismissing the Taskmaster cost 10.
+- `calmRescuePlan` now weighs the manual relief, dismissals (coins paid plus fares lost) and calming, and is shown on every fatal floor. For that cabin it suggests manual relief + calm −1 (18 coins) or, without the relief, dismissing the Taskmaster (10 coins). The calm-only button is hidden in the alert when a cheaper plan exists, and the text states what calming alone costs.
+- The manual relief button moved into the agitation meter, labelled free; the doomed-floor advice names it first.
+- Checks: the 66F cabin rebuilt from the record is in verify; browser-checked in Chinese and English. Hints only, no rule or number changes.
 
 ## v10.2.8 — 2026-09-26 — Keepsake notes on cards no longer cut off / 卡片信物说明不再被裁掉
 
