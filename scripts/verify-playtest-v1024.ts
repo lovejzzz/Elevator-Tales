@@ -100,3 +100,27 @@ console.log('playtest v10.2.4: cancelled pairs, both-failure lesson and emoji-fr
   assert.equal(gambleRescuePlan({ ...st, stress: 0, cabin: [null, null, null, null, null, R('commuter', 'c', 97, 94)] }, 0.2), null, 'no plan when there is no gamble');
   console.log('playtest v10.2.11: the boil-over alert offers the cheapest affordable way down');
 }
+
+// v10.2.12 (player: before losing, the game suggested paying while the bag held items): items already owned come first in
+// every rescue (agitation must-fail, boil-over gamble and power), and they cost no coins.
+{
+  const { calmRescuePlan, gambleRescuePlan, rescuePlan } = await import('../lib/departure-guard');
+  const R = (kind: Rider['kind'], id: string, dest: number, boardedAt: number, extra: Partial<Rider> = {}) => ({ id, kind, destination: dest, patience: 0, boardedAt, fareBonus: 0, stash: 0, volatile: false, ...extra }) as Rider;
+  const base = initialRun();
+  const traits = { weight: 0, energy: 1, agitation: 1, fare: 14, bond: { likes: ['commuter'], avoids: ['drunk'] }, conflictEffect: 'agitation', revision: 3, symbols: ['quiet', 'street'] } as unknown as Rider['traits'];
+  const s66 = { ...base, floor: 66, status: 'playing', energy: 40, coins: 94, stress: 8, stressCap: 12, calmCharge: false, upgrades: { ...base.upgrades, calm: 1 }, items: ['aroma', 'sedative', 'cell', 'swap'],
+    cabin: [R('parcel', 'p', 70, 66), R('taskmaster', 't', 69, 65, { volatile: true }), R('shifter', 's', 67, 63, { traits }), R('ghost', 'g', 72, 63), R('creepychild', 'c', 69, 64), R('nurse', 'n', 67, 63)] } as RunState;
+  const calm = calmRescuePlan(s66)!;
+  assert.deepEqual([calm.items.map(u => u.key).sort(), calm.calm, calm.cost, calm.remove.length], [['aroma', 'sedative'], 0, 0, 0], JSON.stringify(calm));
+  assert.equal(calmRescuePlan({ ...s66, items: [] })!.cost > 0, true, 'without items the rescue costs coins');
+  const s95 = { ...base, floor: 95, status: 'playing', energy: 40, coins: 37, stress: 4, stressCap: 10, dismissalsUsed: 2, upgrades: { ...base.upgrades, calm: 1 }, items: ['aroma', 'sedative'],
+    cabin: [null, R('madbomber', 'm', 100, 95, { volatile: true, fuse: 999 } as Partial<Rider>), null, null, R('taskmaster', 't', 97, 93, { volatile: true }), R('noisemaker', 'n', 98, 94)] } as RunState;
+  const gamble = gambleRescuePlan(s95, 0.2)!;
+  assert.deepEqual([gamble.items.length, gamble.cost, gamble.chance < 0.2], [1, 0, true], JSON.stringify(gamble));
+  const sp = { ...base, floor: 44, status: 'playing', energy: 3, coins: 40, stress: 0, items: ['cell'], cabin: [R('commuter', 'a', 47, 42), R('tourist', 'b', 47, 42), R('lover', 'c', 48, 43), null, null, null] } as RunState;
+  const power = rescuePlan(sp)!;
+  assert.deepEqual([power.items.map(u => u.key), power.charge, power.cost], [['cell'], 0, 0], JSON.stringify(power));
+  const reserve = rescuePlan({ ...sp, items: [], reserveCell: true })!;
+  assert.deepEqual([reserve.reserve, reserve.charge, reserve.cost], [true, 0, 0], JSON.stringify(reserve));
+  console.log('playtest v10.2.12: rescues use the items in the bag before coins');
+}

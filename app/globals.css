@@ -3663,3 +3663,11 @@ button.keepsake-chip { border:1px solid #c99d52; border-radius:999px; background
   .game-shell .metric-sources { margin-top:4px; padding-top:4px; font-size:10px; line-height:1.35; }
   .game-shell .metric-sources li b { font-size:10px; line-height:1.35; }
 }
+
+/* v10.2.12: installed abilities in the shop explain themselves the moment the pointer arrives (no native-title delay). */
+.shop-slot { position:relative; }
+.shop-slot .slot-tip { position:absolute; left:0; top:calc(100% + 6px); z-index:30; width:max(100%, 260px); max-width:320px; display:grid; gap:4px; padding:8px 10px; border:1px solid #c99d5288; border-radius:8px; background:#101a16f2; box-shadow:0 10px 24px #0009; color:#e8dcc0; font:400 12px/1.5 var(--font-sans); text-align:left; white-space:normal; opacity:0; visibility:hidden; pointer-events:none; }
+.shop-slot .slot-tip .slot-tip-next { color:#d8c49b; font-size:11px; }
+.shop-slot:hover .slot-tip, .shop-slot:focus-within .slot-tip { opacity:1; visibility:visible; }
+.shop-slot:nth-child(3n) .slot-tip { left:auto; right:0; }
+.shop-slot.tip-up .slot-tip { top:auto; bottom:calc(100% + 6px); }

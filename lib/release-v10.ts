@@ -886,3 +886,49 @@ export const V10211_EN: ChangelogEntry = {
     'The power rescue still prefers fewer dismissals; unchanged for now.',
   ],
 };
+
+export const V10212_ZH: ChangelogEntry = {
+  version: '10.2.12', date: '2026-09-27', title: '救急先用手里的道具；商店装备说明立即显示',
+  summary: '两处反馈：商店里已装能力的说明要把鼠标停一两秒才出来；快要失败时，系统只推荐花钱补电、安抚或请离，没有提醒道具栏里已有的香薰、镇静剂、应急电池等。',
+  changes: [
+    '三种救急提示（躁动必定失控、失控概率偏高、这一层会断电）都会先考虑道具栏里已有的道具：香薰、檀香、镇静剂、强效镇静剂、照明弹、长明照明弹、请离券、圣水、手铐、糖果、引线剪、应急电池，以及配电箱里备好的应急电池。道具不花金币，所以能用道具解决时优先推荐，写明用在谁身上（例如“用镇静剂（监工）”），按“照此安排 · 不花钱”一键使用。',
+    '最多同时组合两件道具，再加请离和花钱补救。花费一样时，推荐请离更少、用掉的道具更少的方案，免费的手动调节尽量留到以后；失控概率提示里，花费一样时选概率更低的。',
+    '断电提示现在也会在能省钱时给出方案，不再只在补电不够时才出现；方案更省时，不再单独显示那个更贵的“补电”按钮。',
+    '商店“已装能力”的每一格，鼠标移上去立刻显示说明，还一起显示升 2 级后的效果；下方空间不够时说明往上弹出，不会被对话框挡住。“升 2 级”按钮不再弹出重复的原生提示。',
+  ],
+  experiments: [
+    '66 层车厢（躁动 8/12，下一站 +7），道具栏有香薰和镇静剂：推荐“用香薰、用镇静剂（监工）”，不花钱；原来推荐的是花 72 币安抚。没有道具时仍然推荐花钱的方案。',
+    '95 层车厢（失控 64%），道具栏有香薰和镇静剂：推荐给疯炸客用镇静剂，降到 0%，不花钱。',
+    '断电（电量 3，下一站 −3），道具栏有应急电池：推荐用应急电池，不花钱；原来只有“补电”按钮。',
+    '计算速度：普通情况 1 到 20 毫秒；道具栏装满要选目标的道具、车里坐满暗黑乘客的最坏情况约 80 毫秒。',
+    '浏览器检查：三种提示的文字和按钮正确，点下去后道具被用掉、提示消失；商店装备说明在最下面一行时向上弹出，内容完整。这些局面已写进 verify。',
+    '只改提示、按钮和说明，规则和数值不变。verify 全部通过。',
+  ],
+  watch: [
+    '道具被当成“不花钱”，可能为了省几币就用掉贵重道具（比如照明弹）；如果玩家觉得可惜，再按道具的买价折算成本。',
+    '道具栏里的道具在左栏还是浏览器原生提示，窄栏里没法放大说明，之后再改。',
+  ],
+};
+
+export const V10212_EN: ChangelogEntry = {
+  version: '10.2.12', date: '2026-09-27', title: 'Rescues use the items you hold first; shop kit details show at once',
+  summary: 'Two reports: installed abilities in the shop only explained themselves after a second or two of hovering; and right before losing, the game only suggested paying for charging, calming or dismissals, never the Incense, Sedative or Spare Cell already in the bag.',
+  changes: [
+    'All three rescue alerts (agitation will boil over, a high boil-over chance, and running out of power) first consider the items in the bag: Incense, Sandalwood, Sedative, Strong Sedative, Flare, Long Flare, Exit Pass, Holy Water, Handcuffs, Candy, Wire Cutter and Spare Cell, plus the reserve cell in the power box. Items cost no coins, so when an item solves it, that comes first, naming the rider it is used on (for example “use Sedative on the Taskmaster”); “Do it · no coins” uses them in one press.',
+    'Up to two items are combined, together with dismissals and paid fixes. On equal cost the plan removes fewer riders and spends fewer items, and the free manual relief is kept for later; in the boil-over alert, equal cost goes to the lower chance.',
+    'The power alert now also offers a plan whenever it saves coins, not only when charging falls short; when the plan is cheaper, the dearer plain “Charge” button is not shown.',
+    'Each installed-ability slot in the shop shows its details the moment the pointer arrives, with its level-2 effect; when there is no room below, the note opens upwards so the dialog never hides it. The “Lv2” button no longer opens a duplicate native tooltip.',
+  ],
+  experiments: [
+    'The 66F cabin (8/12 agitation, +7 next) with Incense and a Sedative in the bag: the suggestion is “use Incense, use Sedative on the Taskmaster”, no coins; before, it was 72 coins of calming. Without items it still suggests the paid plan.',
+    'The 95F cabin (64% to boil over) with Incense and a Sedative: sedate the Mad Bomber, down to 0%, no coins.',
+    'Out of power (3 power, −3 next) with a Spare Cell: use the Spare Cell, no coins; before, only “Charge” was offered.',
+    'Speed: 1 to 20 ms in normal cases; about 80 ms in the worst case, a full bag of targeted items with a cabin of dark riders.',
+    'Browser: all three alerts show the right text and button, and pressing it uses the items and clears the alert; the shop note on the bottom row opens upwards in full. These cases are now in verify.',
+    'Hints, buttons and notes only; rules and numbers are unchanged. verify passes.',
+  ],
+  watch: [
+    'Treating items as free may spend a dear item (a Flare) to save a few coins; if players mind, count an item at its price.',
+    'The item bag in the side rail still uses native tooltips; the narrow rail has no room for a drawn note yet.',
+  ],
+};

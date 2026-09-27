@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.11**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.12**. Publication status is tracked separately from the source version.
+
+## v10.2.12 — 2026-09-27 — Rescues use the items you hold first; shop kit details show at once / 救急先用道具
+
+- `rescuePlan`, `calmRescuePlan` and `gambleRescuePlan` share one search over manual relief, the reserve cell, up to two bag items (Incense, Sandalwood, Sedatives, Flares, Exit Pass, Holy Water, Handcuffs, Candy, Wire Cutter, Spare Cell), removals and paid fixes; items cost no coins, ties keep riders and items. Item uses are pruned to the six best (worst case ~80 ms).
+- The power alert offers its plan whenever it saves coins; plan steps name the item and its target; "Do it · no coins".
+- Shop installed-ability slots show a drawn tooltip instantly (with the level-2 effect), flipping upwards when needed; no native title.
+- Checks: 66F/95F/power cases with items in verify; browser-checked. No rule or number changes.
 
 ## v10.2.11 — 2026-09-27 — The boil-over alert suggests the cheapest way down / “赌一把”也推荐最省办法
 
