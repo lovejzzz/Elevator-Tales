@@ -932,3 +932,37 @@ export const V10212_EN: ChangelogEntry = {
     'The item bag in the side rail still uses native tooltips; the narrow rail has no room for a drawn note yet.',
   ],
 };
+
+export const V10213_ZH: ChangelogEntry = {
+  version: '10.2.13', date: '2026-09-27', title: '推荐道具时标明道具价值',
+  summary: '上一版救急时优先推荐道具，但只写“不花钱”，看不出用掉的道具值多少。现在继续推荐道具，同时标明价值，由玩家自己权衡。',
+  changes: [
+    '救急方案里每件道具都标出价值（商店基础价），例如“用镇静剂（监工，价值 30 币）”；配电箱里的应急电池标“价值 20 币”。',
+    '“照此安排”按钮写明总代价：只用道具时是“不花钱 · 用掉价值 55 币的道具”，道具加金币时是“12 币 + 价值 25 币的道具”。',
+    '只用道具、不花金币的方案，标题从“更省的办法”改成“不花钱的办法”：比如用一个价值 20 币的应急电池，代替只要 4 币的补电。',
+  ],
+  experiments: [
+    '浏览器中英文检查三种提示：66 层（香薰 25 + 镇静剂 30，“用掉价值 55 币的道具”，只安抚要 72 币）、95 层（镇静剂 30，失控 64% → 0%）、断电（应急电池 20，只补电要 4 币）。',
+    '只改提示文字，推荐逻辑、规则和数值都不变。verify 全部通过。',
+  ],
+  watch: [
+    '看玩家标明价值后是否还会接受用贵重道具换小钱；如果常常不接受，再把道具价值算进排序。',
+  ],
+};
+
+export const V10213_EN: ChangelogEntry = {
+  version: '10.2.13', date: '2026-09-27', title: 'Suggested items show what they are worth',
+  summary: 'The last update put owned items first in every rescue, but only said “no coins”, so the value of the items spent was hidden. Items are still suggested, now with their value, so players can weigh it themselves.',
+  changes: [
+    'Each item in a rescue shows its value (its base shop price), for example “use Sedative on the Taskmaster (worth 30c)”; the power box’s reserve cell shows “worth 20c”.',
+    'The “Do it” button states the full cost: “no coins · items worth 55c” when only items are used, “12c + items worth 25c” when both are.',
+    'A plan that spends only items is headed “Without coins” instead of “Cheaper way”: a reserve cell worth 20 may replace a charge that costs only 4.',
+  ],
+  experiments: [
+    'Browser, Chinese and English, all three alerts: 66F (Incense 25 + Sedative 30, “items worth 55c”, calming alone 72 coins), 95F (Sedative 30, boil-over 64% → 0%), power (reserve cell 20, charging alone 4 coins).',
+    'Wording only; the suggestions, rules and numbers are unchanged. verify passes.',
+  ],
+  watch: [
+    'Whether players still accept spending a dear item to save a few coins once its value shows; if they often decline, count item value in the ranking.',
+  ],
+};

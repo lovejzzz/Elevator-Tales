@@ -1,6 +1,12 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.12**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.13**. Publication status is tracked separately from the source version.
+
+## v10.2.13 — 2026-09-27 — Suggested items show what they are worth / 推荐道具时标明价值
+
+- Rescue steps show each item's base price ("worth 30c"; reserve cell 20c); the button states coins plus item value ("no coins · items worth 55c").
+- Item-only plans are headed "Without coins" instead of "Cheaper way".
+- Wording only; suggestions unchanged. Browser-checked in both languages; verify passes.
 
 ## v10.2.12 — 2026-09-27 — Rescues use the items you hold first; shop kit details show at once / 救急先用道具
 
