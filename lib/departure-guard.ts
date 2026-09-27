@@ -103,3 +103,48 @@ export function calmRescuePlan(state: RunState): CalmPlan | null {
   }
   return best;
 }
+
+export type GamblePlan = CalmPlan & { chance: number };
+/** v10.2.11 (96F playtest: at 95F two dark riders could lash out, 64% to boil over; one 24-coin calm made it 16%, but the
+ * alert only offered calming all the way to safe, 96 coins it could not afford, so it offered nothing). The cheapest mix of
+ * the manual relief, dismissals (counting lost fares) and calming that brings the boil-over chance under `target`; when
+ * nothing does, the mix with the lowest chance. Null when nothing lowers it at all. */
+export function gambleRescuePlan(state: RunState, target: number): GamblePlan | null {
+  if (state.status !== 'playing') return null;
+  const chanceOf = (s: RunState) => stressForecast(s).lossChance ?? 0;
+  const start = chanceOf(state);
+  if (start < target) return null;
+  const candidates = state.cabin.filter((r): r is Rider => Boolean(r) && !isLegend(r!.kind) && r!.big !== 'bottom');
+  const fareOf = (r: Rider) => r.kind === 'parcel' ? 0 : arrivalFare(r, state.cabin, state.cabin.indexOf(r), cooperationBonus(state), state.stress);
+  const manualOptions = state.calmCharge && state.upgrades.calm && state.stress > 0 ? [false, true] : [false];
+  const score = (p: GamblePlan) => p.cost + p.forfeit;
+  const better = (p: GamblePlan, b: GamblePlan | null) => {
+    if (!b) return true;
+    const pOk = p.chance < target, bOk = b.chance < target;
+    if (pOk !== bOk) return pOk;
+    if (!pOk && p.chance !== b.chance) return p.chance < b.chance;
+    if (score(p) !== score(b)) return score(p) < score(b);
+    return p.remove.length < b.remove.length || (p.remove.length === b.remove.length && Number(p.manual) < Number(b.manual));
+  };
+  let best: GamblePlan | null = null;
+  for (const manual of manualOptions) for (let mask = 0; mask < 1 << candidates.length; mask++) {
+    let s = manual ? applyCalmCharge(state) : state, paid = 0, ok = true;
+    const remove: CalmPlan['remove'] = [];
+    candidates.forEach((r, i) => {
+      if (!ok || !(mask & (1 << i))) return;
+      if (r.boardedAt >= state.floor) { s = { ...s, cabin: unseatRider(s.cabin, r.id) }; remove.push({ id: r.id, kind: r.kind, paid: 0, fare: fareOf(r) }); return; }
+      const next = dismissRider(s, r.id); if (next === s) { ok = false; return; }
+      remove.push({ id: r.id, kind: r.kind, paid: s.coins - next.coins, fare: fareOf(r) }); paid += s.coins - next.coins; s = next;
+    });
+    if (!ok || !s.cabin.some(Boolean)) continue;
+    // More calming only costs more once the chance is under the target, so stop there.
+    for (let calm = 0; calm <= calmAllowance(s); calm++) {
+      const chance = chanceOf({ ...s, stress: s.stress - calm });
+      if (!manual && !remove.length && !calm) continue;
+      const plan: GamblePlan = { remove, manual, calm, cost: paid + calm * calmPrice(state.floor), forfeit: remove.reduce((n, r) => n + r.fare, 0), chance };
+      if (chance < start && better(plan, best)) best = plan;
+      if (chance < target) break;
+    }
+  }
+  return best;
+}

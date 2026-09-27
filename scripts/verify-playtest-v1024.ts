@@ -81,3 +81,22 @@ console.log('playtest v10.2.4: cancelled pairs, both-failure lesson and emoji-fr
   assert.equal(floorPreview({ ...st, status: 'upgrade' }), null);
   console.log('playtest v10.2.10: rail source lists add up and show what a new rider moves');
 }
+
+// v10.2.11 (96F playtest): at 95F two dark riders could lash out (64% to boil over at 4/10). Calming to safe needed 96 coins,
+// so the alert showed nothing; one 24-coin calm made it 16%, and dismissing the Taskmaster (8 coins) made it 0%.
+{
+  const { gambleRescuePlan } = await import('../lib/departure-guard');
+  const { stressForecast } = await import('../lib/game-forecast');
+  const R = (kind: Rider['kind'], id: string, dest: number, boardedAt: number, extra: Partial<Rider> = {}) => ({ id, kind, destination: dest, patience: 0, boardedAt, fareBonus: 0, stash: 0, volatile: false, ...extra }) as Rider;
+  const base = initialRun();
+  const st = { ...base, floor: 95, status: 'playing', energy: 40, coins: 37, stress: 4, stressCap: 10, calmCharge: false, dismissalsUsed: 1,
+    upgrades: { ...base.upgrades, calm: 1, reinforced: 1, express: 1, tipjar: 1, punchcard: 1, finale: 1 },
+    cabin: [null, R('madbomber', 'm', 100, 95, { volatile: true, fuse: 999 } as Partial<Rider>), null, null, R('taskmaster', 't', 97, 93, { volatile: true }), R('noisemaker', 'n', 98, 94)] } as RunState;
+  assert.equal(Math.round((stressForecast(st).lossChance ?? 0) * 100), 64);
+  const plan = gambleRescuePlan(st, 0.2)!;
+  assert.deepEqual([plan.remove.map(r => [r.kind, r.paid]), plan.calm, plan.chance], [[['taskmaster', 8]], 0, 0], JSON.stringify(plan));
+  const noDismissal = gambleRescuePlan({ ...st, dismissalsUsed: 2 }, 0.2)!;
+  assert.deepEqual([noDismissal.remove.length, noDismissal.calm, noDismissal.cost, Math.round(noDismissal.chance * 100)], [0, 1, 24, 16], JSON.stringify(noDismissal));
+  assert.equal(gambleRescuePlan({ ...st, stress: 0, cabin: [null, null, null, null, null, R('commuter', 'c', 97, 94)] }, 0.2), null, 'no plan when there is no gamble');
+  console.log('playtest v10.2.11: the boil-over alert offers the cheapest affordable way down');
+}

@@ -846,3 +846,43 @@ export const V10210_EN: ChangelogEntry = {
     'Phones do not show the source lists yet; they need a tap-to-open view.',
   ],
 };
+
+export const V10211_ZH: ChangelogEntry = {
+  version: '10.2.11', date: '2026-09-27', title: '“赌一把”警告也推荐最省的办法',
+  summary: '一局 96 层的真人试玩（目前真人最高），在 95 层以 4/10 的躁动出发，两位暗黑乘客各有 40% 会发作 +3，失控概率 64%，结果失控。当时警告只给“安抚到稳”：要 4 点、96 币，玩家只有 37 币，按钮就不显示了。其实安抚 1 点（24 币）能降到 16%，请离监工（8 币）能降到 0%。84 层也类似：玩家为了避险花 132 币安抚 6 点，而请离黑警只要 8 币。',
+  changes: [
+    '“赌一把”警告（失控概率 20% 以上）会把手动调节、请离（算上少收的车费）和花钱安抚放在一起比较，给出能把失控概率降到 20% 以下的最省办法，并写明“失控 64% → 0%”，可以一键照办。降不到 20% 以下时，给出能降到最低的办法。“安抚到稳”只在它更省时才显示。',
+    '按钮执行后记进本局记录的名称，按实际做了什么来写（比如只请离时记为“请离”，不再写成“请离并安抚”）。',
+  ],
+  experiments: [
+    '按记录复原 95 层车厢（疯炸客、监工、噪音乐手，37 币，本段还能请离 1 位）：失控 64%，与当时一致；推荐请离监工，8 币，降到 0%。请离次数用完时推荐安抚 1 点，24 币，降到 16%。这个局面已写进 verify。',
+    '复原 84 层第一次安抚后的车厢：推荐请离黑警，8 币，降到 0%；玩家当时第二次安抚花了 66 币。',
+    '浏览器中英文检查：警告文字和按钮正确，点下去后警告消失。计算一次约 4 毫秒。',
+    '其他发现，没有改：88 层疯炸客付了 69 币，是 81–89 层暗黑卡的“深渊加价”（+26）加上急躁加价，符合规则；这局 1609 币的总收入和各商店几乎花光的节奏，说明后期的钱“刚好够用”；深渊层发作频繁（82 到 95 层共 5 次），属于只有高手能到 100 层的设计。',
+    '只改提示和按钮，规则和数值不变。verify 全部通过。',
+  ],
+  watch: [
+    '看推荐请离后，玩家是否觉得少收车费不划算；必要时把后续每层的保护费等也算进去。',
+    '断电时的救援方案仍然优先少请离，暂时不改。',
+  ],
+};
+
+export const V10211_EN: ChangelogEntry = {
+  version: '10.2.11', date: '2026-09-27', title: 'The “Feeling lucky?” alert suggests the cheapest way down too',
+  summary: 'A 96F human playtest (the best human run so far) left 95F at 4/10 agitation with two dark riders who could each lash out for +3 at 40%, a 64% chance to boil over, and it did. The alert only offered “Calm to safe”: 4 points for 96 coins, and with 37 coins the button did not show. One calm (24 coins) would have made it 16%, and dismissing the Taskmaster (8 coins) 0%. At 84F the player spent 132 coins on 6 points of calming where dismissing the Crooked Cop cost 8.',
+  changes: [
+    'The “Feeling lucky?” alert (20% or more to boil over) weighs the manual relief, dismissals (counting the fares they lose) and paid calming together. It suggests the cheapest way under 20%, says “boil-over 64% → 0%”, and one press carries it out. When nothing gets under 20%, it suggests whatever brings the chance lowest. “Calm to safe” shows only when it is cheaper.',
+    'The run record names what the button actually did (a plain dismissal is logged as “Dismiss”, not “Dismiss and calm”).',
+  ],
+  experiments: [
+    'The 95F cabin was rebuilt from the record (Mad Bomber, Taskmaster, Noisemaker; 37 coins; 1 dismissal left this sector): 64%, as in the run. The suggestion is to dismiss the Taskmaster, 8 coins, down to 0%. With no dismissals left it suggests one calm, 24 coins, down to 16%. This case is now in verify.',
+    'The 84F cabin after the first calm: the suggestion is to dismiss the Crooked Cop, 8 coins, down to 0%; the player’s second calm cost 66 coins.',
+    'Browser, Chinese and English: the alert text and button are right, and pressing it clears the alert. One plan takes about 4 ms.',
+    'Other findings, left unchanged: the Mad Bomber paid 69 coins at 88F because cards drawn at 81–89 carry the abyss premium (+26) plus the high-risk bonus, as the rules say; 1609 coins earned with nearly every shop spent down shows late money is “just enough”; abyss outbursts were frequent (5 from 82 to 95), which is the design that keeps 100F for masters.',
+    'Hints and buttons only; rules and numbers are unchanged. verify passes.',
+  ],
+  watch: [
+    'Whether players feel a suggested dismissal loses too much fare; if so, also count future costs such as protection fees.',
+    'The power rescue still prefers fewer dismissals; unchanged for now.',
+  ],
+};

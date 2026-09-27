@@ -1,6 +1,13 @@
 # Elevator Tales Changelog
 
-Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.10**. Publication status is tracked separately from the source version.
+Every public update must add a new entry here and in `lib/changelog.ts`. Record the player-visible change, exact balance parameters, experiment size, conclusion, and remaining questions. The current version is **v10.2.11**. Publication status is tracked separately from the source version.
+
+## v10.2.11 — 2026-09-27 — The boil-over alert suggests the cheapest way down / “赌一把”也推荐最省办法
+
+- 96F human playtest: at 95F (4/10, two dark riders at 40%) the boil-over chance was 64%; "Calm to safe" needed 96 coins, so with 37 the alert offered nothing. One calm (24c) → 16%; dismissing the Taskmaster (8c) → 0%. At 84F, 132 coins of calming where dismissing the Crooked Cop cost 8.
+- `gambleRescuePlan` finds the cheapest mix of manual relief, dismissals (plus lost fares) and calming under 20%, else the lowest chance; the alert shows "64% → 0%" with a one-press button. "Calm to safe" only when cheaper.
+- Run records name what the plan button did.
+- Checks: 95F and 84F cabins rebuilt from the record; verify passes; browser-checked in both languages. No rule or number changes.
 
 ## v10.2.10 — 2026-09-26 — The rail lists what moves power, agitation and coins / 左栏逐条列出影响来源
 
