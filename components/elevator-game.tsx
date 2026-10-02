@@ -884,6 +884,8 @@ export default function ElevatorGame() {
     const on = soundEnabled.current, zh = language === 'zh', stage = document.querySelector('.elevator-stage');
     // v10.3 the chain cash-in gets the cabin to itself (the arrival holds the doors until it is done).
     chainShowRef.current?.(); chainShowRef.current = null;
+    // Banners sit where the chain's card does, so on a chain floor they wait for the show to end.
+    const bannerAt = after.lastChain && !fastReveal ? chainShowMs(after.lastChain.path.length, window.matchMedia('(prefers-reduced-motion: reduce)').matches) : 260;
     if (after.lastChain && !fastReveal) { setWalletHold(after.lastChain.bonus); chainShowRef.current = playChainShow(after.lastChain, { zh, sound: on, onPaid: () => setWalletHold(0) }); }
     // v9.19.1: arriving at a shop, the shop covers the cabin; seat pops would float over it, so only sounds play.
     const shopping = after.status === 'upgrade';
@@ -941,7 +943,7 @@ export default function ElevatorGame() {
     if (!shopping && after.lastEarnings.sources.some(l => l.label === '暗黑共鸣')) {
       let found = false; try { found = localStorage.getItem(RESONANCE_KEY) === '1'; localStorage.setItem(RESONANCE_KEY, '1'); } catch { /* storage unavailable */ }
       const seats = document.querySelectorAll('.standing-slot');
-      window.setTimeout(() => { seats.forEach(seat => flashClass(seat, 'is-resonant', 1400)); if (!found) { banner(stage, zh ? '暗黑共鸣' : 'Dark resonance', zh ? '全车都是黑夜里的人：躁动 −2，每人每层 +1 金币' : 'Everyone aboard belongs to the night: −2 agitation, +1 coin each per floor', 'midnight', 3400); playSfx(on, 'bell'); } }, 1250);
+      window.setTimeout(() => { seats.forEach(seat => flashClass(seat, 'is-resonant', 1400)); if (!found) { banner(stage, zh ? '暗黑共鸣' : 'Dark resonance', zh ? '全车都是黑夜里的人：躁动 −2，每人每层 +1 金币' : 'Everyone aboard belongs to the night: −2 agitation, +1 coin each per floor', 'midnight', 3400); playSfx(on, 'bell'); } }, Math.max(1250, bannerAt));
     }
     // v9.18.3 incident: the rider who left without paying gets a red flash where they sat (the exit card says why).
     if (after.lastIncident) { const seat = document.querySelectorAll('.standing-slot')[after.lastIncident.slot] ?? null; window.setTimeout(() => { flashClass(seat, 'is-incident', 1400); playSfx(on, 'conflict'); }, 250); }
@@ -957,23 +959,23 @@ export default function ElevatorGame() {
     const bandUp = agitationBand(after.stress) === 'high' && agitationBand(before.stress) !== 'high';
     if (after.floor > runStartBest && runStartBest > 1 && !recordAnnounced.current) {
       recordAnnounced.current = true;
-      window.setTimeout(() => { banner(stage, zh ? '新纪录！' : 'New record!', zh ? `第 ${after.floor} 层` : `Floor ${after.floor}`, 'gold'); playSfx(on, 'record'); burstAt(document.querySelector('.floor-indicator'), 'gold', 22, 110); }, 260);
+      window.setTimeout(() => { banner(stage, zh ? '新纪录！' : 'New record!', zh ? `第 ${after.floor} 层` : `Floor ${after.floor}`, 'gold'); playSfx(on, 'record'); burstAt(document.querySelector('.floor-indicator'), 'gold', 22, 110); }, bannerAt);
     } else if (after.status === 'playing' && abyssEventAt(after, after.floor)) {
       // v9.21 the eve of the abyss: arriving on an announced floor, say what it holds.
       const kind = abyssEventAt(after, after.floor)!, loc: GameLocale = zh ? 'zh' : 'en';
-      window.setTimeout(() => { banner(stage, `${after.floor}F · ${abyssEventName(kind, loc)}`, abyssEventRule(kind, loc), kind === 'surge' ? 'red' : 'midnight', 2200); }, 260);
+      window.setTimeout(() => { banner(stage, `${after.floor}F · ${abyssEventName(kind, loc)}`, abyssEventRule(kind, loc), kind === 'surge' ? 'red' : 'midnight', 2200); }, bannerAt);
     } else if (after.status === 'playing' && abyssStep(after.floor + 1) > abyssStep(after.floor)) {
       // v9.20: one floor before the abyss unrest steps up, say so (it is the late game's main pressure); it outranks
       // the danger banner, which repeats every floor while the cabin stays near a limit.
       const u = abyssStep(after.floor + 1), p = Math.round(outburstChance(after.floor + 1) * 100), fare = Math.round(u * DARK_RULES.extremeFarePerStep * 100);
-      window.setTimeout(() => { banner(stage, zh ? `深渊 · 第 ${u} 级` : `The abyss · step ${u}`, zh ? `暗黑版更极端了：新上车的车费 +${fare}%，每位每层 ${p}% 会发作（+${DARK_RULES.outburstAgitation}躁动或吸电 ${DARK_RULES.outburstPower}）` : `Dark riders grow extreme: new ones pay +${fare}%, each lashes out ${p}% of floors (+${DARK_RULES.outburstAgitation} agitation or −${DARK_RULES.outburstPower} power)`, 'midnight', 3000); playSfx(on, 'bell'); flashClass(stage, 'midnight-strike', 1600); }, 260);
+      window.setTimeout(() => { banner(stage, zh ? `深渊 · 第 ${u} 级` : `The abyss · step ${u}`, zh ? `暗黑版更极端了：新上车的车费 +${fare}%，每位每层 ${p}% 会发作（+${DARK_RULES.outburstAgitation}躁动或吸电 ${DARK_RULES.outburstPower}）` : `Dark riders grow extreme: new ones pay +${fare}%, each lashes out ${p}% of floors (+${DARK_RULES.outburstAgitation} agitation or −${DARK_RULES.outburstPower} power)`, 'midnight', 3000); playSfx(on, 'bell'); flashClass(stage, 'midnight-strike', 1600); }, bannerAt);
     } else if (after.status === 'playing' && (after.energy <= 3 || after.stress >= after.stressCap - 1) && !(before.energy <= 3 || before.stress >= before.stressCap - 1)) {
       // v9.20.2 (English playtest 4): only on entering danger; it used to repeat on every floor spent there.
       // v9.18.3: never on arriving at a shop (the shop refills and calms; the warning flashed over the shop screen).
-      window.setTimeout(() => { banner(stage, zh ? '危！' : 'Danger!', after.energy <= 3 ? (zh ? `电量只剩 ${after.energy}` : `${after.energy} power left`) : (zh ? `躁动 ${after.stress}/${after.stressCap}` : `Agitation ${after.stress}/${after.stressCap}`), 'red', 1600); playSfx(on, 'heartbeat'); flashClass(stage, 'cabin-closecall', 1400); }, 260);
+      window.setTimeout(() => { banner(stage, zh ? '危！' : 'Danger!', after.energy <= 3 ? (zh ? `电量只剩 ${after.energy}` : `${after.energy} power left`) : (zh ? `躁动 ${after.stress}/${after.stressCap}` : `Agitation ${after.stress}/${after.stressCap}`), 'red', 1600); playSfx(on, 'heartbeat'); flashClass(stage, 'cabin-closecall', 1400); }, bannerAt);
     } else if (districtFor(after.floor).from === after.floor && after.floor > 1) {
       const d = districtFor(after.floor);
-      window.setTimeout(() => { banner(stage, d.name[zh ? 0 : 1], d.scene[zh ? 0 : 1], 'district', 2600); playSfx(on, 'district'); }, 260);
+      window.setTimeout(() => { banner(stage, d.name[zh ? 0 : 1], d.scene[zh ? 0 : 1], 'district', 2600); playSfx(on, 'district'); }, bannerAt);
     }
     if (bandUp) { playSfx(on, 'rumble', { delay: .2 }); flashClass(stage, 'cabin-rumble', 900); }
   };
