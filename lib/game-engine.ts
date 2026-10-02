@@ -1,5 +1,5 @@
 import { BONDS, conflictLinks, profileWeight, randomTraits, riderProfile, type VariableTraits } from './rider-profile';
-import { SYMBOL_RULES, greenCount, pairLink, symbolLedger, symbolsOf } from './symbols';
+import { CHAIN_RULES, SYMBOLS, SYMBOL_RULES, arrivalChain, chainMultiplier, chainPath, greenCount, pairLink, symbolLedger, symbolsOf, type SymbolKey } from './symbols';
 import { AGITATION_RULES, ECONOMY_RULES, FARE_RULES, GHOST_RULES, JOURNEY_RULES, journeyExtension } from './balance-v832';
 import { ADJACENT, BASE_OF, DARK_LEGEND_KINDS, DARK_LEGEND_OF, DARK_OF, PASSENGERS, UNLOCK_TIERS, UPGRADES, isAnyLegend, isDark, isDarkLegend, isLegend, passengerCategory, type DarkLegendKind, type LegendKind, type PassengerKind, type UpgradeKey } from './game-data';
 import { ABYSS_EVENTS, ABYSS_EVENT_KINDS, type AbyssEventKind, DARK_RESONANCE, GHOST_RIDE, DARK_RULES, ITEMS, ITEM_SLOTS, MARKET_ITEM_KEYS, MARKET_STOCK, SHOP_ITEM_KEYS, MYSTERY_IDENTITIES, MYSTERY_RULES, abyssStep, abyssTier, outburstChance, outburstIsPower, corruptible, darkShare, isBombKind, isCarrierKind, isSurvivor, itemPrice, type ItemKey, type MysteryIdentity } from './dark-rules';
@@ -32,6 +32,8 @@ export type RunState = {
   lastHaunts?: Array<{ ghost: number; victim: number }>;
   lastBoxEvents?: BoxEvent[];
   lastIncident?: IncidentReceipt;
+  /** v10.3 the chain cash-in this floor paid (none: no chain of CHAIN_RULES.from or more). `path`: the order it lights up in. */
+  lastChain?: { symbol: SymbolKey; slots: number[]; path: Array<[number, number | null]>; multiplier: number; fares: number; bonus: number };
   /** v9.17.2: an ability found in a box while every slot is full, waiting for the player to swap it in or pass. */
   pendingAbility?: UpgradeKey;
   /** Abilities swapped out for a box's ability; each is sold (refunded) on entering the next shop. */
@@ -1009,7 +1011,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   let stressCapBonus = 0;
   let promoteMusicians = false;
   let punchCount=state.punchCount??0;
-  const arrivalSlots: number[] = []; const lastArrivals:ArrivalReceipt[]=[];
+  const arrivalSlots: number[] = []; const lastArrivals:ArrivalReceipt[]=[]; const paidFares: Record<number, number> = {};
   // v9.17 box events before arrivals, in priority order: a Courier delivering this floor keeps his box; otherwise
   // a Thief leaving takes the box he eyes, then a Child opens a box beside them, then a Mechanic uses an unclaimed
   // box for parts. An Inspector checks a Courier's box once (he rides one floor longer).
@@ -1103,6 +1105,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     if (rider.kind === 'pusher') neighbours(slot).forEach(i => { const n = cabin[i]; if (n && n.kind !== 'parcel' && nextFloor < n.destination && !(n.sedated ?? 0)) withdrawalIds.add(n.id); });
     const spec = PASSENGERS[rider.kind]; const profile = riderProfile(rider, cabin, slot);
     const fare = arrivalFare(rider, cabin, slot, cooperationBonus(state), state.stress, fareTuning, hasKeepsake(state,'bell'));
+    paidFares[slot] = fare;
     const appetitePremium = rider.kind === 'drunk' ? fare - arrivalFare(rider, cabin, slot, cooperationBonus(state), state.stress, { ...fareTuning, appetiteBonus: 0 }, hasKeepsake(state,'bell')) : 0;
     if (profile.hidden) notes.push(`${spec.name}封存车费揭晓：${profile.fare} 金币`);
     const delivered = parcelBeside(cabin, slot, links);
@@ -1155,6 +1158,20 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
     lastArrivals.push({riderId:rider.id,kind:rider.kind,slot,coins:fare-(rider.stash??0)+stash+punchBonus+extra+defusal,...(keepsakeLeft?{keepsake:keepsakeLeft}:{})});
     arrivals += 1; arrivalSlots.push(slot); return null;
   });
+  // v10.3 the chain cash-in: same-symbol neighbours getting off together pay their base fares again, multiplied.
+  let lastChain: RunState['lastChain'];
+  if (CHAIN_RULES.from && arrivalSlots.length >= CHAIN_RULES.from) {
+    const chain = arrivalChain(state.cabin, arrivalSlots), multiplier = chainMultiplier(chain.slots.length);
+    if (chain.symbol && multiplier > 1) {
+      const base = chain.slots.reduce((n, i) => n + (CHAIN_RULES.on === 'paid' ? Math.max(0, paidFares[i] ?? 0) : state.cabin[i] ? riderProfile(state.cabin[i]!, state.cabin, i).fare : 0), 0);
+      const bonus = Math.round(base * (multiplier - 1));
+      if (bonus > 0) {
+        addCoins(`${SYMBOLS[chain.symbol].zh}连锁 ×${multiplier}`, bonus);
+        notes.unshift(`${SYMBOLS[chain.symbol].zh}连锁：${chain.slots.length} 人同站下车，车费 ×${multiplier}`);
+        lastChain = { symbol: chain.symbol, slots: chain.slots, path: chainPath(state.cabin, chain), multiplier, fares: base, bonus };
+      }
+    }
+  }
   // v9.19 midnight bookkeeping on the riders still aboard.
   cabin = cabin.map(r => {
     if (!r) return r;
@@ -1266,7 +1283,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   const marketStock = marketHere ? drawMarketStock(nextFloor, shopRng, state.itemBought) : undefined, marketFloor = marketHere ? nextFloor : undefined;
   // v10.1.2: receiving the Vinyl promotes the Musicians already aboard.
   if (promoteMusicians) cabin = cabin.map(r => r?.kind === 'musician' ? { ...r, master: true } : r);
-  const settled: RunState = { ...state, abyssEvents, marketStock, marketFloor, lastOutbursts, lastThefts, lastHaunts, lastBoxEvents, lastIncident, lastBlast, lastCorruption, lastSummons, itemStock, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
+  const settled: RunState = { ...state, abyssEvents, marketStock, marketFloor, lastOutbursts, lastThefts, lastHaunts, lastBoxEvents, lastIncident, lastChain, lastBlast, lastCorruption, lastSummons, itemStock, pendingAbility, pendingSales: checkpoint ? [] : state.pendingSales, stressCap: state.stressCap + stressCapBonus, stabilizerSector: stabilized ? Math.floor(state.floor / 10) : state.stabilizerSector, stabilizerUsed: stabilized ? stabilizerUsed(state) + stabilized : state.stabilizerUsed, calmCharge: checkpoint && state.upgrades.calm ? true : state.calmCharge, keepsakes, freeBoxLevels, legendStatus, floor: nextFloor, energy, stress, coins, serviceTurns, punchCount, lastArrivals, bufferPower:buffer.stored, restStops: 0, dismissalsUsed: checkpoint ? 0 : (state.dismissalsUsed ?? 0), shopUpgradeBought: false, shopExtraBought: false, earned: state.earned + lastEarnings.total, shop, shopSeen:drawn.seen, cabin, swapped: false, oldMovesUsed:0, status, message, lastEarnings, lastPressure, lastEnergy, log: [`${String(nextFloor).padStart(2, '0')}F · ${incomeNote}${message}`, ...state.log].slice(0, 4) };
   // Abilities found in boxes install like a shop pick (effects such as Safety Margin apply at once).
   return wonAbilities.reduce((run, key) => previewUpgrade(run, key), settled);
 }

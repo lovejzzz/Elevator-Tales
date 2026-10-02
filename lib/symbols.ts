@@ -156,3 +156,56 @@ export function symbolTitle(symbol: SymbolKey, zh: boolean) {
     ? `${SYMBOLS[symbol].zh}：和同样有${SYMBOLS[symbol].zh}的人挨着坐 = 绿线，每层 ${symbolEffectText(symbol, true)}；挨着${SYMBOLS[opp].zh} = 红线，每层 +1 躁动`
     : `${SYMBOLS[symbol].en}: beside another ${SYMBOLS[symbol].en} = green link, ${symbolEffectText(symbol, false)} a floor; beside ${SYMBOLS[opp].en} = red link, +1 agitation a floor`;
 }
+
+/** v10.3 the chain cash-in: riders who get off on the same floor and are joined, seat to seat, by green links of one
+ * symbol pay their base fares again, multiplied. A chain of `from` riders pays ×base; each extra rider doubles it
+ * (4 → ×3, 5 → ×6, 6 → ×12). Chosen by experiment (v10.3): balance-neutral, a ×3 in about a quarter of skilled runs,
+ * a ×6 in about one in forty. */
+export const CHAIN_RULES = { from: 4, base: 3, on: 'paid' as 'paid' | 'base' };
+export type ArrivalChain = { symbol: SymbolKey | null; slots: number[] };
+/** The largest group among `slots` joined by green links of one symbol. */
+export function arrivalChain(cabin: Seat[], slots: number[]): ArrivalChain {
+  const set = new Set(slots), edges = symbolEdges(cabin).filter(e => set.has(e.first) && set.has(e.second));
+  let best: ArrivalChain = { symbol: null, slots: [] };
+  for (const sym of SYMBOL_KEYS) {
+    const adj = new Map<number, number[]>();
+    for (const e of edges) if (e.shared.includes(sym)) { adj.set(e.first, [...(adj.get(e.first) ?? []), e.second]); adj.set(e.second, [...(adj.get(e.second) ?? []), e.first]); }
+    const seen = new Set<number>();
+    for (const start of adj.keys()) {
+      if (seen.has(start)) continue;
+      const group: number[] = [], stack = [start]; seen.add(start);
+      while (stack.length) { const x = stack.pop()!; group.push(x); for (const y of adj.get(x) ?? []) if (!seen.has(y)) { seen.add(y); stack.push(y); } }
+      if (group.length > best.slots.length) best = { symbol: sym, slots: group.sort((a, b) => a - b) };
+    }
+  }
+  return best;
+}
+/** The chain's multiplier on its base fares (1 = no bonus). */
+export const chainMultiplier = (k: number, rules = CHAIN_RULES) => !rules.from || k < rules.from ? 1 : rules.base * 2 ** (k - rules.from);
+/** The order the chain lights up in: each seat with the seat its spark comes from (a walk along the links when one
+ * exists, otherwise a spanning tree). For the arrival show only. */
+export function chainPath(cabin: Seat[], chain: ArrivalChain): Array<[number, number | null]> {
+  if (!chain.symbol || !chain.slots.length) return [];
+  const set = new Set(chain.slots), adj = new Map<number, number[]>(chain.slots.map(i => [i, []]));
+  for (const e of symbolEdges(cabin)) if (set.has(e.first) && set.has(e.second) && e.shared.includes(chain.symbol)) { adj.get(e.first)!.push(e.second); adj.get(e.second)!.push(e.first); }
+  const walk = (path: number[]): number[] | null => {
+    if (path.length === chain.slots.length) return path;
+    for (const y of adj.get(path[path.length - 1]) ?? []) if (!path.includes(y)) { const found = walk([...path, y]); if (found) return found; }
+    return null;
+  };
+  const starts = [...chain.slots].sort((a, b) => (adj.get(a)!.length - adj.get(b)!.length) || a - b);
+  for (const s of starts) { const p = walk([s]); if (p) return p.map((x, i) => [x, i ? p[i - 1] : null]); }
+  const order: Array<[number, number | null]> = [[starts[0], null]], seen = new Set([starts[0]]);
+  for (let q = 0; q < order.length; q++) for (const y of adj.get(order[q][0]) ?? []) if (!seen.has(y)) { seen.add(y); order.push([y, order[q][0]]); }
+  return order;
+}
+/** For the coin box: the best chain forming among riders who share a stop (two or more), soonest stop first on ties. */
+export function chainOutlook(cabin: Array<{ destination: number; kind: string } | null>, floor: number): { symbol: SymbolKey; size: number; stop: number } | null {
+  let best: { symbol: SymbolKey; size: number; stop: number } | null = null;
+  for (const stop of [...new Set(cabin.flatMap(r => r && r.kind !== 'parcel' ? [r.destination] : []))].sort((a, b) => a - b)) {
+    if (stop <= floor) continue;
+    const ch = arrivalChain(cabin as Seat[], cabin.flatMap((r, i) => r && r.kind !== 'parcel' && r.destination === stop ? [i] : []));
+    if (ch.symbol && ch.slots.length >= 2 && (!best || ch.slots.length > best.size)) best = { symbol: ch.symbol, size: ch.slots.length, stop };
+  }
+  return best;
+}

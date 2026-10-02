@@ -40,7 +40,10 @@ assert.equal(arrivingPair.lastEarnings.total,2*PASSENGERS.tourist.fare+4+2+2,'v1
 
 const full=Array.from({length:6},(_,slot)=>rider('tourist',`full-${slot}`));
 assert.equal(income(state(full),'游客旅伴'),0,'a full Tourist cabin has no travel income');
-assert.equal(resolveFloor(state(full.map(r=>({...r,destination:2}))),()=>.9).lastEarnings.total,6*PASSENGERS.tourist.fare+28+6+10,'v10: six base fares, 28 neighbour coins, six low-band tips and a full Lively cabin (level 5: +10)');
+const fullArrival=resolveFloor(state(full.map(r=>({...r,destination:2}))),()=>.9), fares=6*PASSENGERS.tourist.fare+28;
+// v10.3: six linked Tourists getting off together are also a ×12 chain: their fares (base + neighbour coins) count 12 times.
+assert.equal(fullArrival.lastChain?.multiplier,12,'a full Tourist cabin arriving together is a six-rider chain');
+assert.equal(fullArrival.lastEarnings.total,fares+6+10+fares*11,'v10: six base fares, 28 neighbour coins, six low-band tips and a full Lively cabin (level 5: +10); v10.3: plus the ×12 chain');
 
 let cases=0,totalBonus=0;
 const kinds:PassengerKind[]=['commuter','tourist','courier','mechanic','lover','musician'];

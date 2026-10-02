@@ -24,7 +24,7 @@ import * as QA_ENGINE from '@/lib/game-engine';
 import { symbolCoins, type ChangeLine } from '@/lib/game-engine';
 import { SymbolIcon } from '@/components/symbol-icon';
 import { KeepsakeIcon } from '@/components/keepsake-icon';
-import { RIDER_SYMBOLS, cancelledEdges, SYMBOLS, SYMBOL_KEYS, greenBySymbol, symbolEdges, symbolEffectText, symbolShapes, symbolTitle, symbolsOf, type SymbolKey } from '@/lib/symbols';
+import { CHAIN_RULES, RIDER_SYMBOLS, chainMultiplier, chainOutlook, cancelledEdges, SYMBOLS, SYMBOL_KEYS, greenBySymbol, symbolEdges, symbolEffectText, symbolShapes, symbolTitle, symbolsOf, type SymbolKey } from '@/lib/symbols';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
 import { disposeGameMusic, musicSceneForView, setGameMusic, unlockGameMusic } from '@/lib/game-music';
 import { bondStatus, conflictLinks, type ConflictEffect } from '@/lib/rider-profile';
@@ -48,6 +48,7 @@ import { Scramble } from '@/components/scramble';
 import { quip } from '@/lib/quips';
 import { RESERVE_CELL_PRICE } from '@/lib/balance-v832';
 import { CabinFx, type CabinFxState } from '@/components/cabin-fx';
+import { chainShowMs, playChainShow } from '@/components/chain-show';
 import { calmRescuePlan, departureRisk, gambleRescuePlan, rescuePlan, sectorNeed, SECTOR_NEED_RIDERS, type ItemUse } from '@/lib/departure-guard';
 import { offerReveal } from '@/lib/offer-reveal';
 import { shouldPreviewConnection } from '@/lib/connection-preview';
@@ -135,9 +136,9 @@ function placeTip(anchor: HTMLElement) {
   const bottom = box ? box.getBoundingClientRect().bottom : window.innerHeight, a = anchor.getBoundingClientRect();
   anchor.classList.toggle('tip-up', bottom - a.bottom < tip.offsetHeight + 12 && a.top - (box?.getBoundingClientRect().top ?? 0) > tip.offsetHeight + 12);
 }
-function MetricSources({ lines, locale, good, note }: { lines: PreviewLine[]; locale: GameLocale; good: 'up' | 'down'; note?: string }) {
-  if (!lines.length && !note) return null;
-  return <ul className="metric-sources" data-no-translate>{lines.map(l => <li key={`${l.label}:${l.amount}`} className={(l.amount > 0) === (good === 'up') ? 'is-good' : 'is-bad'}><span>{translateGameText(l.label, locale)}</span><b>{signedDelta(l.amount)}</b></li>)}{note && <li className="is-note"><span>{note}</span></li>}</ul>;
+function MetricSources({ lines, locale, good, note, chain }: { lines: PreviewLine[]; locale: GameLocale; good: 'up' | 'down'; note?: string; chain?: [string, string] }) {
+  if (!lines.length && !note && !chain) return null;
+  return <ul className="metric-sources" data-no-translate>{lines.map(l => <li key={`${l.label}:${l.amount}`} className={(l.amount > 0) === (good === 'up') ? 'is-good' : 'is-bad'}><span>{translateGameText(l.label, locale)}</span><b>{signedDelta(l.amount)}</b></li>)}{chain && <li className="is-chain"><span>{chain[0]}</span><b>{chain[1]}</b></li>}{note && <li className="is-note"><span>{note}</span></li>}</ul>;
 }
 function MetricResponse({ metric, event, locale }: { metric: MetricKey; event: MetricEvent | null; locale: GameLocale }) {
   const change = event?.changes.find((item) => item.key === metric);
@@ -435,6 +436,7 @@ const MANUAL: Array<[string, string, string, string]> = [
   ['道具', '商店里的一次性道具放进 4 格道具栏，同一种每买一次涨价。60 层起有对付暗黑版的道具，80 层起一定有照明弹（这一层所有暗黑版都不惹麻烦）。', 'Items', 'Shops sell single-use items for a 4-slot bag; each repeat costs more. From 60F there are tools against dark riders, and from 80F there is always a Flare (no dark rider causes trouble that floor).'],
   ['请离', '每十层最多请离 2 位，赔偿 4＋剩余站数×2 金币，不结算车费和暂存。传奇可免费请离，但拿不到信物。', 'Dismissal', 'Dismiss up to 2 riders per ten floors for 4 + 2 per remaining stop; no fare or bank is paid. Legends leave free but take their keepsake with them.'],
   ['邻座与叠加', '绿线来自相同的符号或人物能力，红线来自相反的符号，每条红线每层 +1 躁动。同一种符号的效果每层只算一次，连成形状才加级。', 'Neighbors', 'Green links come from shared symbols or rider abilities, red links from opposite symbols (+1 agitation each per floor). Each symbol works once a floor; shapes raise its level.'],
+  ['同站连锁', '同一站下车的乘客，如果彼此用同一种符号的绿线连成一串，满 4 人时这串人的基础车费按倍数结算：4 人 ×3，5 人 ×6，6 人 ×12。很难凑齐，但凑齐就是全场最大的一笔。余额栏会提示正在成形的连锁。', 'Same-stop chains', 'Riders who get off at the same stop and are joined in a row by green links of one symbol have their base fares multiplied once there are 4 of them: 4 riders ×3, 5 ×6, 6 ×12. Hard to line up, and the biggest payout in the game when you do. The coin box shows a chain as it forms.'],
 ];
 const PRESSURE_RISE: Array<[string, string, string, string]> = [
   ['乘客自身', '卡面上的躁动数字；急躁的乘客再 +1。没人管的小偷、没人照顾的儿童、未安抚的醉汉、被围住的名人也会加躁动。', 'Riders', 'The agitation number on the card; high-risk riders add 1 more. Unguarded Thieves, uncared-for Children, unsoothed Drifters and crowded Celebrities add agitation too.'],
@@ -622,6 +624,13 @@ export default function ElevatorGame() {
   const pressurePreview = useMemo(() => stressForecast(run), [run]); const energyPreview = useMemo(() => energyForecast(run), [run]);
   const sector = useMemo(() => sectorForecast(run), [run]);
   const preview = useMemo(() => floorPreview(run), [run]);
+  // v10.3 a chain forming: riders sharing a stop, joined by green links of one symbol (the next floor's payout, once it
+  // is due, shows among the coin lines instead).
+  const chainHint = useMemo((): [string, string] | undefined => {
+    const c = chainOutlook(run.cabin, run.floor); if (!c || preview?.coins.some(l => l.label.includes('连锁'))) return undefined;
+    const zh = language === 'zh', name = zh ? `${SYMBOLS[c.symbol].zh}连锁` : `${SYMBOLS[c.symbol].en} chain`, m = chainMultiplier(c.size);
+    return [m > 1 ? `${name} ×${m}` : `${name} ${c.size}/${CHAIN_RULES.from}`, `${c.stop}F`];
+  }, [run.cabin, run.floor, preview, language]);
   // Chance-driven extras the preview leaves out, shown as one “random” line so the list adds up to the forecast range.
   const randomNote = (low: number, high: number, settled: number) => { const a = low - settled, b = high - settled; if (!a && !b) return undefined; const r = a === b ? signedDelta(a) : `${signedDelta(a)}～${signedDelta(b)}`; return language === 'zh' ? `随机因素 ${r}` : `Chance ${r}`; };
   const risk = useMemo(() => departureRisk(run), [run]);
@@ -860,8 +869,15 @@ export default function ElevatorGame() {
     endDrag();
   };
   // v9.8 juice after each floor: bell, speech, streak, and at most one banner (record > close call > district > unrest rumble).
+  const chainShowRef = useRef<(() => void) | null>(null);
+  // v10.3 the chain's bonus is held back from the wallet until its coins land there.
+  const [walletHold, setWalletHold] = useState(0);
+  useEffect(() => () => chainShowRef.current?.(), []);
   const celebrateFloor = (before: RunState, after: RunState) => {
     const on = soundEnabled.current, zh = language === 'zh', stage = document.querySelector('.elevator-stage');
+    // v10.3 the chain cash-in gets the cabin to itself (the arrival holds the doors until it is done).
+    chainShowRef.current?.(); chainShowRef.current = null;
+    if (after.lastChain && !fastReveal) { setWalletHold(after.lastChain.bonus); chainShowRef.current = playChainShow(after.lastChain, { zh, sound: on, onPaid: () => setWalletHold(0) }); }
     // v9.19.1: arriving at a shop, the shop covers the cabin; seat pops would float over it, so only sounds play.
     const shopping = after.status === 'upgrade';
     // v9.18.2 defusal: a Bomber who makes it off rings a brighter chord than an ordinary arrival.
@@ -1065,7 +1081,7 @@ export default function ElevatorGame() {
         if (resolved.status === 'lost') settleLossRef.current(resolved, deliveredNow, seen);
         const exits=[...(resolved.lastArrivals??[]),...(resolved.lastIncident?[{...resolved.lastIncident,coins:0,incident:true}]:[])];
         setRun(delivered); setArriving(exits); setDoors('opening');
-        journeyTimers.current.push(setTimeout(()=>{setArriving([]);setDoors('open');busyRef.current=false;if(!document.querySelector('[role="dialog"]')){if(window.matchMedia('(max-width:700px)').matches)clearJuice();scrollMobileTarget('.candidate-panel','start');}},exits.length?(reduced?800:1600):(reduced?40:260)));
+        journeyTimers.current.push(setTimeout(()=>{setArriving([]);setDoors('open');busyRef.current=false;if(!document.querySelector('[role="dialog"]')){if(window.matchMedia('(max-width:700px)').matches)clearJuice();scrollMobileTarget('.candidate-panel','start');}},resolved.lastChain&&!fastReveal?chainShowMs(resolved.lastChain.path.length,reduced):exits.length?(reduced?800:1600):(reduced?40:260)));
         reportMetrics(run, resolved, `${resolved.floor} 层 · 到站结算`);
         flash({ tone: 'arrival', label: `${String(resolved.floor).padStart(2, '0')}F · 本层结算`, slots: [], coins: resolved.lastEarnings.total, energy: resolved.lastEnergy.delta, pressure: resolved.lastPressure.delta });
         playTone(soundEnabled.current, resolved.status === 'lost' ? 'danger' : 'arrive');
@@ -1216,7 +1232,7 @@ export default function ElevatorGame() {
   });
   const linkLabels=[...edgeLabels,...cancelLabels];
   // pixi-fx experiment: what the WebGL cabin layer needs to light the scene.
-  const fxState: CabinFxState = { cabin: run.cabin, floor: run.floor, doors, stress: run.stress, stressCap: run.stressCap, energy: Math.max(0, run.energy) / Math.max(1, run.energyCap), powerLow: run.status === 'playing' && run.energy + energyPreview.lowDelta <= LOW_POWER_FLICKER, powerFatal: run.status === 'playing' && risk.fatal, midnight: run.floor >= DARK_RULES.midnightFloor, abyss: run.floor >= ABYSS_EVENTS.from };
+  const fxState: CabinFxState = { cabin: run.cabin, floor: run.floor, doors, stress: run.stress, stressCap: run.stressCap, energy: Math.max(0, run.energy) / Math.max(1, run.energyCap), powerLow: run.status === 'playing' && run.energy + energyPreview.lowDelta <= LOW_POWER_FLICKER, powerFatal: run.status === 'playing' && risk.fatal, midnight: run.floor >= DARK_RULES.midnightFloor, abyss: run.floor >= ABYSS_EVENTS.from, chain: run.lastChain && !fastReveal ? { key: run.floor, ...run.lastChain } : null };
   const content = <main id="v2" data-sheet={run.status === 'playing' && phoneSheet ? phoneSheet : undefined} className={`game-shell v2 ${cooperationRelief(run) ? 'has-contract' : ''} ${difficultyTier(run.floor) % 2 ? 'phase-dawn' : ''}`}>
     <div className="ambient-grain" />
     <div className="rotate-notice"><RotateCcw/><h2>请横屏游玩</h2><p>这款游戏为横屏设计，把手机横过来即可继续；本班进度保留。</p></div>
@@ -1242,9 +1258,9 @@ export default function ElevatorGame() {
           {run.status==='playing'&&calmLeft>0&&(stressFatal||agitationBand(run.stress)!=='low')&&(()=>{const units=Math.min(calmLeft,Math.max(1,calmNeed));return <div className="emergency-charge calm-charge" data-no-translate title={language==='zh'?`本段还可安抚 ${calmLeft} 点 · ${calmPrice(run.floor)} 币/点`:`${calmLeft} left this sector · ${calmPrice(run.floor)} coins each`}><button className={stressFatal?'is-urgent':''} disabled={locked} onClick={()=>calm(units)}>{language==='zh'?`安抚 −${units} · ${units*calmPrice(run.floor)}币`:`Calm −${units} · ${units*calmPrice(run.floor)}c`}</button></div>;})()}
           {run.status==='playing'&&calmLeft<1&&overtimePrice!==null&&(stressFatal||agitationBand(run.stress)!=='low')&&<div className="emergency-charge calm-charge" data-no-translate title={language==='zh'?'本段安抚额度已用完 · 加急安抚每点更贵':'Calming allowance spent · each overtime point costs more'}><button className={stressFatal?'is-urgent':''} disabled={locked||!overtimeOk} onClick={overtimeCalm}>{language==='zh'?`加急安抚 −1 · ${overtimePrice}币`:`Overtime calm −1 · ${overtimePrice}c`}</button></div>}
         </div>
-        <div data-metric="coins" {...sheetProps('coins')} className="score-card wallet-card"><Coins aria-hidden="true" /><span className="rail-metric-name">余额</span><strong><RegisterNumber value={run.coins} /></strong><MetricResponse metric="coins" event={metricEvent} locale={language} /><span className={`mobile-shop-note ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</span><small className={`wallet-summary ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</small>
+        <div data-metric="coins" {...sheetProps('coins')} className="score-card wallet-card"><Coins aria-hidden="true" /><span className="rail-metric-name">余额</span><strong><RegisterNumber value={run.coins - walletHold} /></strong><MetricResponse metric="coins" event={metricEvent} locale={language} /><span className={`mobile-shop-note ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</span><small className={`wallet-summary ${nextIsShop ? 'shop-next' : ''}`}>{nextIsShop ? '下一层：商店' : `距商店 ${nextShop - run.floor} 层`}</small>
           {preview&&<small className="rail-forecast wallet-forecast" data-no-translate><span>{language==='zh'?'下一站':'Next'} <b>{preview.coinDelta?signedDelta(preview.coinDelta):(language==='zh'?'不变':'no change')}</b></span></small>}
-          {preview&&<MetricSources lines={preview.coins} locale={language} good="up" note={preview.coins.length?undefined:(language==='zh'?'这一站没人到站，也没有链接收入':'Nobody gets off and no link pays this floor')} />}</div>
+          {preview&&<MetricSources lines={preview.coins} locale={language} good="up" chain={chainHint} note={preview.coins.length?undefined:(language==='zh'?'这一站没人到站，也没有链接收入':'Nobody gets off and no link pays this floor')} />}</div>
 
         <div className="run-tools">
         {((run.serviceTurns??0)>0||run.upgrades.buffer>0||run.upgrades.punchcard>0)&&<div className="rail-chips" data-no-translate>{(run.serviceTurns??0)>0&&<span title={language==='zh'?'检修生效：运转少耗 1 电/层':'Repair: motor −1 per floor'}>{language==='zh'?`检修 −1 · 余${run.serviceTurns}层`:`Repair −1 · ${run.serviceTurns} left`}</span>}{run.upgrades.buffer>0&&<span title={language==='zh'?'惯性飞轮本段还能省的电，到商店重置':'Flywheel saving left this sector'}>{language==='zh'?`飞轮 ${flywheelAllowance(run)}/${boosted(run,'buffer',SHOP_TUNING.bufferFlywheelSectorCap)}`:`Flywheel ${flywheelAllowance(run)}/${boosted(run,'buffer',SHOP_TUNING.bufferFlywheelSectorCap)}`}</span>}{run.upgrades.punchcard>0&&<span title={language==='zh'?'每送达第 5 位乘客额外得其基价':'Every 5th delivery pays its base fare again'}>{language==='zh'?`第五张票 ${(run.punchCount??0)+1}/5`:`Fifth ticket ${(run.punchCount??0)+1}/5`}</span>}</div>}
@@ -1309,7 +1325,7 @@ export default function ElevatorGame() {
           </div>;
         })}</div>
         <CabinFx layer="front" state={fxState} />{linkLabels.length>0&&<div className="standing-grid link-label-layer" data-no-translate aria-hidden="true">{linkLabels}</div>}
-        {arriving.length>0&&<div className="standing-grid arrival-grid">{arriving.map(arrival=><div key={arrival.riderId} className="standing-slot-wrap" style={{gridColumn:arrival.slot%3+1,gridRow:Math.floor(arrival.slot/3)+1}}>{arrival.incident
+        {arriving.length>0&&<div className="standing-grid arrival-grid">{arriving.map(arrival=><div key={arrival.riderId} data-slot={arrival.slot} className={`standing-slot-wrap ${!fastReveal&&run.lastChain?.slots.includes(arrival.slot)?'in-chain':''}`} style={{gridColumn:arrival.slot%3+1,gridRow:Math.floor(arrival.slot/3)+1}}>{arrival.incident
           ? <output className={`arrival-exit arrival-incident ${fastReveal?'arrival-quick':''}`} aria-label={zhUI?`${riderName(arrival.kind,'zh')} 受不了混乱，提前下车，未付车费`:`${riderName(arrival.kind,'en')} left early in the chaos without paying`} data-no-translate><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{riderName(arrival.kind,language)}</span><span className="arrival-payout-incident"><Flame aria-hidden="true"/>{zhUI?'提前下车':'Left early'}<small>{zhUI?'受不了混乱 · 未付车费':'Chaos · no fare'}</small></span></output>
           : <div className={`arrival-exit ${fastReveal?'arrival-quick':''}`} role="status" aria-label={`${PASSENGERS[arrival.kind].name} 到站 ${arrival.keepsake?`信物 ${KEEPSAKES[arrival.keepsake].name}`:arrival.ability?UPGRADES[arrival.ability].name:arrival.power?`+${arrival.power} 电`:`${arrival.coins<0?'−'+(-arrival.coins):'+'+arrival.coins} 金币`}`}><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{PASSENGERS[arrival.kind].name}</span><span className="arrival-payout">{arrival.keepsake?<><Sparkles aria-hidden="true"/><small>{zhUI?`信物 · ${keepsakeLabel(arrival.keepsake,'zh')}`:`Keepsake · ${keepsakeLabel(arrival.keepsake,'en')}`}{arrival.coins>0?` · +${arrival.coins}`:''}</small></>:arrival.ability?<><Sparkles aria-hidden="true"/><small>{UPGRADES[arrival.ability].name}</small></>:arrival.power?<><BatteryCharging aria-hidden="true"/>+{arrival.power}<small>电</small></>:<><Coins aria-hidden="true"/>{arrival.coins<0?`−${-arrival.coins}`:`+${arrival.coins}`}<small>金币</small></>}</span></div>}</div>)}</div>}
         <div className={`cabin-message ${hoveredPlan && !hoveredPlan.ok ? 'message-error' : ''}`} aria-live="polite"><Sparkles /><span>{hoveredPlan ? hoveredPlan.ok ? hoveredPlan.next.message : hoveredPlan.label : selectedSlot !== null && run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : touchUI && run.message === DRAG_HINT ? TAP_HINT : run.message}</span></div><div className="swap-status">{pendingOfferId ? '选择发光站位 · ESC 取消' : selectedSlot !== null ? run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : '再选一个站位完成调整 · ESC 取消' : run.swapped ? <><LockKeyhole /> 旧乘客换位已用 · 新上客仍可调整</> : '拖拽人物安排站位 · 有效组合会亮起'}</div>
@@ -1442,7 +1458,7 @@ export default function ElevatorGame() {
           <div className="shop-power-value"><b>{run.energy}</b><span>/{run.energyCap}</span></div>
         </div>
         <div className={`shop-agitation ${run.stress>=run.stressCap-2?'is-high':''}`} data-no-translate><span className="shop-resource-label"><Flame aria-hidden="true"/>{language==='zh'?'躁动':'Agitation'}</span><div className="shop-power-value"><b>{run.stress}</b><span>/{run.stressCap}</span></div></div>
-        <div className="shop-wallet"><span aria-label={`可用金币 ${run.coins}`}><Coins aria-hidden="true" /><span className="shop-balance-label">金币</span><b><RegisterNumber value={run.coins} /></b></span><span>收入 {run.earned} · 支出 {run.earned - run.coins}</span></div>
+        <div className="shop-wallet"><span aria-label={`可用金币 ${run.coins}`}><Coins aria-hidden="true" /><span className="shop-balance-label">金币</span><b><RegisterNumber value={run.coins - walletHold} /></b></span><span>收入 {run.earned} · 支出 {run.earned - run.coins}</span></div>
       </div>
       <div className="shop-scroll-body">
       <DialogHeader className="shop-head"><p className="dialog-kicker" data-no-translate>FLOOR {run.floor} · SHOP{districtFor(run.floor+1).from===run.floor+1?` · ${language==='zh'?'前方':'Ahead'}: ${districtFor(run.floor+1).name[language==='zh'?0:1]}`:''}</p><DialogTitle>{upgradeCrisis ? '商店 · 紧急维修' : '商店'}</DialogTitle>{run.floor%50===0&&!upgradeCrisis&&<p className="shop-milestone" data-no-translate>{language==='zh'?`第 ${run.floor} 层！这趟夜班已经开到了第 ${run.floor} 层。`:`Floor ${run.floor}! This night shift has reached floor ${run.floor}.`}</p>}<DialogDescription className="sr-only">{language==='zh'?'选能力、升级配电箱、充电，然后继续上行。':'Pick an ability, upgrade the power box, charge, then ascend.'}</DialogDescription></DialogHeader>

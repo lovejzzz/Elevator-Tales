@@ -3,7 +3,7 @@
 
 export type Sfx =
   | 'ding' | 'doorClose' | 'doorOpen' | 'hum' | 'clink' | 'register' | 'link' | 'conflict' | 'heartbeat'
-  | 'rumble' | 'calm' | 'stamp' | 'sell' | 'record' | 'district' | 'tick' | 'board' | 'whoosh' | 'closeCall' | 'deal' | 'shimmer' | 'sizzle' | 'defuse' | 'explosion' | 'boxOpen' | 'bell';
+  | 'rumble' | 'calm' | 'stamp' | 'sell' | 'record' | 'district' | 'tick' | 'board' | 'whoosh' | 'closeCall' | 'deal' | 'shimmer' | 'sizzle' | 'defuse' | 'explosion' | 'boxOpen' | 'bell' | 'zap' | 'slam' | 'jackpot';
 
 type Bus = { ctx: BaseAudioContext; out: GainNode; wet: GainNode };
 let bus: (Bus & { ctx: AudioContext }) | null = null;
@@ -115,7 +115,7 @@ export function playSfx(enabled: boolean, name: Sfx, opts: { pitch?: number; del
   try {
     const b = ensureBus(); if (!b) return;
     loadSamples(b);
-    if (crowded(b) && !['defuse', 'explosion', 'ding', 'record'].includes(name)) return;
+    if (crowded(b) && !['defuse', 'explosion', 'ding', 'record', 'slam', 'jackpot'].includes(name)) return;
     schedule(b, name, b.ctx.currentTime + (opts.delay ?? 0), opts.pitch ?? 0);
   } catch { /* Sound is optional and must never block play. */ }
 }
@@ -157,6 +157,10 @@ function schedule(b: Bus, name: Sfx, at: number, pitch: number) {
     case 'explosion': noise(b, { at, dur: 1.8, gain: .12, freq: 700, sweepTo: 60, q: .6, filter: 'lowpass' }); tone(b, 70, { at, dur: 1.4, gain: .16, type: 'sine', glideTo: 28, attack: .01, wet: false }); noise(b, { at: at + .05, dur: .35, gain: .05, freq: 2600, q: .8 }); [0.3, .55, .8, 1.1].forEach(t => noise(b, { at: at + t, dur: .08, gain: .025, freq: 1600, q: 1.5 })); break;
     // v9.19 midnight bell: three low tolls with a slightly detuned partial, like a distant clock tower.
     case 'bell': [0, 1.1, 2.2].forEach(t => { bell(b, 196, at + t, 2.6, .09); bell(b, 392.8, at + t + .01, 1.8, .04); tone(b, 98, { at: at + t, dur: 1.6, gain: .06, type: 'sine', attack: .01, wet: false }); }); break;
+    // v10.3 the chain cash-in: a crackling hop that climbs with each rider, the multiplier's hit, and the payout.
+    case 'zap': noise(b, { at, dur: .12, gain: .05, freq: 3800 * p, q: 1.4 }); tone(b, 660 * p, { at, dur: .22, gain: .045, type: 'triangle', glideTo: 1320 * p, attack: .004 }); bell(b, 1760 * p, at + .05, .5, .025); break;
+    case 'slam': tone(b, 62, { at, dur: .5, gain: .2, type: 'sine', glideTo: 34, attack: .004, wet: false }); noise(b, { at, dur: .18, gain: .06, freq: 900, sweepTo: 200, q: .7, filter: 'lowpass' }); [0, 7, 12, 16].forEach((st, i) => tone(b, 392 * p * 2 ** (st / 12), { at: at + .02 + i * .025, dur: 1.1, gain: .045, type: 'triangle', attack: .006 })); break;
+    case 'jackpot': [0, 4, 7, 12, 16, 19, 24].forEach((st, i) => tone(b, 784 * p * 2 ** (st / 12), { at: at + i * .055, dur: .7, gain: .035, attack: .004 })); noise(b, { at, dur: .5, gain: .03, freq: 5200, q: .9 }); bell(b, 2093 * p, at + .4, 1.6, .06); bell(b, 2637 * p, at + .5, 1.6, .04); break;
     case 'closeCall': tone(b, 220, { at, dur: 1.2, gain: .04, type: 'triangle', glideTo: 440, attack: .3 }); bell(b, 1318.5, at + .9, 1.4, .05); break;
     case 'boxOpen': noise(b, { at, dur: .12, gain: .07, freq: 1400, sweepTo: 3200, q: 1 }); tone(b, 392 * p, { at: at + .06, dur: .18, gain: .09, type: 'triangle', glideTo: 523.25 * p }); [0, 4, 7].forEach((st, i) => tone(b, 1046.5 * p * 2 ** (st / 12), { at: at + .16 + i * .05, dur: .5, gain: .045, attack: .005 })); break;
   }

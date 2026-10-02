@@ -5,7 +5,8 @@
 // and the red glow of a cabin about to boil over. Game state comes in through props; the DOM stays the source of layout.
 import { useEffect, useRef } from 'react';
 import type { Rider } from '@/lib/game-engine';
-import { symbolEdges, type SymbolKey } from '@/lib/symbols';
+import { chainMultiplier, symbolEdges, type SymbolKey } from '@/lib/symbols';
+import { CHAIN_TIMING, chainTier, hopAt, payoffAt, type ChainShowData } from './chain-show';
 
 export type CabinFxState = {
   cabin: Array<Rider | null>;
@@ -19,6 +20,8 @@ export type CabinFxState = {
   powerFatal: boolean;
   midnight: boolean;
   abyss: boolean;
+  /** v10.3 the chain cash-in to play (keyed by the floor it paid on), or null. */
+  chain: (ChainShowData & { key: number }) | null;
 };
 
 const SYMBOL_COLOR: Record<SymbolKey, number> = { lively: 0xf0a040, quiet: 0x7ab4f0, order: 0xe6c27a, street: 0xb58ae6, hearth: 0x8fd18f, spirit: 0x7fd6d0 };
@@ -143,7 +146,14 @@ export function CabinFx({ layer, state }: { layer: 'back' | 'front'; state: Cabi
         // then the lamp flashes like a bell and the stage settles.
         const travel = new PIXI.Graphics(); travel.blendMode = 'add'; travel.filters = [new PIXI.BlurFilter({ strength: 6, quality: 2 })];
         const ding = new PIXI.Sprite(glow); ding.anchor.set(0.5); ding.blendMode = 'add'; ding.alpha = 0;
-        app.stage.addChild(wash, topLights, rim, glowLayer, coreLayer, flowLayer, travel, ding, sparkLayer);
+        // v10.3 the chain cash-in: bolts jump card to card, each lit card burns in the chain's colour, and the payoff
+        // goes off as a nova (with light rays from ×6).
+        const chainGlow = new PIXI.Graphics(), chainCore = new PIXI.Graphics(), rays = new PIXI.Graphics();
+        chainGlow.blendMode = 'add'; chainCore.blendMode = 'add'; rays.blendMode = 'add';
+        chainGlow.filters = [new PIXI.BlurFilter({ strength: 10, quality: 3 })]; rays.filters = [new PIXI.BlurFilter({ strength: 6, quality: 2 })];
+        const nova = new PIXI.Sprite(glow); nova.anchor.set(0.5); nova.blendMode = 'add'; nova.alpha = 0;
+        app.stage.addChild(wash, topLights, rim, glowLayer, coreLayer, flowLayer, travel, ding, rays, chainGlow, chainCore, nova, sparkLayer);
+        let chainAt = -10, chainKey = stateRef.current.chain?.key ?? null, chainShow: ChainShowData | null = null, chainFired = 0, boltClock = 0, boltSeed: number[] = [];
         let arriveAt = -10;
         let arcClock = 0, arcSeed: number[] = [];
         let prevIds: Array<string | null> = stateRef.current.cabin.map(r => r?.id ?? null), prevFloor = stateRef.current.floor;
@@ -249,6 +259,64 @@ export function CabinFx({ layer, state }: { layer: 'back' | 'front'; state: Cabi
             rim.rect(0, 0, w, t).rect(0, h - t, w, t).rect(0, 0, t, h).rect(w - t, 0, t, h).fill({ color: 0xff3a24, alpha: Math.min(0.9, 0.22 + 0.5 * heat + 0.3 * beat) });
           }
           if (high && !reduced && Math.random() < 0.35 * heat) sparks.push({ x: Math.random() * w, y: h + 4, vx: (Math.random() - 0.5) * 20, vy: -60 - Math.random() * 90, life: 0, max: 1.6 + Math.random(), color: 0xff8a3a, size: 0.7 });
+          // The chain show (see components/chain-show.ts for the shared timeline).
+          if (st.chain && st.chain.key !== chainKey) { chainKey = st.chain.key; chainShow = st.chain; chainAt = time; chainFired = 0; }
+          chainGlow.clear(); chainCore.clear(); rays.clear(); nova.alpha = 0;
+          const show = chainShow, chainSince = time - chainAt;
+          if (show && !reduced && chainSince < payoffAt(show.path.length) + CHAIN_TIMING.hold) {
+            const k = show.path.length, color = SYMBOL_COLOR[show.symbol], pay = payoffAt(k), sincePay = chainSince - pay;
+            const fade = Math.min(1, Math.max(0, (pay + CHAIN_TIMING.hold - chainSince) / 0.5));
+            const centre = (slot: number) => { const r = slots[slot]; return r ? { x: r.x + r.w / 2, y: r.y + r.h * 0.45, r } : null; };
+            boltClock -= dt; if (boltClock <= 0) { boltClock = 0.045; boltSeed = Array.from({ length: 96 }, () => Math.random() - 0.5); }
+            let seed = 0;
+            show.path.forEach(([slot, fromSlot], i) => {
+              const at = hopAt(i); if (chainSince < at) return;
+              const c = centre(slot); if (!c) return;
+              const age = chainSince - at, kick = Math.exp(-age * 5), payFlare = sincePay > 0 ? Math.exp(-sincePay * 3) : 0;
+              const lvl = chainTier(chainMultiplier(i + 1));
+              if (i >= chainFired) {
+                chainFired = i + 1;
+                burst(c.x, c.y, color, 34 + i * 8, 230 + i * 30, 1.1);
+                burst(c.x, c.y, 0xffffff, 12, 140, 0.7);
+                if (chainMultiplier(i + 1) > 1) { burst(c.x, c.y, 0xffd27a, 50 + lvl * 25, 320 + lvl * 60, 1.4); }
+              }
+              // The card burns in the chain's colour: a hot frame that flares on the hit and settles to a glow.
+              const r = c.r, a = (0.55 + 0.45 * kick + 0.5 * payFlare) * fade;
+              chainGlow.roundRect(r.x - 4, r.y - 4, r.w + 8, r.h + 8, 10).stroke({ width: 16, color, alpha: Math.min(1, a) });
+              chainCore.roundRect(r.x - 2, r.y - 2, r.w + 4, r.h + 4, 8).stroke({ width: 2.5, color: 0xffffff, alpha: Math.min(1, a) });
+              // The landing shockwave.
+              if (age < 0.5) { const t = age / 0.5; chainCore.circle(c.x, c.y, 12 + t * Math.max(r.w, r.h) * 0.9).stroke({ width: 7 * (1 - t) + 1, color, alpha: (1 - t) * 0.95 }); }
+              // The bolt from the previous rider: a jagged line re-rolled ~20 times a second.
+              const p = fromSlot === null ? null : centre(fromSlot);
+              if (p) {
+                const len = Math.hypot(c.x - p.x, c.y - p.y) || 1, nx = -(c.y - p.y) / len, ny = (c.x - p.x) / len, segs = 12;
+                for (let strand = 0; strand < 2; strand++) {
+                  const pts: number[] = [];
+                  for (let sgm = 0; sgm <= segs; sgm++) { const t = sgm / segs, j = sgm === 0 || sgm === segs ? 0 : boltSeed[(seed++) % 96] * (14 + 8 * strand) * Math.sin(Math.PI * t) * 2; pts.push(p.x + (c.x - p.x) * t + nx * j, p.y + (c.y - p.y) * t + ny * j); }
+                  const ba = Math.min(1, (0.5 + 0.5 * kick + 0.6 * payFlare)) * fade * (strand ? 0.55 : 1);
+                  chainGlow.poly(pts, false).stroke({ width: 18, color, alpha: ba });
+                  chainCore.poly(pts, false).stroke({ width: strand ? 1.6 : 3.2, color: 0xffffff, alpha: ba });
+                }
+              }
+            });
+            // Payoff: a nova at the cabin's heart; from ×6 light rays turn behind it, from ×12 a second, wider ring.
+            if (sincePay > 0) {
+              const tier = chainTier(show.multiplier), grow = 1 - Math.exp(-sincePay * 7);
+              nova.position.set(w / 2, h * 0.46); nova.tint = tier >= 3 ? 0xfff6dc : 0xffdf9a;
+              nova.width = nova.height = Math.max(w, h) * (0.5 + 0.7 * grow) * (0.8 + 0.2 * tier);
+              nova.alpha = Math.min(1, 1.1 * Math.exp(-sincePay * (3.4 - tier * 0.6))) * fade;
+              if (sincePay < 0.7) { const t = sincePay / 0.7; chainCore.circle(w / 2, h * 0.46, t * Math.max(w, h) * 0.75).stroke({ width: 10 * (1 - t) + 1, color: 0xfff0c0, alpha: 1 - t }); }
+              if (tier >= 3 && sincePay > 0.12 && sincePay < 0.9) { const t = (sincePay - 0.12) / 0.78; chainCore.circle(w / 2, h * 0.46, t * Math.max(w, h)).stroke({ width: 6 * (1 - t) + 1, color, alpha: 1 - t }); }
+              if (tier >= 2) {
+                const n = tier >= 3 ? 18 : 12, L = Math.hypot(w, h), spin = time * (tier >= 3 ? 0.5 : 0.3), ra = Math.min(1, sincePay * 4) * fade * (tier >= 3 ? 0.42 : 0.3);
+                for (let q = 0; q < n; q++) {
+                  const ang = spin + (q / n) * Math.PI * 2, half = Math.PI / n * 0.42;
+                  rays.poly([w / 2, h * 0.46, w / 2 + Math.cos(ang - half) * L, h * 0.46 + Math.sin(ang - half) * L, w / 2 + Math.cos(ang + half) * L, h * 0.46 + Math.sin(ang + half) * L]).fill({ color: q % 2 ? 0xffd27a : color, alpha: ra });
+                }
+              }
+              if (sincePay < dt * 1.5) for (const [slot] of show.path) { const c = centre(slot); if (c) { burst(c.x, c.y, 0xffd27a, 26 + tier * 14, 260 + tier * 70, 1.3); } }
+            }
+          }
           drawSparks(dt);
         });
       }

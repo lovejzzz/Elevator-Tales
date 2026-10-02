@@ -1,3 +1,4 @@
+import { CHAIN_RULES, arrivalChain, chainMultiplier, greenBySymbol } from '../../lib/symbols.ts';
 import { boardNet, netValue, netIncludesAgitation } from '../../lib/net-value.ts';
 import { activeConnection } from '../../lib/game-interaction.ts';
 import { ADJACENT } from '../../lib/game-data.ts';
@@ -126,6 +127,8 @@ function linkOutlook(state: RunState, bot: Bot) {
     const cabin = state.cabin.map(r => r && r.destination > state.floor + t ? r : null);
     if (!cabin.some(Boolean)) break;
     const l = E.symbolCoins({ ...state, cabin });
+    // Burst study: a planner sees the chain cash-in coming when same-symbol neighbours share a destination.
+    if (CHAIN_RULES.from) { const arriving = cabin.flatMap((r, i) => r && r.kind !== 'parcel' && r.destination === state.floor + t + 1 ? [i] : []); const ch = arrivalChain(cabin, arriving); const m = chainMultiplier(ch.slots.length); if (m > 1) v += Math.pow(0.9, t) * (m - 1) * ch.slots.reduce((n, i) => n + riderProfile(cabin[i]!, cabin, i).fare, 0); }
     v += Math.pow(0.9, t) * (l.coins + EP * (Math.min(l.power, cabin.reduce((n, r, i) => n + (r ? riderProfile(r, cabin, i).energy : 0), 0)) + l.freePower) - agi * (redCount(cabin) * SYMBOL_RULES.redAgitation + l.agitationLines.reduce((n, x) => n + x.amount, 0)));
   }
   return v;
@@ -356,7 +359,7 @@ export type RunLog = {
   closeCalls: number; escapes: number; powerCalls: number; stressCalls: number; bombCalls: number;
   emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; calmUnits?: number; inspectors?: number; stamped?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
   bombDismissals?: number; marketBuys?: number; itemsUsed?: number; overtimeCharge?: number; boxAbilities?: number; boxAbilityFinds?: number; parcel?: Record<'offered' | 'paired' | 'courierOnly' | 'parcelOnly' | 'opened' | 'adopted' | 'unpaid' | 'delivered' | 'thefts' | 'bigOffered' | 'bigBoarded' | 'childOpens' | 'parts' | 'inspected' | 'contested' | 'bombCarry' | 'mimicCopy' | 'rareBoarded' | 'rareOffered', number>; legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
-  shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; income?: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
+  burst?: Array<[number, number, number, number]>; shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; income?: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
 };
 
 function causeOf(state: RunState): RunLog['cause'] {
@@ -486,6 +489,8 @@ export function runOne(opt: RunOptions): RunLog {
     for (const line of next.lastPressure.sources) if (line.amount > 0) log.pressure[line.label] = (log.pressure[line.label] ?? 0) + line.amount;
     // v10.2.5: income by source and by ten-floor band, for the money study.
     { const band = `${Math.floor((next.floor - 1) / 10) * 10 + 1}`; const income = (log.income ??= {}); for (const line of next.lastEarnings.sources) if (line.amount > 0) { income[line.label] = (income[line.label] ?? 0) + line.amount; income[`@${band}`] = (income[`@${band}`] ?? 0) + line.amount; income[`${band}|${line.label.replace(/ ×\d+$/, '')}`] = (income[`${band}|${line.label.replace(/ ×\d+$/, '')}`] ?? 0) + line.amount; } }
+    // burst study: each floor's highest symbol level and the coins it earned.
+    { const lv = greenBySymbol(state.cabin); const top = Math.max(0, ...Object.values(lv).map(v => v ?? 0)); const gain = next.lastEarnings.sources.reduce((n, l) => n + Math.max(0, l.amount), 0); const arr = state.cabin.flatMap((r, i) => r && r.kind !== 'parcel' && r.destination <= state.floor + 1 ? [i] : []); const k = arrivalChain(state.cabin, arr).slots.length; (log.burst ??= []).push([state.floor, top, gain, k]); }
     if (next.status === 'lost') log.deathSources = next.lastPressure.sources.map(l => `${l.label}${l.amount > 0 ? '+' : ''}${l.amount}`).join(' ') + ` | stress ${next.stress}/${next.stressCap} riders ${state.cabin.filter(Boolean).map(r => r!.kind).join(',')}`;
     state = next;
     log.peakCoins = Math.max(log.peakCoins, state.coins);

@@ -730,6 +730,8 @@ function translateUncached(value: string): string {
     .replace(/^用了檀香：躁动 −(\d+)。$/u, 'Burned Sandalwood: agitation −$1.')
     // v10 symbol links.
     // v10.2.10: “人间绿线 ×1 −1” read as a sum; the level shows only from 2 (“人间绿线 2级”).
+    .replace(/^(热闹|安静|秩序|江湖|人间|幽冥)连锁 ×(\d+)$/u, (_m, sym: string, n: string) => `${translateGameText(sym, 'en')} chain ×${n}`)
+    .replace(/(热闹|安静|秩序|江湖|人间|幽冥)连锁：(\d+) 人同站下车，车费 ×(\d+)/gu, (_m, sym: string, k: string, n: string) => `${translateGameText(sym, 'en')} chain: ${k} riders off together, fares ×${n}`)
     .replace(/^(热闹|安静|秩序|江湖|人间|幽冥)绿线(?: (\d+)级)?$/u, (_m, sym: string, n?: string) => `${translateGameText(sym, 'en')} green link${n ? ` level ${n}` : ''}`)
     .replace(/^((?:热闹|安静|秩序|江湖|人间|幽冥)(?:、(?:热闹|安静|秩序|江湖|人间|幽冥))*)绿线省电$/u, (_m, syms: string) => `${syms.split('、').map(x => translateGameText(x, 'en')).join(', ')} links save power`)
     .replace(/^(热闹|安静|秩序|江湖|人间|幽冥)绿线 ×(\d+)$/u, (_m, sym: string, n: string) => `${translateGameText(sym, 'en')} green ×${n}`)

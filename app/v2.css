@@ -938,3 +938,67 @@
 #v2 .standing-slot .seat-heading .rider-name { line-height:1.2 !important; }
 #v2 .standing-slot .seat-overlay { left:6px !important; right:6px !important; width:auto !important; transform:none !important; translate:none !important; display:flex; justify-content:center; }
 #v2 .standing-slot .seat-overlay .slot-state { max-width:100% !important; }
+
+/* ── v10.3 the chain cash-in show ─────────────────────────────────────────────────────────────────────────────
+   The cabin dims around the chain, each chained seat steps forward as its bolt lands (cabin-fx draws the bolts),
+   then the multiplier card slams in, rolls up the total and pours coins into the wallet. Tier 1 ×3, 2 ×6, 3 ×12+. */
+#v2 .elevator-stage[data-chain] .standing-grid:not(.link-label-layer) .standing-slot { filter:brightness(.34) saturate(.55); transition:filter .35s ease, transform .3s ease; }
+#v2 .elevator-stage[data-chain] .standing-grid:not(.link-label-layer) .standing-slot.is-chained { filter:none; transform:translateY(-4px) scale(1.035); z-index:3; animation:chain-hit .5s cubic-bezier(.2,1.5,.4,1); }
+@keyframes chain-hit { 0% { transform:scale(.93); filter:brightness(2.4) saturate(1.4); } 45% { filter:brightness(1.5); } 100% { transform:translateY(-4px) scale(1.035); filter:none; } }
+#v2 .elevator-stage.chain-shake-1 { --amp:3px; animation:chain-shake .32s cubic-bezier(.36,.07,.19,.97); }
+#v2 .elevator-stage.chain-shake-2 { --amp:6px; animation:chain-shake .42s cubic-bezier(.36,.07,.19,.97); }
+#v2 .elevator-stage.chain-shake-3 { --amp:10px; animation:chain-shake .55s cubic-bezier(.36,.07,.19,.97); }
+@keyframes chain-shake {
+  12% { transform:translate(calc(var(--amp) * -1), calc(var(--amp) * .6)); } 28% { transform:translate(var(--amp), calc(var(--amp) * -.7)); }
+  46% { transform:translate(calc(var(--amp) * -.6), calc(var(--amp) * -.3)); } 64% { transform:translate(calc(var(--amp) * .4), calc(var(--amp) * .4)); }
+  82% { transform:translate(calc(var(--amp) * -.15), 0); } 100% { transform:none; } }
+
+#v2body .chain-hud { position:fixed; z-index:79; pointer-events:none; display:grid; justify-items:center; gap:2px; padding:12px 18px 14px; transform:translate(-50%,-50%);
+  --chain:#e1b765; text-align:center; color:#fff4d6; font-variant-numeric:lining-nums tabular-nums;
+  background:radial-gradient(120% 140% at 50% 0%, color-mix(in srgb, var(--chain) 26%, transparent), transparent 70%), linear-gradient(180deg,rgba(14,20,17,.86),rgba(5,8,7,.9));
+  border-top:1px solid color-mix(in srgb, var(--chain) 70%, #f6dc9c); border-bottom:1px solid color-mix(in srgb, var(--chain) 70%, #f6dc9c);
+  box-shadow:0 0 0 1px rgba(0,0,0,.4), 0 18px 60px rgba(0,0,0,.6), 0 0 80px color-mix(in srgb, var(--chain) 35%, transparent);
+  animation:chain-hud-in .42s cubic-bezier(.2,1.4,.35,1) both; }
+#v2body .chain-hud.is-leaving { animation:chain-hud-out .35s ease-in forwards; }
+@keyframes chain-hud-in { 0% { opacity:0; transform:translate(-50%,-50%) scale(.5); letter-spacing:.5em; } 100% { opacity:1; transform:translate(-50%,-50%) scale(1); } }
+@keyframes chain-hud-out { to { opacity:0; transform:translate(-50%,-62%) scale(.96); } }
+#v2body .chain-hud .ch-name { font:600 13px/1.2 var(--font-sans, system-ui); letter-spacing:.32em; text-indent:.32em; color:color-mix(in srgb, var(--chain) 55%, #fff4d6); text-transform:uppercase; }
+#v2body .chain-hud .ch-mult { font:700 clamp(56px,9vw,104px)/.95 var(--serif); letter-spacing:.01em; font-variant-numeric:lining-nums;
+  background:linear-gradient(180deg,#fffaf0 0%,#f6dc9c 38%,#e1b765 62%,#8a5f22 100%); -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 0 18px color-mix(in srgb, var(--chain) 70%, transparent)) drop-shadow(0 2px 0 rgba(0,0,0,.6)); }
+#v2body .chain-hud .ch-mult.is-slam { animation:chain-slam .5s cubic-bezier(.15,1.6,.35,1); }
+@keyframes chain-slam { 0% { transform:scale(2.6); opacity:0; filter:blur(6px) brightness(2.2); } 40% { opacity:1; } 100% { transform:scale(1); filter:drop-shadow(0 0 18px color-mix(in srgb, var(--chain) 70%, transparent)) drop-shadow(0 2px 0 rgba(0,0,0,.6)); } }
+#v2body .chain-hud .ch-count { font:500 13px/1.3 var(--font-sans, system-ui); color:#e9dcbc; letter-spacing:.04em; }
+#v2body .chain-hud .ch-total { min-height:0; font:700 0/1 var(--serif); color:#ffe9a8; opacity:0; transition:opacity .2s; text-shadow:0 0 20px rgba(246,205,128,.75), 0 2px 0 rgba(0,0,0,.6); }
+#v2body .chain-hud.is-paid .ch-total { font-size:clamp(28px,4.2vw,46px); opacity:1; margin-top:4px; animation:chain-total-in .45s cubic-bezier(.2,1.5,.4,1); }
+@keyframes chain-total-in { from { transform:translateY(10px) scale(.6); } to { transform:none; } }
+#v2body .chain-hud[data-tier="2"] .ch-mult { font-size:clamp(68px,11vw,128px); }
+#v2body .chain-hud[data-tier="3"] .ch-mult, #v2body .chain-hud[data-tier="3"] .ch-mult.is-slam { font-size:clamp(80px,13vw,150px);
+  background:linear-gradient(100deg,#fff 0%,#ffe9a8 18%,#ffb36b 32%,#ff8fc8 46%,#a9b8ff 60%,#8ff0e0 74%,#fff3c4 88%,#fff 100%); background-size:220% 100%;
+  -webkit-background-clip:text; background-clip:text; animation:chain-slam .5s cubic-bezier(.15,1.6,.35,1), chain-prism 1.4s linear infinite; }
+@keyframes chain-prism { to { background-position:-220% 0; } }
+#v2body .chain-hud[data-tier="3"] { box-shadow:0 0 0 1px rgba(0,0,0,.4), 0 18px 60px rgba(0,0,0,.6), 0 0 140px rgba(255,214,140,.55); }
+#v2body .coin-flight.chain-coin { width:16px; height:16px; box-shadow:0 0 12px rgba(246,205,128,.9); }
+/* Landscape phones: the cabin is a narrow column; the card shrinks to fit it. */
+@media (orientation:landscape) and (max-height:520px) {
+  #v2body .chain-hud { padding:8px 12px 10px; }
+  #v2body .chain-hud .ch-name, #v2body .chain-hud .ch-count { font-size:11px; }
+  #v2body .chain-hud .ch-mult { font-size:56px; } #v2body .chain-hud[data-tier="2"] .ch-mult { font-size:66px; } #v2body .chain-hud[data-tier="3"] .ch-mult, #v2body .chain-hud[data-tier="3"] .ch-mult.is-slam { font-size:76px; }
+  #v2body .chain-hud.is-paid .ch-total { font-size:28px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  /* Payouts do not fade here; the chain card sums the chained ones, so theirs step aside instead of sitting under it. */
+  #v2 .elevator-stage[data-chain] .arrival-grid .in-chain .arrival-payout { visibility:hidden; }
+  #v2 .elevator-stage[data-chain] .standing-slot, #v2 .elevator-stage[class*="chain-shake"], #v2body .chain-hud, #v2body .chain-hud * { animation:none !important; transition:none !important; }
+}
+/* v10.3 a chain forming, in the coin box: the chain's own glint instead of a plain line. */
+#v2 .metric-sources li.is-chain { color:#ffe9a8; }
+#v2 .metric-sources li.is-chain span::after { border-bottom-color:rgba(246,220,156,.55); }
+#v2 .metric-sources li.is-chain b { color:#ffe9a8; text-shadow:0 0 10px rgba(246,205,128,.6); }
+/* The chain's riders stay on stage (their own payout still fades as usual) until the show is over. */
+#v2 .arrival-grid .in-chain .arrival-portrait, #v2 .arrival-grid .in-chain .arrival-name { animation:none; opacity:1; transition:opacity .35s ease; }
+#v2 .elevator-stage[data-chain] .arrival-grid .in-chain:not(.is-chained) { filter:brightness(.45) saturate(.6); }
+#v2 .elevator-stage[data-chain] .arrival-grid .in-chain.is-chained { animation:chain-hit .5s cubic-bezier(.2,1.5,.4,1) forwards; }
+#v2 .elevator-stage[data-chain-leaving] .arrival-grid .in-chain .arrival-portrait, #v2 .elevator-stage[data-chain-leaving] .arrival-grid .in-chain .arrival-name { opacity:0; }
+/* The `font` shorthands above reset numerals to Cormorant's old-style figures (1 reads as I); force lining ones. */
+#v2body .chain-hud .ch-mult, #v2body .chain-hud .ch-total, #v2body .chain-hud .ch-count { font-variant-numeric:lining-nums tabular-nums; }

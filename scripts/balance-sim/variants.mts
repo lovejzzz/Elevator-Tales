@@ -7,12 +7,20 @@ import { CALM_PURCHASE, CALM_RULES, INSULATION_RULES, RISK_RULES, SHOP_PRICES, S
 import { LEGEND_RULES } from '../../lib/legends.ts';
 import { PARCEL_RULES, BOMB_RULES, THIEF_RULES } from '../../lib/game-engine.ts';
 import { PASSENGERS } from '../../lib/game-data.ts';
-import { SYMBOL_EFFECTS, SYMBOL_RULES } from '../../lib/symbols.ts';
+import { CHAIN_RULES, SYMBOL_EFFECTS, SYMBOL_RULES } from '../../lib/symbols.ts';
 const scaleBoxes = (k: number) => { for (const size of ['small', 'big'] as const) for (const tier of ['common', 'rare', 'legendary'] as const) PARCEL_RULES.values[size][tier] = Math.round(PARCEL_RULES.values[size][tier] * k); };
 const parcel = (fare: number, coins: number, power: number) => () => { PASSENGERS.courier.fare = fare; PARCEL_RULES.payoutCoins = coins; PARCEL_RULES.payoutPower = power; };
 
 export const VARIANTS: Record<string, () => void> = {
   baseline: () => {},
+  // v10.3 burst study: the chain cash-in (baseline is from 4, ×3, doubling).
+  nochain: () => { CHAIN_RULES.from = 0; },
+  chainBase3: () => { CHAIN_RULES.on = 'base'; },
+  chainPaid2: () => { CHAIN_RULES.base = 2; },
+  chain3: () => { CHAIN_RULES.from = 3; CHAIN_RULES.base = 2; },
+  chain3x3: () => { CHAIN_RULES.from = 3; CHAIN_RULES.base = 3; },
+  chain4x2: () => { CHAIN_RULES.from = 4; CHAIN_RULES.base = 2; },
+  chain4x4: () => { CHAIN_RULES.from = 4; CHAIN_RULES.base = 4; },
   // v10.2.5 money / early-power study: shape levels (row / square / full), the low-agitation arrival tip.
   shape1: () => { SYMBOL_RULES.row = 1; SYMBOL_RULES.square = 1; SYMBOL_RULES.full = 2; },
   shape0: () => { SYMBOL_RULES.row = 0; SYMBOL_RULES.square = 0; SYMBOL_RULES.full = 0; },
