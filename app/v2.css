@@ -582,7 +582,7 @@
 @media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   #v2 .phone-menu-button b { top:3px; right:3px; }
   /* Lobby card on a phone: name, portrait, four numbers, symbols — nothing else. */
-  #v2 .candidate-panel .tcg-face > :not(.tcg-name):not(.tcg-art):not(.tcg-stats):not(.sym-row) { display:none !important; }
+  #v2 .candidate-panel .tcg-face > :not(.tcg-name):not(.tcg-art):not(.tcg-stats):not(.sym-row):not(.sym-frame) { display:none !important; }
   #v2 .candidate-panel .tcg-name { padding:0 2px !important; justify-content:center !important; }
   #v2 .candidate-panel .tcg-name strong { font-size:11px !important; letter-spacing:0 !important; text-overflow:clip !important; }
   #v2 .candidate-panel .mobile-rule-button { top:auto !important; bottom:calc(16px + 18px + 8px) !important; right:5px !important; background:rgba(6,10,8,.8) !important; border-radius:50% !important; }
@@ -860,3 +860,81 @@
   #v2 .seat-info-button { display:none !important; }
   #v2 .standing-grid { row-gap:24px !important; column-gap:28px !important; }
 }
+
+/* ============================================================================================
+   Symbol materials. A rider's symbols are the card itself: the ring around a card is made of the first symbol's
+   material on the left half and the second's on the right; a gem for each sits on the portrait's lower corners.
+   Lively  · hammered amber      Quiet · frosted blue glass     Order  · engraved gold
+   Street  · studded violet hide Hearth · green velvet          Spirit · teal mist
+   ============================================================================================ */
+#v2, #v2body {
+  --mat-lively: repeating-linear-gradient(135deg, rgba(255,236,190,.55) 0 1.5px, transparent 1.5px 6px), linear-gradient(180deg,#ffc56e,#b5651d);
+  --mat-quiet:  repeating-linear-gradient(0deg, rgba(255,255,255,.28) 0 1px, transparent 1px 4px), linear-gradient(180deg,#b9dbff,#3c6bb0);
+  --mat-order:  repeating-linear-gradient(45deg, rgba(255,248,215,.5) 0 1px, transparent 1px 5px), repeating-linear-gradient(-45deg, rgba(120,80,20,.35) 0 1px, transparent 1px 5px), linear-gradient(180deg,#f8dc98,#a77a2e);
+  --mat-street: radial-gradient(circle, rgba(255,240,255,.55) 0 1.1px, transparent 1.6px) 0 0 / 5px 5px, linear-gradient(180deg,#c9a1f5,#5b3889);
+  --mat-hearth: repeating-linear-gradient(90deg, rgba(255,255,255,.2) 0 1px, transparent 1px 3px), radial-gradient(120% 60% at 50% 0%, rgba(230,255,220,.45), transparent 60%), linear-gradient(180deg,#9fe09f,#2f6e3c);
+  --mat-spirit: repeating-radial-gradient(circle at 50% 120%, rgba(225,255,252,.45) 0 1px, transparent 1px 5px), linear-gradient(180deg,#a9f0e9,#24716c);
+  --mat-hidden: repeating-linear-gradient(45deg, rgba(255,255,255,.08) 0 4px, transparent 4px 8px), linear-gradient(180deg,#5c615e,#2b2f2d);
+  --mat-copy:   repeating-linear-gradient(90deg, rgba(220,190,255,.25) 0 2px, transparent 2px 5px), linear-gradient(180deg,#8b7aa6,#3f3552);
+}
+#v2 .sym-frame { position:absolute; inset:0; z-index:4; pointer-events:none; border-radius:inherit; padding:var(--sf-w,4px);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  filter:drop-shadow(0 0 3px rgba(0,0,0,.6)); }
+#v2 .sym-frame i { position:absolute; top:0; bottom:0; width:50%; }
+#v2 .sym-frame .sf-a { left:0; } #v2 .sym-frame .sf-b { right:0; }
+#v2 .sym-frame::after { /* a bright seam where the two materials meet, top and bottom */
+  content:''; position:absolute; left:calc(50% - 1px); width:2px; top:0; bottom:0; background:linear-gradient(180deg,#fff7df,rgba(255,247,223,.2) 12%,rgba(255,247,223,.2) 88%,#fff7df); opacity:.8; }
+#v2 [data-sa="lively"] .sf-a, #v2 [data-sb="lively"] .sf-b { background:var(--mat-lively); }
+#v2 [data-sa="quiet"] .sf-a,  #v2 [data-sb="quiet"] .sf-b  { background:var(--mat-quiet); }
+#v2 [data-sa="order"] .sf-a,  #v2 [data-sb="order"] .sf-b  { background:var(--mat-order); }
+#v2 [data-sa="street"] .sf-a, #v2 [data-sb="street"] .sf-b { background:var(--mat-street); }
+#v2 [data-sa="hearth"] .sf-a, #v2 [data-sb="hearth"] .sf-b { background:var(--mat-hearth); }
+#v2 [data-sa="spirit"] .sf-a, #v2 [data-sb="spirit"] .sf-b { background:var(--mat-spirit); }
+#v2 [data-sa="hidden"] .sf-a, #v2 [data-sb="hidden"] .sf-b { background:var(--mat-hidden); }
+#v2 [data-sa="copy"] .sf-a,   #v2 [data-sb="copy"] .sf-b   { background:var(--mat-copy); }
+
+/* Gems: the symbol's icon set in a disc of its own material. */
+#v2 .sym-gems { position:absolute; inset:auto 0 0 0; height:0; z-index:5; pointer-events:none; }
+#v2 .sym-gem { position:absolute; bottom:4px; display:grid; place-items:center; width:var(--gem,22px); height:var(--gem,22px); border-radius:50%; pointer-events:auto; cursor:help;
+  color:#140d04; font:700 12px/1 var(--font-sans); border:1.5px solid rgba(255,248,225,.85); box-shadow:0 2px 6px rgba(0,0,0,.65), inset 0 1px 1px rgba(255,255,255,.6), inset 0 -2px 3px rgba(0,0,0,.35); }
+#v2 .sym-gem.gem-a { left:4px; } #v2 .sym-gem.gem-b { right:4px; }
+#v2 .sym-gem svg { width:62%; height:62%; filter:drop-shadow(0 1px 0 rgba(255,255,255,.4)); }
+#v2 .sym-gem.sym-lively { background:var(--mat-lively); } #v2 .sym-gem.sym-quiet { background:var(--mat-quiet); }
+#v2 .sym-gem.sym-order { background:var(--mat-order); } #v2 .sym-gem.sym-street { background:var(--mat-street); }
+#v2 .sym-gem.sym-hearth { background:var(--mat-hearth); } #v2 .sym-gem.sym-spirit { background:var(--mat-spirit); }
+#v2 .sym-gem.gem-hidden { background:var(--mat-hidden); color:#e8e2d0; } #v2 .sym-gem.gem-copy { background:var(--mat-copy); color:#f2e8ff; }
+#v2 .sym-gem::after { content:''; position:absolute; inset:-8px; }
+#v2 .tcg-art, #v2 .sp-art { position:relative; }
+
+/* The symbol row and the seat badges are replaced by the material. */
+#v2 .tcg-face > .sym-row, #v2 .seat-heading > .sym-badges, #v2 .sp-head > .sym-badges { display:none !important; }
+#v2 .passenger-card { position:relative; }
+#v2 .tcg-face { position:static !important; }
+#v2 .passenger-card { border-radius:6px; }
+#v2 .passenger-card > .tcg-face > .sym-frame, #v2 .passenger-card .sym-frame { --sf-w:4px; border-radius:6px; }
+/* Seats: the ring sits on the seat card; long seat-state captions keep clear of the gems. */
+#v2 .standing-slot .rider-visual { --sf-w:4px; }
+/* Full seat cards carry their caption along the portrait's foot, so their gems sit on the portrait's top corners. */
+#v2 .seat-art > .sym-gems { inset:0 0 auto 0; }
+#v2 .seat-art > .sym-gems .sym-gem { bottom:auto; top:4px; }
+#v2 .seat-phone .sp-stops { left:50% !important; translate:-50% 0; }
+#v2 .seat-phone .sp-flag { bottom:auto !important; top:4px; right:4px; }
+#v2 .seat-phone .sp-head { padding-right:5px !important; justify-content:center; }
+#v2 .seat-phone .sp-head b { text-align:center; }
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  #v2 .sym-gem { --gem:18px; bottom:3px; }
+  #v2 .sym-gem.gem-a { left:3px; } #v2 .sym-gem.gem-b { right:3px; }
+  #v2 .sym-frame { --sf-w:3px; }
+}
+/* The manual shows each symbol as its material gem, the same thing players see on cards. */
+#v2body .manual-gem { display:inline-grid; place-items:center; width:26px; height:26px; flex:none; border-radius:50%; color:#140d04; border:1.5px solid rgba(255,248,225,.85); box-shadow:0 2px 6px rgba(0,0,0,.6), inset 0 1px 1px rgba(255,255,255,.6); }
+#v2body .manual-gem svg { width:62%; height:62%; }
+#v2body .manual-gem.sym-lively { background:var(--mat-lively); } #v2body .manual-gem.sym-quiet { background:var(--mat-quiet); }
+#v2body .manual-gem.sym-order { background:var(--mat-order); } #v2body .manual-gem.sym-street { background:var(--mat-street); }
+#v2body .manual-gem.sym-hearth { background:var(--mat-hearth); } #v2body .manual-gem.sym-spirit { background:var(--mat-spirit); }
+/* Full seat card: without the badge row the heading is one line, set clear of the frame; the portrait caption spans the
+   portrait width again. */
+#v2 .standing-slot .seat-heading { display:flex !important; align-items:center; justify-content:center; padding:6px 26px 0 !important; min-height:30px; }
+#v2 .standing-slot .seat-heading .rider-name { line-height:1.2 !important; }
+#v2 .standing-slot .seat-overlay { left:6px !important; right:6px !important; width:auto !important; transform:none !important; translate:none !important; display:flex; justify-content:center; }
+#v2 .standing-slot .seat-overlay .slot-state { max-width:100% !important; }
