@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(publicOrigin),
   title: 'Elevator Tales — Midnight Shift',
   description: "You are tonight's temporary elevator operator in a strange, endless building. Manage riders, power, and agitation—and survive.",
+  // Without a declared icon, browsers ask for /favicon.ico, which does not exist (a 404 on every visit, and no tab icon).
+  icons: { icon: `${publicBasePath}/favicon.svg` },
   openGraph: {
     title: 'Elevator Tales — Midnight Shift',
     description: "You are tonight's temporary elevator operator in a strange, endless building. Manage riders, power, and agitation—and survive.",
