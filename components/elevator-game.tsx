@@ -24,7 +24,7 @@ import * as QA_ENGINE from '@/lib/game-engine';
 import { symbolCoins, type ChangeLine } from '@/lib/game-engine';
 import { SymbolIcon } from '@/components/symbol-icon';
 import { KeepsakeIcon } from '@/components/keepsake-icon';
-import { CHAIN_RULES, RIDER_SYMBOLS, chainMultiplier, chainOutlook, cancelledEdges, SYMBOLS, SYMBOL_KEYS, greenBySymbol, symbolEdges, symbolEffectText, symbolShapes, symbolTitle, symbolsOf, type SymbolKey } from '@/lib/symbols';
+import { CHAIN_RULES, RIDER_SYMBOLS, chainMultiplier, chainOutlook, chainPath, cancelledEdges, SYMBOLS, SYMBOL_KEYS, greenBySymbol, symbolEdges, symbolEffectText, symbolShapes, symbolTitle, symbolsOf, type SymbolKey } from '@/lib/symbols';
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
 import { disposeGameMusic, musicSceneForView, setGameMusic, unlockGameMusic } from '@/lib/game-music';
 import { bondStatus, conflictLinks, type ConflictEffect } from '@/lib/rider-profile';
@@ -626,8 +626,15 @@ export default function ElevatorGame() {
   const preview = useMemo(() => floorPreview(run), [run]);
   // v10.3 a chain forming: riders sharing a stop, joined by green links of one symbol (the next floor's payout, once it
   // is due, shows among the coin lines instead).
+  // v10.3 the cabin shows a chain one rider short (or ready) on the cards themselves, on every layout.
+  const chainForming = useMemo(() => {
+    const c = chainOutlook(run.cabin, run.floor); if (!c || c.size < CHAIN_RULES.from - 1) return null;
+    return { symbol: c.symbol, size: c.size, path: chainPath(run.cabin, { symbol: c.symbol, slots: c.slots }) };
+  }, [run.cabin, run.floor]);
   const chainHint = useMemo((): [string, string] | undefined => {
-    const c = chainOutlook(run.cabin, run.floor); if (!c || preview?.coins.some(l => l.label.includes('连锁'))) return undefined;
+    // The next floor's own preview is exact (riders such as the Taskmaster may still stretch their ride), so a full
+    // chain due there is left to the coin lines; the hint covers chains still forming or further up.
+    const c = chainOutlook(run.cabin, run.floor); if (!c || preview?.coins.some(l => l.label.includes('连锁')) || (c.stop === run.floor + 1 && chainMultiplier(c.size) > 1)) return undefined;
     const zh = language === 'zh', name = zh ? `${SYMBOLS[c.symbol].zh}连锁` : `${SYMBOLS[c.symbol].en} chain`, m = chainMultiplier(c.size);
     return [m > 1 ? `${name} ×${m}` : `${name} ${c.size}/${CHAIN_RULES.from}`, `${c.stop}F`];
   }, [run.cabin, run.floor, preview, language]);
@@ -1232,7 +1239,7 @@ export default function ElevatorGame() {
   });
   const linkLabels=[...edgeLabels,...cancelLabels];
   // pixi-fx experiment: what the WebGL cabin layer needs to light the scene.
-  const fxState: CabinFxState = { cabin: run.cabin, floor: run.floor, doors, stress: run.stress, stressCap: run.stressCap, energy: Math.max(0, run.energy) / Math.max(1, run.energyCap), powerLow: run.status === 'playing' && run.energy + energyPreview.lowDelta <= LOW_POWER_FLICKER, powerFatal: run.status === 'playing' && risk.fatal, midnight: run.floor >= DARK_RULES.midnightFloor, abyss: run.floor >= ABYSS_EVENTS.from, chain: run.lastChain && !fastReveal ? { key: run.floor, ...run.lastChain } : null };
+  const fxState: CabinFxState = { cabin: run.cabin, floor: run.floor, doors, stress: run.stress, stressCap: run.stressCap, energy: Math.max(0, run.energy) / Math.max(1, run.energyCap), powerLow: run.status === 'playing' && run.energy + energyPreview.lowDelta <= LOW_POWER_FLICKER, powerFatal: run.status === 'playing' && risk.fatal, midnight: run.floor >= DARK_RULES.midnightFloor, abyss: run.floor >= ABYSS_EVENTS.from, chain: run.lastChain && !fastReveal ? { key: run.floor, ...run.lastChain } : null, forming: chainForming };
   const content = <main id="v2" data-sheet={run.status === 'playing' && phoneSheet ? phoneSheet : undefined} className={`game-shell v2 ${cooperationRelief(run) ? 'has-contract' : ''} ${difficultyTier(run.floor) % 2 ? 'phase-dawn' : ''}`}>
     <div className="ambient-grain" />
     <div className="rotate-notice"><RotateCcw/><h2>请横屏游玩</h2><p>这款游戏为横屏设计，把手机横过来即可继续；本班进度保留。</p></div>

@@ -34,7 +34,7 @@ for (const [k, m] of [[4, 3], [5, 6], [6, 12]] as const) {
 assert.equal(ride(quiet.map((kind, i) => R(kind, `d${i}`, i < 2 ? 25 : 26))).lastChain, undefined, 'split stops break the chain');
 assert.equal(arrivalChain([R('tourist', 'a', 25), R('commuter', 'b', 25), R('tourist', 'c', 25), R('commuter', 'd', 25), null, null], [0, 1, 2, 3]).slots.length, 0, 'no shared symbol, no chain');
 // The coin box sees a chain forming before it pays.
-assert.deepEqual(chainOutlook(cabinOf(3, 27), 24), { symbol: chainOutlook(cabinOf(3, 27), 24)!.symbol, size: 3, stop: 27 });
+assert.deepEqual(chainOutlook(cabinOf(3, 27), 24), { symbol: chainOutlook(cabinOf(3, 27), 24)!.symbol, size: 3, stop: 27, slots: [0, 1, 2] });
 assert.equal(chainOutlook([R('commuter', 'x', 27), R('inspector', 'y', 28), null, null, null, null], 24), null, 'riders on different stops are not forming anything');
 assert.ok(chainPath(cabinOf(6), arrivalChain(cabinOf(6), [0, 1, 2, 3, 4, 5])).length === 6);
 assert.equal(CHAIN_RULES.on, 'paid');

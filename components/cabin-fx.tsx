@@ -5,7 +5,7 @@
 // and the red glow of a cabin about to boil over. Game state comes in through props; the DOM stays the source of layout.
 import { useEffect, useRef } from 'react';
 import type { Rider } from '@/lib/game-engine';
-import { chainMultiplier, symbolEdges, type SymbolKey } from '@/lib/symbols';
+import { CHAIN_RULES, chainMultiplier, symbolEdges, type SymbolKey } from '@/lib/symbols';
 import { CHAIN_TIMING, chainTier, hopAt, payoffAt, type ChainShowData } from './chain-show';
 
 export type CabinFxState = {
@@ -22,6 +22,8 @@ export type CabinFxState = {
   abyss: boolean;
   /** v10.3 the chain cash-in to play (keyed by the floor it paid on), or null. */
   chain: (ChainShowData & { key: number }) | null;
+  /** v10.3 a chain one rider short of paying, or ready to pay: its seats in lighting order. */
+  forming: { symbol: SymbolKey; size: number; path: Array<[number, number | null]> } | null;
 };
 
 const SYMBOL_COLOR: Record<SymbolKey, number> = { lively: 0xf0a040, quiet: 0x7ab4f0, order: 0xe6c27a, street: 0xb58ae6, hearth: 0x8fd18f, spirit: 0x7fd6d0 };
@@ -259,9 +261,29 @@ export function CabinFx({ layer, state }: { layer: 'back' | 'front'; state: Cabi
             rim.rect(0, 0, w, t).rect(0, h - t, w, t).rect(0, 0, t, h).rect(w - t, 0, t, h).fill({ color: 0xff3a24, alpha: Math.min(0.9, 0.22 + 0.5 * heat + 0.3 * beat) });
           }
           if (high && !reduced && Math.random() < 0.35 * heat) sparks.push({ x: Math.random() * w, y: h + 4, vx: (Math.random() - 0.5) * 20, vy: -60 - Math.random() * 90, life: 0, max: 1.6 + Math.random(), color: 0xff8a3a, size: 0.7 });
+          chainGlow.clear(); chainCore.clear(); rays.clear(); nova.alpha = 0;
+          // A chain forming: one short, its cards breathe in the chain's colour and a spark walks the chain; ready, they
+          // burn gold and crackle. Hidden while the arrival show plays or the car moves.
+          const forming = st.forming, still = st.doors === 'open' && (!chainShow || time - chainAt > payoffAt(chainShow.path.length) + CHAIN_TIMING.hold);
+          if (forming && still) {
+            const ready = forming.size >= CHAIN_RULES.from, color = ready ? 0xffd27a : SYMBOL_COLOR[forming.symbol];
+            const breathe = reduced ? 0.5 : 0.5 + 0.5 * Math.sin(time * (ready ? 5 : 2.4));
+            const seats = forming.path.map(([s]) => slots[s]).filter((r): r is Rect => Boolean(r));
+            for (const r of seats) {
+              chainGlow.roundRect(r.x - 3, r.y - 3, r.w + 6, r.h + 6, 9).stroke({ width: ready ? 12 : 9, color, alpha: (ready ? 0.45 : 0.22) + (ready ? 0.35 : 0.22) * breathe });
+              chainCore.roundRect(r.x - 1.5, r.y - 1.5, r.w + 3, r.h + 3, 8).stroke({ width: 1.5, color: ready ? 0xfff3c4 : color, alpha: (ready ? 0.6 : 0.35) + 0.3 * breathe });
+            }
+            // The walking spark: along the chain and back, one seat-to-seat leg at a time.
+            if (seats.length > 1 && !reduced) {
+              const legs = seats.length - 1, period = legs * (ready ? 0.32 : 0.55), u = (time % (period * 2)) / period, along = u <= 1 ? u : 2 - u;
+              const at = along * legs, leg = Math.min(legs - 1, Math.floor(at)), f = at - leg, A = seats[leg], B = seats[leg + 1];
+              const x = A.x + A.w / 2 + (B.x + B.w / 2 - A.x - A.w / 2) * f, y = A.y + A.h * 0.5 + (B.y + B.h * 0.5 - A.y - A.h * 0.5) * f;
+              chainGlow.circle(x, y, ready ? 16 : 11).fill({ color, alpha: 0.85 }); chainCore.circle(x, y, ready ? 5 : 3.5).fill({ color: 0xffffff, alpha: 0.95 });
+              if (ready && Math.random() < dt * 9) { const r = seats[Math.floor(Math.random() * seats.length)]; burst(r.x + Math.random() * r.w, r.y + (Math.random() < 0.5 ? 0 : r.h), 0xffd27a, 4, 80, 0.6); }
+            }
+          }
           // The chain show (see components/chain-show.ts for the shared timeline).
           if (st.chain && st.chain.key !== chainKey) { chainKey = st.chain.key; chainShow = st.chain; chainAt = time; chainFired = 0; }
-          chainGlow.clear(); chainCore.clear(); rays.clear(); nova.alpha = 0;
           const show = chainShow, chainSince = time - chainAt;
           if (show && !reduced && chainSince < payoffAt(show.path.length) + CHAIN_TIMING.hold) {
             const k = show.path.length, color = SYMBOL_COLOR[show.symbol], pay = payoffAt(k), sincePay = chainSince - pay;

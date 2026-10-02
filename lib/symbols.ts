@@ -200,12 +200,12 @@ export function chainPath(cabin: Seat[], chain: ArrivalChain): Array<[number, nu
   return order;
 }
 /** For the coin box: the best chain forming among riders who share a stop (two or more), soonest stop first on ties. */
-export function chainOutlook(cabin: Array<{ destination: number; kind: string } | null>, floor: number): { symbol: SymbolKey; size: number; stop: number } | null {
-  let best: { symbol: SymbolKey; size: number; stop: number } | null = null;
+export function chainOutlook(cabin: Array<{ destination: number; kind: string } | null>, floor: number): { symbol: SymbolKey; size: number; stop: number; slots: number[] } | null {
+  let best: { symbol: SymbolKey; size: number; stop: number; slots: number[] } | null = null;
   for (const stop of [...new Set(cabin.flatMap(r => r && r.kind !== 'parcel' ? [r.destination] : []))].sort((a, b) => a - b)) {
     if (stop <= floor) continue;
     const ch = arrivalChain(cabin as Seat[], cabin.flatMap((r, i) => r && r.kind !== 'parcel' && r.destination === stop ? [i] : []));
-    if (ch.symbol && ch.slots.length >= 2 && (!best || ch.slots.length > best.size)) best = { symbol: ch.symbol, size: ch.slots.length, stop };
+    if (ch.symbol && ch.slots.length >= 2 && (!best || ch.slots.length > best.size)) best = { symbol: ch.symbol, size: ch.slots.length, stop, slots: ch.slots };
   }
   return best;
 }
