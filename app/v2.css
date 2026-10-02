@@ -1,0 +1,292 @@
+/* ============================================================================================
+   Elevator Tales v2 — “The Gilded Car”. A visual-version experiment (branch pixi-fx).
+   Every rule is scoped to #v2 so it outranks the legacy class rules without touching them.
+   Materials: brass hairlines, smoked glass, warm lamp light; the WebGL layers (cabin-fx) do the light.
+   ============================================================================================ */
+#v2 {
+  --g1:#f6dc9c; --g2:#e1b765; --g3:#a87a33; --g4:#5e4318;
+  --hair:rgba(225,183,101,.22); --hair-2:rgba(225,183,101,.45); --hair-3:rgba(246,220,156,.75);
+  --glass:linear-gradient(180deg,rgba(22,34,29,.72),rgba(8,14,12,.82));
+  --glass-hi:inset 0 1px 0 rgba(255,236,190,.09), inset 0 0 0 1px rgba(225,183,101,.05);
+  --cream:#f3e6c8; --muted:#a7ad9c; --dim:#6f776b;
+  --good:#9ee3b5; --bad:#ff9d86; --ink:#040706;
+  --serif:var(--font-display), 'Cormorant Garamond', 'Songti SC', serif;
+  background:
+    radial-gradient(70% 55% at 50% -12%, rgba(246,205,128,.20), transparent 62%),
+    radial-gradient(60% 45% at 50% 115%, rgba(34,92,72,.22), transparent 70%),
+    repeating-conic-gradient(from -90deg at 50% -8%, rgba(225,183,101,.045) 0deg 1.2deg, transparent 1.2deg 9deg),
+    linear-gradient(180deg,#07100d 0%,#040706 70%,#050806 100%);
+}
+#v2::after { /* film grain + edge falloff over everything */
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:60;
+  background:radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0,0,0,.55) 100%);
+}
+
+/* ---------- Title bar ---------- */
+#v2 .brand-bar { border-bottom:0; position:relative; }
+#v2 .brand-bar::after { content:''; position:absolute; left:0; right:0; bottom:0; height:1px; background:linear-gradient(90deg,transparent,var(--hair-2) 20%,var(--hair-3) 50%,var(--hair-2) 80%,transparent); }
+#v2 .brand-bar h1 { font-family:var(--serif); font-weight:600; letter-spacing:.01em; background:linear-gradient(180deg,#fff1cc 0%,var(--g2) 55%,var(--g3) 100%); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 2px 14px rgba(246,205,128,.25)); }
+#v2 .brand-bar .eyebrow { color:var(--g2); letter-spacing:.42em; opacity:.8; }
+#v2 .brand-actions > button { border-color:var(--hair); background:linear-gradient(180deg,rgba(28,40,34,.7),rgba(10,16,14,.85)); box-shadow:var(--glass-hi); transition:border-color .2s, box-shadow .2s, transform .15s; }
+#v2 .brand-actions > button:hover { border-color:var(--hair-3); box-shadow:var(--glass-hi), 0 0 18px rgba(246,205,128,.18); transform:translateY(-1px); }
+
+/* ---------- The stage: a brass proscenium around the car ---------- */
+#v2 .elevator-stage {
+  border:0; border-radius:3px;
+  box-shadow:
+    0 0 0 1px var(--hair-3),
+    0 0 0 6px #070b09,
+    0 0 0 7px var(--hair-2),
+    0 0 0 12px #050806,
+    0 0 0 13px var(--hair),
+    0 50px 120px rgba(0,0,0,.75),
+    0 0 120px rgba(246,205,128,.10);
+}
+#v2 .elevator-image { filter:saturate(.9) brightness(.82) contrast(1.12); }
+#v2 .floor-indicator { border-color:var(--hair-3); background:radial-gradient(120% 120% at 50% 0%, #1b2420, #050806); box-shadow:inset 0 0 18px #000, 0 0 28px rgba(246,205,128,.28), 0 0 0 4px rgba(0,0,0,.5); }
+#v2 .floor-indicator b { color:#ffe6a8; text-shadow:0 0 8px rgba(255,200,110,.85), 0 0 22px rgba(255,170,70,.45); }
+#v2 .district-tag, #v2 .record-gap { border-color:var(--hair-2); background:rgba(6,10,8,.72); color:var(--g1); letter-spacing:.12em; backdrop-filter:blur(6px); }
+
+/* Seats: empty ones are etched brass marks on the floor; occupied cards sit in a gilt frame. */
+#v2 .standing-slot { border-color:rgba(225,183,101,.12); }
+#v2 .standing-slot:not(:has(.tcg-face)) { background:radial-gradient(ellipse at 50% 88%, rgba(246,205,128,.10), transparent 46%); }
+
+/* ---------- Instrument column (left rail) ---------- */
+#v2 .status-rail .meter-card,
+#v2 .status-rail .score-card,
+#v2 .status-rail .link-ledger,
+#v2 .status-rail .rail-chips > span {
+  border:1px solid var(--hair); border-radius:4px; background:var(--glass); box-shadow:var(--glass-hi), 0 18px 40px rgba(0,0,0,.35);
+  backdrop-filter:blur(8px);
+}
+#v2 .status-rail .meter-card { position:relative; overflow:hidden; }
+#v2 .status-rail .meter-card::before, #v2 .status-rail .score-card::before { /* brass top rule */
+  content:''; position:absolute; left:10px; right:10px; top:0; height:1px; background:linear-gradient(90deg,transparent,var(--hair-3),transparent); opacity:.7;
+}
+#v2 .status-rail .score-card { position:relative; }
+#v2 .status-rail .rail-metric-name { font-family:var(--serif); font-size:17px !important; font-weight:600; letter-spacing:.06em; color:var(--g1); }
+#v2 .status-rail .meter-card > div:first-child > b,
+#v2 .status-rail .wallet-card > strong {
+  font-family:var(--serif); font-weight:600; letter-spacing:-.01em;
+  background:linear-gradient(180deg,#fff4d6 0%,var(--g1) 40%,var(--g2) 75%,var(--g3) 100%); -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 0 10px rgba(246,205,128,.22));
+}
+#v2 .status-rail .meter-card > div:first-child > b { font-size:34px !important; }
+#v2 .status-rail .metric-cap { color:var(--dim); -webkit-text-fill-color:var(--dim); font-size:.5em; }
+#v2 .status-rail .meter-card.meter-danger { border-color:rgba(255,110,80,.55); box-shadow:var(--glass-hi), 0 0 0 1px rgba(255,110,80,.25), 0 0 28px rgba(255,90,60,.22); }
+#v2 .status-rail .meter-card > div:first-child > svg { color:var(--g2); }
+#v2 .status-rail .rail-forecast { color:var(--muted); }
+#v2 .status-rail .rail-forecast b { color:var(--cream); font-family:var(--font-mono); }
+
+/* Source lists read like a menu: name, dotted leader, value. */
+#v2 .metric-sources { border-top:1px solid var(--hair); gap:3px; padding-top:8px; margin-top:8px; }
+#v2 .metric-sources li { font-size:12px; color:#d9d2bd; }
+#v2 .metric-sources li span { display:flex; align-items:baseline; flex:1; min-width:0; }
+#v2 .metric-sources li span::before { content:none; }
+#v2 .metric-sources li span::after { content:''; flex:1; min-width:10px; margin:0 6px 0 8px; border-bottom:1px dotted rgba(225,183,101,.32); transform:translateY(-3px); }
+#v2 .metric-sources li b { font-size:12px; }
+#v2 .metric-sources li.is-note span::after { content:none; }
+
+/* Buttons inside the instruments: slim brass pills. */
+#v2 .status-rail .emergency-charge button {
+  border:1px solid var(--hair-2); border-radius:3px; background:linear-gradient(180deg,rgba(225,183,101,.16),rgba(225,183,101,.05)); color:var(--g1);
+  font-weight:600; letter-spacing:.04em; transition:background .2s, box-shadow .2s;
+}
+#v2 .status-rail .emergency-charge button:hover:not(:disabled) { background:linear-gradient(180deg,rgba(225,183,101,.30),rgba(225,183,101,.10)); box-shadow:0 0 16px rgba(246,205,128,.2); }
+#v2 .status-rail .emergency-charge button.is-urgent { border-color:rgba(255,120,90,.7); color:#ffd2c4; background:linear-gradient(180deg,rgba(255,90,60,.28),rgba(255,90,60,.08)); animation:v2-urgent 1.4s ease-in-out infinite; }
+@keyframes v2-urgent { 50% { box-shadow:0 0 22px rgba(255,90,60,.45); } }
+
+/* ---------- The lobby (offers) ---------- */
+#v2 .arrival-panel { border:1px solid var(--hair); border-radius:4px; background:var(--glass); box-shadow:var(--glass-hi), 0 30px 60px rgba(0,0,0,.4); }
+#v2 .arrival-heading span, #v2 .arrival-heading b { font-family:var(--serif); color:var(--g1); letter-spacing:.08em; }
+#v2 .passenger-item { transition:transform .35s cubic-bezier(.16,1,.3,1), filter .3s; transform-style:preserve-3d; }
+#v2 .passenger-item:hover { transform:perspective(900px) translateY(-4px) rotateX(3deg); filter:drop-shadow(0 18px 26px rgba(0,0,0,.55)) drop-shadow(0 0 14px rgba(246,205,128,.18)); }
+
+/* ---------- The ascend plate ---------- */
+#v2 .depart-button {
+  height:62px; border:1px solid #f3d38c; border-radius:3px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.28),transparent 42%),
+    linear-gradient(135deg,#f3d48e 0%,#d6a752 38%,#a77531 70%,#d9ad5d 100%);
+  color:#1a1206; text-shadow:0 1px 0 rgba(255,240,200,.55);
+  box-shadow:inset 0 1px 0 rgba(255,250,225,.85), inset 0 -2px 0 rgba(90,60,20,.45), 0 12px 30px rgba(180,120,40,.28), 0 0 0 1px rgba(0,0,0,.6);
+  font-family:var(--serif); font-size:22px; font-weight:700; letter-spacing:.12em;
+}
+#v2 .depart-button::after { /* a slow light sweep across the plate */
+  content:''; position:absolute; top:0; bottom:0; width:40%; left:-60%; background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent); transform:skewX(-18deg);
+  animation:v2-sweep 4.5s ease-in-out infinite;
+}
+@keyframes v2-sweep { 0%,62% { left:-60%; } 100% { left:130%; } }
+#v2 .depart-button:hover:not(:disabled) { filter:brightness(1.07); box-shadow:inset 0 1px 0 rgba(255,250,225,.9), inset 0 -2px 0 rgba(90,60,20,.45), 0 16px 40px rgba(220,150,50,.42), 0 0 0 1px rgba(0,0,0,.6); }
+#v2 .depart-button.is-armed { background:linear-gradient(180deg,rgba(255,255,255,.2),transparent 42%),linear-gradient(135deg,#ffb39a,#e0583c 45%,#93261a); border-color:#ffc2b0; color:#fff3ee; text-shadow:0 1px 0 rgba(80,0,0,.5); animation:v2-urgent 1.2s ease-in-out infinite; }
+#v2 .depart-button:disabled { filter:grayscale(.6) brightness(.6); }
+#v2 .depart-button:disabled::after { display:none; }
+
+/* ---------- Alerts float like brass plaques ---------- */
+#v2 .power-alert { border-radius:4px; border-color:var(--hair-3); background:linear-gradient(180deg,rgba(32,24,10,.94),rgba(16,12,6,.96)); box-shadow:0 20px 50px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,236,190,.12); backdrop-filter:blur(10px); }
+#v2 .power-alert.is-fatal { border-color:rgba(255,130,100,.8); box-shadow:0 20px 50px rgba(0,0,0,.6), 0 0 40px rgba(255,80,50,.25), inset 0 1px 0 rgba(255,200,180,.15); }
+#v2 .power-alert button { border-radius:3px; }
+
+/* ---------- Footer ---------- */
+#v2 .footer-line { opacity:.55; letter-spacing:.3em; }
+
+@media (prefers-reduced-motion:reduce) {
+  #v2 .depart-button::after, #v2 .status-rail .emergency-charge button.is-urgent, #v2 .depart-button.is-armed { animation:none; }
+}
+
+/* Arrival: the car settles with a small dip and rebound (triggered by the WebGL layer on each new floor). */
+#v2 .elevator-stage[data-fx-arrive] .standing-grid { animation:v2-settle .62s cubic-bezier(.2,.9,.25,1.2); }
+@keyframes v2-settle { 0% { translate:0 0; } 35% { translate:0 5px; } 70% { translate:0 -2px; } 100% { translate:0 0; } }
+#v2 .elevator-stage[data-fx-arrive] .floor-indicator b { animation:v2-floor-glow .9s ease-out; }
+@keyframes v2-floor-glow { 0% { text-shadow:0 0 18px #fff, 0 0 40px rgba(255,200,110,1); color:#fff; } 100% { } }
+@media (prefers-reduced-motion:reduce) { #v2 .elevator-stage[data-fx-arrive] .standing-grid, #v2 .elevator-stage[data-fx-arrive] .floor-indicator b { animation:none; } }
+
+/* ---------- Doors: lacquered Art Deco leaves with brass inlay (the right leaf mirrors the left) ---------- */
+#v2 .door {
+  border:0;
+  background:
+    /* brass trim along the meeting edge, and a fine line inset from the outer edge */
+    linear-gradient(90deg, transparent calc(100% - 7px), #8a6427 calc(100% - 7px), #f3d38c calc(100% - 4px), #9a7030 100%),
+    linear-gradient(90deg, transparent 14px, rgba(225,183,101,.55) 14px, rgba(225,183,101,.55) 15px, transparent 15px),
+    /* a medallion split across the seam: rings and a sunburst core (each leaf shows one half) */
+    radial-gradient(circle at 100% 50%, rgba(255,236,190,.0) 0 48px, #f3d38c 48px 50px, transparent 50px 63px, rgba(225,183,101,.65) 63px 64px, transparent 64px 86px, #b68a3e 86px 89px, transparent 89px 96px, rgba(225,183,101,.35) 96px 97px, transparent 97px),
+    radial-gradient(circle at 100% 50%, transparent 0 29px, rgba(0,0,0,0) 29px),
+    /* two brass bands framing a gilt kick panel */
+    linear-gradient(180deg, transparent 31%, #b68a3e 31%, #f0cf86 31.6%, #8a6427 32.2%, transparent 32.2%, transparent 67.8%, #8a6427 67.8%, #f0cf86 68.4%, #b68a3e 69%, transparent 69%),
+    repeating-linear-gradient(180deg, rgba(225,183,101,.10) 0 1px, transparent 1px 9px) 0 32.2% / 100% 35.6% no-repeat,
+    /* a sunburst rising from the seam at the foot of the door */
+    repeating-conic-gradient(from 270deg at 100% 100%, rgba(225,183,101,.20) 0deg 1.4deg, transparent 1.4deg 7.5deg) 0 69% / 100% 31% no-repeat,
+    radial-gradient(140% 90% at 100% 100%, rgba(225,183,101,.16), transparent 60%) 0 69% / 100% 31% no-repeat,
+    /* lacquer with a faint vertical grain */
+    repeating-linear-gradient(90deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px),
+    linear-gradient(90deg, #06100d 0%, #13221c 30%, #0c1814 70%, #0a1411 100%);
+  box-shadow:inset 0 0 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,236,190,.08);
+}
+#v2 .door-left::after { /* warm light leaking through the seam while the doors meet */
+  content:''; position:absolute; top:0; bottom:0; right:-2px; width:4px;
+  background:linear-gradient(180deg, transparent, rgba(255,220,150,.9) 20%, rgba(255,236,190,1) 50%, rgba(255,220,150,.9) 80%, transparent);
+  filter:blur(2px); opacity:0; transition:opacity .2s ease .18s;
+}
+#v2 .doors-closing .door-left::after, #v2 .doors-moving .door-left::after { opacity:.85; }
+
+#v2 .door-left::before { /* sunburst core of the medallion, clipped to its circle */
+  content:''; position:absolute; right:0; top:50%; width:48px; height:96px; translate:0 -50%;
+  border-radius:96px 0 0 96px; background:repeating-conic-gradient(from 180deg at 100% 50%, #f3d38c 0deg 3deg, #2a2312 3deg 12deg);
+  box-shadow:inset 0 0 12px rgba(0,0,0,.6);
+}
+#v2 .door-right::before { content:''; position:absolute; right:0; top:50%; width:48px; height:96px; translate:0 -50%; border-radius:96px 0 0 96px; background:repeating-conic-gradient(from 180deg at 100% 50%, #f3d38c 0deg 3deg, #2a2312 3deg 12deg); box-shadow:inset 0 0 12px rgba(0,0,0,.6); }
+#v2 .doors-closing .door-left, #v2 .doors-moving .door-left { box-shadow:inset 0 0 90px rgba(0,0,0,.55), 3px 0 14px -2px rgba(255,214,140,.65); }
+
+/* ---------- Coins: a brass odometer with ivory numerals on black drums ---------- */
+#v2 .status-rail .wallet-card > strong { background:none; -webkit-background-clip:border-box; background-clip:border-box; color:inherit; filter:none; }
+#v2 .register-number, #v2body .register-number { gap:3px; }
+#v2 .register-digit, #v2body .register-digit {
+  min-width:.78em; padding:.1em .08em; border-radius:2px; border:1px solid rgba(225,183,101,.5);
+  font-family:var(--serif); font-weight:700; color:#fff1cc; text-shadow:0 0 8px rgba(246,205,128,.45);
+  background:linear-gradient(180deg,#000 0%,#1b1a14 18%,#2b281e 50%,#1b1a14 82%,#000 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), inset 0 -6px 10px rgba(0,0,0,.6), 0 0 0 2px #070a08, 0 0 0 3px rgba(225,183,101,.35);
+}
+#v2 .register-digit.is-lead, #v2body .register-digit.is-lead { color:rgba(255,241,204,.18); text-shadow:none; }
+
+/* ---------- Secondary buttons: smoked glass with a brass hairline ---------- */
+#v2 .mobile-inspect-button, #v2 .status-rail .run-tools > button, #v2 .status-rail .reserve-use, #v2 .receipt-button {
+  border:1px solid var(--hair-2); border-radius:3px; background:var(--glass); color:var(--g1); box-shadow:var(--glass-hi); transition:border-color .2s, box-shadow .2s, color .2s;
+}
+#v2 .mobile-inspect-button:hover:not(:disabled) { border-color:var(--hair-3); box-shadow:var(--glass-hi), 0 0 18px rgba(246,205,128,.16); color:#fff3d6; }
+#v2 .mobile-inspect-button:disabled { opacity:.5; }
+
+/* ---------- Link labels: small enamel badges ---------- */
+#v2 .link-label { border-radius:999px; border:1px solid rgba(225,183,101,.55); background:radial-gradient(120% 140% at 50% 0%, #22302a, #070b09); box-shadow:0 4px 14px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,236,190,.15); }
+#v2 .link-label:hover { border-color:var(--hair-3); box-shadow:0 4px 18px rgba(0,0,0,.6), 0 0 14px rgba(246,205,128,.25), inset 0 1px 0 rgba(255,236,190,.2); }
+
+/* ---------- Lobby heading ---------- */
+#v2 .arrival-heading { border-bottom:1px solid var(--hair); }
+#v2 .arrival-heading::after { content:''; display:block; height:1px; margin-top:6px; background:linear-gradient(90deg,var(--hair-3),transparent 70%); }
+
+/* Display numerals are lining and tabular (Cormorant defaults to old-style figures: 6 and 0 sat at different heights). */
+#v2 { font-variant-numeric:lining-nums tabular-nums; }
+#v2 .register-digit, #v2 .status-rail b, #v2 .status-rail strong, #v2 .floor-indicator b { font-variant-numeric:lining-nums tabular-nums; font-feature-settings:'lnum' 1, 'tnum' 1; }
+/* Keep the cabin art from washing out on bright districts: the lamp light is added by WebGL. */
+#v2 .elevator-image { filter:saturate(.88) brightness(.7) contrast(1.16); }
+
+/* ============================================================================================
+   Dialogs live in a portal outside #v2, so they are scoped to #v2body.
+   ============================================================================================ */
+#v2body {
+  --g1:#f6dc9c; --g2:#e1b765; --g3:#a87a33; --hair:rgba(225,183,101,.22); --hair-2:rgba(225,183,101,.45); --hair-3:rgba(246,220,156,.75);
+  --glass:linear-gradient(180deg,rgba(22,34,29,.72),rgba(8,14,12,.82)); --glass-hi:inset 0 1px 0 rgba(255,236,190,.09);
+  --serif:var(--font-display),'Cormorant Garamond','Songti SC',serif;
+}
+#v2body [data-slot="dialog-overlay"] { background:radial-gradient(80% 70% at 50% 45%, rgba(4,8,7,.55), rgba(2,4,3,.88)); backdrop-filter:blur(6px) saturate(.8); }
+#v2body .story-dialog {
+  border:0; border-radius:4px; color:#efe4c9;
+  background:
+    radial-gradient(90% 60% at 50% 0%, rgba(246,205,128,.10), transparent 60%),
+    linear-gradient(180deg,#101a16 0%,#070c0a 100%);
+  box-shadow:0 0 0 1px var(--hair-3), 0 0 0 5px #060a08, 0 0 0 6px var(--hair-2), 0 40px 120px rgba(0,0,0,.8), 0 0 80px rgba(246,205,128,.08);
+}
+#v2body .story-dialog::before { /* stepped Art Deco corners */
+  content:''; position:absolute; inset:8px; pointer-events:none; border:1px solid rgba(225,183,101,.18);
+  clip-path:polygon(0 18px,18px 18px,18px 0,calc(100% - 18px) 0,calc(100% - 18px) 18px,100% 18px,100% calc(100% - 18px),calc(100% - 18px) calc(100% - 18px),calc(100% - 18px) 100%,18px 100%,18px calc(100% - 18px),0 calc(100% - 18px));
+}
+#v2body .story-dialog .dialog-kicker { color:var(--g2); letter-spacing:.32em; font-weight:600; }
+#v2body .story-dialog [data-slot="dialog-title"] { font-family:var(--serif); font-weight:600; letter-spacing:.02em; background:linear-gradient(180deg,#fff4d6,var(--g1) 45%,var(--g2) 80%,var(--g3)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+#v2body .story-dialog .story-primary, #v2body .story-dialog .upgrade-continue, #v2body .story-dialog button.is-primary {
+  position:relative; overflow:hidden; border:1px solid #f3d38c; border-radius:3px; color:#1a1206; text-shadow:0 1px 0 rgba(255,240,200,.55);
+  background:linear-gradient(180deg,rgba(255,255,255,.28),transparent 42%),linear-gradient(135deg,#f3d48e 0%,#d6a752 38%,#a77531 70%,#d9ad5d 100%);
+  box-shadow:inset 0 1px 0 rgba(255,250,225,.85), inset 0 -2px 0 rgba(90,60,20,.45), 0 12px 30px rgba(180,120,40,.28);
+  font-family:var(--serif); font-weight:700; letter-spacing:.12em; font-size:20px;
+}
+#v2body .story-dialog .story-primary:hover { filter:brightness(1.07); }
+#v2body .story-dialog button:not(.story-primary):not(.upgrade-continue):not([data-slot="dialog-close"]) { border-radius:3px; }
+
+/* ---------- Result: the floor reached is the hero ---------- */
+#v2body .result-dialog { text-align:center; overflow:hidden; }
+#v2body .result-dialog::after { /* sunburst behind the number */
+  content:''; position:absolute; left:50%; top:118px; width:520px; height:520px; translate:-50% -50%; pointer-events:none; z-index:0;
+  background:repeating-conic-gradient(rgba(246,205,128,.10) 0deg 2deg, transparent 2deg 10deg); mask:radial-gradient(circle, #000 0 18%, transparent 62%);
+  animation:v2-spin 60s linear infinite;
+}
+@keyframes v2-spin { to { rotate:360deg; } }
+#v2body .result-dialog > * { position:relative; z-index:1; }
+#v2body .result-dialog [data-slot="dialog-title"] { font-size:96px; line-height:1; filter:drop-shadow(0 0 24px rgba(246,205,128,.35)); }
+#v2body .result-dialog [data-slot="dialog-title"] small { font-size:.3em; margin-left:.15em; -webkit-text-fill-color:var(--g2); }
+#v2body .result-dialog .failure-cause { font-family:var(--serif); font-size:24px; letter-spacing:.2em; color:#ffb9a6; }
+#v2body .result-dialog .compact-record { display:inline-block; margin:6px auto 2px; padding:4px 14px; border:1px solid var(--hair-2); border-radius:999px; color:var(--g1); letter-spacing:.14em; background:rgba(225,183,101,.07); }
+#v2body .result-dialog .result-share button, #v2body .result-dialog .result-details summary { border-color:var(--hair-2); color:var(--g1); background:var(--glass); }
+
+/* ---------- Shop ---------- */
+#v2body { font-variant-numeric:lining-nums tabular-nums; }
+#v2body .upgrade-dialog .shop-resources > div { border:1px solid var(--hair); border-radius:4px; background:radial-gradient(120% 90% at 50% 0%, rgba(246,205,128,.08), transparent 60%), var(--glass); box-shadow:var(--glass-hi), 0 14px 30px rgba(0,0,0,.35); }
+#v2body .upgrade-dialog .shop-resources > div b, #v2body .upgrade-dialog .shop-resources > div strong { font-family:var(--serif); font-weight:600; background:linear-gradient(180deg,#fff4d6,var(--g1) 45%,var(--g2) 80%,var(--g3)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+#v2body .upgrade-dialog .shop-resources .register-digit { -webkit-text-fill-color:#fff1cc; }
+#v2body .upgrade-dialog .shop-power.is-danger, #v2body .upgrade-dialog .shop-agitation.is-danger { border-color:rgba(255,120,90,.6); }
+#v2body .upgrade-dialog .shop-wallet strong, #v2body .upgrade-dialog .shop-wallet b { font-family:var(--serif); font-variant-numeric:lining-nums tabular-nums; }
+#v2body .upgrade-dialog .shop-step-head h3 { font-family:var(--serif); font-size:20px; font-weight:600; color:var(--g1); letter-spacing:.06em; }
+#v2body .upgrade-dialog .shop-step-head h3 i { border-color:var(--hair-3); color:var(--g1); background:radial-gradient(circle at 50% 30%, #3a2e14, #120d05); box-shadow:0 0 12px rgba(246,205,128,.2); font-style:normal; }
+#v2body .upgrade-dialog .upgrade-grid > button {
+  border:1px solid var(--hair-2); border-radius:4px; background:radial-gradient(120% 70% at 50% 0%, rgba(246,205,128,.08), transparent 60%), var(--glass);
+  box-shadow:var(--glass-hi), 0 18px 40px rgba(0,0,0,.4); transition:transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s, border-color .3s;
+}
+#v2body .upgrade-dialog .upgrade-grid > button:hover:not(:disabled) { transform:translateY(-4px); border-color:var(--hair-3); box-shadow:var(--glass-hi), 0 24px 50px rgba(0,0,0,.5), 0 0 28px rgba(246,205,128,.18); }
+#v2body .upgrade-dialog .upgrade-grid > button strong, #v2body .upgrade-dialog .upgrade-grid > button h4 { font-family:var(--serif); color:var(--g1); }
+#v2body .upgrade-dialog .recharge-panel, #v2body .upgrade-dialog .shop-slots { border:1px solid var(--hair); border-radius:4px; background:var(--glass); box-shadow:var(--glass-hi); }
+#v2body .upgrade-dialog .shop-slot { border-color:var(--hair); background:rgba(8,14,12,.6); border-radius:3px; }
+#v2body .upgrade-dialog .shop-slot.is-empty { border-style:dashed; color:rgba(225,183,101,.35); }
+
+/* Legacy `font:` shorthands reset numeral settings, so lining figures are set on every element. */
+#v2 *, #v2body * { font-variant-numeric:lining-nums; }
+#v2 .register-digit, #v2body .register-digit, #v2body .upgrade-dialog .shop-resources b { font-variant-numeric:lining-nums tabular-nums; }
+#v2body .upgrade-dialog .shop-resources > div > b, #v2body .upgrade-dialog .shop-resources > div strong { font-size:40px; line-height:1; }
+
+/* Instrument headers: the name, its help mark and the big numeral never crowd (English names run longer). */
+#v2 .status-rail .rail-metric-name { font-size:15px !important; white-space:nowrap; }
+#v2 .status-rail .meter-card > div:first-child { column-gap:8px; }
+#v2 .status-rail .meter-card > div:first-child > b { font-size:30px !important; margin-left:auto; }
+#v2 .status-rail .meter-label { min-width:0; }
+
+/* Phones: an alert must not hide the cabin it is about. It opens at the top of the screen, over the instruments
+   (it repeats their numbers), leaving the cabin and the ascend bar in view. */
+@media (max-width:700px) {
+  #v2 .power-alert { top:calc(env(safe-area-inset-top) + 8px); bottom:auto; max-height:44vh; overflow-y:auto; overscroll-behavior:contain; }
+}

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Cormorant_Garamond, Geist, Geist_Mono } from 'next/font/google';
 import type { CSSProperties } from 'react';
 import './globals.css';
+import './v2.css';
 
 const sans = Geist({ variable: '--font-sans', subsets: ['latin'] });
 const mono = Geist_Mono({ variable: '--font-mono', subsets: ['latin'] });
@@ -29,5 +30,5 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     '--elevator-cabin-image-dark': `url("${publicBasePath}/assets/elevator-cabin-deco-dark.jpg")`,
   } as CSSProperties;
 
-  return <html lang="en" className="dark" style={imageStyle}><body className={`${sans.variable} ${mono.variable} ${display.variable}`}>{children}</body></html>;
+  return <html lang="en" className="dark" style={imageStyle}><body id="v2body" className={`${sans.variable} ${mono.variable} ${display.variable}`}>{children}</body></html>;
 }

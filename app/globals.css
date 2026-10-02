@@ -3671,3 +3671,9 @@ button.keepsake-chip { border:1px solid #c99d52; border-radius:999px; background
 .shop-slot:hover .slot-tip, .shop-slot:focus-within .slot-tip { opacity:1; visibility:visible; }
 .shop-slot:nth-child(3n) .slot-tip { left:auto; right:0; }
 .shop-slot.tip-up .slot-tip { top:auto; bottom:calc(100% + 6px); }
+
+/* pixi-fx experiment: the WebGL cabin layers. The front layer only adds light (screen blend) above the cards. */
+.cabin-fx { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.cabin-fx-front { z-index:6; mix-blend-mode:screen; }
+[data-fx="on"] .adjacency-map .connection-path.active line, [data-fx="on"] .adjacency-map .connection-path.conflict-link line, [data-fx="on"] .adjacency-map .connection-node { opacity:0; }
+[data-fx="on"] .cabin-flicker { display:none; }
