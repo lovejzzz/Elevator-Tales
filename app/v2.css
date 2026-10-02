@@ -297,7 +297,7 @@
    ============================================================================================ */
 #v2 .phone-menu-button, #v2 .phone-tools-button, #v2 .phone-sheet-backdrop, #v2 .seat-phone { display:none; }
 
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   #v2.game-shell { height:100dvh; min-height:0; overflow:hidden; display:block; padding:6px max(8px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
   #v2 .brand-bar, #v2 .footer-line, #v2 .rotate-notice, #v2 .ambient-grain { display:none; }
   #v2 .game-grid { display:grid !important; height:100%; max-width:none; min-height:0; margin:0; gap:8px;
@@ -394,7 +394,7 @@
 }
 
 /* Phones held upright are asked to turn sideways. */
-@media (orientation:portrait) and (max-width:700px) {
+@media (orientation:portrait) and (max-width:1100px) {
   #v2 .game-grid, #v2 .footer-line { display:none !important; }
   #v2 .rotate-notice { display:flex !important; position:fixed; inset:0; z-index:5; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:32px; text-align:center; color:var(--g1); }
   #v2 .rotate-notice svg { width:48px; height:48px; animation:v2-turn 2.4s ease-in-out infinite; }
@@ -402,7 +402,7 @@
   #v2 .rotate-notice p { margin:0; max-width:300px; color:#cfc6ae; line-height:1.7; }
   @keyframes v2-turn { 0%,30% { rotate:0deg; } 60%,100% { rotate:-90deg; } }
 }
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   /* An open panel sits above the cabin's own layers (floor indicator, doors). */
   #v2[data-sheet] .status-rail { position:relative; z-index:75; overflow:visible; }
   #v2[data-sheet="menu"] .brand-bar { z-index:85; }
@@ -423,7 +423,7 @@
   #v2body .upgrade-dialog .shop-footer { position:sticky; bottom:-10px; z-index:5; margin-top:8px; padding:8px 0 2px; background:linear-gradient(0deg,#070c0a 70%,transparent); }
   #v2body .upgrade-dialog .shop-footer .story-primary { height:44px; font-size:17px; }
 }
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   #v2body .upgrade-dialog .shop-resources > div { height:40px !important; padding:0 10px !important; }
   #v2body .upgrade-dialog .shop-resources > div svg { width:16px !important; height:16px !important; }
   #v2body .upgrade-dialog .shop-resources > div > span, #v2body .upgrade-dialog .shop-resources .shop-balance-label { font-size:12px !important; }
@@ -435,7 +435,7 @@
   #v2body .upgrade-dialog .upgrade-grid > button p, #v2body .upgrade-dialog .upgrade-grid > button small { font-size:11px !important; line-height:1.45 !important; }
   #v2body .upgrade-dialog .upgrade-grid .shop-icon { width:34px !important; height:34px !important; }
 }
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   #v2body .upgrade-dialog .shop-resources .shop-resource-label { display:flex !important; align-items:center; gap:6px; font-size:12px !important; white-space:nowrap; }
   #v2body .upgrade-dialog .shop-resources .shop-power-value { display:flex !important; align-items:baseline; gap:2px; margin:0 0 0 auto !important; }
   #v2body .upgrade-dialog .shop-resources .shop-power-value b { font-size:22px !important; line-height:1; }
@@ -445,7 +445,7 @@
   #v2body .upgrade-dialog .shop-wallet > span:last-child { display:none !important; }
   #v2body .upgrade-dialog .shop-resources .register-digit { font-size:16px !important; }
 }
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   /* Lobby card: the name gets the bar, the rules book shrinks into the corner, the four numbers fit. */
   #v2 .candidate-panel .mobile-rule-button { width:18px !important; height:18px !important; top:3px !important; right:3px !important; padding:2px !important; }
   #v2 .candidate-panel .mobile-rule-button svg { width:11px !important; height:11px !important; }
@@ -458,13 +458,13 @@
   /* Shop resource label sits on the same line as its value. */
   #v2body .upgrade-dialog .shop-resources .shop-resource-label { position:static !important; margin:0 !important; transform:none !important; }
 }
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   #v2body .upgrade-dialog .shop-resources > div { flex-direction:row !important; justify-content:flex-start !important; justify-items:start !important; text-align:left !important; }
   #v2body .upgrade-dialog .shop-resources > div > * { align-self:center !important; }
   #v2 .phone-menu-button svg, #v2 .status-rail .meter-card > div:first-child > svg, #v2 .status-rail .wallet-card > svg { display:block !important; flex:none; }
 }
 
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   /* Items & tools: one button at the foot of the instruments; it glows when the night market, a reserve cell
      or an abyss event wants attention. */
   #v2 .phone-tools-button { display:flex; align-items:center; gap:6px; height:38px; flex:none; padding:0 9px; border:1px solid var(--hair-2); border-radius:4px; background:var(--glass); color:var(--g1); font-size:12px; box-shadow:var(--glass-hi); }
@@ -479,14 +479,14 @@
   }
   #v2[data-sheet="tools"] .status-rail > .run-tools > * { flex:none; }
 }
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   /* Touch targets: small controls keep their look but get an invisible 40px+ hit area. */
   #v2 .seat-info-button::after, #v2 .mobile-rule-button::after { content:''; position:absolute; inset:-10px; }
   #v2 .link-label::after { content:''; position:absolute; inset:-12px -4px; }
   /* Symbol marks are labels on a phone; a tap on them lands on the seat or card (their meaning is in the details). */
   #v2 .standing-slot .sym, #v2 .candidate-panel .sym { pointer-events:none; }
 }
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   /* Dialogs on a short landscape screen: compact headings so the content, not the title, fills the view. */
   #v2body .story-dialog { padding:16px 22px !important; max-height:calc(100dvh - 16px) !important; overflow-y:auto !important; }
   #v2body .story-dialog .dialog-kicker { margin-bottom:2px !important; font-size:9px !important; }
@@ -497,7 +497,7 @@
   #v2body .archive-dialog { width:calc(100vw - 24px) !important; max-width:none !important; }
   #v2body .archive-grid { grid-template-columns:repeat(4,minmax(0,1fr)) !important; }
 }
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   /* Reading dialogs use the screen's width on a phone held sideways. */
   #v2body .manual-dialog, #v2body .changelog-dialog, #v2body .pressure-dialog, #v2body .codex-dialog, #v2body .inventory-dialog, #v2body .passenger-detail-dialog { width:calc(100vw - 24px) !important; max-width:880px !important; }
   #v2body .manual-dialog p, #v2body .manual-dialog li, #v2body .manual-dialog span { font-size:12px !important; line-height:1.55 !important; }
@@ -505,7 +505,7 @@
   #v2body .manual-dialog .manual-grid section { padding:10px 12px !important; }
   #v2body .manual-dialog h3, #v2body .manual-dialog h4, #v2body .manual-dialog b { font-size:14px !important; }
 }
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   #v2 .seat-phone .sp-bomb { right:4px; justify-content:center; }
   #v2 .seat-phone .sp-bomb-live { border-color:rgba(255,190,120,.6); }
   #v2 .seat-phone .sp-bomb-late { border-color:#ff7a5a; color:#ffd2c4; background:rgba(120,25,15,.9); animation:v2-urgent 1s ease-in-out infinite; }
@@ -525,7 +525,7 @@
 #v2 .seat-act-button svg { width:14px; height:14px; }
 @keyframes v2-pop { from { scale:.8; opacity:0; } }
 
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   /* Narrower instruments, wider lobby: every waiting rider is visible without scrolling. */
   #v2 .game-grid { grid-template-columns:clamp(84px,11vw,100px) minmax(0,1fr) clamp(232px,31vw,300px) !important; }
   #v2[data-sheet="energy"] .status-rail [data-metric="energy"], #v2[data-sheet="stress"] .status-rail [data-metric="stress"], #v2[data-sheet="coins"] .status-rail [data-metric="coins"],
@@ -579,7 +579,7 @@
   /* The rider action sits over the compact seat face. */
   #v2 .seat-act-button { top:50%; padding:5px 9px; font-size:11px; }
 }
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   #v2 .phone-menu-button b { top:3px; right:3px; }
   /* Lobby card on a phone: name, portrait, four numbers, symbols — nothing else. */
   #v2 .candidate-panel .tcg-face > :not(.tcg-name):not(.tcg-art):not(.tcg-stats):not(.sym-row) { display:none !important; }
@@ -594,15 +594,269 @@
   #v2 .candidate-panel .sym-row { justify-content:center !important; }
 }
 
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   #v2 .status-rail [data-metric] .rail-forecast, #v2 .status-rail .wallet-card > .wallet-forecast { white-space:nowrap; font-size:10px !important; letter-spacing:-.01em; }
   #v2 .status-rail [data-metric] .rail-forecast b, #v2 .status-rail .wallet-forecast b { font-size:11px; }
 }
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   #v2 .status-rail [data-metric] .rail-forecast *, #v2 .status-rail .wallet-card > .wallet-forecast * { white-space:nowrap !important; }
   #v2 .status-rail .wallet-card { padding-left:7px !important; padding-right:7px !important; }
 }
-@media (orientation:landscape) and (max-height:520px) {
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
   #v2 .seat-act-button { padding:4px 7px; font-size:10px; gap:3px; max-width:calc(100% - 6px); }
   #v2 .seat-act-button svg { width:11px; height:11px; }
+}
+
+/* ---------- Clarity pass: nothing that carries information may sit on other information ---------- */
+#v2 .reservation-button .rb-short { display:none; }
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  /* “Hold for the next batch” is a small pill on the portrait’s corner (the full wording is its tooltip). */
+  #v2 .candidate-panel .reservation-button { position:absolute !important; top:24px !important; left:5px !important; right:auto !important; bottom:auto !important; width:auto !important; z-index:5;
+    display:flex; align-items:center; gap:2px; padding:1px 6px !important; border-radius:999px; font:600 10px/16px var(--font-sans) !important; white-space:nowrap; background:rgba(6,10,8,.88) !important; border:1px solid var(--hair-2) !important; color:var(--g1) !important; }
+  #v2 .candidate-panel .reservation-button .rb-full { display:none; }
+  #v2 .candidate-panel .reservation-button .rb-short { display:inline-flex; align-items:center; gap:2px; }
+  #v2 .candidate-panel .reservation-button svg { width:9px; height:9px; }
+  #v2 .candidate-panel .reservation-button::after { content:''; position:absolute; inset:-10px -6px; }
+
+  /* Alerts take their own place in the lobby column (above the ascend plate) instead of floating over the cards;
+     the cards shrink to make room, so nothing is hidden. */
+  #v2 .departure-controls { display:flex !important; flex-direction:column; gap:6px; }
+  #v2 .departure-controls > .power-alert { position:static !important; inset:auto !important; transform:none !important; width:auto !important; max-height:46vh; overflow-y:auto; overscroll-behavior:contain;
+    margin:0 !important; padding:7px 9px !important; gap:5px !important; font-size:11px !important; line-height:1.4; animation:none; }
+  #v2 .departure-controls > .power-alert p { font-size:12px !important; line-height:1.35; margin:0; }
+  #v2 .departure-controls > .power-alert small { font-size:11px !important; line-height:1.4; }
+  #v2 .departure-controls > .power-alert button { min-height:30px; padding:4px 10px !important; font-size:12px !important; }
+  #v2 .departure-controls > .power-alert svg { width:13px; height:13px; }
+
+  /* Lobby keeps at least two rows, so a short batch does not blow two cards up to full height. */
+  #v2 .candidate-panel .passenger-list { grid-template-rows:repeat(2,minmax(0,1fr)) !important; grid-auto-rows:minmax(0,1fr) !important; }
+
+  /* Ranges such as “−18～−12” wrap under the label rather than run past the instrument. */
+  #v2 .status-rail [data-metric] .rail-forecast { flex-wrap:wrap; }
+  #v2 .status-rail [data-metric] .rail-forecast > span:first-child { display:flex; flex-wrap:wrap; column-gap:4px; row-gap:0; }
+  #v2 .status-rail [data-metric] .rail-forecast > span:first-child b { white-space:nowrap; }
+}
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  /* The hold pill sits in the name bar's left corner; the name makes room for it. */
+  #v2 .candidate-panel .reservation-button { top:5px !important; left:5px !important; height:18px; padding:0 5px !important; line-height:16px !important; }
+  #v2 .candidate-panel .passenger-item:has(.reservation-button) .tcg-name { padding-left:28px !important; justify-content:flex-start !important; }
+  #v2 .candidate-panel .passenger-item:has(.reservation-button) .tcg-name strong { overflow:hidden; text-overflow:ellipsis !important; }
+  /* Narrow cards (three across) show the four numbers as two rows of two. */
+  @container tcg (max-width:100px) {
+    #v2 .candidate-panel .tcg-stats:has(> .tcg-stat:nth-child(4)) { grid-template-columns:repeat(2,minmax(0,1fr)) !important; row-gap:1px !important; }
+  }
+
+  /* Shop: the sticky resource bar is a solid band (scrolled content never shows through above it). */
+  #v2body .upgrade-dialog .shop-resources { background:#0b1411 !important; padding-top:10px !important; margin-top:-10px !important; box-shadow:0 8px 12px -6px rgba(0,0,0,.8); }
+  /* A full ability row: the reason wraps inside the card instead of running into the next one. */
+  #v2body .upgrade-dialog .upgrade-grid > button .shop-price { display:flex !important; flex-wrap:wrap; white-space:normal !important; gap:2px 6px; min-width:0; max-width:100%; font-size:11px !important; line-height:1.3 !important; }
+  #v2body .upgrade-dialog .upgrade-grid > button .shop-price * { white-space:normal !important; min-width:0; }
+  /* Installed slots: the name shortens before it meets the sell / level-2 buttons. */
+  #v2body .upgrade-dialog .shop-slot { display:flex !important; align-items:center; gap:4px; min-width:0; }
+  #v2body .upgrade-dialog .shop-slot .shop-slot-name { flex:1 1 auto; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  #v2body .upgrade-dialog .shop-slot > button { flex:none; }
+}
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  /* Shop scroll chrome: the dialog has no top/bottom padding of its own, so the sticky resource bar and the
+     continue bar sit flush on its edges and nothing scrolls into view above or below them. */
+  #v2body .upgrade-dialog { padding-top:0 !important; padding-bottom:0 !important; }
+  #v2body .upgrade-dialog .shop-resources { top:0 !important; margin-top:0 !important; padding-top:8px !important; padding-bottom:6px !important; }
+  #v2body .upgrade-dialog .shop-footer { bottom:0 !important; margin-bottom:0 !important; padding:8px 0 8px !important; background:#070c0a !important; box-shadow:0 -8px 12px -6px rgba(0,0,0,.8); }
+  /* Installed slot: name, then “level 2”, then “sell”, all in one row and never on top of each other. */
+  #v2body .upgrade-dialog .shop-slot .ability-raise { position:static !important; inset:auto !important; transform:none !important; flex:none; padding:2px 6px !important; font-size:10px !important; white-space:nowrap; }
+  #v2body .upgrade-dialog .shop-slot .shop-icon { flex:none; }
+}
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  /* A slot is too narrow for name and two buttons in one row: the name keeps the first row, the buttons the second. */
+  #v2body .upgrade-dialog .shop-slot { flex-wrap:wrap !important; row-gap:4px !important; height:auto !important; min-height:0 !important; padding:5px 6px !important; }
+  #v2body .upgrade-dialog .shop-slot .shop-icon { width:24px !important; height:24px !important; }
+  #v2body .upgrade-dialog .shop-slot .shop-slot-name { flex:1 1 calc(100% - 30px) !important; font-size:12px !important; }
+  #v2body .upgrade-dialog .shop-slot > button { margin-left:auto; }
+  #v2body .upgrade-dialog .shop-slot > .ability-raise + button { margin-left:4px; }
+  #v2body .upgrade-dialog .shop-slot > .ability-raise { margin-left:auto; }
+}
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  /* Labels may break between words (English “Next floor”) but never inside a Chinese word or a number. */
+  #v2 .status-rail [data-metric] .rail-forecast > span:first-child, #v2 .status-rail .wallet-card > .wallet-forecast { white-space:normal !important; word-break:keep-all; }
+  #v2 .candidate-panel .tcg-legend-note { white-space:normal !important; text-align:center; font-size:9px !important; line-height:1.2 !important; word-break:keep-all; }
+
+  /* Alerts in the lobby column stay compact: the headline, the suggested plan and its button. The general advice line
+     (which riders may lash out, what lowers the risk) is folded into the plan and hidden here. */
+  #v2 .departure-controls > .power-alert.is-gamble:has(.power-alert-rescue) > small:first-of-type { display:none; }
+  #v2 .departure-controls > .power-alert { max-height:40vh; }
+}
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  /* Rail “next”: label on its own small line, value under it — fits either language at any phone width. */
+  #v2:not([data-sheet]) .status-rail [data-metric] .rail-forecast > span:first-child, #v2[data-sheet="menu"] .status-rail [data-metric] .rail-forecast > span:first-child { display:flex !important; flex-direction:column; align-items:flex-start; gap:0; font-size:10px !important; line-height:1.25; color:var(--muted); }
+  #v2:not([data-sheet]) .status-rail [data-metric] .rail-forecast > span:first-child b, #v2[data-sheet="menu"] .status-rail [data-metric] .rail-forecast > span:first-child b { font-size:13px !important; color:var(--cream); }
+
+  /* Seat: details live on the tap action now, so the header keeps only name and symbols. */
+  #v2 .standing-slot .seat-info-button { display:none !important; }
+  #v2 .seat-phone .sp-head { padding-right:4px; }
+  #v2 .seat-phone .sp-head b { font-size:10.5px; }
+  #v2 .seat-phone .sp-stops { white-space:nowrap; max-width:calc(100% - 26px); }
+
+  /* Lobby hold pill moves onto the portrait's lower-left corner, so the name bar keeps its full width. */
+  #v2 .candidate-panel .reservation-button { top:auto !important; bottom:calc(16px + 20px + 6px) !important; left:4px !important; }
+  #v2 .candidate-panel .passenger-item:has(.reservation-button) .tcg-name { padding-left:2px !important; justify-content:center !important; }
+  #v2 .candidate-panel .tcg-name strong { font-size:10.5px !important; }
+}
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  /* The hold control becomes a thin strip under the card — part of the layout, so it can never sit on anything. */
+  #v2 .candidate-panel .passenger-item:has(.reservation-button) { display:flex !important; flex-direction:column; gap:2px; }
+  #v2 .candidate-panel .passenger-item:has(.reservation-button) > .passenger-card { flex:1 1 auto; min-height:0; height:auto !important; }
+  #v2 .candidate-panel .reservation-button { position:relative !important; inset:auto !important; top:auto !important; bottom:auto !important; left:auto !important; flex:none; width:100% !important; height:16px !important;
+    justify-content:center; border-radius:3px !important; padding:0 !important; line-height:14px !important; }
+  #v2 .candidate-panel .reservation-button .rb-short { gap:3px; }
+  #v2 .candidate-panel .reservation-button .rb-short b { padding:0 4px; border-radius:999px; background:rgba(225,183,101,.22); font-size:9px; line-height:12px; }
+  @container tcg (max-width:84px) { #v2 .candidate-panel .reservation-button .rb-word { display:none; } }
+}
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  /* Link labels on a phone: icon and number only (the coin icon already says “coins”), so they stay in the gap. */
+  #v2 .link-label .ll-word { display:none; }
+  #v2 .link-label { padding:0 4px !important; gap:2px !important; }
+
+  /* Lobby rows never shrink below a readable card; an alert that needs more room scrolls inside itself. */
+  #v2 .candidate-panel { flex:1 0 auto !important; min-height:min(150px,42vh) !important; }
+  #v2 .candidate-panel .passenger-list { grid-template-rows:repeat(2,minmax(72px,1fr)) !important; grid-auto-rows:minmax(72px,1fr) !important; }
+  #v2 .departure-controls { flex:0 1 auto !important; min-height:0 !important; overflow:hidden; }
+  #v2 .departure-controls > .power-alert { flex:0 1 auto; min-height:0; max-height:none !important; }
+  #v2 .departure-controls > .depart-button { flex:none; }
+
+  /* Rules book: top-right of the portrait (under the name bar), clear of the numbers and the hold strip. */
+  #v2 .candidate-panel .mobile-rule-button { top:26px !important; bottom:auto !important; right:6px !important; }
+  /* Two-by-two numbers get their own lines. */
+  #v2 .candidate-panel .tcg-stats:has(> .tcg-stat:nth-child(4)) .tcg-stat { line-height:13px !important; }
+}
+#v2 .offer-act-button { display:none; }
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  /* Details on the phone come from the selected rider (seat or waiting card); the corner buttons are gone. */
+  #v2 .seat-info-button, #v2 .candidate-panel .mobile-rule-button { display:none !important; }
+  #v2 .offer-act-button { display:flex; position:absolute; z-index:6; left:50%; top:46%; translate:-50% -50%; align-items:center; gap:3px; white-space:nowrap;
+    padding:4px 8px; border:1px solid var(--hair-3); border-radius:999px; color:#1a1206; font-weight:700; font-size:10px;
+    background:linear-gradient(180deg,rgba(255,255,255,.25),transparent 50%),linear-gradient(135deg,#f3d48e,#c99643); box-shadow:0 6px 18px rgba(0,0,0,.6); animation:v2-pop .18s cubic-bezier(.2,.9,.3,1.3); }
+  #v2 .offer-act-button svg { width:11px; height:11px; }
+  #v2 .offer-act-button::after { content:''; position:absolute; inset:-8px; }
+  /* Room between seats for the link labels, so a label sits in the gap rather than on a card. */
+  #v2 .standing-grid { row-gap:20px !important; column-gap:24px !important; }
+  #v2 .departure-controls > .power-alert { padding-bottom:9px !important; }
+}
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  /* Alert order on a phone: headline, the suggested plan's button, then its explanation, then the other buttons —
+     so the one-press fix is always in view even when the alert has to scroll. */
+  #v2 .departure-controls > .power-alert { display:flex !important; flex-direction:column; }
+  #v2 .departure-controls > .power-alert > p { order:0; }
+  #v2 .departure-controls > .power-alert > .power-alert-rescue { order:1; display:flex; flex-direction:column; gap:4px; }
+  #v2 .departure-controls > .power-alert > .power-alert-rescue > button { order:0; }
+  #v2 .departure-controls > .power-alert > .power-alert-rescue > small { order:1; }
+  #v2 .departure-controls > .power-alert > .power-alert-actions { order:2; }
+  #v2 .departure-controls > .power-alert > small { order:3; }
+  /* The details pill on a waiting card sits at the top of its portrait. */
+  #v2 .offer-act-button { top:24px; translate:-50% 0; }
+}
+
+/* Tablets and small windows held landscape (701–1100 wide, taller than a phone): the same layout, scaled up. */
+@media (orientation:landscape) and (min-width:701px) and (max-width:1100px) and (min-height:521px) {
+  #v2 .game-grid { grid-template-columns:clamp(124px,13vw,148px) minmax(0,1fr) clamp(290px,33vw,350px) !important; gap:10px !important; }
+  #v2[data-sheet="energy"] .status-rail [data-metric="energy"], #v2[data-sheet="stress"] .status-rail [data-metric="stress"], #v2[data-sheet="coins"] .status-rail [data-metric="coins"],
+  #v2[data-sheet="menu"] .brand-bar, #v2[data-sheet="menu"] .status-rail > .run-tools { left:calc(max(8px, env(safe-area-inset-left)) + clamp(124px,13vw,148px) + 10px) !important; width:min(420px,46vw) !important; }
+  #v2[data-sheet="menu"] .status-rail > .run-tools { top:160px; }
+  #v2 .phone-menu-button { height:52px; }
+  #v2 .phone-menu-button svg { width:24px; height:24px; }
+  #v2 .status-rail [data-metric] { padding:10px 12px !important; }
+  #v2 .status-rail .rail-metric-name { font-size:15px !important; }
+  #v2:not([data-sheet]) .status-rail .meter-card > div:first-child > b, #v2[data-sheet="menu"] .status-rail .meter-card > div:first-child > b { font-size:36px !important; }
+  #v2:not([data-sheet]) .status-rail [data-metric] .rail-forecast > span:first-child, #v2[data-sheet="menu"] .status-rail [data-metric] .rail-forecast > span:first-child { font-size:12px !important; }
+  #v2:not([data-sheet]) .status-rail [data-metric] .rail-forecast > span:first-child b, #v2[data-sheet="menu"] .status-rail [data-metric] .rail-forecast > span:first-child b { font-size:17px !important; }
+  #v2:not([data-sheet="coins"]) .status-rail .wallet-card > strong { font-size:20px; }
+  #v2 .seat-phone { zoom:1.3; }
+  #v2 .seat-act-button { font-size:13px; padding:6px 12px; }
+  #v2 .candidate-panel .tcg-name { height:26px !important; }
+  #v2 .candidate-panel .tcg-name strong { font-size:14px !important; }
+  #v2 .candidate-panel .tcg-stat { font-size:13px !important; }
+  #v2 .candidate-panel .tcg-stat svg { width:11px !important; height:11px !important; }
+  #v2 .candidate-panel .sym-row .sym { width:22px !important; height:22px !important; }
+  #v2 .candidate-panel .reservation-button { height:22px !important; font-size:12px !important; }
+  #v2 .offer-act-button { font-size:13px; padding:6px 12px; top:30px; }
+  #v2 .depart-button { height:58px !important; font-size:24px; }
+  #v2 .departure-controls > .power-alert, #v2 .departure-controls > .power-alert p, #v2 .departure-controls > .power-alert small, #v2 .departure-controls > .power-alert button { font-size:13px !important; }
+  #v2 .link-label { transform:translate(-50%,-50%) scale(1) !important; }
+  #v2 .standing-grid { row-gap:26px !important; column-gap:30px !important; }
+}
+@media (orientation:landscape) and (min-width:701px) and (max-width:1100px) and (min-height:521px) {
+  @container tcg (max-width:150px) {
+    #v2 .candidate-panel .tcg-stats:has(> .tcg-stat:nth-child(4)) { grid-template-columns:repeat(2,minmax(0,1fr)) !important; row-gap:2px !important; }
+    #v2 .candidate-panel .tcg-stats:has(> .tcg-stat:nth-child(4)) .tcg-stat { line-height:16px !important; }
+  }
+}
+
+/* Desktop: the hold control is a strip under the card (it used to sit on the name bar). A lobby that scrolls says so
+   with a soft fade at its lower edge. */
+#v2 .candidate-panel .passenger-item:has(.reservation-button) { display:flex !important; flex-direction:column; gap:4px; }
+#v2 .candidate-panel .passenger-item:has(.reservation-button) > .passenger-card { flex:1 1 auto; min-height:0; }
+#v2 .candidate-panel .reservation-button { position:relative !important; inset:auto !important; top:auto !important; right:auto !important; bottom:auto !important; left:auto !important; width:100% !important; flex:none;
+  display:flex; align-items:center; justify-content:center; gap:4px; padding:3px 8px !important; border-radius:3px !important; border:1px solid var(--hair-2) !important; background:rgba(8,14,12,.85) !important; color:var(--g1) !important; font-size:12px !important; line-height:1.3 !important; white-space:normal; }
+#v2 .candidate-panel .passenger-item:has(.reservation-button) .card-head { padding-right:0 !important; min-height:0 !important; }
+@media (min-width:1101px) {
+  #v2 .candidate-panel .passenger-list { mask-image:linear-gradient(180deg,#000 calc(100% - 26px),transparent); }
+  #v2 .candidate-panel .passenger-list:not(:has(> .passenger-item:nth-child(3))) { mask-image:none; }
+}
+/* Desktop alerts take their own place above the ascend plate (the lobby shrinks and scrolls) instead of floating over
+   the waiting cards. */
+@media (min-width:1101px) {
+  #v2 .game-grid { grid-template-rows:minmax(0,1fr) auto !important; }
+  #v2 .departure-controls { height:auto !important; min-height:0 !important; display:flex !important; flex-direction:column; gap:8px; align-self:end; }
+  #v2 .departure-controls > .power-alert { position:static !important; inset:auto !important; transform:none !important; width:auto !important; margin:0 !important; max-height:42vh; overflow-y:auto; overscroll-behavior:contain; animation:none; }
+  #v2 .departure-controls > .depart-button { flex:none; height:62px !important; }
+}
+#v2 .brand-bar .eyebrow { line-height:1.2; margin-bottom:4px; }
+#v2 .brand-bar h1 { line-height:1; }
+/* Every dialog fits the screen and scrolls inside itself; the manual gets a width it can be read at. */
+#v2body .story-dialog { max-height:calc(100dvh - 32px) !important; overflow-y:auto !important; overscroll-behavior:contain; }
+@media (min-width:701px) {
+  #v2body .manual-dialog { width:min(920px,calc(100vw - 48px)) !important; max-width:none !important; }
+  #v2body .manual-dialog .manual-grid { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+}
+#v2 .candidate-panel .reservation-button { display:flex !important; align-items:center !important; overflow:hidden; }
+#v2 .candidate-panel .reservation-button .rb-short, #v2 .candidate-panel .reservation-button .rb-short * { line-height:1 !important; }
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  /* A long name gets the full bar: smaller type before it is cut. */
+  #v2 .candidate-panel .tcg-name strong { overflow:hidden; text-overflow:ellipsis !important; }
+  @container tcg (max-width:120px) { #v2 .candidate-panel .tcg-name strong { font-size:9.5px !important; letter-spacing:-.02em !important; } }
+}
+@container tcg (max-width:118px) { #v2 .candidate-panel .reservation-button .rb-word { display:none !important; } }
+#v2 .link-label .ll-word { display:none; } /* the coin icon already says “coins”; a shorter label stays in the gap between seats */
+#v2 .standing-slot .seat-overlay .slot-state { max-width:calc(100% - 8px); white-space:normal !important; overflow-wrap:anywhere; text-align:center; line-height:1.25; } /* a long English state wraps inside its own seat */
+
+/* Short desktop windows (≤820 tall): the full seat card crowds its own portrait, so seats use the compact face too. */
+@media (min-width:1101px) and (max-height:820px) {
+  #v2 .standing-slot .rider-visual > :not(.seat-phone):not(.card-shader) { display:none !important; }
+  #v2 .standing-slot.occupied { padding:0 !important; }
+  #v2 .standing-slot .rider-visual { display:block !important; position:absolute !important; inset:0 !important; width:auto !important; height:auto !important; max-width:none !important; margin:0 !important; padding:0 !important; overflow:hidden; border-radius:4px; transform:none; }
+  #v2 .seat-phone { display:grid; position:absolute; inset:0; grid-area:auto !important; grid-template-rows:20px minmax(0,1fr) 20px; border:1px solid rgba(225,183,101,.4); border-radius:4px; overflow:hidden; background:#06100d; }
+  #v2 .seat-phone .sp-head { display:flex; align-items:center; gap:3px; min-width:0; padding:0 22px 0 5px; background:linear-gradient(180deg,#141f1a,#0b1310); border-bottom:1px solid rgba(225,183,101,.25); }
+  #v2 .seat-phone .sp-head b { flex:1 1 auto; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:11px; font-weight:600; color:var(--g1); }
+  #v2 .seat-phone .sp-head .sym-badges { display:flex; gap:2px; position:static; transform:none; margin:0; }
+  #v2 .seat-phone .sp-head .sym { width:14px; height:14px; padding:1px; }
+  #v2 .seat-phone .sp-head .sym-icon { width:10px; height:10px; }
+  #v2 .seat-phone .sp-art { position:relative; min-height:0; overflow:hidden; display:flex; justify-content:center; align-items:flex-end; background:radial-gradient(90% 80% at 50% 100%, rgba(246,205,128,.10), transparent 70%); }
+  #v2 .seat-phone .sp-art .portrait-window { position:relative !important; inset:auto !important; height:100% !important; width:auto !important; aspect-ratio:1/1; margin:0 !important; transform:none !important; translate:none !important; border:0 !important; background:transparent !important; }
+  #v2 .seat-phone .sp-stops { position:absolute; left:4px; bottom:24px; z-index:2; display:flex; align-items:center; gap:2px; padding:0 6px; height:16px; border-radius:999px; border:1px solid rgba(225,183,101,.45); background:rgba(6,10,8,.85); color:var(--cream); font-size:10px; }
+  #v2 .seat-phone .sp-stops svg { width:10px; height:10px; }
+  #v2 .seat-phone .sp-flag { position:absolute; right:4px; bottom:24px; z-index:2; display:grid; place-items:center; width:16px; height:16px; border-radius:50%; background:rgba(120,30,20,.85); color:#ffb39a; }
+  #v2 .seat-phone .sp-flag svg { width:10px; height:10px; }
+  #v2 .seat-phone .sp-metrics { display:grid; grid-template-columns:repeat(3,1fr); align-items:center; padding:0 3px; background:linear-gradient(180deg,#0b1310,#141f1a); border-top:1px solid rgba(225,183,101,.25); font:600 11px/1 var(--font-mono); color:var(--cream); }
+  #v2 .seat-phone .sp-metrics span { display:flex; align-items:center; justify-content:center; gap:2px; }
+  #v2 .seat-phone .sp-metrics svg { width:10px; height:10px; color:var(--g2); }
+  #v2 .seat-phone .sp-bomb { right:4px; justify-content:center; }
+  #v2 .seat-phone .sp-bomb-live { border-color:rgba(255,190,120,.6); }
+  #v2 .seat-phone .sp-bomb-late { border-color:#ff7a5a; color:#ffd2c4; background:rgba(120,25,15,.9); animation:v2-urgent 1s ease-in-out infinite; }
+  #v2 .seat-phone .sp-bomb-locked, #v2 .seat-phone .sp-bomb-carried { border-color:rgba(140,200,255,.55); color:#cfe6ff; }
+  #v2 .seat-phone .sp-head { padding-right:4px; }
+  #v2 .seat-phone .sp-head b { font-size:10.5px; }
+  #v2 .seat-phone .sp-stops { white-space:nowrap; max-width:calc(100% - 26px); }
+  #v2 .seat-phone { zoom:1.3; }
+  #v2 .seat-phone { zoom:1.12; }
+  #v2 .seat-info-button { display:none !important; }
+  #v2 .standing-grid { row-gap:24px !important; column-gap:28px !important; }
 }
