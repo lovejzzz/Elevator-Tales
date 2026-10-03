@@ -1060,3 +1060,10 @@ main.game-shell[data-base-ui-inert] ~ .juice-banner, main.game-shell[data-base-u
 /* A big parcel's status ("unclaimed · opens on arrival") sat under its numbers row: the box art fills the whole card, so
    the status rides above the numbers instead. */
 #v2 .standing-slot.crate-card .seat-overlay { top:auto !important; bottom:calc(var(--crate-metrics, 38px) + 8px) !important; }
+/* v10.3 (player request): nothing on the game screen can be drag-selected (a sweep across the cabin used to highlight
+   labels and tooltips). The release notes and anything typed or copied on purpose stay selectable. */
+#v2body, #v2body * { -webkit-user-select:none; user-select:none; }
+#v2body input, #v2body textarea, #v2body pre, #v2body code, #v2body .changelog-dialog, #v2body .changelog-dialog * { -webkit-user-select:text; user-select:text; }
+/* Dragging an earlier rider to the offer list asks them off: the drop zone says so, in the dismissal colour. */
+#v2 .candidate-panel.drop-dismiss { outline-color:#e08a6a; }
+#v2 .candidate-panel.drop-dismiss::after { border-color:#e08a6a; color:#ffd9c9; }

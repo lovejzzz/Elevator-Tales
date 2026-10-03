@@ -618,8 +618,11 @@ console.log('PASS real-time Bomber timer');
 {
   const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 29, fareBonus: 0, stash: 0, volatile: false, ...extra });
   const picked = E.resolveFloor(run(30, [R('celebrity', 'c', 34), R('thief', 't', 34), R('ghost', 'g', 34), null, R('child', 'k', 34)]), fixed());
-  assert.equal(lines(picked, 'lastEarnings')['小偷顺手牵羊'], 4 + 0 + 1, 'Celebrity 4, Ghost 0, Child 1');
-  assert.deepEqual(picked.lastThefts, [{ thief: 1, victims: [{ slot: 0, coins: 4 }, { slot: 4, coins: 1 }] }]);
+  // v10.3: a Child has nothing to steal (the Child cries instead) and a Ghost gives power, not coins.
+  assert.equal(lines(picked, 'lastEarnings')['小偷顺手牵羊'], 4 + 0 + 0, 'Celebrity 4, Ghost 0, Child 0');
+  assert.deepEqual(picked.lastThefts, [{ thief: 1, victims: [{ slot: 0, coins: 4 }] }]);
+  assert.equal(lines(picked, 'lastEnergy')['小偷偷幽灵的电'], E.THIEF_RULES.ghostPower);
+  assert.equal(lines(picked, 'lastPressure')['小偷惹哭小孩'], E.THIEF_RULES.childAgitation);
   assert.equal(E.pickpocketFrom(R('cop', 'o', 34)), 0);
   const power = E.resolveFloor(run(30, [R('parcel', 'q', 31)], { energy: 30 }), fixed(0.9));
   assert.ok(power.lastArrivals?.[0].power && power.lastArrivals[0].coins === 0, 'a power box says how much power, not +0 coins');
@@ -632,7 +635,7 @@ console.log('PASS pickpocketing by pocket and box receipts');
 {
   const R = (kind: PassengerKind, id: string, dest: number, extra: Partial<Rider> = {}): Rider => ({ id, kind, destination: dest, patience: 0, boardedAt: 29, fareBonus: 0, stash: 0, volatile: false, ...extra });
   const cab = [R('celebrity', 'c', 34), R('thief', 't', 34), R('parcel', 'q', 34), null, R('ghost', 'g', 34), null];
-  assert.equal(E.stealLink(cab, 0, 1), 4); assert.equal(E.stealLink(cab, 1, 2), 'box'); assert.equal(E.stealLink(cab, 1, 4), 0, 'nothing to steal from a Ghost');
+  assert.equal(E.stealLink(cab, 0, 1), 4); assert.equal(E.stealLink(cab, 1, 2), 'box'); assert.equal(E.stealLink(cab, 1, 4), 'power', 'v10.3: no coins on a Ghost, so the Thief steals its power');
   assert.equal(E.stealLink([R('thief', 't', 34), R('commuter', 'a', 34), null, R('cop', 'k', 34), null, null], 0, 1), 0, 'a held Thief steals nothing');
   const { activeConnection } = await import('../lib/game-interaction');
   assert.ok(!activeConnection([R('tourist', 'u', 34), R('parcel', 'q', 34), null, null, null, null], 0, 1), 'a box never links, even to a Tourist');

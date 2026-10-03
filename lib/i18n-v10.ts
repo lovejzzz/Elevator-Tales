@@ -2,6 +2,8 @@ import { SYMBOLS, SYMBOL_KEYS, symbolTitle } from './symbols';
 import { SYMBOL_SHAPE_RULE } from './rider-profile';
 // v10 symbol links: English for the symbol names, their rule lines, the sheet heading and the rewritten keepsake/ability texts.
 export const V10_PAIRS: Array<[string, string]> = [
+  // v10.3 the Thief with a Ghost or a Child beside him.
+  ['小偷偷幽灵的电', 'Thief steals the Ghost’s power'], ['小偷惹哭小孩', 'Thief makes the Child cry'],
   ...SYMBOL_KEYS.map(k => [SYMBOLS[k].zh, SYMBOLS[k].en] as [string, string]),
   ...SYMBOL_KEYS.map(k => [symbolTitle(k, true), symbolTitle(k, false)] as [string, string]),
   [SYMBOL_SHAPE_RULE, 'Matching and opposite symbols cancel one for one. A row of one symbol adds a level (+1), a 2×2 square two (+2), a full cabin four (+4).'],

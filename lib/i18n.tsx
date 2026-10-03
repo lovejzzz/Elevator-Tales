@@ -591,6 +591,9 @@ function translateUncached(value: string): string {
     .replace(/^红线 (🔥|⚡) \+1$/u, 'Red link $1 +1')
     .replace(/^红线 \+1躁动$/u, 'Red link +1 agitation').replace(/^红线 \+1耗电$/u, 'Red link +1 power')
     .replace(/^顺手牵羊 \+(\d+)金币\/层$/u, 'Picking pockets +$1 coins/floor')
+    // v10.3: the Thief's haul may be coins, a Ghost's power, or both; a Child beside him cries.
+    .replace(/^(顺手牵羊|教父罩着 · 不躁动 ·) (?:\+(\d+)金币)? ?(?:\+(\d+)电)?\/层(?: · 惹哭儿童 \+(\d+)躁动)?$/u, (_m, head: string, c?: string, p?: string, t?: string) => `${head === '顺手牵羊' ? 'Picking pockets' : 'Under the Don · calm ·'} ${[c ? `+${c} coins` : '', p ? `+${p} power` : ''].filter(Boolean).join(' ')}/floor${t ? ` · Child crying +${t} agitation` : ''}`)
+    .replace(/^惹哭儿童 · \+(\d+)躁动\/层$/u, 'Child crying · +$1 agitation/floor')
     .replace(/^暂存\+(\d+)币\/层 · 链接加躁动$/u, 'Bank +$1 coins/floor · links add agitation')
     .replace(/^暂存 (\d+) 币$/u, 'Banked $1 coins')
     .replace(/^小偷盯上了这个纸箱：他(下一层|(\d+) 层后)下车时会带走它，给一半金币作小费；它的快递员就拿不到了。$/u, (_m, when: string, n?: string) => `A Thief has his eye on this box: he takes it when he gets off ${n ? `in ${n} floors` : 'next floor'}, tipping half its coins, and its Courier loses it.`)

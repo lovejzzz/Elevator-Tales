@@ -124,3 +124,28 @@ console.log('playtest v10.2.4: cancelled pairs, both-failure lesson and emoji-fr
   assert.deepEqual([reserve.reserve, reserve.charge, reserve.cost], [true, 0, 0], JSON.stringify(reserve));
   console.log('playtest v10.2.12: rescues use the items in the bag before coins');
 }
+
+// v10.3 player ideas: an uncontrolled Thief beside a Ghost steals its power (+3 a floor); beside a Child he takes
+// nothing and the Child cries (+1 agitation a floor). An Officer beside him stops both.
+{
+  const E = await import('../lib/game-engine');
+  const { floorPreview } = await import('../lib/game-forecast');
+  const R = (kind: Rider['kind'], id: string) => ({ id, kind, destination: 30, patience: 0, boardedAt: 20, fareBonus: 0, stash: 0, volatile: false }) as unknown as Rider;
+  const at = (cabin: Array<Rider | null>) => ({ ...initialRun(), floor: 24, status: 'playing', energy: 40, coins: 0, stress: 0, stressCap: 10, cabin } as RunState);
+  const line = (lines: Array<{ label: string; amount: number }>, label: string) => lines.find(l => l.label === label)?.amount ?? 0;
+  const ghost = at([R('thief', 't'), R('ghost', 'g'), null, null, null, null]), afterGhost = E.resolveFloor(ghost, () => 0.9);
+  assert.equal(line(afterGhost.lastEnergy.sources, '小偷偷幽灵的电'), E.THIEF_RULES.ghostPower, 'the Thief steals the Ghost’s power');
+  assert.equal(line(afterGhost.lastEarnings.sources, '小偷顺手牵羊'), 0, 'and no coins from it');
+  assert.equal(E.stealLink(ghost.cabin, 0, 1), 'power');
+  assert.equal(floorPreview(ghost)!.energyDelta, afterGhost.lastEnergy.delta, 'the forecast counts the stolen power');
+  assert.equal(E.energyBreakdown(ghost).theft, E.THIEF_RULES.ghostPower);
+  const child = at([R('thief', 't'), R('child', 'c'), null, null, null, null]), afterChild = E.resolveFloor(child, () => 0.9);
+  assert.equal(line(afterChild.lastPressure.sources, '小偷惹哭小孩'), E.THIEF_RULES.childAgitation, 'the Child cries');
+  assert.equal(line(afterChild.lastEarnings.sources, '小偷顺手牵羊'), 0, 'a Child has nothing to steal');
+  assert.equal(E.stealLink(child.cabin, 0, 1), 'tears');
+  const held = at([R('cop', 'p'), R('thief', 't'), R('ghost', 'g'), null, null, null]), afterHeld = E.resolveFloor(held, () => 0.9);
+  assert.equal(line(afterHeld.lastEnergy.sources, '小偷偷幽灵的电'), 0, 'a held Thief steals nothing');
+  assert.equal(E.stealLink(held.cabin, 1, 2), 0);
+  for (const label of ['小偷偷幽灵的电', '小偷惹哭小孩', '顺手牵羊 +2金币 +3电/层 · 惹哭儿童 +1躁动', '惹哭儿童 · +2躁动/层']) assert.doesNotMatch(translateGameText(label, 'en'), /[㐀-鿿]/, label);
+  console.log('playtest v10.3: the Thief takes a Ghost’s power and makes a Child cry');
+}

@@ -167,22 +167,26 @@ export const INSPECTOR_COMPLIANCE_REWARD = 1;
 export const INSPECTOR_ENERGY_LIMIT = 3;
 export const COURIER_ARRIVAL_CHARGE = 2;
 /** v9.18.2: agitation each Thief held by an Officer or Lawyer removes per floor (tuned in scripts/balance-sim). */
-export const THIEF_RULES = { controlledCalm: 1 };
+/** v10.3 (player idea): an uncontrolled Thief beside a Ghost steals its power (+`ghostPower` a floor per Ghost); beside a
+ * Child he finds nothing to take and makes the child cry (+`childAgitation` a floor per Child). */
+export const THIEF_RULES = { controlledCalm: 1, ghostPower: 3, childAgitation: 1 };
 /** v9.18.1: what a Thief lifts from each adjacent rider per floor, by how full their pockets are (about 2 on average).
  * Officers, Lawyers, the Don, legends and boxes are never robbed. */
 export const PICKPOCKET: Partial<Record<PassengerKind, number>> = {
   celebrity: 4, tourist: 3, mystery: 3, shifter: 3,
   commuter: 2, courier: 2, lover: 2, musician: 2, coach: 2, mimic: 2, bomb: 2,
-  mechanic: 1, nurse: 1, child: 1, drunk: 1, exorcist: 1, inspector: 1, thief: 1, ghost: 0,
+  mechanic: 1, nurse: 1, child: 0, drunk: 1, exorcist: 1, inspector: 1, thief: 1, ghost: 0,
 };
 /** v9.18.2: what an uncontrolled Thief takes across one adjacent pair each floor (0 when neither is such a Thief);
  * 'box' when the Thief eyes a box on the other side. Drawn as the pickpocket link. */
-export function stealLink(cabin: Array<Rider | null>, first: number, second: number): number | 'box' {
+export function stealLink(cabin: Array<Rider | null>, first: number, second: number): number | 'box' | 'power' | 'tears' {
   for (const [t, v] of [[first, second], [second, first]]) {
     const thief = cabin[t];
     if (thief?.kind !== 'thief' || thiefHeld(cabin, t)) continue;
     if (!neighbours(t).includes(v)) continue;
     if (cabin[v]?.kind === 'parcel') { const links = parcelLinks(cabin); if (links.eyed.get(v) === t) return 'box'; continue; }
+    if (cabin[v]?.kind === 'ghost' && THIEF_RULES.ghostPower) return 'power';
+    if (cabin[v]?.kind === 'child' && THIEF_RULES.childAgitation) return 'tears';
     const coins = ECONOMY_RULES.thiefPerVictim ? pickpocketFrom(cabin[v]) : 0;
     if (coins) return coins;
   }
@@ -426,6 +430,10 @@ export const hasNeighbour = (cabin: Array<Rider | null>, slot: number, kinds: Pa
 export const isUndercover = (r: Rider | null | undefined) => Boolean(r?.kind === 'mystery' && r.revealed && r.identity === 'undercover');
 /** A Thief or Robber is held by an adjacent Officer, Crooked Cop or revealed Undercover Officer (a Lawyer holds Thieves
  * only), or by handcuffs; a Shyster beside a Robber gets him off. */
+/** v10.3 power the cabin's uncontrolled Thieves steal from Ghosts beside them this floor. */
+export function thiefGhostPower(cabin: Array<Rider | null>): number {
+  return cabin.reduce((n, r, slot) => r?.kind === 'thief' && !thiefHeld(cabin, slot) ? n + THIEF_RULES.ghostPower * neighbours(slot).filter(i => cabin[i]?.kind === 'ghost').length : n, 0);
+}
 export function thiefHeld(cabin: Array<Rider | null>, slot: number): boolean {
   const r = cabin[slot]; if (!r) return false;
   if (r.cuffed) return true;
@@ -500,7 +508,10 @@ function rawRiderAgitation(state: RunState, slot: number): ChangeLine[] {
   const cabin = state.cabin, dark = !troubleFree(state), abyss = abyssTier(state.floor + 1);
   const survivorsBeside = () => neighbours(slot).filter(i => cabin[i] && isSurvivor(cabin[i]!.kind)).length;
   switch (rider.kind) {
-    case 'thief': if (!thiefHeld(cabin, slot) && !hasNeighbour(cabin, slot, ['don']) && !thiefEyesParcel(parcelLinks(cabin), slot)) add('小偷未受控', 1); break;
+    case 'thief':
+      if (!thiefHeld(cabin, slot) && !hasNeighbour(cabin, slot, ['don']) && !thiefEyesParcel(parcelLinks(cabin), slot)) add('小偷未受控', 1);
+      if (!thiefHeld(cabin, slot)) add('小偷惹哭小孩', THIEF_RULES.childAgitation * neighbours(slot).filter(i => cabin[i]?.kind === 'child').length);
+      break;
     case 'robber': if (dark && !thiefHeld(cabin, slot)) add('劫匪行凶', DARK_RULES.robberAgitation); break;
     case 'overtimer': if (dark && state.floor >= rider.destination && !rider.alarm) add('加班魂赖着不走', DARK_RULES.overstayAgitation); break;
     case 'voyeur': if (dark && survivorsBeside()) add('偷拍惊扰', DARK_RULES.voyeurAgitation); break;
@@ -645,7 +656,8 @@ export function energyBreakdown(state: RunState) {
   const conflictProtection=state.upgrades.insulation ? conflict : 0;
   // v10: Quiet and Spirit green links save power, never more than the riders themselves use.
   const ledger=symbolLedger(state.cabin),symbol=Math.min(motor+people,Math.min(people,ledger.power)+ledger.freePower);
-  return {motor,people,stabilizer,shared,service,conflict,conflictProtection,symbol,riderCosts,dark,saved:stabilizer+shared+service+conflictProtection+symbol,total:motor+people+conflict+dark-stabilizer-shared-service-conflictProtection-symbol};
+  const theft=thiefGhostPower(state.cabin);
+  return {motor,people,stabilizer,shared,service,conflict,conflictProtection,symbol,theft,riderCosts,dark,saved:stabilizer+shared+service+conflictProtection+symbol+theft,total:motor+people+conflict+dark-stabilizer-shared-service-conflictProtection-symbol-theft};
 }
 export const totalEnergyCost = (state: RunState) => energyBreakdown(state).total;
 // Inspector judges the controllable load, not the route's unavoidable motor.
@@ -884,6 +896,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   for (const line of darkEnergyLines(state)) adjustEnergy(line.label, -line.amount);
   if(conflictProtection)adjustEnergy('绝缘衬层抵消',conflictProtection);
   if(energyBreakdown(state).symbol)adjustEnergy('符号绿线省电',energyBreakdown(state).symbol);
+  if(thiefGhostPower(state.cabin))adjustEnergy('小偷偷幽灵的电',thiefGhostPower(state.cabin));
   const inspectionWork = hasKeepsake(state,'roundsLog') ? 1 : INSPECTION_RULE.work;
   let cabin = state.cabin.map((rider,slot) => rider ? riderAfterWork(rider,state.cabin,slot,state.stress,inspectionWork) : null);
   const notes: string[] = []; const stressReasons: string[] = [];
