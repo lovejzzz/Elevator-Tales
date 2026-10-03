@@ -1048,7 +1048,10 @@ main.game-shell[data-base-ui-inert] ~ .juice-banner, main.game-shell[data-base-u
    "Decision details". */
 @media (min-width:1101px) {
   #v2 .elevator-stage .cabin-feedback.feedback-arrival { display:flex; align-items:center; gap:12px; padding:4px 12px; white-space:nowrap; }
-  #v2 .elevator-stage .cabin-feedback.feedback-arrival .feedback-label b { font-size:12px; }
+  #v2 .elevator-stage .cabin-feedback.feedback-arrival { max-width:calc(100% - 20px); }
+  #v2 .elevator-stage .cabin-feedback.feedback-arrival .feedback-label { min-width:0; flex:0 1 auto; overflow:hidden; }
+  #v2 .elevator-stage .cabin-feedback.feedback-arrival .feedback-label b { font-size:12px; overflow:hidden; text-overflow:ellipsis; }
+  #v2 .elevator-stage .cabin-feedback.feedback-arrival .feedback-values { flex:none; }
   #v2 .elevator-stage .cabin-feedback.feedback-arrival .feedback-values { display:flex; gap:8px; flex-wrap:nowrap; }
   #v2 .elevator-stage .cabin-feedback.feedback-arrival .feedback-cause { display:none; }
   #v2 .elevator-stage .cabin-feedback.feedback-arrival .feedback-values > span { font-size:16px; }

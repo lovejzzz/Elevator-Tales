@@ -109,7 +109,7 @@ function watchUnder(cover: HTMLElement, until: number, hit: (el: HTMLElement) =>
 export function yieldUnder(cover: HTMLElement, ms: number) {
   const hidden = new Set<HTMLElement>();
   watchUnder(cover, performance.now() + ms + 600, el => { if (!hidden.has(el)) { el.style.visibility = 'hidden'; hidden.add(el); } return false; },
-    { end: () => hidden.forEach(e => { e.style.visibility = ''; }) });
+    { pad: 6, end: () => hidden.forEach(e => { e.style.visibility = ''; }) });
 }
 /** Boxes of the announcements (banners, the chain card, the cabin message) that a pop must not sit under. */
 const announcementBoxes = (): Box[] => [...document.querySelectorAll<HTMLElement>('.juice-banner, .chain-hud, .cabin-feedback')].filter(e => getComputedStyle(e).visibility !== 'hidden').map(restingBox);

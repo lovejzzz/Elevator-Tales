@@ -517,7 +517,7 @@ const phrasePairs: Array<[string, string]> = [
   ['小费（不翻倍）', ' tip (not multiplied)'], ['另有小费 ', 'Extra tip: '], ['到站金币待揭晓', 'Arrival fare hidden'], ['到站金币 ', 'Arrival fare '], ['每站躁动 +', 'Agitation/floor +'], ['自身 +', 'Self +'],
   ['查看选中人物规则', 'Inspect selected rider'], ['选中人物 · ', 'Selected rider · '], [' · 请离', ' · dismiss'],
   ['已选择', 'Selected '], ['，现在点一个空位。', '; now choose an open position.'], ['回到队伍中。', ' returned to the queue.'], ['下车', ' removed'], ['已站到 ', ' placed in '], ['号位。', ' position.'],
-  [' 层 · 到站结算', 'F · arrival settlement'], ['F · 本层结算', 'F · floor settlement'], [' · 连送 ×', ' · streak ×'], [' 本层结算', ' floor settlement'],
+  [' 层 · 到站结算', 'F · arrival settlement'], ['F · 本层结算', 'F · settled'], [' · 连送 ×', ' · streak ×'], [' 本层结算', ' floor settlement'],
   ['位乘客抵达。门再次开启。', ' riders arrived. Doors open again.'], [' 位乘客抵达。门再次开启。', ' riders arrived. Doors open again.'],
   ['查看人物详情', 'View rider details'], ['切换候客卡片', 'Switch candidate card'], ['本层候客乘客', 'Candidates on this floor'],
   ['到站车费：', 'Arrival fare: '], ['？封存中，到站揭晓', '? sealed until arrival'], [' · 升级小费 +', ' · upgrade tip +'], ['提前请离 · 赔偿 ', 'Dismiss early · compensation '],
