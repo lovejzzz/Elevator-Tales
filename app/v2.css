@@ -1067,3 +1067,64 @@ main.game-shell[data-base-ui-inert] ~ .juice-banner, main.game-shell[data-base-u
 /* Dragging an earlier rider to the offer list asks them off: the drop zone says so, in the dismissal colour. */
 #v2 .candidate-panel.drop-dismiss { outline-color:#e08a6a; }
 #v2 .candidate-panel.drop-dismiss::after { border-color:#e08a6a; color:#ffd9c9; }
+
+/* ── v10.3 the simpler shop ──────────────────────────────────────────────────────────────────────────────────
+   Three numbered steps a visit always involves (pick an ability, charge, the power box) and two quiet extras (calming,
+   items). On a desktop everything is on screen at once; the resource header is one slim bar. */
+#v2body .upgrade-dialog .shop-resources { gap:8px !important; }
+#v2body .upgrade-dialog .shop-resources > div { min-height:0 !important; height:44px !important; padding:0 14px !important; display:flex !important; flex-direction:row !important; align-items:center !important; gap:10px !important; }
+#v2body .upgrade-dialog .shop-resources > div > b, #v2body .upgrade-dialog .shop-resources > div strong, #v2body .upgrade-dialog .shop-resources .shop-power-value b { font-size:26px !important; line-height:1 !important; }
+#v2body .upgrade-dialog .shop-resources .shop-resource-label { position:static !important; margin:0 !important; transform:none !important; display:flex !important; align-items:center; gap:6px; white-space:nowrap; }
+#v2body .upgrade-dialog .shop-resources .shop-power-value { display:flex !important; align-items:baseline; gap:2px; margin:0 0 0 auto !important; }
+#v2body .upgrade-dialog .shop-resources .shop-agitation > b { margin-left:auto !important; }
+#v2body .upgrade-dialog .shop-wallet > span:first-child { display:flex !important; align-items:center; gap:8px; width:100%; }
+#v2body .upgrade-dialog .shop-wallet > span:first-child > b { margin-left:auto; }
+#v2body .upgrade-dialog .shop-wallet > span:last-child { display:none !important; }
+#v2body .upgrade-dialog .shop-resources .register-digit { font-size:18px !important; }
+/* The title and its "floor · ahead" line share one row. */
+#v2body .upgrade-dialog .shop-head { display:flex !important; flex-direction:row-reverse; justify-content:flex-end; align-items:baseline; gap:14px; margin:6px 0 2px !important; }
+#v2body .upgrade-dialog .shop-head [data-slot="dialog-title"] { font-size:24px !important; line-height:1.1; }
+#v2body .upgrade-dialog .shop-head .dialog-kicker { margin:0 !important; }
+/* Charge (2) comes before the power box (3): 21 of 24 real visits charged first. */
+#v2body .upgrade-dialog .shop-service-column { display:flex !important; flex-direction:column; gap:10px; }
+#v2body .upgrade-dialog .shop-service-column .charge-slider-panel { order:1; }
+#v2body .upgrade-dialog .shop-service-column .box-panel { order:2; }
+#v2body .upgrade-dialog .shop-service-column .calm-panel { order:3; }
+#v2body .upgrade-dialog .charge-confirm { min-height:46px; font-size:16px; }
+/* The extras carry no step number and sit quieter. */
+#v2body .upgrade-dialog .recharge-panel.is-extra { background:rgba(8,14,12,.45); }
+#v2body .upgrade-dialog .recharge-panel.is-extra .shop-step-head h3 { font-size:15px !important; color:var(--cream); letter-spacing:.04em; }
+/* Installed abilities: a row of chips. Tap one for its sell button (details still open on hover). */
+#v2body .upgrade-dialog .shop-slots { padding:8px 10px !important; }
+#v2body .upgrade-dialog .shop-slot-grid { display:flex !important; flex-wrap:wrap; gap:6px !important; }
+#v2body .upgrade-dialog .shop-slot { display:inline-flex !important; align-items:center; gap:6px; width:auto !important; min-height:0 !important; height:auto !important; padding:4px 10px 4px 5px !important; cursor:pointer; flex:0 1 auto; }
+#v2body .upgrade-dialog .shop-slot.is-open { border-color:var(--hair-3); }
+#v2body .upgrade-dialog .shop-slot .shop-icon { width:24px !important; height:24px !important; flex:none; }
+#v2body .upgrade-dialog .shop-slot .shop-slot-name { flex:0 1 auto !important; font-size:13px !important; white-space:nowrap; }
+#v2body .upgrade-dialog .shop-slot .shop-slot-sell { margin-left:4px; }
+/* Level-up cards (all six slots full) look like the ability cards they replace. */
+#v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card p { color:var(--cream); }
+/* Items: three across under the abilities on a desktop. */
+@media (min-width:1101px) {
+  #v2body .upgrade-dialog .shop-main-column .item-shop .item-stock { display:grid !important; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  #v2body .upgrade-dialog .shop-main-column .item-shop .item-card { height:100%; }
+  #v2body .upgrade-dialog .upgrade-grid > button { min-height:0 !important; }
+}
+/* Level-up cards are compact (there can be six of them). */
+#v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card { padding:10px 12px !important; gap:6px; }
+#v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card .shop-icon { width:36px !important; height:36px !important; }
+#v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card .shop-item-head b { font-size:18px !important; }
+#v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card p { margin:0; font-size:12.5px; line-height:1.4; }
+#v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card .shop-price { padding-top:6px; }
+#v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card .shop-price strong { font-size:15px !important; }
+/* Phones: the header bar already says where you are; the title row goes, so the first screen holds the ability cards
+   and the charge button. */
+@media (orientation:landscape) and (max-height:520px) {
+  #v2body .upgrade-dialog .shop-head { display:none !important; }
+  #v2body .upgrade-dialog .shop-resources > div { height:36px !important; }
+  #v2body .upgrade-dialog .shop-resources > div > b, #v2body .upgrade-dialog .shop-resources > div strong, #v2body .upgrade-dialog .shop-resources .shop-power-value b { font-size:20px !important; }
+  #v2body .upgrade-dialog .charge-confirm { min-height:40px; font-size:15px; }
+}
+#v2body .upgrade-dialog .shop-slot { padding:0 !important; cursor:default; }
+#v2body .upgrade-dialog .shop-scroll-body .shop-slot > button.shop-slot-chip { display:inline-flex; align-items:center; gap:6px; width:auto; min-height:0; padding:4px 10px 4px 5px; border:0; background:transparent; color:inherit; font:inherit; cursor:pointer; }
+#v2body .upgrade-dialog .shop-scroll-body .shop-slot > button.shop-slot-sell { margin:0 6px 0 0; }

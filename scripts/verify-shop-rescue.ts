@@ -13,9 +13,8 @@ const rescue = emergencyRepairPlan(s).cost;
 assert.equal(rescue, 48, 'six points over the cap at 8 coins');
 s = installUpgrade(s, 'battery');
 assert.equal(s.upgrades.battery, 1, 'the free pick costs nothing, so it is allowed');
-s = installUpgrade(s, 'buffer');
-assert.equal(s.upgrades.buffer, 1, 'a 40-coin extra still leaves 61 ≥ 48, so it is allowed');
-assert.equal(s.coins, 61);
+assert.equal(installUpgrade(s, 'buffer'), s, 'v10.3: one ability per shop (the 40-coin extra is gone)');
+s = { ...s, coins: 61 }; // what the old extra used to leave: still ≥ 48, but a box level would dip into the rescue
 const price = boxLevelPrice(s, 'transformer');
 assert.ok(s.coins - price < rescue, `the box level (${price}) would dip into the rescue`);
 assert.equal(buyBoxLevel(s, 'transformer'), s, 'a power-box level that leaves the rescue unaffordable is refused');

@@ -8,11 +8,22 @@ import { LEGEND_RULES } from '../../lib/legends.ts';
 import { PARCEL_RULES, BOMB_RULES, THIEF_RULES } from '../../lib/game-engine.ts';
 import { PASSENGERS } from '../../lib/game-data.ts';
 import { CHAIN_RULES, SYMBOL_EFFECTS, SYMBOL_RULES } from '../../lib/symbols.ts';
+import { SHOP_USE } from './sim.mts';
+import { ABILITY_SHOP } from '../../lib/shop-effects.ts';
 const scaleBoxes = (k: number) => { for (const size of ['small', 'big'] as const) for (const tier of ['common', 'rare', 'legendary'] as const) PARCEL_RULES.values[size][tier] = Math.round(PARCEL_RULES.values[size][tier] * k); };
 const parcel = (fare: number, coins: number, power: number) => () => { PASSENGERS.courier.fare = fare; PARCEL_RULES.payoutCoins = coins; PARCEL_RULES.payoutPower = power; };
 
 export const VARIANTS: Record<string, () => void> = {
   baseline: () => {},
+  // v10.3 shop study: what each shop system is worth to a skilled bot (it stops using that one thing).
+  shopOldAbility: () => { ABILITY_SHOP.extra = true; ABILITY_SHOP.reroll = true; ABILITY_SHOP.level2Free = false; },
+  shopNoReroll: () => { SHOP_USE.reroll = false; },
+  shopNoBox: () => { SHOP_USE.box = false; },
+  shopNoExtra: () => { SHOP_USE.extra = false; },
+  shopNoLevel2: () => { SHOP_USE.level2 = false; },
+  shopNoCalm: () => { SHOP_USE.calm = false; },
+  shopFullCharge: () => { SHOP_USE.fullCharge = true; },
+  shopBare: () => { SHOP_USE.reroll = false; SHOP_USE.box = false; SHOP_USE.extra = false; SHOP_USE.level2 = false; SHOP_USE.calm = false; },
   // v10.3 burst study: the chain cash-in (baseline is from 4, ×3, doubling).
   nochain: () => { CHAIN_RULES.from = 0; },
   chainBase3: () => { CHAIN_RULES.on = 'base'; },

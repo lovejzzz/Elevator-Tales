@@ -1,4 +1,5 @@
 import { CHAIN_RULES, arrivalChain, chainMultiplier, greenBySymbol } from '../../lib/symbols.ts';
+import { ABILITY_SHOP } from '../../lib/shop-effects.ts';
 import { boardNet, netValue, netIncludesAgitation } from '../../lib/net-value.ts';
 import { activeConnection } from '../../lib/game-interaction.ts';
 import { ADJACENT } from '../../lib/game-data.ts';
@@ -277,6 +278,8 @@ function sectorNeed(state: RunState, occupancy: number) {
   for (let f = state.floor + 1; f <= state.floor + 10; f++) need += futureMotor(state, f) + occupancy;
   return need;
 }
+/** v10.3 shop study: switch off one thing the bots do in the shop, to see what each system is worth. */
+export const SHOP_USE = { reroll: true, box: true, extra: true, level2: true, calm: true, fullCharge: false };
 export function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog): RunState {
   let s = state;
   const entry = { floor: s.floor, energy: s.energy, coins: s.coins, cap: s.energyCap };
@@ -287,9 +290,12 @@ export function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog):
     const order = bot.id === 'novice' || bot.id === 'human' ? cards : [...bot.abilities, ...GENERIC_ABILITIES];
     return order.find(k => cards.includes(k));
   };
+  // v10.3: with all six slots full the shop's free pick is a level-up; every bot takes it (it costs nothing).
+  const freeRaise = () => { if (!ABILITY_SHOP.level2Free) return; const k = (Object.keys(s.upgrades) as UpgradeKey[]).filter(x => E.canRaiseAbility(s, x)).sort((a, b) => [...bot.abilities, ...GENERIC_ABILITIES].indexOf(a) - [...bot.abilities, ...GENERIC_ABILITIES].indexOf(b))[0]; if (k) s = E.raiseAbility(s, k); };
   if (bot.id === 'human') {
     // Real records: take the first card, fill the battery, then a storage level if coins remain; no calming, no extras.
     const first = pickAbility(); if (first) { s = E.installUpgrade(s, first); log.abilities.push(first); }
+    freeRaise();
     while ((s.freeBoxLevels ?? 0) > 0 && E.canBuyBoxLevel(s, 'storage')) { s = E.buyBoxLevel(s, 'storage'); log.box.push('storage'); }
     const units = Math.min(s.energyCap - s.energy, E.affordableChargingPlan(s).units);
     if (units > 0) s = E.chargeBattery(s, units);
@@ -299,18 +305,19 @@ export function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog):
     return E.leaveShop(s);
   }
   let key = pickAbility();
-  if (bot.id !== 'novice' && key && !bot.abilities.includes(key) && bot.abilities.length && s.coins >= E.REROLL_PRICE + 40) { s = E.rerollShop(s, rng); key = pickAbility(); }
+  if (SHOP_USE.reroll && bot.id !== 'novice' && key && !bot.abilities.includes(key) && bot.abilities.length && s.coins >= E.REROLL_PRICE + 40) { s = E.rerollShop(s, rng); key = pickAbility(); }
   if (key) { s = E.installUpgrade(s, key); log.abilities.push(key); }
+  freeRaise();
   // 2. free box level from the wrench
   const lineFor = () => bot.box.find(l => E.canBuyBoxLevel(s, l)) ?? BOX_LINES.find(l => E.canBuyBoxLevel(s, l));
   while ((s.freeBoxLevels ?? 0) > 0 && lineFor()) { const l = lineFor()!; s = E.buyBoxLevel(s, l); log.box.push(l); }
   // 3. power plan for the next sector
   const occupancy = bot.id === 'novice' ? 6 : 3.2;
   const need = sectorNeed(s, occupancy);
-  const target = Math.min(s.energyCap, Math.ceil(need + 4));
+  const target = SHOP_USE.fullCharge ? s.energyCap : Math.min(s.energyCap, Math.ceil(need + 4));
   const chargeFor = (units: number) => chargeCost(E.boxOf(s), Math.max(0, units), s.floor);
   // 4. box investment
-  if (bot.id !== 'novice' && bot.box.length && boxTotal(E.boxOf(s)) < E.boxTotalCap(s.floor)) {
+  if (SHOP_USE.box && bot.id !== 'novice' && bot.box.length && boxTotal(E.boxOf(s)) < E.boxTotalCap(s.floor)) {
     const bottleneck: BoxLine[] = need > s.energyCap ? ['storage', 'motor', 'transformer'] : s.floor >= 30 ? ['motor', 'transformer', 'storage'] : ['transformer', 'motor', 'storage'];
     const order = bot.fixedBox ? bot.box : bot.id === 'balanced' || bot.id === 'investor' ? bottleneck : [...bot.box, ...bottleneck];
     const line = order.find(l => E.canBuyBoxLevel(s, l));
@@ -325,19 +332,19 @@ export function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog):
   let units = Math.min(want, E.affordableChargingPlan(s).units);
   if (units > 0) s = E.chargeBattery(s, units);
   // 5b. with surplus beyond the power plan and a box level, buy a second ability card
-  if (bot.id !== 'novice') {
+  if (SHOP_USE.extra && bot.id !== 'novice') {
     const extra = pickAbility();
     const reserveFor = chargeFor(Math.max(0, target - s.energy));
     if (extra && s.coins - E.SHOP_PRICES.extraAbility >= reserveFor) { s = E.installUpgrade(s, extra); if (s.shopExtraBought) log.abilities.push(extra); }
   }
   // v9.19: with every slot full, raise the first raisable ability when the coins beyond the power plan allow it.
-  if (bot.id !== 'novice') {
+  if (SHOP_USE.level2 && bot.id !== 'novice') {
     const key = (Object.keys(s.upgrades) as UpgradeKey[]).find(k => E.canRaiseAbility(s, k));
     if (key && s.coins - E.abilityLevel2Price(s) >= chargeFor(Math.max(0, target - s.energy))) s = E.raiseAbility(s, key);
   }
   // (The Reserve Cell left the shop in v9.0.2; bots no longer buy what players cannot.)
   // v9.7 shop calming: bring high agitation down with coins beyond the power plan.
-  while (s.stress >= s.stressCap - 3 && E.calmAllowance(s) > 0 && s.coins - E.calmPrice(s.floor) >= chargeFor(Math.max(0, target - s.energy))) { const next = E.buyCalm(s, 1); if (next === s) break; s = next; }
+  while (SHOP_USE.calm && s.stress >= s.stressCap - 3 && E.calmAllowance(s) > 0 && s.coins - E.calmPrice(s.floor) >= chargeFor(Math.max(0, target - s.energy))) { const next = E.buyCalm(s, 1); if (next === s) break; s = next; }
   // top up with anything left if still under target (scarcity check reads what remains)
   units = Math.min(Math.max(0, target - s.energy), E.affordableChargingPlan(s).units);
   if (units > 0) s = E.chargeBattery(s, units);

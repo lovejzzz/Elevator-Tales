@@ -130,17 +130,15 @@ console.log('PASS power box: shop only, one per shop, five per run, capacity/pri
 }
 console.log('PASS emergency charging price, sector cap and reset');
 
-// Abilities: the first pick is free, a second costs 40, a third is impossible.
+// Abilities: one free pick per shop (v10.3: the 40-coin second card is gone).
 {
   const s = run(10, [], { status: 'upgrade', coins: 100, shop: [{ key: 'relay', price: 0, purchased: false }, { key: 'tipjar', price: 0, purchased: false }, { key: 'meter', price: 0, purchased: false }] });
   const a = E.installUpgrade(s, 'relay');
   assert.equal(a.coins, 100); assert.equal(a.upgrades.relay, 1);
-  const b = E.installUpgrade(a, 'tipjar');
-  assert.equal(b.coins, 60); assert.equal(b.upgrades.tipjar, 1);
-  assert.equal(E.installUpgrade(b, 'meter'), b);
+  assert.equal(E.installUpgrade(a, 'tipjar'), a, 'no second ability at the same shop');
   assert.ok(!E.drawUpgradeOffer({ ...E.EMPTY_UPGRADES }, [], fixed(0.3), 60).keys.some(k => E.RETIRED_UPGRADES.includes(k)));
 }
-console.log('PASS free first ability, 40-coin second, retired abilities never offered');
+console.log('PASS one free ability per shop, retired abilities never offered');
 
 // Agitation bands: low and medium tips, high-band incidents, crowding at six riders.
 {

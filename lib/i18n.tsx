@@ -793,6 +793,8 @@ function translateUncached(value: string): string {
     .replace(/^收检查费 \+(\d+)币\/层 · 车厢\+1躁动$/u, 'Inspection fees +$1 coins/floor · cabin +1 agitation')
     .replace(/^(便衣警察|逃犯|富商|好心人) · (.+)$/u, (_m, who: string) => ({ 便衣警察: 'Undercover Officer · holds Thieves and Robbers, locks Bomb Carriers (not the Mad Bomber)', 逃犯: 'Fugitive · +1 agitation/floor · fare 20', 富商: 'Magnate · fare 25', 好心人: 'Good Samaritan · calms each neighbor 1/floor' } as Record<string, string>)[who])
     .replace(/^加急补电 \+(\d+)，支付 (\d+) 金币；下一包更贵。$/u, 'Overtime charging +$1 for $2 coins; the next pack costs more.')
+    .replace(/^「(.+?)」升到 2 级（本店免费一项）。$/u, (_m, a: string) => `“${translateGameText(a, 'en')}” raised to level 2 (this shop’s free pick).`)
+    .replace(/^(\d+)F · 「(.+?)」升到 2 级$/u, (_m, f: string, a: string) => `${f}F · “${translateGameText(a, 'en')}” raised to Lv2`)
     .replace(/^「(.+?)」升到 2 级，支付 (\d+) 金币。$/u, (_m, a: string, n: string) => `“${translateGameText(a, 'en')}” raised to level 2 for ${n} coins.`)
     .replace(/^(\d+)F · 「(.+?)」2级 −(\d+) 金币$/u, (_m, f: string, a: string, n: string) => `${f}F · “${translateGameText(a, 'en')}” Lv2 −${n} coins`)
     .replace(/^下一层被同化成(.+)$/u, (_m, who: string) => `Turns into the ${translateGameText(who, 'en')} next floor`)

@@ -50,6 +50,12 @@ export const FINALE_COINS = 8;
 export const finaleIncome=(state:RunState,arrivals:number,remaining:number)=>state.upgrades.finale&&arrivals>=2&&remaining<=SHOP_TUNING.finaleRemaining?boosted(state,'finale',FINALE_COINS):0;
 /** Process-local experimental switches; production uses these defaults. */
 export const SHOP_RULES = { expanded: true, grouped: true, mixed: true, optionalCalm: true };
+/** v10.3 the simpler ability step (shop study): every shop gives one free pick and nothing in this step has a price.
+ * With a free slot the pick is a new ability; with all six slots full it is raising one installed ability to level 2.
+ * `extra` (buying a second card for 40), `reroll` (10 coins) and the paid level 2 (60+) are the old rules, kept as
+ * switches for the balance simulator. In 24 real shop visits they were used 1, 0 and 1 times; skilled bots that stop
+ * using all three reach the same floor. */
+export const ABILITY_SHOP = { extra: false, reroll: false, level2Free: true };
 export function mixedTicketEligible(cabin: Array<Rider|null>) {
   return SHOP_RULES.mixed ? new Set(cabin.flatMap(r=>r&&r.kind!=='parcel'?[passengerCategory(r.kind)]:[])).size === 3 : cabin.filter(Boolean).length >= CROWD_MINIMUM;
 }

@@ -149,3 +149,25 @@ console.log('playtest v10.2.4: cancelled pairs, both-failure lesson and emoji-fr
   for (const label of ['小偷偷幽灵的电', '小偷惹哭小孩', '顺手牵羊 +2金币 +3电/层 · 惹哭儿童 +1躁动', '惹哭儿童 · +2躁动/层']) assert.doesNotMatch(translateGameText(label, 'en'), /[㐀-鿿]/, label);
   console.log('playtest v10.3: the Thief takes a Ghost’s power and makes a Child cry');
 }
+
+// v10.3 the simpler ability step: one free pick per shop and no prices. With a free slot it is a new ability; with all six
+// full it is one free level-up. No second card for coins, no reroll.
+{
+  const E = await import('../lib/game-engine');
+  const { ABILITY_SHOP } = await import('../lib/shop-effects');
+  assert.deepEqual(ABILITY_SHOP, { extra: false, reroll: false, level2Free: true });
+  const base = { ...initialRun(), status: 'upgrade', floor: 20, coins: 200, shop: [{ key: 'battery', price: 0, purchased: false }, { key: 'concierge', price: 0, purchased: false }, { key: 'express', price: 0, purchased: false }] } as RunState;
+  const picked = E.installUpgrade(base, 'battery');
+  assert.equal(picked.upgrades.battery, 1); assert.equal(picked.coins, 200, 'the pick is free');
+  assert.equal(E.availableShopCards(picked).length, 0, 'the other cards lock after the pick');
+  assert.equal(E.installUpgrade(picked, 'concierge'), picked, 'no second ability for coins');
+  assert.equal(E.rerollShop(base, () => 0.5), base, 'no reroll');
+  const full = { ...base, floor: 70, coins: 0, upgrades: { ...base.upgrades, battery: 1, concierge: 1, express: 1, reinforced: 1, tipjar: 1, meter: 1 } } as RunState;
+  assert.equal(E.abilityLevel2Price(full), 0); assert.ok(E.canRaiseAbility(full, 'battery'), 'a level-up is free, even with no coins');
+  const raised = E.raiseAbility(full, 'battery');
+  assert.equal(raised.upgrades.battery, 2); assert.equal(raised.coins, 0);
+  assert.equal(E.canRaiseAbility(raised, 'concierge'), false, 'one level-up per shop');
+  assert.equal(E.canRaiseAbility({ ...full, upgrades: { ...full.upgrades, meter: 0 } } as RunState, 'battery'), false, 'level-ups start once all six slots are full');
+  assert.doesNotMatch(translateGameText(raised.message, 'en'), /[㐀-鿿]/, 'the level-up message reads in English');
+  console.log('playtest v10.3: one free ability pick per shop; a free level-up once the slots are full');
+}

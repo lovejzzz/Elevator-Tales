@@ -7,7 +7,7 @@ import { BOX_MAX_LEVEL, BOX_PRICES, BOX_TOTAL_CAP, emergencySectorCap, EMPTY_BOX
 import { districtWeight } from './districts';
 import { CHILD_CARERS, DARK_LEGEND_RULES, DRUNK_CARERS, GHOST_CONTROLLERS, KEEPSAKE_KEYS, LEGEND_DECLINE_COINS, LEGEND_DESTINATION, LEGEND_KEEPSAKE, LEGEND_POOL_DEFAULT, LEGEND_RULES, type KeepsakeKey } from './legends';
 import { V9_AGITATION, NIGHT_UNREST, nightUnrest, crowdingThreshold, agitationBand, AGITATION_HIGH_MIN, musicBeatForAgitation, BASE_AGITATION_CAP, motorCost, REPAIR_WORK, REPAIR_DURATION, REPAIR_DURATION_CAP, REPAIR_MOTOR_SAVING, INSPECTION_WORK, INSPECTION_BONUS, CHILD_CARE_WORK, CHILD_CARE_BONUS, COMMUTER_QUIET_BONUS, TOURIST_MEDIUM_BONUS, RESERVE_CELL_CHARGE, RESERVE_CELL_PRICE, CAPACITY_UPGRADE } from './balance-v832';
-import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome, flywheelSaving, consumeFlywheel, boosted, ABILITY_LEVEL2, LEVEL2_TEXT } from './shop-effects';
+import { rollShopRewards, shopFloorIncome, shopOpportunities, SHOP_RULES, ABILITY_SHOP, SHOP_TUNING, deliveryGapCharge, deliveryUpgradeIncome, naturalChargeBoost, finaleIncome, flywheelSaving, consumeFlywheel, boosted, ABILITY_LEVEL2, LEVEL2_TEXT } from './shop-effects';
 import { experimentalRiskLinks, rollExperimentalRiskIncome, type RiskLinkTuning } from './risk-link-experiment';
 import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_SLOTS, isRushFloor, offerRiskChance, riskPartnerships } from './shift-rules';
 
@@ -1327,7 +1327,7 @@ export function drawUpgradeOffer(upgrades:Record<UpgradeKey,number>,history:Upgr
 }
 /** v9: the first ability of each shop is free; one of the remaining cards may then be bought. */
 export const SHOP_PRICES = { extraAbility: 40 };
-export const availableShopCards = (state: RunState) => state.shopExtraBought ? [] : state.shop.filter(card => !card.purchased && !state.upgrades[card.key]);
+export const availableShopCards = (state: RunState) => state.shopExtraBought || (state.shopUpgradeBought && !ABILITY_SHOP.extra) ? [] : state.shop.filter(card => !card.purchased && !state.upgrades[card.key]);
 
 export function failureLesson(state: RunState): string {
   if (state.status !== 'lost') return '';
@@ -1406,6 +1406,7 @@ export function resolveBoxAbility(state: RunState, replace: UpgradeKey | null): 
     message: `装上「${UPGRADES[found].name}」，换下的「${UPGRADES[replace].name}」会在下次进商店时卖掉（退 ${SELL_REFUND} 金币）。` };
 }
 function rerollShopUnguarded(current: RunState, rng: () => number = Math.random): RunState {
+  if (!ABILITY_SHOP.reroll) return current;
   if (current.status !== 'upgrade' || current.shopUpgradeBought || current.rerolledFloor === current.floor || current.coins < REROLL_PRICE || !current.shop.length) return current;
   const drawn = drawUpgradeOffer(current.upgrades, current.shopSeen ?? [], rng, current.floor);
   return { ...current, coins: current.coins - REROLL_PRICE, rerolledFloor: current.floor, shopSeen: drawn.seen, shop: drawn.keys.map(key => ({ key, price: 0, purchased: false })), message: `重抽能力，支付 ${REROLL_PRICE} 金币。` };
@@ -1498,7 +1499,7 @@ export function buyOvertimeCharge(state: RunState): RunState {
     lastEarnings: { total: 0, sources: [] }, lastPressure: { delta: 0, sources: [] }, lastEnergy: { delta: offer.units, sources: [{ label: '加急补电', amount: offer.units }] } };
 }
 /** v9.19 ability level 2 (see ABILITY_LEVEL2): with every slot full, one installed ability per shop can be raised. */
-export const abilityLevel2Price = (state: RunState) => ABILITY_LEVEL2.price + ABILITY_LEVEL2.step * Object.values(state.upgrades).filter(v => v >= 2).length;
+export const abilityLevel2Price = (state: RunState) => ABILITY_SHOP.level2Free ? 0 : ABILITY_LEVEL2.price + ABILITY_LEVEL2.step * Object.values(state.upgrades).filter(v => v >= 2).length;
 export function canRaiseAbility(state: RunState, key: UpgradeKey): boolean {
   return state.status === 'upgrade' && state.upgrades[key] === 1 && ABILITY_LEVEL2.keys.includes(key) && Object.values(state.upgrades).filter(Boolean).length >= UPGRADE_SLOTS
     && state.abilityRaisedFloor !== state.floor && state.coins >= abilityLevel2Price(state);
@@ -1507,12 +1508,12 @@ function raiseAbilityUnguarded(state: RunState, key: UpgradeKey): RunState {
   if (!canRaiseAbility(state, key)) return state;
   const price = abilityLevel2Price(state);
   return { ...state, upgrades: { ...state.upgrades, [key]: 2 }, coins: state.coins - price, abilityRaisedFloor: state.floor,
-    message: `「${UPGRADES[key].name}」升到 2 级，支付 ${price} 金币。`, log: [`${state.floor}F · 「${UPGRADES[key].name}」2级 −${price} 金币`, ...state.log].slice(0, 4) };
+    message: price ? `「${UPGRADES[key].name}」升到 2 级，支付 ${price} 金币。` : `「${UPGRADES[key].name}」升到 2 级（本店免费一项）。`, log: [price ? `${state.floor}F · 「${UPGRADES[key].name}」2级 −${price} 金币` : `${state.floor}F · 「${UPGRADES[key].name}」升到 2 级`, ...state.log].slice(0, 4) };
 }
 function installUpgradeUnguarded(current: RunState, key: UpgradeKey): RunState {
   const card = current.shop.find((item) => item.key === key);
   const price = current.shopUpgradeBought ? SHOP_PRICES.extraAbility : 0;
-  if (current.status !== 'upgrade' || current.shopExtraBought || !card || card.purchased || current.coins < price || current.upgrades[key] > 0 || Object.values(current.upgrades).filter(Boolean).length >= UPGRADE_SLOTS) return current;
+  if (current.status !== 'upgrade' || current.shopExtraBought || (current.shopUpgradeBought && !ABILITY_SHOP.extra) || !card || card.purchased || current.coins < price || current.upgrades[key] > 0 || Object.values(current.upgrades).filter(Boolean).length >= UPGRADE_SLOTS) return current;
   const preview = previewUpgrade(current, key);
   const extra = current.shopUpgradeBought;
   const shop = extra ? [] : current.shop.map(item => item.key === key ? { ...item, purchased: true } : { ...item, price: SHOP_PRICES.extraAbility });
