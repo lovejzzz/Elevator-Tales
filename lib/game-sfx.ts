@@ -129,7 +129,8 @@ function schedule(b: Bus, name: Sfx, at: number, pitch: number) {
     return;
   }
   switch (name) {
-    case 'ding': bell(b, 1318.5, at, 1.6, .08); bell(b, 1046.5, at + .32, 1.8, .07); break;
+    // v10.3 (player: the arrival bell was too loud, every floor): half its former gain (.08 / .07).
+    case 'ding': bell(b, 1318.5, at, 1.6, .04); bell(b, 1046.5, at + .32, 1.8, .035); break;
     case 'doorClose': noise(b, { at, dur: .32, gain: .035, freq: 700, sweepTo: 240, q: .9 }); tone(b, 70, { at: at + .28, dur: .12, gain: .07, type: 'triangle', wet: false }); break;
     case 'doorOpen': noise(b, { at, dur: .34, gain: .07, freq: 260, sweepTo: 900, q: .9 }); break;
     case 'hum': tone(b, 55, { at, dur: .75, gain: .045, type: 'triangle', glideTo: 82, attack: .12, wet: false }); noise(b, { at, dur: .7, gain: .015, freq: 180, q: 3, filter: 'lowpass' }); break;
