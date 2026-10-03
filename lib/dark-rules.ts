@@ -127,17 +127,23 @@ export const ITEMS: Record<ItemKey, { name: string; en: string; zh: string; enTe
   sedative: { name: '镇静剂', en: 'Sedative', zh: '一位乘客 3 层内自身不产生躁动、不会深渊发作，也不会戒断', enText: 'A rider adds no agitation of their own for 3 floors: no abyss outbursts, no withdrawal', from: 60, price: 30, target: 'rider' },
   seal: { name: '封条', en: 'Seal', zh: '一个纸箱或黑箱不会被没收、偷走或拆开', enText: 'A box cannot be seized, stolen or opened', from: 60, price: 20, target: 'parcel' },
   cutter: { name: '引线剪', en: 'Wire Cutter', zh: '当场拆掉一颗炸弹：炸弹客下车并付车费', enText: 'Defuse one bomb now: the bomber gets off and pays', from: 60, price: 45, target: 'bomb' },
-  flare: { name: '照明弹', en: 'Flare', zh: '本层所有暗黑版的麻烦都不发生', enText: 'No dark rider causes trouble this floor', from: 80, price: 120, target: 'none' },
+  flare: { name: '照明弹', en: 'Flare', zh: '本层所有暗黑版的麻烦都不发生', enText: 'No dark rider causes trouble this floor', from: 80, price: 130, target: 'none' },
   // v9.21.1 night-market goods: sold only at the Night market (never in shops), stronger and dearer versions of shop items.
-  longflare: { name: '长明照明弹', en: 'Long Flare', zh: '本层和下一层所有暗黑版的麻烦都不发生', enText: 'No dark rider causes trouble this floor or the next', from: 81, price: 190, target: 'none', market: true, art: 'flare' },
-  sandalwood: { name: '檀香', en: 'Sandalwood', zh: '立即 −5 躁动', enText: '−5 agitation now', from: 81, price: 120, target: 'none', market: true, art: 'aroma' },
-  strongsedative: { name: '强效镇静剂', en: 'Strong Sedative', zh: '一位乘客直到下车都不产生躁动、不会深渊发作，也不会戒断', enText: 'A rider adds no agitation of their own until they get off: no abyss outbursts, no withdrawal', from: 81, price: 80, target: 'rider', market: true, art: 'sedative' },
-  greatamulet: { name: '大护身符', en: 'Great Amulet', zh: '车里所有普通人本次路程都不会被同化', enText: 'Every normal rider aboard is safe from corruption this trip', from: 81, price: 90, target: 'none', market: true, art: 'amulet' },
+  longflare: { name: '长明照明弹', en: 'Long Flare', zh: '本层和下一层所有暗黑版的麻烦都不发生', enText: 'No dark rider causes trouble this floor or the next', from: 81, price: 210, target: 'none', market: true, art: 'flare' },
+  sandalwood: { name: '檀香', en: 'Sandalwood', zh: '立即 −5 躁动', enText: '−5 agitation now', from: 81, price: 130, target: 'none', market: true, art: 'aroma' },
+  strongsedative: { name: '强效镇静剂', en: 'Strong Sedative', zh: '一位乘客直到下车都不产生躁动、不会深渊发作，也不会戒断', enText: 'A rider adds no agitation of their own until they get off: no abyss outbursts, no withdrawal', from: 81, price: 90, target: 'rider', market: true, art: 'sedative' },
+  greatamulet: { name: '大护身符', en: 'Great Amulet', zh: '车里所有普通人本次路程都不会被同化', enText: 'Every normal rider aboard is safe from corruption this trip', from: 81, price: 100, target: 'none', market: true, art: 'amulet' },
 };
 export const ITEM_KEYS = Object.keys(ITEMS) as ItemKey[];
 /** Shop items (the Night market also sells one of these) and the night-market goods sold nowhere else. */
 export const SHOP_ITEM_KEYS = ITEM_KEYS.filter(k => !ITEMS[k].market);
 export const MARKET_ITEM_KEYS = ITEM_KEYS.filter(k => ITEMS[k].market);
 export const MARKET_STOCK = { goods: 2, shopItems: 1 } as const;
-/** Price rises half the base each time the same item is bought, and a little with depth. */
-export const itemPrice = (key: ItemKey, floor: number, bought = 0) => Math.round(ITEMS[key].price * (1 + 0.5 * bought) * (1 + Math.max(0, floor - 60) / 200));
+/** Price rises half the base each time the same item is bought, and with depth. */
+/** v10.3: an item's listed price is what it costs on the floor it first appears; from 21F every price follows depth at
+ * +1% a floor (it was +0.5% from 61F on the listed price), so a Spare Cell or Incense bought deep costs about what the
+ * shop charges for the same power or calm there. `relative: false` with `from: 60, per: 200` is the old rule. */
+export const ITEM_PRICE = { repeat: 0.5, from: 20, per: 100, relative: true };
+const itemDepth = (floor: number) => 1 + Math.max(0, floor - ITEM_PRICE.from) / ITEM_PRICE.per;
+export const itemDepthFactor = (floor: number, key?: ItemKey) => itemDepth(floor) / (ITEM_PRICE.relative && key ? itemDepth(ITEMS[key].from) : 1);
+export const itemPrice = (key: ItemKey, floor: number, bought = 0) => Math.round(ITEMS[key].price * (1 + ITEM_PRICE.repeat * bought) * itemDepthFactor(floor, key));

@@ -173,3 +173,26 @@ console.log('playtest v10.2.4: cancelled pairs, both-failure lesson and emoji-fr
   assert.doesNotMatch(translateGameText(raised.message, 'en'), /[㐀-鿿]/, 'the level-up message reads in English');
   console.log('playtest v10.3: one free ability pick per shop; a free level-up once the slots are full');
 }
+
+// v10.3 price scheme: shop power on one ramp, dearer upper box levels, items that follow depth.
+{
+  const { BOX_PRICES, CHARGE_DEPTH, EMPTY_BOX, chargeUnitPrice, emergencyUnitPrice } = await import('../lib/power-box');
+  const { ITEMS, itemPrice } = await import('../lib/dark-rules');
+  const { calmPrice } = await import('../lib/game-engine');
+  const unit = (shop: number, transformer = 0) => Number(chargeUnitPrice({ ...EMPTY_BOX, transformer }, shop).toFixed(3));
+  assert.deepEqual([10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(f => unit(f)), [1.2, 1.2, 1.2, 1.2, 1.6, 2, 2.4, 2.8, 2.8, 2.8], 'power by shop without a transformer');
+  for (let i = 1; i < CHARGE_DEPTH.length; i++) assert.ok(CHARGE_DEPTH[i] >= CHARGE_DEPTH[i - 1] && CHARGE_DEPTH[i] - CHARGE_DEPTH[i - 1] <= 0.2 + 1e-9, 'no step in the ramp is more than 0.2');
+  assert.equal(unit(45), unit(50), 'a floor between shops is priced like the next shop');
+  assert.deepEqual(BOX_PRICES, [15, 45, 80]);
+  // An item's listed price is what it costs on the floor it first appears.
+  for (const key of ['cell', 'aroma', 'sedative', 'flare', 'longflare'] as const) assert.equal(itemPrice(key, ITEMS[key].from), ITEMS[key].price, key);
+  assert.deepEqual([10, 40, 60, 80, 100].map(f => itemPrice('cell', f)), [20, 24, 28, 32, 36], 'a Spare Cell follows depth');
+  assert.equal(itemPrice('cell', 80, 1), 48, 'a repeat still costs half as much again');
+  for (const shop of [30, 40, 50, 60, 70, 80, 90, 100]) {
+    // Carried goods stay near what the shop charges for the same thing there, and under the price of a rescue in transit.
+    const cell = itemPrice('cell', shop) / 15, aroma = itemPrice('aroma', shop) / 2;
+    assert.ok(cell >= unit(shop, 3) && cell < emergencyUnitPrice({ ...EMPTY_BOX }), `Spare Cell at ${shop}F: ${cell}`);
+    assert.ok(Math.abs(aroma / calmPrice(shop) - 1) <= 0.15, `Incense at ${shop}F: ${aroma} against ${calmPrice(shop)}`);
+  }
+  console.log('playtest v10.3: power ramp, box levels 15 / 45 / 80, items follow depth');
+}

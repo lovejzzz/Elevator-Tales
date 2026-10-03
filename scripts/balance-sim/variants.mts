@@ -1,18 +1,20 @@
 // Process-local rule variants for side-by-side comparison. Production defaults live in lib/.
 // A shard applies exactly one variant before running; nothing here changes the shipped game.
 import { ECONOMY_RULES, AGITATION_RULES, FARE_RULES, MOTOR_RULES, NIGHT_UNREST, V9_AGITATION } from '../../lib/balance-v832.ts';
-import { BOX_PRICES, CHARGE_PRICES, EMERGENCY_PRICES, LATE_CHARGE } from '../../lib/power-box.ts';
+import { BOX_PRICES, CHARGE_DEPTH, CHARGE_PRICES, EMERGENCY_PRICES } from '../../lib/power-box.ts';
 import { LATE_FARE } from '../../lib/rider-profile.ts';
 import { CALM_PURCHASE, CALM_RULES, INSULATION_RULES, RISK_RULES, SHOP_PRICES, SOUNDPROOF_RULES, START_RULES } from '../../lib/game-engine.ts';
 import { LEGEND_RULES } from '../../lib/legends.ts';
 import { PARCEL_RULES, BOMB_RULES, THIEF_RULES } from '../../lib/game-engine.ts';
 import { PASSENGERS } from '../../lib/game-data.ts';
 import { CHAIN_RULES, SYMBOL_EFFECTS, SYMBOL_RULES } from '../../lib/symbols.ts';
-import { SHOP_USE } from './sim.mts';
-import { MYSTERY_RULES } from '../../lib/dark-rules.ts';
+import { SHOP_USE, SPEND } from './sim.mts';
+import { ITEMS, ITEM_PRICE, MYSTERY_RULES } from '../../lib/dark-rules.ts';
 import { ABILITY_SHOP } from '../../lib/shop-effects.ts';
 const scaleBoxes = (k: number) => { for (const size of ['small', 'big'] as const) for (const tier of ['common', 'rare', 'legendary'] as const) PARCEL_RULES.values[size][tier] = Math.round(PARCEL_RULES.values[size][tier] * k); };
 const parcel = (fare: number, coins: number, power: number) => () => { PASSENGERS.courier.fare = fare; PARCEL_RULES.payoutCoins = coins; PARCEL_RULES.payoutPower = power; };
+
+const charge = (...table: number[]) => { CHARGE_DEPTH.splice(0, CHARGE_DEPTH.length, ...table); };
 
 export const VARIANTS: Record<string, () => void> = {
   baseline: () => {},
@@ -20,6 +22,24 @@ export const VARIANTS: Record<string, () => void> = {
   // v10.3 under-used riders: Taskmaster 12→15, Grafter 13→18, Scandal 16→19, each Mystery identity +3 are now the
   // defaults (boarding 13–15% → 15–26% over three seeds); `darkOld` restores the previous fares for comparison.
   darkOld: () => { PASSENGERS.taskmaster.fare = 12; PASSENGERS.grafter.fare = 13; PASSENGERS.scandal.fare = 16; for (const k of Object.keys(MYSTERY_RULES) as Array<keyof typeof MYSTERY_RULES>) MYSTERY_RULES[k].fare -= 3; },
+  // v10.3 price study: the bots spend like the recorded player.
+  spend: () => { SPEND.items = true; SPEND.overtimeCalm = true; },
+  spendItems: () => { SPEND.items = true; },
+  spendCalm: () => { SPEND.overtimeCalm = true; },
+  spendMax: () => { SPEND.items = true; SPEND.overtimeCalm = true; SPEND.keep = 0; SPEND.cells = 3; SPEND.each = 2; },
+  // v10.3 price scheme (now the defaults): shop power on one ramp, box levels 15 / 45 / 80, items follow depth from 21F.
+  // `priceOld` restores the previous prices; the others are the candidates that were compared.
+  priceOld: () => { VARIANTS.chargeOld(); VARIANTS.boxOld(); VARIANTS.itemsOld(); },
+  chargeOld: () => { charge(0.6, 0.6, 0.6, 0.6, 1, 1, 1.25); },
+  boxOld: () => { BOX_PRICES.splice(0, 3, 15, 35, 60); },
+  itemsOld: () => { ITEM_PRICE.from = 60; ITEM_PRICE.per = 200; ITEM_PRICE.relative = false; ITEMS.flare.price = 120; ITEMS.longflare.price = 190; ITEMS.sandalwood.price = 120; ITEMS.strongsedative.price = 80; ITEMS.greatamulet.price = 90; },
+  ramp: () => { charge(0.6, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.25); },
+  chargeA: () => { charge(0.6, 0.6, 0.6, 0.6, 0.8, 1, 1.15, 1.3); },
+  chargeB: () => { charge(0.6, 0.6, 0.6, 0.6, 0.8, 1, 1.1, 1.25); },
+  chargeC: () => { charge(0.6, 0.6, 0.6, 0.6, 0.8, 1, 1.2, 1.4); },
+  box154075: () => { BOX_PRICES.splice(0, 3, 15, 40, 75); },
+  box154580: () => { BOX_PRICES.splice(0, 3, 15, 45, 80); },
+  box204070: () => { BOX_PRICES.splice(0, 3, 20, 40, 70); },
   shopOldAbility: () => { ABILITY_SHOP.extra = true; ABILITY_SHOP.reroll = true; ABILITY_SHOP.level2Free = false; },
   shopNoReroll: () => { SHOP_USE.reroll = false; },
   shopNoBox: () => { SHOP_USE.box = false; },
@@ -46,7 +66,7 @@ export const VARIANTS: Record<string, () => void> = {
   coin1batt1: () => { VARIANTS.coin1(); VARIANTS.batt1(); },
   fare31: () => { LATE_FARE.from = 31; LATE_FARE.factor = 0.75; },
   fare21: () => { LATE_FARE.from = 21; LATE_FARE.factor = 0.8; },
-  charge61: () => { LATE_CHARGE.from = 61; LATE_CHARGE.factor = 1.25; },
+  charge61: () => { VARIANTS.chargeOld(); },
   fare31charge61: () => { VARIANTS.fare31(); VARIANTS.charge61(); },
   darkfix: () => { PASSENGERS.madbomber.fare = 52; },
   // v9.18.3 Courier routes by box tier: trip ranges (common / rare / legendary) and a per-stop delivery fee.
@@ -185,7 +205,6 @@ export const VARIANTS: Record<string, () => void> = {
   slope15LateCrowd: () => { MOTOR_RULES.lateSlope = 15; V9_AGITATION.lateCrowdingFloor = 51; },
 };
 export function applyVariant(name = 'baseline') {
-  const v = VARIANTS[name]; if (!v) throw Error('unknown variant ' + name);
-  v();
+  for (const part of name.split('+')) { const v = VARIANTS[part]; if (!v) throw Error('unknown variant ' + part); v(); }
   return { AGITATION_RULES, FARE_RULES, MOTOR_RULES, V9_AGITATION, BOX_PRICES, CHARGE_PRICES, LEGEND_RULES };
 }

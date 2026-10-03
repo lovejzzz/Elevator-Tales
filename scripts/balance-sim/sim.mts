@@ -278,6 +278,10 @@ function sectorNeed(state: RunState, occupancy: number) {
   for (let f = state.floor + 1; f <= state.floor + 10; f++) need += futureMotor(state, f) + occupancy;
   return need;
 }
+/** v10.3 price study: bots that spend like the recorded player — items at ordinary shops (a Spare Cell, Incense, a
+ * Sedative from 60F, a Flare from 80F), used when the forecast says the next ascent fails, and overtime calming once the
+ * sector's allowance is gone. Off by default (the acceptance bots are the frugal ones the targets were set against). */
+export const SPEND = { items: false, overtimeCalm: false, keep: 30, cells: 2, each: 1 };
 /** v10.3 shop study: switch off one thing the bots do in the shop, to see what each system is worth. */
 export const SHOP_USE = { reroll: true, box: true, extra: true, level2: true, calm: true, fullCharge: false };
 export function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog): RunState {
@@ -290,6 +294,17 @@ export function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog):
     const order = bot.id === 'novice' || bot.id === 'human' ? cards : [...bot.abilities, ...GENERIC_ABILITIES];
     return order.find(k => cards.includes(k));
   };
+  // v10.3 price study: with coins to spare after the power plan, buy what the recorded player bought.
+  const buyItems = () => {
+    if (!SPEND.items || bot.id === 'novice') return;
+    const order: string[] = s.floor >= 80 ? ['flare', 'sedative', 'cell', 'aroma'] : s.floor >= 60 ? ['sedative', 'cell', 'aroma'] : ['cell', 'aroma'];
+    for (const key of order) {
+      const i = (s.itemStock ?? []).findIndex(c => c.key === key && !c.sold);
+      if (i < 0 || (s.items?.length ?? 0) >= 4 || (s.items ?? []).filter(k => k === key).length >= (key === 'cell' ? SPEND.cells : key === 'sedative' ? SPEND.each : 1)) continue;
+      if (s.coins - s.itemStock![i].price < SPEND.keep) continue;
+      const price = s.itemStock![i].price, next = E.buyItem(s, i); if (next !== s) { s = next; log.itemBuys = (log.itemBuys ?? 0) + 1; log.itemSpend = (log.itemSpend ?? 0) + price; }
+    }
+  };
   // v10.3: with all six slots full the shop's free pick is a level-up; every bot takes it (it costs nothing).
   const freeRaise = () => { if (!ABILITY_SHOP.level2Free) return; const k = (Object.keys(s.upgrades) as UpgradeKey[]).filter(x => E.canRaiseAbility(s, x)).sort((a, b) => [...bot.abilities, ...GENERIC_ABILITIES].indexOf(a) - [...bot.abilities, ...GENERIC_ABILITIES].indexOf(b))[0]; if (k) s = E.raiseAbility(s, k); };
   if (bot.id === 'human') {
@@ -301,6 +316,7 @@ export function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog):
     if (units > 0) s = E.chargeBattery(s, units);
     const line = bot.box.find(l => E.canBuyBoxLevel(s, l));
     if (line) { s = E.buyBoxLevel(s, line); log.box.push(line); const more = Math.min(s.energyCap - s.energy, E.affordableChargingPlan(s).units); if (more > 0) s = E.chargeBattery(s, more); }
+    buyItems();
     log.shops.push({ ...entry, exitCoins: s.coins, exitEnergy: s.energy, target: s.energyCap, affluent: false });
     return E.leaveShop(s);
   }
@@ -348,6 +364,7 @@ export function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog):
   // top up with anything left if still under target (scarcity check reads what remains)
   units = Math.min(Math.max(0, target - s.energy), E.affordableChargingPlan(s).units);
   if (units > 0) s = E.chargeBattery(s, units);
+  buyItems();
   const boxPrice = Math.min(...BOX_LINES.map(l => (E.boxOf(state)[l] < 3 ? BOX_PRICES[E.boxOf(state)[l]] : Infinity)));
   // Rich = after paying for everything the next sector really needs (shop charge to cap, the emergency power
   // beyond the cap at its higher price, one box level) there are still 20 coins spare.
@@ -360,13 +377,13 @@ export function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog):
 }
 
 // ---------- run ----------
-export type ShopLog = { floor: number; energy: number; coins: number; cap: number; exitCoins: number; exitEnergy: number; target: number; affluent: boolean };
+export type ShopLog = { floor: number; energy: number; coins: number; cap: number; exitCoins: number; exitEnergy: number; target: number; affluent: boolean; unit?: number };
 export type RunLog = {
   bot: BotId; seed: number; floor: number; cause: 'energy' | 'agitation' | 'bomb' | 'alive';
   closeCalls: number; escapes: number; powerCalls: number; stressCalls: number; bombCalls: number;
   emergencyUnits: number; incidents: number; dismissals?: number; riderFloors?: number; links?: number; calmUnits?: number; inspectors?: number; stamped?: number; shops: ShopLog[]; abilities: UpgradeKey[]; box: BoxLine[];
   bombDismissals?: number; marketBuys?: number; itemsUsed?: number; overtimeCharge?: number; boxAbilities?: number; boxAbilityFinds?: number; parcel?: Record<'offered' | 'paired' | 'courierOnly' | 'parcelOnly' | 'opened' | 'adopted' | 'unpaid' | 'delivered' | 'thefts' | 'bigOffered' | 'bigBoarded' | 'childOpens' | 'parts' | 'inspected' | 'contested' | 'bombCarry' | 'mimicCopy' | 'rareBoarded' | 'rareOffered', number>; legend?: LegendKind; legendStatus?: string; keepsakes: string[]; boarded: Record<string, number>; delivered: Record<string, number>; offered: Record<string, number>;
-  burst?: Array<[number, number, number, number]>; shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; income?: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
+  burst?: Array<[number, number, number, number]>; endCoins?: number; itemBuys?: number; itemSpend?: number; overtimeCalm?: number; shopStyle: 'archetype' | 'generic'; peakCoins: number; pressure: Record<string, number>; income?: Record<string, number>; deathSources?: string; stressFloors: { low: number; medium: number; high: number };
 };
 
 function causeOf(state: RunState): RunLog['cause'] {
@@ -438,13 +455,17 @@ export function runOne(opt: RunOptions): RunLog {
     const powerDeath = () => { const t = test(); return t.status === 'lost' && t.message.includes('电量'); };
     {
       let guard = 0;
+      if (SPEND.items) while (state.items?.includes('cell') && powerDeath()) { state = E.applyItem(state, 'cell'); log.itemsUsed = (log.itemsUsed ?? 0) + 1; }
       while (guard++ < 12 && powerDeath() && E.emergencyAllowance(state) > 0) { state = E.emergencyCharge(state, 1); log.emergencyUnits++; }
       // v9.19: past the allowance, skilled bots buy overtime packs while they would otherwise run out.
       guard = 0;
       while (bot.id !== 'human' && bot.id !== 'novice' && guard++ < 6 && powerDeath() && E.buyOvertimeCharge(state) !== state) { state = E.buyOvertimeCharge(state); log.overtimeCharge = (log.overtimeCharge ?? 0) + 1; }
       const calmDeath = () => { const t = test(); return t.status === 'lost' && t.message.includes('躁动'); };
       guard = 0;
+      if (SPEND.items) while (state.items?.includes('aroma') && calmDeath()) { state = E.applyItem(state, 'aroma'); log.itemsUsed = (log.itemsUsed ?? 0) + 1; }
       while ((bot.id !== 'human' || HUMAN.transitCalm) && guard++ < 12 && calmDeath() && E.calmAllowance(state) > 0) { state = E.buyCalm(state, 1); log.calmUnits = (log.calmUnits ?? 0) + 1; }
+      guard = 0;
+      while (SPEND.overtimeCalm && bot.id !== 'novice' && guard++ < 8 && calmDeath() && E.buyOvertimeCalm(state) !== state) { state = E.buyOvertimeCalm(state); log.overtimeCalm = (log.overtimeCalm ?? 0) + 1; }
     }
     // v9.21 the night market: skilled and human-like bots buy a Flare (else a Sedative) when coins allow; held tools
     // are used on a real gamble (a 20%+ chance this ascent ends the run). Bots still buy nothing at ordinary shops.
@@ -500,7 +521,7 @@ export function runOne(opt: RunOptions): RunLog {
     { const lv = greenBySymbol(state.cabin); const top = Math.max(0, ...Object.values(lv).map(v => v ?? 0)); const gain = next.lastEarnings.sources.reduce((n, l) => n + Math.max(0, l.amount), 0); const arr = state.cabin.flatMap((r, i) => r && r.kind !== 'parcel' && r.destination <= state.floor + 1 ? [i] : []); const k = arrivalChain(state.cabin, arr).slots.length; (log.burst ??= []).push([state.floor, top, gain, k]); }
     if (next.status === 'lost') log.deathSources = next.lastPressure.sources.map(l => `${l.label}${l.amount > 0 ? '+' : ''}${l.amount}`).join(' ') + ` | stress ${next.stress}/${next.stressCap} riders ${state.cabin.filter(Boolean).map(r => r!.kind).join(',')}`;
     state = next;
-    log.peakCoins = Math.max(log.peakCoins, state.coins);
+    log.peakCoins = Math.max(log.peakCoins, state.coins); log.endCoins = state.coins;
     if (state.status === 'playing') {
       // close calls: the next ascent is nearly unaffordable, agitation is one or two steps from loss, or a fuse is about to blow
       const cost = E.energyBreakdown(state).total + (state.cabin.some(Boolean) ? 0 : 1);

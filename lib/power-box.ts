@@ -9,7 +9,9 @@ export const EMPTY_BOX: PowerBox = { storage: 0, transformer: 0, motor: 0 };
 export const BOX_MAX_LEVEL = 3;
 export const BOX_TOTAL_CAP = 5;
 /** Price of the next level, indexed by the line's current level. */
-export const BOX_PRICES = [15, 35, 60];
+/** v10.3: the second and third levels cost 45 / 80 (they were 35 / 60). A level pays for itself several times over a run,
+ * and with the ability step free this is the mid-run purchase that takes coins back; the first level stays 15. */
+export const BOX_PRICES = [15, 45, 80];
 export const STORAGE_CAPS = [60, 75, 90, 110];
 export const CHARGE_PRICES = [2, 1.75, 1.5, 1.25];
 export const BASE_SHOP_ENTRY_CHARGE = 5;
@@ -26,12 +28,14 @@ export const boxTotal = (box: PowerBox) => box.storage + box.transformer + box.m
 export const storageCap = (box: PowerBox) => STORAGE_CAPS[box.storage];
 export const shopEntryCharge = (box: PowerBox) => BASE_SHOP_ENTRY_CHARGE + 5 * box.storage;
 export const emergencySectorCap = (box: PowerBox) => (box.storage >= BOX_MAX_LEVEL ? 10 : EMERGENCY_SECTOR_CAP);
-/** v9.19: early shops sell power at a discount, so a careful early run is not starved (cautious-player aid).
- * v10.1.2: up to 40F at 40% off — a first real playtest ran dry at 26F; the novice bot goes 31→54F, skilled play unchanged. */
-export const EARLY_CHARGE = { until: 40, factor: 0.6 };
-/** v10.2.5: shop power costs 25% more from the 61F shop on (after midnight), where skilled runs held 250–300 coins. */
-export const LATE_CHARGE = { from: 61, factor: 1.25 };
-export const chargeUnitPrice = (box: PowerBox, floor = Infinity) => CHARGE_PRICES[box.transformer] * (floor <= EARLY_CHARGE.until ? EARLY_CHARGE.factor : floor >= LATE_CHARGE.from && floor !== Infinity ? LATE_CHARGE.factor : 1);
+/** Shop power by depth: the factor on the unit price at each shop (10F, 20F, …; the last entry holds from there on).
+ * v9.19 / v10.1.2: 40% off up to the 40F shop — a first real playtest ran dry at 26F, and the novice bot loses 3 floors
+ * if the 30F and 40F shops cost more.
+ * v10.3: one even ramp after that (+0.2 a shop to 80F) instead of two cliffs (0.6 → 1 at the 50F shop, 1.25 from 70F).
+ * The recorded player's charge bill doubled at the 50F shop (40–68 → 74–119 coins) and nothing else was bought after it. */
+export const CHARGE_DEPTH = [0.6, 0.6, 0.6, 0.6, 0.8, 1, 1.2, 1.4];
+export const chargeDepthFactor = (floor = Infinity) => floor === Infinity ? 1 : CHARGE_DEPTH[Math.min(CHARGE_DEPTH.length - 1, Math.max(0, Math.ceil(floor / 10) - 1))];
+export const chargeUnitPrice = (box: PowerBox, floor = Infinity) => CHARGE_PRICES[box.transformer] * chargeDepthFactor(floor);
 /** Whole coins, rounded up, for a batch of shop charge. */
 export const chargeCost = (box: PowerBox, units: number, floor = Infinity) => Math.ceil(units * chargeUnitPrice(box, floor) - 1e-9);
 /** Most units a wallet can buy at the box's shop price. */
