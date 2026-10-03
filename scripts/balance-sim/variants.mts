@@ -27,7 +27,7 @@ export const VARIANTS: Record<string, () => void> = {
   spendItems: () => { SPEND.items = true; },
   spendCalm: () => { SPEND.overtimeCalm = true; },
   spendMax: () => { SPEND.items = true; SPEND.overtimeCalm = true; SPEND.keep = 0; SPEND.cells = 3; SPEND.each = 2; },
-  // v10.3 price scheme (now the defaults): shop power on one ramp, box levels 15 / 45 / 80, items follow depth from 21F.
+  // v10.3 price scheme (now the defaults): shop power on one ramp, box levels 15 / 60 / 120, items follow depth from 21F.
   // `priceOld` restores the previous prices; the others are the candidates that were compared.
   priceOld: () => { VARIANTS.chargeOld(); VARIANTS.boxOld(); VARIANTS.itemsOld(); },
   chargeOld: () => { charge(0.6, 0.6, 0.6, 0.6, 1, 1, 1.25); },
@@ -205,6 +205,11 @@ export const VARIANTS: Record<string, () => void> = {
   slope15LateCrowd: () => { MOTOR_RULES.lateSlope = 15; V9_AGITATION.lateCrowdingFloor = 51; },
 };
 export function applyVariant(name = 'baseline') {
-  for (const part of name.split('+')) { const v = VARIANTS[part]; if (!v) throw Error('unknown variant ' + part); v(); }
+  for (const part of name.split('+')) {
+    // `box15_60_120`: power-box level prices, for price studies.
+    const box = /^box(\d+)_(\d+)_(\d+)$/.exec(part);
+    if (box) { BOX_PRICES.splice(0, 3, Number(box[1]), Number(box[2]), Number(box[3])); continue; }
+    const v = VARIANTS[part]; if (!v) throw Error('unknown variant ' + part); v();
+  }
   return { AGITATION_RULES, FARE_RULES, MOTOR_RULES, V9_AGITATION, BOX_PRICES, CHARGE_PRICES, LEGEND_RULES };
 }

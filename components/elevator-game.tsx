@@ -42,7 +42,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { CardShader } from '@/components/card-shader';
 import { fuseState } from '@/lib/bomb-state';
 import { beginPointerDrag } from '@/components/pointer-drag';
-import { banner, bubble, burstAt, clearJuice, explode, flashClass, flyCoin, flyPortrait, openBoxFx, popText, walletGain } from '@/components/juice';
+import { banner, bubble, burstAt, clearBubbles, clearJuice, explode, flashClass, flyCoin, flyPortrait, openBoxFx, popText, walletGain } from '@/components/juice';
 import { BombTimer } from '@/components/bomb-timer';
 import { Scramble } from '@/components/scramble';
 import { quip } from '@/lib/quips';
@@ -788,7 +788,7 @@ export default function ElevatorGame() {
       const from = placingFrom.current; placingFrom.current = null;
       const target = result.slots[result.slots.length - 1];
       const slotEl = typeof target === 'number' ? document.querySelectorAll('.standing-slot')[target] ?? null : null;
-      if (from?.el) { playSfx(soundEnabled.current, 'board', { pitch: randomPitch() }); if (chance(.15)) window.setTimeout(() => bubble(slotEl, quip(from.kind, 'board', language === 'zh')), 380); }
+      if (from?.el) { playSfx(soundEnabled.current, 'board', { pitch: randomPitch() }); if (chance(.15)) window.setTimeout(() => { if (!busyRef.current) bubble(slotEl, quip(from.kind, 'board', language === 'zh')); }, 380); }
       if (result.tone === 'combo') { playSfx(soundEnabled.current, 'link', { delay: .12, pitch: Math.min(7, conflictLinks(result.next.cabin).length) }); }
       if (conflictLinks(result.next.cabin).length > conflictLinks(run.cabin).length) { playSfx(soundEnabled.current, 'conflict', { delay: .1 }); }
     }
@@ -1097,7 +1097,7 @@ export default function ElevatorGame() {
     if (!run.cabin.some(Boolean)) { flash({tone:'error',label:'至少接一位乘客才能上行',slots:[]}); playTone(sound,'danger'); return; }
     if ((risk.fatal || stressFatal || gamble || strandedCourier) && !departArmed) { setDepartArmedFor(departSig); playTone(sound,'danger'); return; }
     const reduced = fastReveal || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    busyRef.current = true; setPhoneSheet(null); setItemAim(null); setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setFeedback(null); setDoors('closing'); playTone(sound, 'depart'); playSfx(sound, 'doorClose'); playSfx(sound, 'hum', { delay: .3 });
+    busyRef.current = true; clearBubbles(); setPhoneSheet(null); setItemAim(null); setSelectedSlot(null); setPendingOfferId(null); setDragged(null); setDragOverSlot(null); setFeedback(null); setDoors('closing'); playTone(sound, 'depart'); playSfx(sound, 'doorClose'); playSfx(sound, 'hum', { delay: .3 });
     journeyTimers.current.forEach(clearTimeout);
     journeyTimers.current = [
       setTimeout(() => setDoors('moving'), reduced ? 30 : 250),

@@ -9,9 +9,11 @@ export const EMPTY_BOX: PowerBox = { storage: 0, transformer: 0, motor: 0 };
 export const BOX_MAX_LEVEL = 3;
 export const BOX_TOTAL_CAP = 5;
 /** Price of the next level, indexed by the line's current level. */
-/** v10.3: the second and third levels cost 45 / 80 (they were 35 / 60). A level pays for itself several times over a run,
- * and with the ability step free this is the mid-run purchase that takes coins back; the first level stays 15. */
-export const BOX_PRICES = [15, 45, 80];
+/** v10.3: the second and third levels cost 60 / 120 (they were 35 / 60); the first stays 15. With the ability step free
+ * this is the mid-run purchase that takes coins back, and at these prices an upper level about pays for itself rather than
+ * several times over. Tried 45 / 80 to 80 / 160 over three seeds: skilled coins at death 233 -> 173 at 60 / 120 and no
+ * lower beyond it; run length unchanged (skilled median 88, novice the same). */
+export const BOX_PRICES = [15, 60, 120];
 export const STORAGE_CAPS = [60, 75, 90, 110];
 export const CHARGE_PRICES = [2, 1.75, 1.5, 1.25];
 export const BASE_SHOP_ENTRY_CHARGE = 5;

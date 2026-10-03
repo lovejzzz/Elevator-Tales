@@ -232,13 +232,18 @@ export function bubble(anchor: Element | null, text: string, ms = 1700) {
   // A quip is flavour: wherever it would sit on any words (a card's own, another effect's), it stays unsaid.
   { const b = el.getBoundingClientRect(), box = { left: b.left - b.width / 2, right: b.left + b.width / 2, top: b.top, bottom: b.bottom };
     if (textBoxes(el).some(({ r }) => covered(r, box) > 0)) { el.remove(); return; } }
+  el.style.transform = 'translateX(-50%)';
   el.animate(reduced() ? [{ opacity: 1 }, { opacity: 1, offset: .85 }, { opacity: 0 }] : [
     { transform: 'translate(-50%,10%) scale(.6)', opacity: 0 },
     { transform: 'translate(-50%,0) scale(1.05)', opacity: 1, offset: .12 },
     { transform: 'translate(-50%,0) scale(1)', opacity: 1, offset: .85 },
     { transform: 'translate(-50%,-20%) scale(.96)', opacity: 0 },
   ], { duration: ms, easing: 'ease-out' }).onfinish = () => el.remove();
+  // Words can land under a quip after it is up (an exit card where the rider sat): the quip goes at once.
+  watchUnder(el, performance.now() + ms, () => { el.remove(); return true; }, { pad: 2 });
 }
+/** The cabin is leaving: what a rider said on boarding is over (the exit cards are about to take those seats). */
+export function clearBubbles() { document.querySelectorAll('.juice-bubble').forEach(el => el.remove()); }
 
 /** Briefly add a class (cabin pulses, wallet bumps); restarts cleanly when retriggered. */
 export function flashClass(el: Element | null, className: string, ms = 700) {
