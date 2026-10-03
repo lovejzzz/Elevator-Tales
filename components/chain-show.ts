@@ -4,7 +4,7 @@
 // One timeline drives both; times are seconds from the moment the arrival settles.
 import { CHAIN_RULES, SYMBOLS, type SymbolKey } from '@/lib/symbols';
 import { playSfx } from '@/lib/game-sfx';
-import { burstAt, flashClass, walletGain } from './juice';
+import { burstAt, flashClass, walletGain, yieldUnder } from './juice';
 
 export type ChainShowData = { symbol: SymbolKey; path: Array<[number, number | null]>; multiplier: number; fares: number; bonus: number };
 
@@ -29,6 +29,7 @@ export function playChainShow(chain: ChainShowData, opts: { zh: boolean; sound: 
   const name = opts.zh ? `${SYMBOLS[chain.symbol].zh}连锁` : `${SYMBOLS[chain.symbol].en} chain`;
   let paid = false;
   const pay = () => { if (!paid) { paid = true; opts.onPaid?.(); } };
+  const end = reduced ? 2.1 : payoffAt(k) + CHAIN_TIMING.hold;
   const timers: number[] = [], later = (s: number, fn: () => void) => { timers.push(window.setTimeout(fn, s * 1000)); };
   const seats = () => [...stage.querySelectorAll<HTMLElement>('.standing-grid:not(.link-label-layer) .standing-slot')];
 
@@ -58,7 +59,7 @@ export function playChainShow(chain: ChainShowData, opts: { zh: boolean; sound: 
     if (!reduced) { multEl.classList.remove('is-slam'); void multEl.offsetWidth; multEl.classList.add('is-slam'); }
   };
   const first = CHAIN_RULES.from - 1;
-  later(reduced ? 0.2 : hopAt(first), () => { place(); document.body.appendChild(hud); stage.dataset.chainHud = '1'; setCount(first + 1); });
+  later(reduced ? 0.2 : hopAt(first), () => { place(); document.body.appendChild(hud); stage.dataset.chainHud = '1'; setCount(first + 1); yieldUnder(hud, (end - (reduced ? 0.2 : hopAt(first))) * 1000); });
   for (let i = first; i < k; i++) {
     later(reduced ? 0.2 : hopAt(i), () => {
       if (i > first) setCount(i + 1);
@@ -71,7 +72,7 @@ export function playChainShow(chain: ChainShowData, opts: { zh: boolean; sound: 
 
   // Payoff: the total rolls up and the coins pour from the card into the wallet.
   later(reduced ? 0.3 : payoffAt(k), () => {
-    hud.classList.add('is-paid');
+    hud.classList.add('is-paid'); // (the card's own yield re-measures it every frame, so its taller paid state is covered)
     countEl.textContent = opts.zh ? `${k} 人车费 ${chain.fares} → ${chain.fares + chain.bonus}` : `${k} fares ${chain.fares} → ${chain.fares + chain.bonus}`;
     const wallet = document.querySelector('[data-metric="coins"]');
     if (reduced) { totalEl.textContent = `+${chain.bonus}`; pay(); return; }
@@ -99,7 +100,6 @@ export function playChainShow(chain: ChainShowData, opts: { zh: boolean; sound: 
     }
   });
 
-  const end = reduced ? 2.1 : payoffAt(k) + CHAIN_TIMING.hold;
   later(end - 0.35, () => { hud.classList.add('is-leaving'); stage.dataset.chainLeaving = '1'; });
   const cleanup = () => {
     timers.forEach(clearTimeout); pay(); hud.remove();

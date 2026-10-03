@@ -905,7 +905,8 @@ export default function ElevatorGame() {
     (after.lastThefts ?? []).forEach((theft, t) => {
       const seats = document.querySelectorAll('.standing-slot'), thiefSeat = seats[theft.thief] ?? null;
       theft.victims.forEach((v, i) => flyCoin(seats[v.slot] ?? null, thiefSeat, `+${v.coins}`, .15 + t * .2 + i * .12));
-      window.setTimeout(() => { popText(thiefSeat, zh ? `顺手牵羊 +${theft.victims.reduce((n, v) => n + v.coins, 0)} 金币` : `Pickpocket +${theft.victims.reduce((n, v) => n + v.coins, 0)} coins`, 'gold'); playSfx(on, 'clink'); }, 800 + t * 200);
+      // v10.3: the coins fly to the thief with their amounts and the link label says what was taken, so no extra words.
+      window.setTimeout(() => { playSfx(on, 'clink'); }, 800 + t * 200);
     });
     // v9.19.1 wallet flows: the Robber and the Crooked Cop take coins out of the wallet; the dark riders who earn per
     // floor (Grafter, Scrapper, Shyster, a controlled Wraith, the Noisemaker) send theirs in.
@@ -953,7 +954,6 @@ export default function ElevatorGame() {
     streakRef.current = arrivals.length ? streakRef.current + 1 : 0;
     window.setTimeout(() => {
       document.querySelectorAll('.arrival-exit').forEach((el, i) => { if (i < 1 && arrivals[i]) bubble(el, quip(arrivals[i].kind, 'arrive', zh), 1500); });
-      if (streakRef.current >= 3) popText(document.querySelector('.floor-indicator'), zh ? `连送 ×${streakRef.current}` : `Streak ×${streakRef.current}`, 'green');
     }, 140);
     if (after.status === 'lost') return;
     const bandUp = agitationBand(after.stress) === 'high' && agitationBand(before.stress) !== 'high';
@@ -1092,7 +1092,7 @@ export default function ElevatorGame() {
         setRun(delivered); setArriving(exits); setDoors('opening');
         journeyTimers.current.push(setTimeout(()=>{setArriving([]);setDoors('open');busyRef.current=false;if(!document.querySelector('[role="dialog"]')){if(window.matchMedia('(max-width:700px)').matches)clearJuice();scrollMobileTarget('.candidate-panel','start');}},resolved.lastChain&&!fastReveal?chainShowMs(resolved.lastChain.path.length,reduced):exits.length?(reduced?800:1600):(reduced?40:260)));
         reportMetrics(run, resolved, `${resolved.floor} 层 · 到站结算`);
-        flash({ tone: 'arrival', label: `${String(resolved.floor).padStart(2, '0')}F · 本层结算`, slots: [], coins: resolved.lastEarnings.total, energy: resolved.lastEnergy.delta, pressure: resolved.lastPressure.delta });
+        flash({ tone: 'arrival', label: `${String(resolved.floor).padStart(2, '0')}F · 本层结算${(resolved.lastArrivals?.length ? streakRef.current + 1 : 0) >= 3 ? ` · 连送 ×${streakRef.current + 1}` : ''}`, slots: [], coins: resolved.lastEarnings.total, energy: resolved.lastEnergy.delta, pressure: resolved.lastPressure.delta });
         playTone(soundEnabled.current, resolved.status === 'lost' ? 'danger' : 'arrive');
         celebrateRef.current(run, resolved);
       }, reduced ? 70 : 470),

@@ -189,7 +189,7 @@ const valid = (state: RunState) => E.parcelLayoutOk(state.cabin);
 
 /** The same net value the cards show (lib/net-value.ts). */
 export const cardNet = (o: Rider, state: RunState) => netValue(o, state) ?? 0;
-function chooseBoarding(state: RunState, offers: Rider[], bot: Bot, mode: LegendMode): RunState {
+export function chooseBoarding(state: RunState, offers: Rider[], bot: Bot, mode: LegendMode): RunState {
   let pool = offers.filter(o => !isLegend(o.kind) || mode === 'auto' || mode === 'board');
   let cur = state;
   if (mode === 'board') {
@@ -277,7 +277,7 @@ function sectorNeed(state: RunState, occupancy: number) {
   for (let f = state.floor + 1; f <= state.floor + 10; f++) need += futureMotor(state, f) + occupancy;
   return need;
 }
-function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog): RunState {
+export function shop(state: RunState, bot: Bot, rng: () => number, log: RunLog): RunState {
   let s = state;
   const entry = { floor: s.floor, energy: s.energy, coins: s.coins, cap: s.energyCap };
   if (s.energy <= 0 || s.stress >= s.stressCap) s = E.repairEmergency(s);

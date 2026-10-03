@@ -1013,11 +1013,11 @@
    the money), so nothing sits under it. */
 #v2 .elevator-stage[data-chain-hud] .arrival-grid .arrival-name, #v2 .elevator-stage[data-chain-hud] .arrival-grid .arrival-payout { opacity:0 !important; visibility:hidden; transition:opacity .2s; }
 /* A cabin message sits where the record-gap chip does; the chip waits until it is gone. */
-#v2 .elevator-stage:has(.cabin-feedback) .record-gap { opacity:0; transition:opacity .2s; }
+#v2 .elevator-stage:has(.cabin-feedback) .record-gap { visibility:hidden; }
 /* Phones: the cabin message is a one-line strip in the gap between the floor indicator and the cards, so it never covers
    a card. Long arrival summaries drop their cause line. */
-@media (orientation:landscape) and (max-height:520px) {
-  #v2 .elevator-stage .cabin-feedback, #v2 .elevator-stage .cabin-feedback.feedback-arrival { top:35px !important; height:18px; padding:0 10px !important; width:max-content !important; max-width:calc(100% - 16px) !important;
+@media (orientation:landscape) and (max-height:520px), (orientation:landscape) and (min-width:701px) and (max-width:1100px) {
+  #v2 .elevator-stage .cabin-feedback, #v2 .elevator-stage .cabin-feedback.feedback-arrival { top:34px !important; height:18px; padding:0 10px !important; width:max-content !important; max-width:calc(100% - 16px) !important;
     display:flex !important; align-items:center; gap:8px; overflow:hidden; white-space:nowrap; border-radius:9px; }
   #v2 .elevator-stage .cabin-feedback .feedback-label { gap:4px; }
   #v2 .elevator-stage .cabin-feedback .feedback-label b { font-size:11px !important; }
@@ -1027,3 +1027,36 @@
   #v2 .elevator-stage .cabin-feedback .feedback-cause { display:none !important; }
   .juice-bubble { font-size:11px; padding:3px 8px; }
 }
+#v2 .elevator-stage:has(.cabin-feedback) .adjacency-key { visibility:hidden; }
+
+/* A cabin message never shows over an open dialog (the shop opens on the floor the arrival strip is still up). */
+main.game-shell[data-base-ui-inert] .cabin-feedback { visibility:hidden; }
+/* A pop that wraps inside a small card's portrait. */
+.juice-pop.is-wrapped { white-space:normal; text-align:center; font-size:12px; line-height:1.2; }
+/* Phones: with the first-floor lesson above them, the waiting cards share what is left (they used to be pushed under
+   the ascend plate). */
+@media (orientation:landscape) and (max-height:520px) {
+  #v2 .candidate-panel:has(> .mobile-lesson-banner) { display:flex !important; flex-direction:column; }
+  #v2 .candidate-panel:has(> .mobile-lesson-banner) > .mobile-lesson-banner { flex:none; }
+  #v2 .candidate-panel:has(> .mobile-lesson-banner) .passenger-list { flex:1 1 auto; height:auto !important; min-height:0; }
+}
+
+/* While a dialog is open, the cabin's own effects stay out of it (a shop opening under a banner or pop). */
+/* (Base UI marks the page inert behind a modal; a sibling selector is far cheaper than :has() on body.) */
+main.game-shell[data-base-ui-inert] ~ .juice-banner, main.game-shell[data-base-ui-inert] ~ .juice-pop:not(.in-dialog), main.game-shell[data-base-ui-inert] ~ .juice-bubble, main.game-shell[data-base-ui-inert] ~ .chain-hud { visibility:hidden; }
+/* Desktop: the arrival message is one row (label and the three changes) so it stays above the cards; the breakdown is in
+   "Decision details". */
+@media (min-width:1101px) {
+  #v2 .elevator-stage .cabin-feedback.feedback-arrival { display:flex; align-items:center; gap:12px; padding:4px 12px; white-space:nowrap; }
+  #v2 .elevator-stage .cabin-feedback.feedback-arrival .feedback-label b { font-size:12px; }
+  #v2 .elevator-stage .cabin-feedback.feedback-arrival .feedback-values { display:flex; gap:8px; flex-wrap:nowrap; }
+  #v2 .elevator-stage .cabin-feedback.feedback-arrival .feedback-cause { display:none; }
+  #v2 .elevator-stage .cabin-feedback.feedback-arrival .feedback-values > span { font-size:16px; }
+}
+/* Phones: the arrival strip shows the three changes only (the floor is on the indicator just above). */
+@media (orientation:landscape) and (max-height:520px) {
+  #v2 .elevator-stage .cabin-feedback.feedback-arrival .feedback-label b { display:none; }
+}
+/* A big parcel's status ("unclaimed · opens on arrival") sat under its numbers row: the box art fills the whole card, so
+   the status rides above the numbers instead. */
+#v2 .standing-slot.crate-card .seat-overlay { top:auto !important; bottom:calc(var(--crate-metrics, 38px) + 8px) !important; }
