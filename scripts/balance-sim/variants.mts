@@ -9,6 +9,7 @@ import { PARCEL_RULES, BOMB_RULES, THIEF_RULES } from '../../lib/game-engine.ts'
 import { PASSENGERS } from '../../lib/game-data.ts';
 import { CHAIN_RULES, SYMBOL_EFFECTS, SYMBOL_RULES } from '../../lib/symbols.ts';
 import { SHOP_USE } from './sim.mts';
+import { MYSTERY_RULES } from '../../lib/dark-rules.ts';
 import { ABILITY_SHOP } from '../../lib/shop-effects.ts';
 const scaleBoxes = (k: number) => { for (const size of ['small', 'big'] as const) for (const tier of ['common', 'rare', 'legendary'] as const) PARCEL_RULES.values[size][tier] = Math.round(PARCEL_RULES.values[size][tier] * k); };
 const parcel = (fare: number, coins: number, power: number) => () => { PASSENGERS.courier.fare = fare; PARCEL_RULES.payoutCoins = coins; PARCEL_RULES.payoutPower = power; };
@@ -16,6 +17,9 @@ const parcel = (fare: number, coins: number, power: number) => () => { PASSENGER
 export const VARIANTS: Record<string, () => void> = {
   baseline: () => {},
   // v10.3 shop study: what each shop system is worth to a skilled bot (it stops using that one thing).
+  // v10.3 under-used riders: Taskmaster 12→15, Grafter 13→18, Scandal 16→19, each Mystery identity +3 are now the
+  // defaults (boarding 13–15% → 15–26% over three seeds); `darkOld` restores the previous fares for comparison.
+  darkOld: () => { PASSENGERS.taskmaster.fare = 12; PASSENGERS.grafter.fare = 13; PASSENGERS.scandal.fare = 16; for (const k of Object.keys(MYSTERY_RULES) as Array<keyof typeof MYSTERY_RULES>) MYSTERY_RULES[k].fare -= 3; },
   shopOldAbility: () => { ABILITY_SHOP.extra = true; ABILITY_SHOP.reroll = true; ABILITY_SHOP.level2Free = false; },
   shopNoReroll: () => { SHOP_USE.reroll = false; },
   shopNoBox: () => { SHOP_USE.box = false; },
@@ -44,7 +48,7 @@ export const VARIANTS: Record<string, () => void> = {
   fare21: () => { LATE_FARE.from = 21; LATE_FARE.factor = 0.8; },
   charge61: () => { LATE_CHARGE.from = 61; LATE_CHARGE.factor = 1.25; },
   fare31charge61: () => { VARIANTS.fare31(); VARIANTS.charge61(); },
-  darkfix: () => { PASSENGERS.taskmaster.fare = 12; PASSENGERS.madbomber.fare = 52; },
+  darkfix: () => { PASSENGERS.madbomber.fare = 52; },
   // v9.18.3 Courier routes by box tier: trip ranges (common / rare / legendary) and a per-stop delivery fee.
   tripOld: () => { PARCEL_RULES.trips = { common: [1, 3], rare: [1, 3], legendary: [1, 3] }; PARCEL_RULES.crateExtraStop = 0; },
   tripMild: () => { PARCEL_RULES.trips = { common: [1, 3], rare: [2, 4], legendary: [3, 5] }; },

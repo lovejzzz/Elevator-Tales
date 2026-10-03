@@ -94,7 +94,9 @@ console.log('playtest v10.2.4: cancelled pairs, both-failure lesson and emoji-fr
     cabin: [null, R('madbomber', 'm', 100, 95, { volatile: true, fuse: 999 } as Partial<Rider>), null, null, R('taskmaster', 't', 97, 93, { volatile: true }), R('noisemaker', 'n', 98, 94)] } as RunState;
   assert.equal(Math.round((stressForecast(st).lossChance ?? 0) * 100), 64);
   const plan = gambleRescuePlan(st, 0.2)!;
-  assert.deepEqual([plan.remove.map(r => [r.kind, r.paid]), plan.calm, plan.chance], [[['taskmaster', 8]], 0, 0], JSON.stringify(plan));
+  // v10.3: the Taskmaster's fare rose to 15, so losing his fare now costs more than the Noisemaker's (10 paid + 12
+  // forfeited); the cheapest plan that brings the gamble under 20% dismisses the Noisemaker instead.
+  assert.deepEqual([plan.remove.map(r => [r.kind, r.paid]), plan.calm, Math.round(plan.chance * 100)], [[['noisemaker', 10]], 0, 16], JSON.stringify(plan));
   const noDismissal = gambleRescuePlan({ ...st, dismissalsUsed: 2 }, 0.2)!;
   assert.deepEqual([noDismissal.remove.length, noDismissal.calm, noDismissal.cost, Math.round(noDismissal.chance * 100)], [0, 1, 24, 16], JSON.stringify(noDismissal));
   assert.equal(gambleRescuePlan({ ...st, stress: 0, cabin: [null, null, null, null, null, R('commuter', 'c', 97, 94)] }, 0.2), null, 'no plan when there is no gamble');
