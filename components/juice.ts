@@ -65,6 +65,22 @@ export function popText(el: Element | null, text: string, tone: Tone = 'gold', b
     .then(() => animate(inner, { y: -46, opacity: 0 }, { duration: big ? .9 : .6, ease: 'easeIn', delay: big ? .5 : .25 })).then(() => t.remove());
 }
 
+/** v10.3 a gain or loss landing in the wallet. It used to float over the wallet's own digits and labels; it now takes
+ * the place of the wallet's "next floor" line for a moment (that line is stale while the floor settles anyway), so it
+ * never sits on other text. */
+export function walletGain(text: string, tone: Tone = 'gold', big = false) {
+  const card = document.querySelector<HTMLElement>('[data-metric="coins"]'), line = card?.querySelector<HTMLElement>('.wallet-forecast');
+  if (!card || !line || !line.getClientRects().length) return;
+  document.querySelectorAll('.wallet-gain').forEach(el => el.remove());
+  const r = line.getBoundingClientRect(), el = layer(`wallet-gain juice-${tone} ${big ? 'is-big' : ''}`); el.textContent = text;
+  el.style.left = `${r.left}px`; el.style.top = `${r.top}px`; el.style.width = `${r.width}px`; el.style.height = `${r.height}px`;
+  card.classList.add('is-gaining');
+  const done = () => { el.remove(); if (!document.querySelector('.wallet-gain')) card.classList.remove('is-gaining'); };
+  if (reduced()) { window.setTimeout(done, 1400); return; }
+  void animate(el, { scale: [.4, 1], opacity: [0, 1] }, { type: 'spring', stiffness: 520, damping: 16 })
+    .then(() => animate(el, { opacity: 0 }, { duration: .35, delay: big ? 1.1 : .8 })).then(done);
+}
+
 /** A full-width banner across the cabin: close calls, new records, district title cards. */
 export function banner(anchor: Element | null, title: string, sub: string, tone: 'gold' | 'red' | 'district' | 'midnight' = 'gold', ms = 1900) {
   if (!anchor) return;
@@ -89,13 +105,24 @@ export function banner(anchor: Element | null, title: string, sub: string, tone:
 /** A speech bubble above a rider (boarding or getting off). */
 export function bubble(anchor: Element | null, text: string, ms = 1700) {
   if (!anchor) return;
-  const r = anchor.getBoundingClientRect(), el = layer('juice-bubble'); el.textContent = text;
-  el.style.left = `${r.left + r.width / 2}px`; el.style.top = `${r.top + 6}px`;
+  // v10.3: the quip comes out of the speaker's own portrait (below the symbol gems on its top corners). Above the card it
+  // sat on the card overhead, the floor indicator or the cabin messages.
+  const art = ['.arrival-portrait .portrait-large', '.sp-art', '.tcg-art', '.seat-art'].map(q => anchor.querySelector(q)).find(e => e && e.getBoundingClientRect().width > 20);
+  const r = (art ?? anchor).getBoundingClientRect(), el = layer('juice-bubble'); el.textContent = text;
+  el.style.left = `${r.left + r.width / 2}px`; el.style.top = `${r.top + Math.max(24, r.height * .16)}px`; el.style.maxWidth = `${Math.max(80, Math.min(180, r.width - 8))}px`;
+  // An exit card also shows the rider's name and payout: the quip only goes in the gap between them, or not at all.
+  const name = anchor.querySelector('.arrival-name')?.getBoundingClientRect(), payout = anchor.querySelector('.arrival-payout, .arrival-payout-incident')?.getBoundingClientRect();
+  if (name && payout) {
+    const h = el.getBoundingClientRect().height, gap = payout.top - name.bottom;
+    // The payout rises 22px as it fades out; leave it that room.
+    if (gap < h + 28) { el.remove(); return; }
+    el.style.top = `${name.bottom + 3}px`;
+  }
   el.animate(reduced() ? [{ opacity: 1 }, { opacity: 1, offset: .85 }, { opacity: 0 }] : [
-    { transform: 'translate(-50%,-80%) scale(.6)', opacity: 0 },
-    { transform: 'translate(-50%,-110%) scale(1.05)', opacity: 1, offset: .12 },
-    { transform: 'translate(-50%,-110%) scale(1)', opacity: 1, offset: .85 },
-    { transform: 'translate(-50%,-130%) scale(.96)', opacity: 0 },
+    { transform: 'translate(-50%,10%) scale(.6)', opacity: 0 },
+    { transform: 'translate(-50%,0) scale(1.05)', opacity: 1, offset: .12 },
+    { transform: 'translate(-50%,0) scale(1)', opacity: 1, offset: .85 },
+    { transform: 'translate(-50%,-20%) scale(.96)', opacity: 0 },
   ], { duration: ms, easing: 'ease-out' }).onfinish = () => el.remove();
 }
 

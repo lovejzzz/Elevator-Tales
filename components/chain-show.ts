@@ -4,7 +4,7 @@
 // One timeline drives both; times are seconds from the moment the arrival settles.
 import { CHAIN_RULES, SYMBOLS, type SymbolKey } from '@/lib/symbols';
 import { playSfx } from '@/lib/game-sfx';
-import { burstAt, flashClass, popText } from './juice';
+import { burstAt, flashClass, walletGain } from './juice';
 
 export type ChainShowData = { symbol: SymbolKey; path: Array<[number, number | null]>; multiplier: number; fares: number; bonus: number };
 
@@ -58,7 +58,7 @@ export function playChainShow(chain: ChainShowData, opts: { zh: boolean; sound: 
     if (!reduced) { multEl.classList.remove('is-slam'); void multEl.offsetWidth; multEl.classList.add('is-slam'); }
   };
   const first = CHAIN_RULES.from - 1;
-  later(reduced ? 0.2 : hopAt(first), () => { place(); document.body.appendChild(hud); setCount(first + 1); });
+  later(reduced ? 0.2 : hopAt(first), () => { place(); document.body.appendChild(hud); stage.dataset.chainHud = '1'; setCount(first + 1); });
   for (let i = first; i < k; i++) {
     later(reduced ? 0.2 : hopAt(i), () => {
       if (i > first) setCount(i + 1);
@@ -94,7 +94,7 @@ export function playChainShow(chain: ChainShowData, opts: { zh: boolean; sound: 
       ], { duration: 640 + Math.random() * 200, delay: 120 + c * (14 - tier * 2), easing: 'cubic-bezier(.45,0,.3,1)', fill: 'forwards' }).onfinish = () => {
         coin.remove();
         if (landed++ % 3 === 0) playSfx(opts.sound, 'clink', { pitch: Math.min(12, landed / 3) });
-        if (landed === count) { pay(); flashClass(wallet, 'wallet-bump', 700); popText(wallet, `+${chain.bonus}`, 'gold', true); burstAt(wallet, 'gold', 14 + tier * 8, 70 + tier * 30); }
+        if (landed === count) { pay(); flashClass(wallet, 'wallet-bump', 700); walletGain(`+${chain.bonus}`, 'gold', true); burstAt(wallet, 'gold', 14 + tier * 8, 70 + tier * 30); }
       };
     }
   });
@@ -103,7 +103,7 @@ export function playChainShow(chain: ChainShowData, opts: { zh: boolean; sound: 
   later(end - 0.35, () => { hud.classList.add('is-leaving'); stage.dataset.chainLeaving = '1'; });
   const cleanup = () => {
     timers.forEach(clearTimeout); pay(); hud.remove();
-    delete stage.dataset.chain; delete stage.dataset.chainLeaving; stage.classList.remove('chain-shake-1', 'chain-shake-2', 'chain-shake-3');
+    delete stage.dataset.chain; delete stage.dataset.chainLeaving; delete stage.dataset.chainHud; stage.classList.remove('chain-shake-1', 'chain-shake-2', 'chain-shake-3');
     stage.querySelectorAll('.is-chained').forEach(s => s.classList.remove('is-chained'));
     document.querySelectorAll('.chain-coin').forEach(c => c.remove());
   };

@@ -42,7 +42,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { CardShader } from '@/components/card-shader';
 import { fuseState } from '@/lib/bomb-state';
 import { beginPointerDrag } from '@/components/pointer-drag';
-import { banner, bubble, burstAt, clearJuice, explode, flashClass, flyCoin, flyPortrait, openBoxFx, popText } from '@/components/juice';
+import { banner, bubble, burstAt, clearJuice, explode, flashClass, flyCoin, flyPortrait, openBoxFx, popText, walletGain } from '@/components/juice';
 import { BombTimer } from '@/components/bomb-timer';
 import { Scramble } from '@/components/scramble';
 import { quip } from '@/lib/quips';
@@ -995,7 +995,7 @@ export default function ElevatorGame() {
       playSfx(on, 'explosion'); explode(bomberSeat); flashClass(stage, 'is-shaking', 900);
       b.slots.filter(i => i !== b.bomber).forEach(i => flashClass(seats()[i] ?? null, 'is-blasted', 1500));
       banner(stage, zh ? '炸了！' : 'BOOM!', zh ? `${b.slots.length} 人被炸下车 · 损失 ${b.coins} 金币` : `${b.slots.length} blown out · −${b.coins} coins`, 'red', 1900);
-      if (b.coins) window.setTimeout(() => popText(document.querySelector('[data-metric="coins"]'), `−${b.coins}`, 'red', true), 500);
+      if (b.coins) window.setTimeout(() => walletGain(`−${b.coins}`, 'red', true), 500);
     }
     if (run.lastCorruption?.length && seen.corruption !== run.lastCorruption) run.lastCorruption.forEach((c, k) => {
       const seat = seats()[c.slot] ?? null, purified = !isDark(c.to);
@@ -1108,7 +1108,7 @@ export default function ElevatorGame() {
       let landed = 0; const total = arriving.reduce((sum, a) => sum + Math.max(0, a.coins), 0);
       const walletEl = document.querySelector('[data-metric="coins"]');
       // On a shop floor the shop covers the wallet; its own register counts the coins up instead (v9.18.4).
-      if (statusRef.current !== 'upgrade') window.setTimeout(() => { flashClass(walletEl, 'wallet-bump', 600); popText(walletEl, `+${total}`, 'gold', total >= 20); if (total >= 20) { playSfx(soundEnabled.current, 'register'); burstAt(walletEl, 'gold', 18, 80); } }, 900);
+      if (statusRef.current !== 'upgrade') window.setTimeout(() => { flashClass(walletEl, 'wallet-bump', 600); walletGain(`+${total}`, 'gold', total >= 20); if (total >= 20) { playSfx(soundEnabled.current, 'register'); burstAt(walletEl, 'gold', 18, 80); } }, 900);
       document.querySelectorAll('.arrival-exit .arrival-payout').forEach((payout, index) => {
         const from = payout.getBoundingClientRect(); const coins = arriving[index]?.coins ?? 0; if (!from.width || coins <= 0) return;
         const x0 = from.left + from.width / 2, y0 = from.top + from.height / 2, dx = wallet.left + wallet.width / 2 - x0, dy = wallet.top + wallet.height / 2 - y0;

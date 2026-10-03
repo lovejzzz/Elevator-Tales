@@ -1002,3 +1002,28 @@
 #v2 .elevator-stage[data-chain-leaving] .arrival-grid .in-chain .arrival-portrait, #v2 .elevator-stage[data-chain-leaving] .arrival-grid .in-chain .arrival-name { opacity:0; }
 /* The `font` shorthands above reset numerals to Cormorant's old-style figures (1 reads as I); force lining ones. */
 #v2body .chain-hud .ch-mult, #v2body .chain-hud .ch-total, #v2body .chain-hud .ch-count { font-variant-numeric:lining-nums tabular-nums; }
+/* v10.3 a wallet gain takes the place of the wallet's "next floor" line for a moment (it no longer floats over the
+   wallet's digits and labels). */
+.juice.wallet-gain { position:fixed; z-index:81; display:flex; align-items:center; pointer-events:none; white-space:nowrap; transform-origin:left center;
+  font:800 15px/1 var(--font-mono); font-variant-numeric:lining-nums tabular-nums; text-shadow:0 0 12px rgba(0,0,0,.6); }
+.juice.wallet-gain.is-big { font-size:19px; }
+.juice.wallet-gain.juice-gold { color:#ffd98a; text-shadow:0 0 14px rgba(246,205,128,.55); } .juice.wallet-gain.juice-red { color:#ffab96; }
+[data-metric="coins"].is-gaining > .wallet-forecast { visibility:hidden; }
+/* While the chain card is up, the exit cards' names and payouts step aside (the card says who got off; the wallet takes
+   the money), so nothing sits under it. */
+#v2 .elevator-stage[data-chain-hud] .arrival-grid .arrival-name, #v2 .elevator-stage[data-chain-hud] .arrival-grid .arrival-payout { opacity:0 !important; visibility:hidden; transition:opacity .2s; }
+/* A cabin message sits where the record-gap chip does; the chip waits until it is gone. */
+#v2 .elevator-stage:has(.cabin-feedback) .record-gap { opacity:0; transition:opacity .2s; }
+/* Phones: the cabin message is a one-line strip in the gap between the floor indicator and the cards, so it never covers
+   a card. Long arrival summaries drop their cause line. */
+@media (orientation:landscape) and (max-height:520px) {
+  #v2 .elevator-stage .cabin-feedback, #v2 .elevator-stage .cabin-feedback.feedback-arrival { top:35px !important; height:18px; padding:0 10px !important; width:max-content !important; max-width:calc(100% - 16px) !important;
+    display:flex !important; align-items:center; gap:8px; overflow:hidden; white-space:nowrap; border-radius:9px; }
+  #v2 .elevator-stage .cabin-feedback .feedback-label { gap:4px; }
+  #v2 .elevator-stage .cabin-feedback .feedback-label b { font-size:11px !important; }
+  #v2 .elevator-stage .cabin-feedback .feedback-label svg { width:11px; height:11px; }
+  #v2 .elevator-stage .cabin-feedback .feedback-values { display:flex; gap:6px; }
+  #v2 .elevator-stage .cabin-feedback .feedback-values > span { font-size:11px !important; }
+  #v2 .elevator-stage .cabin-feedback .feedback-cause { display:none !important; }
+  .juice-bubble { font-size:11px; padding:3px 8px; }
+}
