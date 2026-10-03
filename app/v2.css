@@ -418,7 +418,7 @@
   #v2body .upgrade-dialog .shop-head { margin:6px 0 4px !important; }
   #v2body .upgrade-dialog .shop-head [data-slot="dialog-title"] { font-size:22px !important; }
   #v2body .upgrade-dialog .shop-choice-row { display:grid !important; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) !important; gap:8px !important; }
-  #v2body .upgrade-dialog .upgrade-grid { grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:6px !important; }
+  #v2body .upgrade-dialog .upgrade-grid { grid-template-columns:repeat(3,minmax(0,1fr)) !important; grid-auto-flow:row !important; grid-auto-columns:auto !important; overflow-x:visible !important; scroll-snap-type:none !important; gap:6px !important; }
   #v2body .upgrade-dialog .upgrade-grid > button { min-height:0 !important; padding:8px !important; }
   #v2body .upgrade-dialog .shop-footer { position:sticky; bottom:-10px; z-index:5; margin-top:8px; padding:8px 0 2px; background:linear-gradient(0deg,#070c0a 70%,transparent); }
   #v2body .upgrade-dialog .shop-footer .story-primary { height:44px; font-size:17px; }
@@ -661,7 +661,7 @@
      continue bar sit flush on its edges and nothing scrolls into view above or below them. */
   #v2body .upgrade-dialog { padding-top:0 !important; padding-bottom:0 !important; }
   #v2body .upgrade-dialog .shop-resources { top:0 !important; margin-top:0 !important; padding-top:8px !important; padding-bottom:6px !important; }
-  #v2body .upgrade-dialog .shop-footer { bottom:0 !important; margin-bottom:0 !important; padding:8px 0 8px !important; background:#070c0a !important; box-shadow:0 -8px 12px -6px rgba(0,0,0,.8); }
+  #v2body .upgrade-dialog .shop-footer { bottom:0 !important; margin-bottom:0 !important; padding:8px 0 8px !important; background:#070c0a !important; box-shadow:0 -8px 12px -6px rgba(0,0,0,.8), 0 3px 0 #070c0a; }
   /* Installed slot: name, then “level 2”, then “sell”, all in one row and never on top of each other. */
   #v2body .upgrade-dialog .shop-slot .ability-raise { position:static !important; inset:auto !important; transform:none !important; flex:none; padding:2px 6px !important; font-size:10px !important; white-space:nowrap; }
   #v2body .upgrade-dialog .shop-slot .shop-icon { flex:none; }
@@ -1116,7 +1116,16 @@ main.game-shell[data-base-ui-inert] ~ .juice-banner, main.game-shell[data-base-u
 /* Level-up cards are compact (there can be six of them). */
 #v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card { padding:10px 12px !important; gap:6px; }
 #v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card .shop-icon { width:36px !important; height:36px !important; }
-#v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card .shop-item-head b { font-size:18px !important; }
+@media (min-width:1101px) { #v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card .shop-item-head b { font-size:18px !important; } }
+@media (max-width:1100px) {
+  #v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card { padding:7px 8px !important; }
+  #v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card .shop-icon { width:26px !important; height:26px !important; }
+  #v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card .shop-item-head { gap:6px; min-width:0; }
+  #v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card .shop-item-head b { font-size:14px !important; line-height:1.2 !important; min-width:0; overflow-wrap:break-word; }
+  #v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card p { font-size:11px !important; line-height:1.35 !important; overflow-wrap:break-word; }
+}
+/* The narrowest phones: level-up cards two across, so a long English name stays whole. */
+@media (max-width:700px) { #v2body .upgrade-dialog .upgrade-grid:has(> .ability-raise-card) { grid-template-columns:repeat(2,minmax(0,1fr)) !important; } }
 #v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card p { margin:0; font-size:12.5px; line-height:1.4; }
 #v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card .shop-price { padding-top:6px; }
 #v2body .upgrade-dialog .upgrade-grid > button.ability-raise-card .shop-price strong { font-size:15px !important; }
@@ -1131,3 +1140,7 @@ main.game-shell[data-base-ui-inert] ~ .juice-banner, main.game-shell[data-base-u
 #v2body .upgrade-dialog .shop-slot { padding:0 !important; cursor:default; }
 #v2body .upgrade-dialog .shop-scroll-body .shop-slot > button.shop-slot-chip { display:inline-flex; align-items:center; gap:6px; width:auto; min-height:0; padding:4px 10px 4px 5px; border:0; background:transparent; color:inherit; font:inherit; cursor:pointer; }
 #v2body .upgrade-dialog .shop-scroll-body .shop-slot > button.shop-slot-sell { margin:0 6px 0 0; }
+/* The "click · place" hint over a seat that already holds a rider sits on the portrait, not on the rider's numbers. */
+#v2 .standing-slot .drop-caption.on-rider { bottom:auto; top:36%; transform:translate(-50%,-50%); }
+/* On an empty seat it stays inside the seat (it hung 4px below, onto the cabin message under the bottom row). */
+#v2 .standing-slot .drop-caption:not(.on-rider) { bottom:6px; }
