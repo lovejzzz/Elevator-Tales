@@ -11,15 +11,18 @@ const live = new Set<AudioScheduledSourceNode>();
 /** v9.18.3 mix safety: a brick-wall limiter so stacked effects never clip, and an 11 kHz low-pass that keeps bright
  * partials and noise from turning into fizz. (The old -18 dB compressor added about 8 dB of automatic make-up gain,
  * which pushed sharp sample transients and reverb hiss up with it.) `SFX_MIX` is tuned in the offline
- * render check (window.__sfxQa in development). */
-export const SFX_MIX = { out: .9, wet: .16, limit: { threshold: -4, ratio: 20, attack: .002, release: .12 }, lowpass: 11000, maxVoices: 40, maxPartial: 9000 };
+ * render check (window.__sfxQa in development).
+ * v10.3 `master`: every effect at half level (player feedback: the effects were too loud overall). It sits after the
+ * limiter, so single effects and stacked ones drop by the same amount. */
+export const SFX_MIX = { master: .5, out: .9, wet: .16, limit: { threshold: -4, ratio: 20, attack: .002, release: .12 }, lowpass: 11000, maxVoices: 40, maxPartial: 9000 };
 
 function makeBus(ctx: BaseAudioContext): Bus {
   const out = ctx.createGain(); out.gain.value = SFX_MIX.out;
   const limiter = ctx.createDynamicsCompressor();
   limiter.threshold.value = SFX_MIX.limit.threshold; limiter.knee.value = 0; limiter.ratio.value = SFX_MIX.limit.ratio; limiter.attack.value = SFX_MIX.limit.attack; limiter.release.value = SFX_MIX.limit.release;
   const tame = ctx.createBiquadFilter(); tame.type = 'lowpass'; tame.frequency.value = SFX_MIX.lowpass; tame.Q.value = .5;
-  out.connect(tame).connect(limiter).connect(ctx.destination);
+  const master = ctx.createGain(); master.gain.value = SFX_MIX.master;
+  out.connect(tame).connect(limiter).connect(master).connect(ctx.destination);
   // A short generated room: decaying stereo noise as the impulse response.
   const length = Math.floor(ctx.sampleRate * 1.2), impulse = ctx.createBuffer(2, length, ctx.sampleRate);
   for (let ch = 0; ch < 2; ch++) { const data = impulse.getChannelData(ch); for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length) ** 3; }

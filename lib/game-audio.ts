@@ -20,7 +20,8 @@ export function playGameSound(enabled: boolean, type: GameSound, delay = 0) {
       oscillator.type = ['depart', 'danger', 'pressure', 'drain', 'load'].includes(type) ? 'triangle' : 'sine';
       oscillator.frequency.setValueAtTime(frequency, at);
       gain.gain.setValueAtTime(.0001, at);
-      gain.gain.exponentialRampToValueAtTime(['select','rare','debut'].includes(type) ? .018 : .03, at + .008);
+      // v10.3: half the earlier level (.018 / .03), with the sound effects' master gain.
+      gain.gain.exponentialRampToValueAtTime(['select','rare','debut'].includes(type) ? .009 : .015, at + .008);
       gain.gain.exponentialRampToValueAtTime(.0001, at + duration);
       oscillator.connect(gain).connect(ctx.destination);
       voices.add(oscillator); oscillator.start(at); oscillator.stop(at + duration + .02);
