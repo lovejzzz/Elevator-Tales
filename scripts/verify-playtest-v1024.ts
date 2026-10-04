@@ -204,3 +204,21 @@ console.log('playtest v10.2.4: cancelled pairs, both-failure lesson and emoji-fr
   }
   console.log('playtest v10.3: power ramp, box levels 15 / 60 / 120, items follow depth');
 }
+
+// v10.3: an opened box's receipt says which box it was, so a crate's exit card is drawn as a crate.
+{
+  const E = await import('../lib/game-engine');
+  const { crateArtSrc } = await import('../lib/passenger-assets');
+  const { existsSync } = await import('node:fs');
+  const R = (kind: Rider['kind'], id: string, extra: Partial<Rider> = {}) => ({ id, kind, destination: 25, patience: 0, boardedAt: 20, fareBonus: 0, stash: 0, volatile: false, ...extra }) as unknown as Rider;
+  const at = (cabin: Array<Rider | null>) => ({ ...initialRun(), floor: 24, status: 'playing', energy: 40, coins: 0, stress: 0, stressCap: 10, cabin } as RunState);
+  const crate = E.resolveFloor(at([R('parcel', 'p', { big: 'top', tier: 'rare' }), null, null, R('parcel', 'pb', { big: 'bottom', tier: 'rare' }), null, R('commuter', 'c', { destination: 30 })]), () => 0.9);
+  assert.equal(crate.lastArrivals?.length, 1, 'one receipt for the whole crate');
+  assert.deepEqual(crate.lastArrivals![0].box, { big: true, tier: 'rare' });
+  assert.equal(crate.lastArrivals![0].slot, 0, 'on its upper seat');
+  assert.ok(crate.lastBoxEvents?.some(e => e.by === 'arrival' && e.big && e.tier === 'rare'));
+  const small = E.resolveFloor(at([R('parcel', 'q'), null, null, null, null, R('commuter', 'c', { destination: 30 })]), () => 0.9);
+  assert.equal(small.lastArrivals![0].box, undefined, 'a plain parcel needs no note');
+  for (const box of [{}, { tier: 'rare' as const }, { tier: 'legendary' as const }, { contraband: true }]) assert.ok(existsSync('public' + crateArtSrc(box).replace(/^.*\/assets\//, '/assets/')), crateArtSrc(box));
+  console.log('playtest v10.3: a crate opens as a crate; every crate face exists');
+}

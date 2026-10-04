@@ -292,4 +292,28 @@ function openBoxNow(anchor: Element, src: string, label: string, tone: Tone) {
   window.setTimeout(reveal, (delay + .45) * 1000);
 }
 
+/** v10.3 a crate (two seats tall) opens at its own size: the lid lifts off the top of the tall box. With `lidOnly` the
+ * crate is already on screen as its exit card, so only the lid and the dark opening under it are drawn. (The square
+ * box effect made a crate look like a small parcel for a moment.) */
+export function openCrateFx(top: Element | null, bottom: Element | null, src: string, label: string, tone: Tone = 'gold', delay = 0, lidOnly = false) {
+  if (!top || !bottom) return;
+  window.setTimeout(() => {
+    const a = top.getBoundingClientRect(), b = bottom.getBoundingClientRect();
+    const left = Math.min(a.left, b.left), y = Math.min(a.top, b.top), w = Math.max(a.right, b.right) - left, h = Math.max(a.bottom, b.bottom) - y;
+    if (w < 8 || h < 8) return;
+    const lidH = Math.round(w * .3), box = layer('juice-box juice-crate');
+    Object.assign(box.style, { left: `${left}px`, top: `${y}px`, width: `${w}px`, height: `${h}px` });
+    const part = (className: string, from: number, height: number) => { const el = document.createElement('span'); el.className = className; Object.assign(el.style, { top: `${from}px`, bottom: 'auto', height: `${height}px`, backgroundImage: `url(${src})`, backgroundSize: `${w}px ${h}px`, backgroundPosition: `0 ${-from}px` }); box.appendChild(el); return el; };
+    if (!lidOnly) part('juice-box-body', lidH, h - lidH);
+    const mouth = document.createElement('span'); mouth.className = 'juice-crate-mouth'; mouth.style.height = `${lidH}px`; box.appendChild(mouth);
+    const lid = part('juice-box-lid', 0, lidH);
+    const reveal = () => { burst(left + w / 2, y + lidH * .7, tone, 22, 110); if (label) popText(top, label, tone, true); };
+    if (reduced()) { void animate(box, { opacity: [0, 1, 1, 0] }, { duration: 1.1 }).then(() => box.remove()); window.setTimeout(reveal, 300); return; }
+    void animate(box, lidOnly ? { opacity: [1, 1, 0] } : { scale: [.94, 1.03, 1, 1], opacity: [0, 1, 1, 0] }, { duration: 1.25, times: lidOnly ? [0, .7, 1] : [0, .18, .7, 1] }).then(() => box.remove());
+    void animate(mouth, { opacity: [0, 0, 1] }, { duration: .5, delay: .3, times: [0, .2, 1] });
+    void animate(lid, { y: [0, 0, -lidH * 1.5], rotate: [0, 0, -16], opacity: [1, 1, 0] }, { duration: .85, delay: .3, times: [0, .15, 1], ease: 'easeOut' });
+    window.setTimeout(reveal, 450);
+  }, delay * 1000);
+}
+
 export function clearJuice() { bannerFreeAt = 0; document.querySelectorAll('.juice').forEach(el => el.remove()); }

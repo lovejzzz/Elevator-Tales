@@ -28,7 +28,7 @@ import { CHAIN_RULES, RIDER_SYMBOLS, chainMultiplier, chainOutlook, chainPath, c
 import { disposeGameAudio, playGameSound as playTone, playMetricSounds } from '@/lib/game-audio';
 import { disposeGameMusic, musicSceneForView, setGameMusic, unlockGameMusic } from '@/lib/game-music';
 import { bondStatus, conflictLinks, type ConflictEffect } from '@/lib/rider-profile';
-import { frankBombSrc, portraitAsset, riderPortraitSrc, shopIcon } from '@/lib/passenger-assets';
+import { crateArtSrc, frankBombSrc, portraitAsset, riderPortraitSrc, shopIcon } from '@/lib/passenger-assets';
 import { addDiscoveredPassengers, sanitizeDiscoveredPassengers } from '@/lib/passenger-discovery';
 import { passengerBrief, SHARED_SAVING_RULE, type PassengerRuleBlock } from '@/lib/passenger-presentation';
 import { metricChanges, type MetricChange, type MetricKey } from '@/lib/metric-feedback';
@@ -42,7 +42,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { CardShader } from '@/components/card-shader';
 import { fuseState } from '@/lib/bomb-state';
 import { beginPointerDrag } from '@/components/pointer-drag';
-import { banner, bubble, burstAt, clearBubbles, clearJuice, explode, flashClass, flyCoin, flyPortrait, openBoxFx, popText, walletGain } from '@/components/juice';
+import { banner, bubble, burstAt, clearBubbles, clearJuice, explode, flashClass, flyCoin, flyPortrait, openBoxFx, openCrateFx, popText, walletGain } from '@/components/juice';
 import { BombTimer } from '@/components/bomb-timer';
 import { Scramble } from '@/components/scramble';
 import { quip } from '@/lib/quips';
@@ -953,13 +953,16 @@ export default function ElevatorGame() {
     // v9.18.3 boxes: every box opened (or used, or taken) plays where it sat, with what was inside.
     (after.lastBoxEvents ?? []).forEach((ev, k) => {
       const seats = document.querySelectorAll('.standing-slot'), seat = seats[ev.slot] ?? null, delay = .15 + k * .25;
-      const src = riderPortraitSrc({ kind: 'parcel', big: ev.big ? 'top' : undefined, tier: ev.tier === 'common' ? undefined : ev.tier });
+      const tier = ev.tier === 'common' ? undefined : ev.tier, src = riderPortraitSrc({ kind: 'parcel', big: ev.big ? 'top' : undefined, tier, contraband: ev.contraband });
       if (ev.by === 'inspect') { window.setTimeout(() => { popText(seat, zh ? `验货 · 快递员晚一站 · +${ev.coins ?? 0} 金币` : `Checked · Courier 1 stop later · +${ev.coins ?? 0} coins`, 'green'); flashClass(seat, 'is-inspected', 900); playSfx(on, 'stamp'); }, delay * 1000); return; }
       if (ev.by === 'thief') { window.setTimeout(() => { flyPortrait(seat, seats[ev.thief ?? ev.slot] ?? null, src); popText(seats[ev.thief ?? ev.slot] ?? null, zh ? '带走纸箱' : 'Took the box', 'gold'); }, delay * 1000); return; }
       // An unclaimed box that reached its floor already shows its contents on the exit card.
       const label = ev.by === 'arrival' ? '' : ev.by === 'mechanic' ? (zh ? '拆成零件 · 检修完成' : 'Parts · repair done') : ev.ability ? `${zh ? '能力：' : 'Ability: '}${translateGameText(UPGRADES[ev.ability].name, language)}` : ev.power ? (zh ? `+${ev.power} 电` : `+${ev.power} power`) : (zh ? `+${ev.coins ?? 0} 金币` : `+${ev.coins ?? 0} coins`);
       const who = ev.by === 'child' ? (zh ? '小孩拆开了纸箱' : 'The Child opened it') : ev.by === 'mimic' ? (zh ? '复制人打开复制箱' : 'The Mimic’s copy') : '';
-      openBoxFx(seat, src, label, ev.by === 'mechanic' || ev.power ? 'blue' : ev.ability ? 'green' : 'gold', delay);
+      const tone = ev.by === 'mechanic' || ev.power ? 'blue' : ev.ability ? 'green' : 'gold';
+      // A crate opens at its own size, over both of its seats (the exit card under it is the crate itself).
+      if (ev.big) openCrateFx(seats[ev.slot % 3] ?? null, seats[ev.slot % 3 + 3] ?? null, crateArtSrc({ tier, contraband: ev.contraband }), label, tone, delay, ev.by === 'arrival');
+      else openBoxFx(seat, src, label, tone, delay);
       playSfx(on, 'boxOpen', { delay: delay + .3, pitch: k * 2 });
       if (who) window.setTimeout(() => bubble(seat, who, 1400), delay * 1000);
     });
@@ -1352,7 +1355,7 @@ export default function ElevatorGame() {
         <button className="cabin-inspect-button" disabled={!activeRider || locked} onClick={() => {if(activeRider){setEjectArmed(false);setPassengerDetails(activeRider);}}}><BookOpen />{activeRider ? `查看${PASSENGERS[activeRider.kind].name} · 请离` : '选中人物 · 查看 / 请离'}</button>
         <div className="door door-left" /><div className="door door-right" />
         {/* v9.18.1: a crate is one card across the upper and lower seat of its column, drawn over the two seats. */}
-        <div className="standing-grid crate-grid">{activeRider && isBigParcel(activeRider) && dragOverSlot !== null && placementPlans[dragOverSlot]?.ok && <div className="standing-slot crate-card crate-ghost" style={{ gridColumn: dragOverSlot % 3 + 1, gridRow: '1 / span 2' }} aria-hidden="true"><span className="crate-image" style={{ backgroundImage: `url(${riderPortraitSrc(activeRider)})` }} /></div>}
+        <div className="standing-grid crate-grid">{activeRider && isBigParcel(activeRider) && dragOverSlot !== null && placementPlans[dragOverSlot]?.ok && <div className="standing-slot crate-card crate-ghost" style={{ gridColumn: dragOverSlot % 3 + 1, gridRow: '1 / span 2' }} aria-hidden="true"><span className="crate-image" style={{ backgroundImage: `url(${crateArtSrc(activeRider)})` }} /></div>}
           {/* v10.1.2: a big box being dragged previews as one tall box over its column, not a small box in each seat. */}
           {run.cabin.map((r, i) => {
           if (r?.big !== 'top') return null;
@@ -1360,18 +1363,20 @@ export default function ElevatorGame() {
           return <div key={r.id} className={`standing-slot occupied crate-card category-good seat-grade-${riderCardGrade(r)}`} style={{ gridColumn: i % 3 + 1, gridRow: '1 / span 2' }}>
             <span className="rider-visual">
               {(riderCardGrade(r) === 'rare' || riderCardGrade(r) === 'legendary') && <CardShader legendary={riderCardGrade(r) === 'legendary'} />}
+              {/* The compact face (phones and short screens): the same parts as a compact seat. */}
+              <span className="seat-phone crate-phone" aria-hidden="true" data-no-translate><span className="sp-head"><b>{displayName(r, language)}</b></span><span className="sp-art"><span className="crate-image" style={{ backgroundImage: `url(${crateArtSrc(r)})` }} /></span><span className="sp-stops">{stopsLeft(Math.max(0, r.destination - run.floor), language)}</span><span className="sp-metrics"><span><Coins aria-hidden="true" />0</span><span><BatteryCharging aria-hidden="true" />−2</span><span><Flame aria-hidden="true" />0</span></span></span>
               <span className="seat-heading"><span className="rider-name" data-no-translate>{displayName(r, language)}{riderCardGrade(r) !== 'standard' && <span className={`card-gem gem-${riderCardGrade(r)}`} />}</span></span>
               <span className="slot-destination">{stopsLeft(Math.max(0, r.destination - run.floor), language)}</span>
-              <span className="seat-art crate-art"><span className="crate-image" style={{ backgroundImage: `url(${riderPortraitSrc(r)})` }} />{state && <span className="seat-overlay"><span className={`slot-state ${state.tone}`}>{state.label}</span></span>}</span>
+              <span className="seat-art crate-art"><span className="crate-image" style={{ backgroundImage: `url(${crateArtSrc(r)})` }} />{state && <span className="seat-overlay"><span className={`slot-state ${state.tone}`}>{state.label}</span></span>}</span>
               <span className="seat-metrics"><span className="seat-fare"><Coins aria-hidden="true" />0</span><span className="seat-energy"><BatteryCharging aria-hidden="true" />−2</span><span className="seat-agitation"><Flame aria-hidden="true" />0</span></span>
             </span>
             <button className="seat-info-button crate-info" type="button" disabled={locked} onClick={() => { setEjectArmed(false); setPassengerDetails(r); }} aria-label={language === 'zh' ? `查看${displayName(r, 'zh')}详情` : `View ${displayName(r, 'en')} details`}><Info aria-hidden="true" /></button>
           </div>;
         })}</div>
         <CabinFx layer="front" state={fxState} />{linkLabels.length>0&&<div className="standing-grid link-label-layer" data-no-translate aria-hidden="true">{linkLabels}</div>}
-        {arriving.length>0&&<div className="standing-grid arrival-grid">{arriving.map(arrival=><div key={arrival.riderId} data-slot={arrival.slot} className={`standing-slot-wrap ${!fastReveal&&run.lastChain?.slots.includes(arrival.slot)?'in-chain':''}`} style={{gridColumn:arrival.slot%3+1,gridRow:Math.floor(arrival.slot/3)+1}}>{arrival.incident
+        {arriving.length>0&&<div className="standing-grid arrival-grid">{arriving.map(arrival=><div key={arrival.riderId} data-slot={arrival.slot} className={`standing-slot-wrap ${!fastReveal&&run.lastChain?.slots.includes(arrival.slot)?'in-chain':''} ${arrival.box?.big?'arrival-crate':''}`} style={{gridColumn:arrival.slot%3+1,gridRow:arrival.box?.big?'1 / span 2':Math.floor(arrival.slot/3)+1}}>{arrival.incident
           ? <output className={`arrival-exit arrival-incident ${fastReveal?'arrival-quick':''}`} aria-label={zhUI?`${riderName(arrival.kind,'zh')} 受不了混乱，提前下车，未付车费`:`${riderName(arrival.kind,'en')} left early in the chaos without paying`} data-no-translate><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{riderName(arrival.kind,language)}</span><span className="arrival-payout-incident"><Flame aria-hidden="true"/>{zhUI?'提前下车':'Left early'}<small>{zhUI?'受不了混乱 · 未付车费':'Chaos · no fare'}</small></span></output>
-          : <div className={`arrival-exit ${fastReveal?'arrival-quick':''}`} role="status" aria-label={`${PASSENGERS[arrival.kind].name} 到站 ${arrival.keepsake?`信物 ${KEEPSAKES[arrival.keepsake].name}`:arrival.ability?UPGRADES[arrival.ability].name:arrival.power?`+${arrival.power} 电`:`${arrival.coins<0?'−'+(-arrival.coins):'+'+arrival.coins} 金币`}`}><div className="arrival-portrait"><Portrait kind={arrival.kind} large /></div><span className="arrival-name">{PASSENGERS[arrival.kind].name}</span><span className="arrival-payout">{arrival.keepsake?<><Sparkles aria-hidden="true"/><small>{zhUI?`信物 · ${keepsakeLabel(arrival.keepsake,'zh')}`:`Keepsake · ${keepsakeLabel(arrival.keepsake,'en')}`}{arrival.coins>0?` · +${arrival.coins}`:''}</small></>:arrival.ability?<><Sparkles aria-hidden="true"/><small>{UPGRADES[arrival.ability].name}</small></>:arrival.power?<><BatteryCharging aria-hidden="true"/>+{arrival.power}<small>电</small></>:<><Coins aria-hidden="true"/>{arrival.coins<0?`−${-arrival.coins}`:`+${arrival.coins}`}<small>金币</small></>}</span></div>}</div>)}</div>}
+          : <div className={`arrival-exit ${fastReveal?'arrival-quick':''}`} role="status" aria-label={`${PASSENGERS[arrival.kind].name} 到站 ${arrival.keepsake?`信物 ${KEEPSAKES[arrival.keepsake].name}`:arrival.ability?UPGRADES[arrival.ability].name:arrival.power?`+${arrival.power} 电`:`${arrival.coins<0?'−'+(-arrival.coins):'+'+arrival.coins} 金币`}`}><div className="arrival-portrait">{arrival.box?.big?<span className="crate-image" style={{backgroundImage:`url(${crateArtSrc(arrival.box)})`}} />:<Portrait kind={arrival.kind} rider={arrival.box?({kind:arrival.kind,tier:arrival.box.tier,contraband:arrival.box.contraband} as Rider):undefined} large />}</div><span className="arrival-name">{arrival.box?displayName({kind:arrival.kind,big:arrival.box.big?'top':undefined,contraband:arrival.box.contraband},language):PASSENGERS[arrival.kind].name}</span><span className="arrival-payout">{arrival.keepsake?<><Sparkles aria-hidden="true"/><small>{zhUI?`信物 · ${keepsakeLabel(arrival.keepsake,'zh')}`:`Keepsake · ${keepsakeLabel(arrival.keepsake,'en')}`}{arrival.coins>0?` · +${arrival.coins}`:''}</small></>:arrival.ability?<><Sparkles aria-hidden="true"/><small>{UPGRADES[arrival.ability].name}</small></>:arrival.power?<><BatteryCharging aria-hidden="true"/>+{arrival.power}<small>电</small></>:<><Coins aria-hidden="true"/>{arrival.coins<0?`−${-arrival.coins}`:`+${arrival.coins}`}<small>金币</small></>}</span></div>}</div>)}</div>}
         <div className={`cabin-message ${hoveredPlan && !hoveredPlan.ok ? 'message-error' : ''}`} aria-live="polite"><Sparkles /><span>{hoveredPlan ? hoveredPlan.ok ? hoveredPlan.next.message : hoveredPlan.label : selectedSlot !== null && run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : touchUI && run.message === DRAG_HINT ? TAP_HINT : run.message}</span></div><div className="swap-status">{pendingOfferId ? '选择发光站位 · ESC 取消' : selectedSlot !== null ? run.swapped ? '旧乘客换位已用 · 仅新上客可调整 · ESC 取消' : '再选一个站位完成调整 · ESC 取消' : run.swapped ? <><LockKeyhole /> 旧乘客换位已用 · 新上客仍可调整</> : '拖拽人物安排站位 · 有效组合会亮起'}</div>
       </section>
       <aside className="arrival-panel">

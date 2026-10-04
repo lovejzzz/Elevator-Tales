@@ -27,3 +27,8 @@ export function riderPortraitSrc(rider: { kind: PassengerKind; big?: 'top' | 'bo
 /** Object icons for shop abilities and power-box lines (one painted item each). */
 export const shopIcon = (key: string) => publicAsset(`/assets/shop/${key}.jpg`);
 export const frankBombSrc = () => publicAsset('/assets/riders/frankbomb.jpg');
+/** v10.3: the two-seat crate card has its own vector face (the square painting was shown at up to five times its size);
+ * drawn by scripts/make-crate-art.mjs. */
+export function crateArtSrc(rider: { tier?: 'rare' | 'legendary'; contraband?: boolean }) {
+  return publicAsset(`/assets/riders/crate-${rider.contraband ? 'contraband' : rider.tier ?? 'common'}.svg`);
+}

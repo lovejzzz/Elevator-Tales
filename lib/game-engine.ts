@@ -15,12 +15,12 @@ import { DISMISSALS_PER_SECTOR, OFFER_PARTNERS, RISK_STASH_PER_ASCENT, UPGRADE_S
 export type MidnightRiderFields = { /** v10.1.2 upgraded by a keepsake (the Vinyl makes every Musician a Master Musician). */ master?: boolean; corruption?: number; warded?: boolean; cuffed?: boolean; alarm?: boolean; sedated?: number; sealed?: boolean; withdrawal?: number; identity?: MysteryIdentity; /** v9.20.1: abyss step when this dark card was drawn (its fare premium). */ extreme?: number; revealed?: boolean; contraband?: boolean; summoned?: boolean; crewFloors?: number; /** v9.21: extra coins on arrival (the eve-of-the-abyss bounty). */ bounty?: number };
 export type Rider = MidnightRiderFields & { id: string; kind: PassengerKind; ownerId?: string; parcelId?: string; routeStops?: number; bombMs?: number; bombMsTotal?: number; /** v9.18.4: seconds that still count for the defusal bonus; they drain even while an Officer locks the timer. */ bonusMs?: number; big?: 'top' | 'bottom'; boxId?: string; inspected?: boolean; parcelBig?: boolean; tier?: 'rare' | 'legendary'; disguised?: boolean; destination: number; patience: number; boardedAt: number; fareBonus: number; localFareRatio?: number; stash?: number; volatile?: boolean; fuse?: number; calledByLover?: boolean; traits?: VariableTraits; copySeed?: number; repairProgress?: number; repairDone?: boolean; quietStreak?: number; complianceReady?: boolean; careProgress?: number };
 export type ChangeLine = { label: string; amount: number };
-export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number; power?:number; ability?:UpgradeKey; /** v9.18.4: the keepsake a delivered legend left behind. */ keepsake?:KeepsakeKey; /** UI only: an incident exit card (never set by the engine). */ incident?:boolean };
+export type ArrivalReceipt = { riderId:string; kind:PassengerKind; slot:number; coins:number; power?:number; ability?:UpgradeKey; /** v9.18.4: the keepsake a delivered legend left behind. */ keepsake?:KeepsakeKey; /** UI only: an incident exit card (never set by the engine). */ incident?:boolean; /** v10.3: which box opened, so its exit card shows the same box (a crate used to turn into a small parcel as it opened). */ box?:{ big?:boolean; tier?:'rare'|'legendary'; contraband?:boolean } };
 /** v9.18.1: who the Thief robbed on the last floor, for the pickpocket animation. */
 export type TheftReceipt = { thief: number; victims: Array<{ slot: number; coins: number }> };
 /** v9.18.3: every box opened, used or taken on the last floor, for the in-place box animation. `slot` is where the box
  * (or, for a Mimic's copy, the Mimic) sat; `thief` is where the Thief who took it sat. */
-export type BoxEvent = { slot: number; by: 'arrival' | 'child' | 'mimic' | 'mechanic' | 'thief' | 'inspect'; coins?: number; power?: number; ability?: UpgradeKey; thief?: number; big?: boolean; tier?: BoxTier };
+export type BoxEvent = { slot: number; by: 'arrival' | 'child' | 'mimic' | 'mechanic' | 'thief' | 'inspect'; coins?: number; power?: number; ability?: UpgradeKey; thief?: number; big?: boolean; tier?: BoxTier; contraband?: boolean };
 /** v9.18.3: a rider who left early in a high-agitation incident (no fare), for the exit card. */
 export type IncidentReceipt = { riderId: string; kind: PassengerKind; slot: number };
 export type ShopCard = { key: UpgradeKey; price: number; purchased: boolean };
@@ -1036,8 +1036,8 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
   // v9.17.2 hidden contents, rolled on opening. Abilities won this floor are installed after settlement.
   const wonAbilities: UpgradeKey[] = []; let pendingAbility = state.pendingAbility;
   const lastBoxEvents: BoxEvent[] = []; let lastIncident: IncidentReceipt | undefined;
-  const boxEvent = (slot: number, by: BoxEvent['by'], box: { big?: unknown; tier?: BoxTier }, got?: { coins?: number; power?: number; ability?: UpgradeKey }) =>
-    lastBoxEvents.push({ slot, by, ...(got?.ability ? { ability: got.ability } : got?.power ? { power: got.power } : got ? { coins: got.coins ?? 0 } : {}), ...(box.big ? { big: true } : {}), ...(box.tier ? { tier: box.tier } : {}) });
+  const boxEvent = (slot: number, by: BoxEvent['by'], box: { big?: unknown; tier?: BoxTier; contraband?: boolean }, got?: { coins?: number; power?: number; ability?: UpgradeKey }) =>
+    lastBoxEvents.push({ slot, by, ...(got?.ability ? { ability: got.ability } : got?.power ? { power: got.power } : got ? { coins: got.coins ?? 0 } : {}), ...(box.big ? { big: true } : {}), ...(box.tier ? { tier: box.tier } : {}), ...(box.contraband ? { contraband: true } : {}) });
   const receive = (box: { big?: unknown; tier?: BoxTier }, label: string, say: string) => {
     const installed = { ...state.upgrades }; wonAbilities.forEach(k => { installed[k] = 1; }); if (pendingAbility) installed[pendingAbility] = 1;
     let got = rollBox(box, rng, installed);
@@ -1109,7 +1109,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       if (rider.big === 'bottom') return null; // the upper half opens the whole box
       const got = receive(rider, '纸箱开箱', '无人认领的纸箱开箱：');
       boxEvent(slot, 'arrival', rider, got);
-      lastArrivals.push({ riderId: rider.id, kind: rider.kind, slot, coins: got.coins, ...(got.power ? { power: got.power } : {}), ...(got.ability ? { ability: got.ability } : {}) });
+      lastArrivals.push({ riderId: rider.id, kind: rider.kind, slot, coins: got.coins, ...(got.power ? { power: got.power } : {}), ...(got.ability ? { ability: got.ability } : {}), ...(rider.big || rider.tier || rider.contraband ? { box: { ...(rider.big ? { big: true } : {}), ...(rider.tier ? { tier: rider.tier } : {}), ...(rider.contraband ? { contraband: true } : {}) } } : {}) });
       return null;
     }
     if (nextFloor < rider.destination) return rider;
