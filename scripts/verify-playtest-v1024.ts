@@ -149,7 +149,15 @@ console.log('playtest v10.2.4: cancelled pairs, both-failure lesson and emoji-fr
   assert.equal(line(afterHeld.lastEnergy.sources, '小偷偷幽灵的电'), 0, 'a held Thief steals nothing');
   assert.equal(E.stealLink(held.cabin, 1, 2), 0);
   for (const label of ['小偷偷幽灵的电', '小偷惹哭小孩', '顺手牵羊 +2金币 +3电/层 · 惹哭儿童 +1躁动', '惹哭儿童 · +2躁动/层']) assert.doesNotMatch(translateGameText(label, 'en'), /[㐀-鿿]/, label);
-  console.log('playtest v10.3: the Thief takes a Ghost’s power and makes a Child cry');
+  // A legend's pockets are the deepest; the Don and the Kingpin are not robbed.
+  const legend = at([R('thief', 't'), R('operator', 'o'), null, R('celebrity', 'c'), null, null]), afterLegend = E.resolveFloor(legend, () => 0.9);
+  assert.equal(E.pickpocketFrom(R('operator', 'o')), E.THIEF_RULES.legendCoins); assert.ok(E.THIEF_RULES.legendCoins > 4, 'more than from a Celebrity');
+  assert.equal(line(afterLegend.lastEarnings.sources, '小偷顺手牵羊'), E.THIEF_RULES.legendCoins + 4, 'legend and Celebrity are both robbed');
+  assert.equal(E.stealLink(legend.cabin, 0, 1), E.THIEF_RULES.legendCoins);
+  assert.equal(E.pickpocketFrom(R('nightoperator', 'n')), E.THIEF_RULES.legendCoins, 'dark legends too');
+  for (const boss of ['don', 'kingpin'] as const) assert.equal(E.pickpocketFrom(R(boss, 'b')), 0, boss);
+  assert.equal(E.resolveFloor(at([R('cop', 'p'), R('thief', 't'), R('operator', 'o'), null, null, null]), () => 0.9).lastEarnings.sources.some(l => l.label === '小偷顺手牵羊'), false, 'a held Thief does not rob the legend');
+  console.log('playtest v10.3: the Thief takes a Ghost’s power, makes a Child cry and robs legends');
 }
 
 // v10.3 the simpler ability step: one free pick per shop and no prices. With a free slot it is a new ability; with all six

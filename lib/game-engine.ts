@@ -169,9 +169,13 @@ export const COURIER_ARRIVAL_CHARGE = 2;
 /** v9.18.2: agitation each Thief held by an Officer or Lawyer removes per floor (tuned in scripts/balance-sim). */
 /** v10.3 (player idea): an uncontrolled Thief beside a Ghost steals its power (+`ghostPower` a floor per Ghost); beside a
  * Child he finds nothing to take and makes the child cry (+`childAgitation` a floor per Child). */
-export const THIEF_RULES = { controlledCalm: 1, ghostPower: 3, childAgitation: 1 };
+/** v10.3 (player idea): a legend's pockets are the deepest: `legendCoins` a floor from each legend beside him (0 = legends
+ * are never robbed, the rule before). The Don and the Kingpin are still not robbed: the Thief works under their protection.
+ * Tried 5 / 6 / 8 / 10 (840 runs each): at 8, twice the Celebrity's 4, skilled bots enter the 10F shop with 112 coins
+ * against 95 and run length does not move. */
+export const THIEF_RULES = { controlledCalm: 1, ghostPower: 3, childAgitation: 1, legendCoins: 8 };
 /** v9.18.1: what a Thief lifts from each adjacent rider per floor, by how full their pockets are (about 2 on average).
- * Officers, Lawyers, the Don, legends and boxes are never robbed. */
+ * Officers, Lawyers, the Don, the Kingpin and boxes are never robbed; other legends pay `THIEF_RULES.legendCoins`. */
 export const PICKPOCKET: Partial<Record<PassengerKind, number>> = {
   celebrity: 4, tourist: 3, mystery: 3, shifter: 3,
   commuter: 2, courier: 2, lover: 2, musician: 2, coach: 2, mimic: 2, bomb: 2,
@@ -192,7 +196,7 @@ export function stealLink(cabin: Array<Rider | null>, first: number, second: num
   }
   return 0;
 }
-export const pickpocketFrom = (v: Rider | null | undefined) => (!v || v.kind === 'parcel' || ['cop', 'lawyer', 'don', 'crookedcop'].includes(v.kind) || isAnyLegend(v.kind) ? 0 : PICKPOCKET[v.kind] ?? ECONOMY_RULES.thiefPerVictim);
+export const pickpocketFrom = (v: Rider | null | undefined) => (!v || v.kind === 'parcel' || ['cop', 'lawyer', 'don', 'kingpin', 'crookedcop'].includes(v.kind) ? 0 : isAnyLegend(v.kind) ? THIEF_RULES.legendCoins : PICKPOCKET[v.kind] ?? ECONOMY_RULES.thiefPerVictim);
 /** Bomb timers (v9.18 study): the dealt range, and how many steps an unlocked timer drops per floor at high agitation. */
 export const BOMB_RULES = { fuseMin: 3, fuseMax: 6, highTick: 2,
   /** v9.18 real-time timer: a Bomber aboard counts down in real seconds (base + per stop of his trip) instead of floors.
@@ -991,7 +995,7 @@ export function resolveFloor(state: RunState, rng: () => number = Math.random, f
       case 'tourist': break; // Companion rewards are paid on delivery only.
       case 'lover': break; // Pairing increases delivery value, never idle income.
       case 'thief': {
-        // v9.17: he picks the pockets of every adjacent rider except Officers, Lawyers, the Don and legends.
+        // v9.17: he picks the pockets of every adjacent rider except Officers, Lawyers and the Don (v10.3: legends pay most).
         if (controlledThief) break;
         const victims = neighbours(slot).map(i => ({ slot: i, coins: ECONOMY_RULES.thiefPerVictim ? pickpocketFrom(effectCabin[i]) : 0 })).filter(v => v.coins > 0);
         const take = ECONOMY_RULES.thiefTravel + victims.reduce((n, v) => n + v.coins, 0);

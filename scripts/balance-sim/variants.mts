@@ -108,6 +108,12 @@ export const VARIANTS: Record<string, () => void> = {
   c3r51e8: () => { NIGHT_UNREST.cap = 3; MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 8; },
   nBr51: () => { NIGHT_UNREST.from = 31; NIGHT_UNREST.every = 20; NIGHT_UNREST.cap = 3; MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 10; },
   e20c3r51: () => { NIGHT_UNREST.every = 20; NIGHT_UNREST.cap = 3; MOTOR_RULES.rampFrom = 51; MOTOR_RULES.rampEvery = 10; },
+  // v10.3 a Thief beside a legend: coins a floor per legend (0 = the old rule, legends never robbed).
+  thiefLegend0: () => { THIEF_RULES.legendCoins = 0; },
+  thiefLegend5: () => { THIEF_RULES.legendCoins = 5; },
+  thiefLegend6: () => { THIEF_RULES.legendCoins = 6; },
+  thiefLegend8: () => { THIEF_RULES.legendCoins = 8; },
+  thiefLegend10: () => { THIEF_RULES.legendCoins = 10; },
   reform0: () => { THIEF_RULES.controlledCalm = 0; },
   reform2: () => { THIEF_RULES.controlledCalm = 2; },
   bHigh2: () => { BOMB_RULES.highTick = 2; },
